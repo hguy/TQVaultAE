@@ -1181,4 +1181,10 @@ Here is a complex example: 'arctic &amp; of frost @ring $rare | common'</value>
   <data name="AlbertusMT" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\resources\fonts\albertus mt.ttf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="SettingsEnableSharedStashHotReload" xml:space="preserve">
+    <value>Enable Shared Stash Hot Reload</value>
+  </data>
+  <data name="SettingsEnableSharedStashHotReloadTT" xml:space="preserve">
+    <value>Ticking this box will automaticaly reload shared stash when changed in game.</value>
+  </data>
 </root>

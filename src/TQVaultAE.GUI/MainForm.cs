@@ -283,6 +283,12 @@ namespace TQVaultAE.GUI
 
 			this.splashScreen.Show();
 			this.splashScreen.Update();
+
+			// Activate SharedStash watcher
+			if (Settings.Default.EnableSharedStashHotReload)
+			{
+				this.fileSystemWatcherSharedStash.EnableRaisingEvents = true;
+			}
 		}
 
 		/// <summary>
@@ -3483,6 +3489,11 @@ namespace TQVaultAE.GUI
 			{
 				this.fadeInTimer.Stop();
 			}
+		}
+
+		private void FileSystemWatcherSharedStash_Changed(object sender, FileSystemEventArgs e)
+		{
+
 		}
 	}
 }

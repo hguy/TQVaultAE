@@ -53,6 +53,7 @@ namespace TQVaultAE.GUI
 		/// Indicates whether the language will be auto detected
 		/// </summary>
 		private bool detectLanguage;
+		private bool enableSharedStashHotReload;
 
 		/// <summary>
 		/// The language we will be using.
@@ -176,6 +177,7 @@ namespace TQVaultAE.GUI
 			this.customMapLabel.Font = Program.GetFontAlbertusMTLight(11.25F);
 			this.mapListComboBox.Font = Program.GetFontAlbertusMTLight(11.25F);
 			this.Font = Program.GetFontAlbertusMTLight(11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, (byte)(0));
+			this.enableSharedStashHotReloadCheckBox.Font = Program.GetFontAlbertusMTLight(11.25F);
 
 			#endregion
 
@@ -209,6 +211,9 @@ namespace TQVaultAE.GUI
 			this.cancelButton.Text = Resources.GlobalCancel;
 			this.okayButton.Text = Resources.GlobalOK;
 			this.Text = Resources.SettingsTitle;
+
+			this.enableSharedStashHotReloadCheckBox.Text = Resources.SettingsEnableSharedStashHotReload;
+			this.toolTip.SetToolTip(this.enableSharedStashHotReloadCheckBox, Resources.SettingsEnableSharedStashHotReloadTT);
 
 			this.DrawCustomBorder = true;
 
@@ -415,6 +420,7 @@ namespace TQVaultAE.GUI
 			this.loadLastCharacter = Settings.Default.LoadLastCharacter;
 			this.loadLastVault = Settings.Default.LoadLastVault;
 			this.detectLanguage = Settings.Default.AutoDetectLanguage;
+			this.enableSharedStashHotReload = Settings.Default.EnableSharedStashHotReload;
 
 			// Force English since there was some issue with getting the proper language setting.
 			var gl = Database.DB.GameLanguage;
@@ -488,6 +494,7 @@ namespace TQVaultAE.GUI
 			this.loadAllFilesCheckBox.Checked = this.loadAllFiles;
 			this.suppressWarningsCheckBox.Checked = this.suppressWarnings;
 			this.playerReadonlyCheckbox.Checked = this.playerReadonly;
+			this.enableSharedStashHotReloadCheckBox.Checked = this.enableSharedStashHotReload;
 
 			this.enableCustomMapsCheckBox.Checked = this.enableMods;
 			int ind = this.mapListComboBox.FindStringExact(this.customMap);
@@ -528,6 +535,7 @@ namespace TQVaultAE.GUI
 				Settings.Default.LoadAllFiles = this.loadAllFiles;
 				Settings.Default.SuppressWarnings = this.suppressWarnings;
 				Settings.Default.PlayerReadonly = this.playerReadonly;
+				Settings.Default.EnableSharedStashHotReload = this.enableSharedStashHotReload;
 			}
 		}
 
@@ -928,6 +936,12 @@ namespace TQVaultAE.GUI
 				}
 			}
 
+		}
+
+		private void EnableSharedStashHotReloadCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			if (!this.configurationChanged) this.configurationChanged = this.enableSharedStashHotReloadCheckBox.Checked != this.enableSharedStashHotReload;
+			this.enableSharedStashHotReload = this.enableSharedStashHotReloadCheckBox.Checked;
 		}
 	}
 }

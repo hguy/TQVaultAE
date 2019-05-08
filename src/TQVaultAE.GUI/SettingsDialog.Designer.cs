@@ -198,6 +198,7 @@ namespace TQVaultAE.GUI
             this.loadAllFilesCheckBox = new TQVaultAE.GUI.ScalingCheckBox();
             this.suppressWarningsCheckBox = new TQVaultAE.GUI.ScalingCheckBox();
             this.playerReadonlyCheckbox = new TQVaultAE.GUI.ScalingCheckBox();
+            this.enableSharedStashHotReloadCheckBox = new TQVaultAE.GUI.ScalingCheckBox();
             this.languageComboBox = new TQVaultAE.GUI.ScalingComboBox();
             this.languageLabel = new TQVaultAE.GUI.ScalingLabel();
             this.detectLanguageCheckBox = new TQVaultAE.GUI.ScalingCheckBox();
@@ -455,7 +456,20 @@ namespace TQVaultAE.GUI
         " will be read-only,  you won\'t be able to select or move any item.");
             this.playerReadonlyCheckbox.UseVisualStyleBackColor = true;
             this.playerReadonlyCheckbox.CheckedChanged += new System.EventHandler(this.PlayerReadonlyCheckboxCheckedChanged);
-			// 
+            // 
+            // enableSharedStashHotReloadCheckBox
+            // 
+            this.enableSharedStashHotReloadCheckBox.AutoSize = true;
+            this.enableSharedStashHotReloadCheckBox.Font = new System.Drawing.Font("Albertus MT Light", 11.25F);
+            this.enableSharedStashHotReloadCheckBox.Location = new System.Drawing.Point(498, 173);
+            this.enableSharedStashHotReloadCheckBox.Name = "enableSharedStashHotReloadCheckBox";
+            this.enableSharedStashHotReloadCheckBox.Size = new System.Drawing.Size(226, 21);
+            this.enableSharedStashHotReloadCheckBox.TabIndex = 34;
+            this.enableSharedStashHotReloadCheckBox.Text = "Enable Shared Stash Hot Reload";
+            this.toolTip.SetToolTip(this.enableSharedStashHotReloadCheckBox, "Ticking this box will automaticaly reload shared stash when changed in game");
+            this.enableSharedStashHotReloadCheckBox.UseVisualStyleBackColor = true;
+            this.enableSharedStashHotReloadCheckBox.CheckedChanged += new System.EventHandler(this.EnableSharedStashHotReloadCheckBox_CheckedChanged);
+            // 
             // languageComboBox
             // 
             this.languageComboBox.Font = new System.Drawing.Font("Albertus MT Light", 11.25F);
@@ -611,6 +625,7 @@ namespace TQVaultAE.GUI
             this.AutoValidate = System.Windows.Forms.AutoValidate.EnablePreventFocusChange;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
             this.ClientSize = new System.Drawing.Size(922, 461);
+            this.Controls.Add(this.enableSharedStashHotReloadCheckBox);
             this.Controls.Add(this.playerReadonlyCheckbox);
             this.Controls.Add(this.titanQuestPathTextBox);
             this.Controls.Add(this.titanQuestPathLabel);
@@ -679,6 +694,7 @@ namespace TQVaultAE.GUI
             this.Controls.SetChildIndex(this.titanQuestPathLabel, 0);
             this.Controls.SetChildIndex(this.titanQuestPathTextBox, 0);
             this.Controls.SetChildIndex(this.playerReadonlyCheckbox, 0);
+            this.Controls.SetChildIndex(this.enableSharedStashHotReloadCheckBox, 0);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -687,5 +703,6 @@ namespace TQVaultAE.GUI
 		#endregion
 
 		private ScalingCheckBox playerReadonlyCheckbox;
+		private ScalingCheckBox enableSharedStashHotReloadCheckBox;
 	}
 }

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.352
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArzExplorer", "src\ARZExplorer\ArzExplorer.csproj", "{F5582F3E-552C-4EDA-B4EE-3F4BD9B0A9CF}"
 EndProject
@@ -9,6 +9,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TQVaultAE.DAL", "src\TQVaultAE.DAL\TQVaultAE.DAL.csproj", "{35474E71-4ED2-4C3C-8BDB-C33D2B260496}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TQVaultAE.GUI", "src\TQVaultAE.GUI\TQVaultAE.GUI.csproj", "{5A472C5B-BC7E-46EE-905E-93CCD53E8EAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestProject1", "UnitTestProject1\UnitTestProject1.csproj", "{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,8 +52,19 @@ Global
 		{5A472C5B-BC7E-46EE-905E-93CCD53E8EAA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5A472C5B-BC7E-46EE-905E-93CCD53E8EAA}.Release|x86.ActiveCfg = Release|Any CPU
 		{5A472C5B-BC7E-46EE-905E-93CCD53E8EAA}.Release|x86.Build.0 = Release|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Debug|x86.Build.0 = Debug|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Release|x86.ActiveCfg = Release|Any CPU
+		{90632F29-7A4C-498F-B9FE-EAEEDCB61C8C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6CF6CA99-1B19-44EB-9804-589D0960D055}
 	EndGlobalSection
 EndGlobal

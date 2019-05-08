@@ -139,7 +139,10 @@ namespace TQVaultAE.GUI
             this.searchButton = new TQVaultAE.GUI.ScalingButton();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             this.fadeInTimer = new System.Windows.Forms.Timer(this.components);
+            this.LabelNotification = new TQVaultAE.GUI.ScalingLabel();
+            this.fileSystemWatcherSharedStash = new System.IO.FileSystemWatcher();
             this.itemTextPanel.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcherSharedStash)).BeginInit();
             this.SuspendLayout();
             // 
             // exitButton
@@ -367,6 +370,25 @@ namespace TQVaultAE.GUI
             this.fadeInTimer.Interval = 50;
             this.fadeInTimer.Tick += new System.EventHandler(this.FadeInTimerTick);
             // 
+            // LabelNotification
+            // 
+            this.LabelNotification.BackColor = System.Drawing.Color.Transparent;
+            this.LabelNotification.Font = new System.Drawing.Font("Arial Black", 8.25F);
+            this.LabelNotification.ForeColor = System.Drawing.SystemColors.Info;
+            this.LabelNotification.Location = new System.Drawing.Point(8, 585);
+            this.LabelNotification.Name = "LabelNotification";
+            this.LabelNotification.Size = new System.Drawing.Size(576, 18);
+            this.LabelNotification.TabIndex = 19;
+            this.LabelNotification.Text = "(1/2) Transfer stash has changed in game !";
+            this.LabelNotification.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // fileSystemWatcherSharedStash
+            // 
+            this.fileSystemWatcherSharedStash.Filter = "*.dxb";
+            this.fileSystemWatcherSharedStash.NotifyFilter = System.IO.NotifyFilters.LastWrite;
+            this.fileSystemWatcherSharedStash.SynchronizingObject = this;
+            this.fileSystemWatcherSharedStash.Changed += new System.IO.FileSystemEventHandler(this.FileSystemWatcherSharedStash_Changed);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -376,6 +398,7 @@ namespace TQVaultAE.GUI
             this.CancelButton = this.exitButton;
             this.ClientSize = new System.Drawing.Size(1350, 910);
             this.ConstrainToDesignRatio = true;
+            this.Controls.Add(this.LabelNotification);
             this.Controls.Add(this.searchButton);
             this.Controls.Add(this.aboutButton);
             this.Controls.Add(this.secondaryVaultListComboBox);
@@ -419,12 +442,17 @@ namespace TQVaultAE.GUI
             this.Controls.SetChildIndex(this.secondaryVaultListComboBox, 0);
             this.Controls.SetChildIndex(this.aboutButton, 0);
             this.Controls.SetChildIndex(this.searchButton, 0);
+            this.Controls.SetChildIndex(this.LabelNotification, 0);
             this.itemTextPanel.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcherSharedStash)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
 		}
 
 		#endregion
+
+		private ScalingLabel LabelNotification;
+		private System.IO.FileSystemWatcher fileSystemWatcherSharedStash;
 	}
 }

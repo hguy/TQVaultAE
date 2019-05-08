@@ -983,4 +983,10 @@ Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
   <data name="ItemRagnarok" xml:space="preserve">
     <value>Objet Ragnarök</value>
   </data>
+  <data name="SettingsEnableSharedStashHotReload" xml:space="preserve">
+    <value>Active le rechargement à chaud de la Zone de transfert</value>
+  </data>
+  <data name="SettingsEnableSharedStashHotReloadTT" xml:space="preserve">
+    <value>Avec cette option, TQVault rechargera automatiquement la zone de transfert quand le jeu applique une modification.</value>
+  </data>
 </root>
