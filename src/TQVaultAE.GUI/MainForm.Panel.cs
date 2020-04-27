@@ -8,6 +8,7 @@ using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.Presentation;
+using TQVaultAE.GUI.Components.Containers;
 
 namespace TQVaultAE.GUI
 {

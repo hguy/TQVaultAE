@@ -12,6 +12,7 @@ namespace TQVaultAE.GUI.Models
 	using TQVaultAE.Domain.Entities;
 	using TQVaultAE.GUI.Tooltip;
 	using TQVaultAE.Domain.Contracts.Services;
+	using TQVaultAE.GUI.Components.Containers;
 
 	/// <summary>
 	/// Stores information about the item being dragged around by the user

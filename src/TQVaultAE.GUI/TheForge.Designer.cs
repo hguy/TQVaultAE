@@ -1,4 +1,5 @@
 ﻿using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 
 namespace TQVaultAE.GUI
 {
@@ -47,15 +48,16 @@ namespace TQVaultAE.GUI
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TheForge));
-            this.applyButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.cancelButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.vaultProgressBar = new TQVaultAE.GUI.Components.VaultProgressBar();
-            this.scalingLabelProgress = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.applyButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.cancelButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.vaultProgressBar = new TQVaultAE.GUI.Components.UI.VaultProgressBar();
+            this.scalingLabelProgress = new TQVaultAE.GUI.Components.UI.ScalingLabel();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.tableLayoutPanelBottom = new System.Windows.Forms.TableLayoutPanel();
             this.scalingLabelProgressPanelAlignText = new System.Windows.Forms.Panel();
             this.backgroundWorkerBuildDB = new System.ComponentModel.BackgroundWorker();
-            this.typeAssistant = new TQVaultAE.GUI.Components.TypeAssistant();
+            this.typeAssistant = new TQVaultAE.GUI.Components.Behaviors.TypeAssistant();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanelBottom.SuspendLayout();
             this.scalingLabelProgressPanelAlignText.SuspendLayout();
             this.SuspendLayout();
@@ -172,7 +174,25 @@ namespace TQVaultAE.GUI
             this.backgroundWorkerBuildDB.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerBuildDB_DoWork);
             this.backgroundWorkerBuildDB.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerBuildDB_ProgressChanged);
             this.backgroundWorkerBuildDB.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerBuildDB_RunWorkerCompleted);
-
+            // 
+            // tableLayoutPanel1
+            // 
+            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanel1.CellBorderStyle = System.Windows.Forms.TableLayoutPanelCellBorderStyle.Single;
+            this.tableLayoutPanel1.ColumnCount = 3;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 28);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 3;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(1391, 641);
+            this.tableLayoutPanel1.TabIndex = 7;
             // 
             // TheForge
             // 
@@ -182,6 +202,7 @@ namespace TQVaultAE.GUI
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
             this.CancelButton = this.cancelButton;
             this.ClientSize = new System.Drawing.Size(1415, 755);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.tableLayoutPanelBottom);
             this.DrawCustomBorder = true;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -197,10 +218,10 @@ namespace TQVaultAE.GUI
             this.Text = "Search for an Item";
             this.TitleTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(44)))), ((int)(((byte)(28)))));
             this.TopMost = true;
-
             this.Load += new System.EventHandler(this.SearchDialogAdvanced_Load);
             this.Shown += new System.EventHandler(this.SearchDialogShown);
             this.Controls.SetChildIndex(this.tableLayoutPanelBottom, 0);
+            this.Controls.SetChildIndex(this.tableLayoutPanel1, 0);
             this.tableLayoutPanelBottom.ResumeLayout(false);
             this.scalingLabelProgressPanelAlignText.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -214,7 +235,8 @@ namespace TQVaultAE.GUI
 		private System.Windows.Forms.ToolTip toolTip;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelBottom;
 		private System.ComponentModel.BackgroundWorker backgroundWorkerBuildDB;
-		private Components.TypeAssistant typeAssistant;
+		private Components.Behaviors.TypeAssistant typeAssistant;
 		private System.Windows.Forms.Panel scalingLabelProgressPanelAlignText;
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
 	}
 }

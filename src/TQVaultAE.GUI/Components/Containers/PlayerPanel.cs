@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components.Containers
 {
 	using System;
 	using System.Drawing;
@@ -11,6 +11,7 @@ namespace TQVaultAE.GUI.Components
 	using TQVaultAE.GUI.Models;
 	using TQVaultAE.Domain.Entities;
 	using TQVaultAE.Presentation;
+	using TQVaultAE.GUI.Components.UI;
 
 	/// <summary>
 	/// Class for holding the UI functions on the player panel.

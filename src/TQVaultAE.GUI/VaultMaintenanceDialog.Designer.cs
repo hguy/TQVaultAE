@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 
 namespace TQVaultAE.GUI
 {
@@ -100,18 +101,18 @@ namespace TQVaultAE.GUI
 		private void InitializeComponent()
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(VaultMaintenanceDialog));
-            this.targetTextBox = new TQVaultAE.GUI.Components.ScalingTextBox();
-            this.instructionsLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.okayButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.cancelButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.vaultListComboBox = new TQVaultAE.GUI.Components.ScalingComboBox();
-            this.newRadioButton = new TQVaultAE.GUI.Components.ScalingRadioButton();
+            this.targetTextBox = new TQVaultAE.GUI.Components.UI.ScalingTextBox();
+            this.instructionsLabel = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.okayButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.cancelButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.vaultListComboBox = new TQVaultAE.GUI.Components.UI.ScalingComboBox();
+            this.newRadioButton = new TQVaultAE.GUI.Components.UI.ScalingRadioButton();
             this.selectFunctionGroupBox = new System.Windows.Forms.GroupBox();
-            this.renameRadioButton = new TQVaultAE.GUI.Components.ScalingRadioButton();
-            this.copyRadioButton = new TQVaultAE.GUI.Components.ScalingRadioButton();
-            this.deleteRadioButton = new TQVaultAE.GUI.Components.ScalingRadioButton();
-            this.sourceLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.targetLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.renameRadioButton = new TQVaultAE.GUI.Components.UI.ScalingRadioButton();
+            this.copyRadioButton = new TQVaultAE.GUI.Components.UI.ScalingRadioButton();
+            this.deleteRadioButton = new TQVaultAE.GUI.Components.UI.ScalingRadioButton();
+            this.sourceLabel = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.targetLabel = new TQVaultAE.GUI.Components.UI.ScalingLabel();
             this.selectFunctionGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 

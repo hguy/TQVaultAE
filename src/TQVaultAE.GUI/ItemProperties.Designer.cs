@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI
@@ -86,15 +87,15 @@ namespace TQVaultAE.GUI
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ItemProperties));
-			this.ButtonOK = new TQVaultAE.GUI.Components.ScalingButton();
+			this.ButtonOK = new TQVaultAE.GUI.Components.UI.ScalingButton();
 			this.flowLayoutBaseItemProperties = new System.Windows.Forms.FlowLayoutPanel();
 			this.labelItemName = new System.Windows.Forms.Label();
 			this.flowLayoutPrefixProperties = new System.Windows.Forms.FlowLayoutPanel();
-			this.labelPrefixProperties = new TQVaultAE.GUI.Components.ScalingLabel();
-			this.labelBaseItemProperties = new TQVaultAE.GUI.Components.ScalingLabel();
-			this.checkBoxFilterExtraInfo = new TQVaultAE.GUI.Components.ScalingCheckBox();
+			this.labelPrefixProperties = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+			this.labelBaseItemProperties = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+			this.checkBoxFilterExtraInfo = new TQVaultAE.GUI.Components.UI.ScalingCheckBox();
 			this.flowLayoutSuffixProperties = new System.Windows.Forms.FlowLayoutPanel();
-			this.labelSuffixProperties = new TQVaultAE.GUI.Components.ScalingLabel();
+			this.labelSuffixProperties = new TQVaultAE.GUI.Components.UI.ScalingLabel();
 			this.SuspendLayout();
 			// 
 			// ButtonOK

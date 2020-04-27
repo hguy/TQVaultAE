@@ -6,7 +6,7 @@
 namespace TQVaultAE.GUI.Models
 {
 	using System;
-	using TQVaultAE.Domain.Search;
+	using TQVaultAE.Domain.Entities;
 
 	/// <summary>
 	/// Encapsulates the ResultsChanged event data
@@ -17,7 +17,7 @@ namespace TQVaultAE.GUI.Models
 		/// Initializes a new instance of the ResultChangedEventArgs class.
 		/// </summary>
 		/// <param name="result">Result data</param>
-		public ResultChangedEventArgs(Result result)
+		public ResultChangedEventArgs(ItemLocation result)
 		{
 			this.Result = result;
 		}
@@ -25,6 +25,6 @@ namespace TQVaultAE.GUI.Models
 		/// <summary>
 		/// Gets the Result data.
 		/// </summary>
-		public Result Result { get; private set; }
+		public ItemLocation Result { get; private set; }
 	}
 }

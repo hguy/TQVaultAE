@@ -9,7 +9,6 @@ namespace TQVaultAE.GUI
 	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Domain.Entities;
-	using TQVaultAE.Domain.Search;
 	using TQVaultAE.GUI.Components;
 	using TQVaultAE.GUI.Helpers;
 	using TQVaultAE.Presentation;
@@ -27,20 +26,16 @@ namespace TQVaultAE.GUI
 	{
 		private readonly SessionContext Ctx;
 		private readonly ITranslationService TranslationService;
-		private readonly List<Result> ItemDatabase = new List<Result>();
+		private readonly List<ItemLocation> ItemDatabase = new List<ItemLocation>();
 		private readonly ILogger Log;
+		private readonly IItemService ItemService;
 		private readonly Bitmap ButtonImageUp;
 		private readonly Bitmap ButtonImageDown;
-		private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] _NavMap;
-		private readonly List<BoxItem> _SelectedFilters = new List<BoxItem>();
-		private readonly List<SearchQuery> _Queries = new List<SearchQuery>();
-		public Result[] QueryResults { get; private set; } = Enumerable.Empty<Result>().ToArray();
-		private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 		public TheForge(
 			MainForm instance
 			, SessionContext sessionContext
-			, IItemProvider itemProvider
+			, IItemService itemService
 			, ITranslationService translationService
 			, ILogger<SearchDialogAdvanced> log
 		) : base(instance.ServiceProvider)
@@ -49,6 +44,7 @@ namespace TQVaultAE.GUI
 			this.Ctx = sessionContext;
 			this.TranslationService = translationService;
 			this.Log = log;
+			this.ItemService = itemService;
 
 			this.InitializeComponent();
 
@@ -91,11 +87,11 @@ namespace TQVaultAE.GUI
 		/// <param name="e">EventArgs data</param>
 		private void ApplyButtonClicked(object sender, EventArgs e)
 		{
-			if (!_SelectedFilters.Any())
-			{
-				scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
-				return;
-			};
+			//if (!_SelectedFilters.Any())
+			//{
+			//	scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
+			//	return;
+			//};
 
 			this.DialogResult = DialogResult.OK;
 			this.Close();

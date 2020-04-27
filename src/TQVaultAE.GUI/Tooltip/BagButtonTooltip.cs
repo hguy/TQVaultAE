@@ -10,6 +10,7 @@ using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
 using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Domain.Contracts.Providers;
+using TQVaultAE.GUI.Components.UI;
 
 namespace TQVaultAE.GUI.Tooltip
 {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components.Behaviors
 {
 	// Inspired from https://stackoverflow.com/questions/33776387/dont-raise-textchanged-while-continuous-typing
 	public class TypeAssistant : Component

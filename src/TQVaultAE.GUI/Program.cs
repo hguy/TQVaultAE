@@ -100,6 +100,7 @@ namespace TQVaultAE.GUI
 				.AddSingleton<IUIService, UIService>()
 				.AddSingleton<ITQDataService, TQDataService>()
 				.AddTransient<IBitmapService, BitmapService>()
+				.AddTransient<IItemService, ItemService>()
 				// Forms
 				.AddSingleton<MainForm>()
 				.AddTransient<AboutBox>()

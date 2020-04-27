@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI
@@ -78,13 +79,13 @@ namespace TQVaultAE.GUI
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashScreenForm));
-            this.label3 = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.nextButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.exitButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.labelPleaseWait = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.label3 = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.nextButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.exitButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.labelPleaseWait = new TQVaultAE.GUI.Components.UI.ScalingLabel();
             this.waitTimer = new System.Timers.Timer();
             this.fadeTimer = new System.Windows.Forms.Timer(this.components);
-            this.progressBar = new TQVaultAE.GUI.Components.VaultProgressBar();
+            this.progressBar = new TQVaultAE.GUI.Components.UI.VaultProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.waitTimer)).BeginInit();
             this.SuspendLayout();
             // 

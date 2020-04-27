@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components.Containers
 {
 	using Microsoft.Extensions.DependencyInjection;
 	using System;

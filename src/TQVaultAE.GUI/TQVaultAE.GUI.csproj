@@ -152,10 +152,10 @@
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
     <Compile Include="Components\IScalingControl.cs" />
-    <Compile Include="Components\ScalingCheckedListBox.cs">
+    <Compile Include="Components\UI\ScalingCheckedListBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\TypeAssistant.cs">
+    <Compile Include="Components\Behaviors\TypeAssistant.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Helpers\WinFormExtension.cs" />
@@ -176,13 +176,13 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Models\AutoMoveLocation.cs" />
-    <Compile Include="Components\AutoSortButton.cs">
+    <Compile Include="Components\UI\AutoSortButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\BagButton.cs">
+    <Compile Include="Components\UI\BagButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\BagButtonBase.cs">
+    <Compile Include="Components\UI\BagButtonBase.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Models\ComboBoxItem.cs" />
@@ -215,7 +215,7 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Components\PlayerPanel.cs">
+    <Compile Include="Components\Containers\PlayerPanel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Models\SearchDialogAdvanced\SearchQuery.cs" />
@@ -236,7 +236,7 @@
     <Compile Include="SearchDialogAdvanced.Designer.cs">
       <DependentUpon>SearchDialogAdvanced.cs</DependentUpon>
     </Compile>
-    <Compile Include="Components\EquipmentPanel.cs">
+    <Compile Include="Components\Containers\EquipmentPanel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SplashScreenForm.cs">
@@ -283,13 +283,13 @@
     <Compile Include="VaultForm.Designer.cs">
       <DependentUpon>VaultForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Components\VaultPanel.cs">
+    <Compile Include="Components\Containers\VaultPanel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\VaultProgressBar.cs">
+    <Compile Include="Components\UI\VaultProgressBar.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Components\WindowMenu.cs">
+    <Compile Include="Components\UI\WindowMenu.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Models\WindowMenuEventArgs.cs" />
@@ -297,26 +297,26 @@
       <SubType>Designer</SubType>
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\AutoSortButton.resx">
+    <EmbeddedResource Include="Components\UI\AutoSortButton.resx">
       <DependentUpon>AutoSortButton.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\BagButtonBase.resx">
+    <EmbeddedResource Include="Components\UI\BagButtonBase.resx">
       <DependentUpon>BagButtonBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\SackPanel.resx">
+    <EmbeddedResource Include="Components\Containers\SackPanel.resx">
       <DependentUpon>SackPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\ScalingCheckedListBox.resx">
+    <EmbeddedResource Include="Components\UI\ScalingCheckedListBox.resx">
       <DependentUpon>ScalingCheckedListBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\ScalingComboBox.resx">
+    <EmbeddedResource Include="Components\UI\ScalingComboBox.resx">
       <DependentUpon>ScalingComboBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\VaultPanel.resx">
+    <EmbeddedResource Include="Components\Containers\VaultPanel.resx">
       <DependentUpon>VaultPanel.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\VaultProgressBar.resx">
+    <EmbeddedResource Include="Components\UI\VaultProgressBar.resx">
       <DependentUpon>VaultProgressBar.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ItemProperties.resx">
@@ -339,7 +339,7 @@
       <DependentUpon>ResultsDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Components\ScalingButton.resx">
+    <EmbeddedResource Include="Components\UI\ScalingButton.resx">
       <DependentUpon>ScalingButton.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TheForge.resx">
@@ -385,25 +385,25 @@
     <Compile Include="ResultsDialog.Designer.cs">
       <DependentUpon>ResultsDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Components\SackPanel.cs">
+    <Compile Include="Components\Containers\SackPanel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\ScalingButton.cs">
+    <Compile Include="Components\UI\ScalingButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\ScalingCheckBox.cs">
+    <Compile Include="Components\UI\ScalingCheckBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\ScalingComboBox.cs">
+    <Compile Include="Components\UI\ScalingComboBox.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\ScalingLabel.cs">
+    <Compile Include="Components\UI\ScalingLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\ScalingRadioButton.cs">
+    <Compile Include="Components\UI\ScalingRadioButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\ScalingTextBox.cs">
+    <Compile Include="Components\UI\ScalingTextBox.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="SettingsDialog.cs">
@@ -412,10 +412,10 @@
     <Compile Include="SettingsDialog.Designer.cs">
       <DependentUpon>SettingsDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="Components\StashButton.cs">
+    <Compile Include="Components\UI\StashButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Components\StashPanel.cs">
+    <Compile Include="Components\Containers\StashPanel.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="VaultMaintenanceDialog.cs">

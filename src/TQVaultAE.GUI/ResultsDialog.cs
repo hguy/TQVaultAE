@@ -12,7 +12,7 @@ using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Helpers;
-using TQVaultAE.Domain.Search;
+
 
 namespace TQVaultAE.GUI
 {
@@ -24,12 +24,12 @@ namespace TQVaultAE.GUI
 		/// <summary>
 		/// List of all results
 		/// </summary>
-		private List<Result> resultsList;
+		private List<ItemLocation> resultsList;
 
 		/// <summary>
 		/// User selected result from the list
 		/// </summary>
-		private Result selectedResult;
+		private ItemLocation selectedResult;
 
 		/// <summary>
 		/// Search string passed from user
@@ -57,7 +57,7 @@ namespace TQVaultAE.GUI
 
 			#endregion
 
-			this.resultsList = new List<Result>();
+			this.resultsList = new List<ItemLocation>();
 
 			this.item.HeaderText = Resources.ResultsItem;
 			this.containerName.HeaderText = Resources.ResultsContainer;
@@ -94,7 +94,7 @@ namespace TQVaultAE.GUI
 		/// <summary>
 		/// Gets the list of results collection
 		/// </summary>
-		public List<Result> ResultsList => this.resultsList;
+		public List<ItemLocation> ResultsList => this.resultsList;
 
 		/// <summary>
 		/// Sets the user search string
@@ -174,7 +174,7 @@ namespace TQVaultAE.GUI
 		/// </summary>
 		/// <param name="selectedResult">Currently selected Result</param>
 		/// <returns>String containing the tool tip for the Result.</returns>
-		private void GetToolTip(Result selectedResult)
+		private void GetToolTip(ItemLocation selectedResult)
 		{
 			if (selectedResult == null || selectedResult.FriendlyNames == null)
 				ItemTooltip.HideTooltip();
@@ -197,7 +197,7 @@ namespace TQVaultAE.GUI
 
 			for (int i = 0; i < this.resultsList.Count; i++)
 			{
-				Result result = this.resultsList[i];
+				ItemLocation result = this.resultsList[i];
 				// Add the result to the DataGridView
 				int currentRow = this.resultsDataGridView.Rows.Add(
 					result.ItemName

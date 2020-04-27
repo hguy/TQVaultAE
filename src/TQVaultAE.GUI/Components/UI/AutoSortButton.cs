@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components.UI
 {
 	using System;
 	using System.Windows.Forms;

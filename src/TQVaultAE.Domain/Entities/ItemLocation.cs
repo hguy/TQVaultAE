@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Domain.Search
+namespace TQVaultAE.Domain.Entities
 {
 	using System;
 	using System.Collections.Generic;
@@ -15,7 +15,7 @@ namespace TQVaultAE.Domain.Search
 	/// <summary>
 	/// Class for an individual result in the results list.
 	/// </summary>
-	public class Result
+	public class ItemLocation
 	{
 		public readonly string Container;
 		public readonly string ContainerName;
@@ -46,7 +46,7 @@ namespace TQVaultAE.Domain.Search
 		/// <param name="sackNumber"></param>
 		/// <param name="sackType"></param>
 		/// <param name="fnames"></param>
-		public Result(string container, string containerName, int sackNumber, SackType sackType, Lazy<ToFriendlyNameResult> fnames)
+		public ItemLocation(string container, string containerName, int sackNumber, SackType sackType, Lazy<ToFriendlyNameResult> fnames)
 		{
 			this.Container = container ?? throw new ArgumentNullException(nameof(container));
 			this.ContainerName = containerName ?? throw new ArgumentNullException(nameof(containerName));

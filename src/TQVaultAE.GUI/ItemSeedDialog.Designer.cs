@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 
 namespace TQVaultAE.GUI
 {
@@ -65,11 +66,11 @@ namespace TQVaultAE.GUI
 		private void InitializeComponent()
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ItemSeedDialog));
-            this.itemSeedBox = new TQVaultAE.GUI.Components.ScalingTextBox();
-            this.ButtonRandom = new TQVaultAE.GUI.Components.ScalingButton();
-            this.ButtonOk = new TQVaultAE.GUI.Components.ScalingButton();
-            this.ButtonCancel = new TQVaultAE.GUI.Components.ScalingButton();
-            this.labelInfos = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.itemSeedBox = new TQVaultAE.GUI.Components.UI.ScalingTextBox();
+            this.ButtonRandom = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.ButtonOk = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.ButtonCancel = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.labelInfos = new TQVaultAE.GUI.Components.UI.ScalingLabel();
             this.SuspendLayout();
             // 
             // itemSeedBox

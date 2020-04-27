@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 
 namespace TQVaultAE.GUI
 {
@@ -62,11 +63,11 @@ namespace TQVaultAE.GUI
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(VaultForm));
-            this.buttonMaximize = new TQVaultAE.GUI.Components.ScalingButton();
-            this.buttonMinimize = new TQVaultAE.GUI.Components.ScalingButton();
-            this.buttonClose = new TQVaultAE.GUI.Components.ScalingButton();
+            this.buttonMaximize = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.buttonMinimize = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.buttonClose = new TQVaultAE.GUI.Components.UI.ScalingButton();
             this.toolTipButton = new System.Windows.Forms.ToolTip(this.components);
-            this.ButtonScaleTo1 = new TQVaultAE.GUI.Components.ScalingButton();
+            this.ButtonScaleTo1 = new TQVaultAE.GUI.Components.UI.ScalingButton();
             this.SuspendLayout();
             // 
             // buttonMaximize

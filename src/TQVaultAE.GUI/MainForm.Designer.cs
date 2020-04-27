@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.UI;
 
 namespace TQVaultAE.GUI
 {
@@ -106,26 +107,26 @@ namespace TQVaultAE.GUI
 		{
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.exitButton = new TQVaultAE.GUI.Components.ScalingButton();
+            this.exitButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
             this.itemTextPanel = new System.Windows.Forms.Panel();
-            this.itemText = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.vaultListComboBox = new TQVaultAE.GUI.Components.ScalingComboBox();
-            this.vaultLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.configureButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.customMapText = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.showVaulButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.aboutButton = new TQVaultAE.GUI.Components.ScalingButton();
-            this.titleLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.searchButton = new TQVaultAE.GUI.Components.ScalingButton();
+            this.itemText = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.vaultListComboBox = new TQVaultAE.GUI.Components.UI.ScalingComboBox();
+            this.vaultLabel = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.configureButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.customMapText = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.showVaulButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.aboutButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
+            this.titleLabel = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.searchButton = new TQVaultAE.GUI.Components.UI.ScalingButton();
             this.backgroundWorkerLoadAllFiles = new System.ComponentModel.BackgroundWorker();
             this.fadeInTimer = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanelVaultSelector = new System.Windows.Forms.FlowLayoutPanel();
             this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
             this.flowLayoutPanelRightPanels = new System.Windows.Forms.FlowLayoutPanel();
             this.flowLayoutPanelRightComboBox = new System.Windows.Forms.FlowLayoutPanel();
-            this.characterLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.characterComboBox = new TQVaultAE.GUI.Components.ScalingComboBox();
-            this.secondaryVaultListComboBox = new TQVaultAE.GUI.Components.ScalingComboBox();
+            this.characterLabel = new TQVaultAE.GUI.Components.UI.ScalingLabel();
+            this.characterComboBox = new TQVaultAE.GUI.Components.UI.ScalingComboBox();
+            this.secondaryVaultListComboBox = new TQVaultAE.GUI.Components.UI.ScalingComboBox();
             this.itemTextPanel.SuspendLayout();
             this.flowLayoutPanelVaultSelector.SuspendLayout();
             this.tableLayoutPanelMain.SuspendLayout();

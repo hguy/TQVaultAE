@@ -28,6 +28,7 @@ namespace TQVaultAE.GUI
 	using TQVaultAE.Domain.Results;
 	using System.Collections.Concurrent;
 	using Microsoft.Extensions.Logging;
+	using TQVaultAE.GUI.Components.Containers;
 
 	/// <summary>
 	/// Main Dialog class

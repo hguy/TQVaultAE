@@ -11,6 +11,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Components.Containers;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Tooltip

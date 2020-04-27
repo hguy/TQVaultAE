@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components.Containers
 {
 	using System;
 	using System.Drawing;
@@ -14,6 +14,8 @@ namespace TQVaultAE.GUI.Components
 	using System.Collections.Generic;
 	using Microsoft.Extensions.DependencyInjection;
 	using TQVaultAE.Domain.Contracts.Services;
+	using TQVaultAE.GUI.Components.Containers;
+	using TQVaultAE.GUI.Components.UI;
 
 	/// <summary>
 	/// Class for handling the stash panel ui functions

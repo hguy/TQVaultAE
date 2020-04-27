@@ -1,10 +1,7 @@
-﻿namespace TQVaultAE.GUI.Components
+﻿namespace TQVaultAE.GUI.Components.UI
 {
-	using System;
-	using System.Linq;
 	using System.Drawing;
 	using System.Windows.Forms;
-	using TQVaultAE.Presentation;
 
 	/// <summary>
 	/// ComboBox class to support scaling of the fonts.

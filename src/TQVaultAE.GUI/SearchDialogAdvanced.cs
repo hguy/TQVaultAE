@@ -2,14 +2,10 @@ namespace TQVaultAE.GUI
 {
 	using System;
 	using System.Collections.Generic;
-	using System.IO;
 	using System.Linq;
-	using System.Threading;
 	using System.Windows.Forms;
-	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Domain.Entities;
-	using TQVaultAE.Domain.Search;
 	using TQVaultAE.GUI.Components;
 	using TQVaultAE.GUI.Helpers;
 	using TQVaultAE.Presentation;
@@ -19,6 +15,7 @@ namespace TQVaultAE.GUI
 	using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 	using TQVaultAE.GUI.Tooltip;
 	using Newtonsoft.Json;
+	using TQVaultAE.GUI.Components.UI;
 
 	/// <summary>
 	/// Class for the Search Dialog box.
@@ -27,14 +24,14 @@ namespace TQVaultAE.GUI
 	{
 		private readonly SessionContext Ctx;
 		private readonly ITranslationService TranslationService;
-		private readonly List<Result> ItemDatabase = new List<Result>();
 		private readonly ILogger Log;
+		private readonly IItemService ItemService;
 		private readonly Bitmap ButtonImageUp;
 		private readonly Bitmap ButtonImageDown;
 		private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] _NavMap;
 		private readonly List<BoxItem> _SelectedFilters = new List<BoxItem>();
 		private readonly List<SearchQuery> _Queries = new List<SearchQuery>();
-		public Result[] QueryResults { get; private set; } = Enumerable.Empty<Result>().ToArray();
+		public ItemLocation[] QueryResults { get; private set; } = Enumerable.Empty<ItemLocation>().ToArray();
 		private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 		/// <summary>
@@ -43,7 +40,7 @@ namespace TQVaultAE.GUI
 		public SearchDialogAdvanced(
 			MainForm instance
 			, SessionContext sessionContext
-			, IItemProvider itemProvider
+			, IItemService itemService
 			, ITranslationService translationService
 			, ILogger<SearchDialogAdvanced> log
 		) : base(instance.ServiceProvider)
@@ -52,6 +49,7 @@ namespace TQVaultAE.GUI
 			this.Ctx = sessionContext;
 			this.TranslationService = translationService;
 			this.Log = log;
+			this.ItemService = itemService;
 
 			this.InitializeComponent();
 
@@ -195,7 +193,7 @@ namespace TQVaultAE.GUI
 		{
 			if (!_SelectedFilters.Any())
 			{
-				scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
+				scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, ItemService.ItemDatabase.Count())}";
 				return;
 			};
 
@@ -230,7 +228,7 @@ namespace TQVaultAE.GUI
 			scalingLabelProgress.Visible = true;
 
 			vaultProgressBar.Minimum = 0;
-			vaultProgressBar.Maximum = ItemDatabase.Count();
+			vaultProgressBar.Maximum = ItemService.ItemDatabase.Count();
 			vaultProgressBar.Visible = true;
 
 			this.backgroundWorkerBuildDB.RunWorkerAsync();
@@ -239,143 +237,8 @@ namespace TQVaultAE.GUI
 		#region Load & Init
 
 		private void SearchDialogAdvanced_Load(object sender, EventArgs e)
-			=> BuildItemDatabase();
+		{ }
 
-		/// <summary>
-		/// Seek for all available items
-		/// </summary>
-		private void BuildItemDatabase()
-		{
-			foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in Ctx.Vaults)
-			{
-				string vaultFile = kvp.Key;
-				PlayerCollection vault = kvp.Value.Value;
-
-				if (vault == null)
-					continue;
-
-				int vaultNumber = -1;
-				foreach (SackCollection sack in vault)
-				{
-					vaultNumber++;
-					if (sack == null)
-						continue;
-
-					foreach (var item in sack.Cast<Item>())
-					{
-						ItemDatabase.Add(new Result(
-							vaultFile
-							, Path.GetFileNameWithoutExtension(vaultFile)
-							, vaultNumber
-							, SackType.Vault
-							, new Lazy<Domain.Results.ToFriendlyNameResult>(
-								() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-								, LazyThreadSafetyMode.ExecutionAndPublication
-							)
-						));
-					}
-				}
-			}
-
-			foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in Ctx.Players)
-			{
-				string playerFile = kvp.Key;
-				PlayerCollection player = kvp.Value.Value;
-
-				if (player == null)
-					continue;
-
-				string playerName = this.GamePathResolver.GetNameFromFile(playerFile);
-				if (playerName == null)
-					continue;
-
-				int sackNumber = -1;
-				foreach (SackCollection sack in player)
-				{
-					sackNumber++;
-					if (sack == null)
-						continue;
-
-					foreach (var item in sack.Cast<Item>())
-					{
-						this.ItemDatabase.Add(new Result(
-							playerFile
-							, playerName
-							, sackNumber
-							, SackType.Player
-							, new Lazy<Domain.Results.ToFriendlyNameResult>(
-								() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-								, LazyThreadSafetyMode.ExecutionAndPublication
-							)
-						));
-					}
-				}
-
-				// Now search the Equipment panel
-				var equipmentSack = player.EquipmentSack;
-				if (equipmentSack == null)
-					continue;
-
-				foreach (var item in equipmentSack.Cast<Item>())
-				{
-					ItemDatabase.Add(new Result(
-						playerFile
-						, playerName
-						, 0
-						, SackType.Equipment
-						, new Lazy<Domain.Results.ToFriendlyNameResult>(
-							() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-							, LazyThreadSafetyMode.ExecutionAndPublication
-						)
-					));
-				}
-			}
-
-			foreach (KeyValuePair<string, Lazy<Stash>> kvp in Ctx.Stashes)
-			{
-				string stashFile = kvp.Key;
-				Stash stash = kvp.Value.Value;
-
-				// Make sure we have a valid name and stash.
-				if (stash == null)
-					continue;
-
-				string stashName = this.GamePathResolver.GetNameFromFile(stashFile);
-				if (stashName == null)
-					continue;
-
-				SackCollection sack = stash.Sack;
-				if (sack == null)
-					continue;
-
-				int sackNumber = 2;
-				SackType sackType = SackType.Stash;
-				if (stashName == Resources.GlobalTransferStash)
-				{
-					sackNumber = 1;
-					sackType = SackType.TransferStash;
-				}
-				else if (stashName == Resources.GlobalRelicVaultStash)
-				{
-					sackNumber = 3;
-					sackType = SackType.RelicVaultStash;
-				}
-
-				foreach (var item in sack.Cast<Item>())
-				{
-					ItemDatabase.Add(new Result(
-						stashFile
-						, stashName
-						, sackNumber
-						, sackType
-						, new Lazy<Domain.Results.ToFriendlyNameResult>(
-							() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-							, LazyThreadSafetyMode.ExecutionAndPublication
-						)
-					));
-				}
-			}
-		}
 
 		/// <summary>
 		/// Load item data & display progress
@@ -383,13 +246,13 @@ namespace TQVaultAE.GUI
 		private void InitItemDatabase()
 		{
 			// Must not change UI Controls. Just update backgroundWorker which handle this for you through his event pipeline.
-			foreach (var item in ItemDatabase)
+			foreach (var item in ItemService.ItemDatabase)
 			{
 				item.LazyLoad();
 				this.backgroundWorkerBuildDB.ReportProgress(1);
 			}
-			// Cleanup zombies
-			ItemDatabase.RemoveAll(id => string.IsNullOrWhiteSpace(id.ItemName));
+
+			ItemService.CleanupZombies();
 		}
 
 		#endregion
@@ -413,7 +276,7 @@ namespace TQVaultAE.GUI
 
 		private void SearchEngineReady()
 		{
-			scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
+			scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, ItemService.ItemDatabase.Count())}";
 
 			PopulateCheckBoxes();
 
@@ -487,7 +350,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxWithRelic;
 			var WithRelic =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let itm = id.FriendlyNames.Item
 				where itm.HasRelicSlot1 && !itm.IsRelic1Charm || itm.HasRelicSlot2 && !itm.IsRelic2Charm
 				from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
@@ -518,7 +381,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxWithCharm;
 			var WithCharm =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let itm = id.FriendlyNames.Item
 				where itm.HasRelicSlot1 && itm.IsRelic1Charm || itm.HasRelicSlot2 && itm.IsRelic2Charm
 				from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
@@ -540,7 +403,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxVaults;
 			var Vaults =
-				from id in ItemDatabase.Where(i => i.SackType == SackType.Vault)
+				from id in ItemService.ItemDatabase.Where(i => i.SackType == SackType.Vault)
 				let att = id.ContainerName
 				orderby att
 				group id by att into grp
@@ -558,7 +421,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxQuality;
 			var Quality =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let att = id.FriendlyNames.BaseItemInfoQuality
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -578,7 +441,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxSuffixName;
 			var SuffixName =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let att = id.FriendlyNames.SuffixInfoDescription
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -598,7 +461,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxSuffixAttributes;
 			var SuffixAttributes =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				from att in id.FriendlyNames.SuffixAttributes
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -618,7 +481,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxStyle;
 			var Style =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let att = id.FriendlyNames.BaseItemInfoStyle
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -646,7 +509,7 @@ namespace TQVaultAE.GUI
 			};
 			var clb = scalingCheckedListBoxRarity;
 			var Rarity =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				where equipmentOnly.Contains(id.ItemStyle)
 				let att = id.FriendlyNames.BaseItemRarity
 				where !string.IsNullOrWhiteSpace(att)
@@ -667,7 +530,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxPrefixName;
 			var PrefixName =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let att = id.FriendlyNames.PrefixInfoDescription
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.TQCleanup().Trim()
@@ -687,7 +550,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxPrefixAttributes;
 			var PrefixAttributes =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				from att in id.FriendlyNames.PrefixAttributes
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -707,7 +570,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxCharacters;
 			var Players =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				where id.SackType == SackType.Player || id.SackType == SackType.Equipment
 				let att = id.ContainerName
 				orderby att
@@ -726,7 +589,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxItemType;
 			var ItemType =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				let att = id.FriendlyNames.BaseItemInfoClass ?? id.FriendlyNames.Item.ItemClass
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -746,7 +609,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxItemAttributes;
 			var ItemAttributes =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				from att in id.FriendlyNames.AttributesAll
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -766,7 +629,7 @@ namespace TQVaultAE.GUI
 		{
 			var clb = scalingCheckedListBoxBaseAttributes;
 			var BaseAttributes =
-				from id in ItemDatabase
+				from id in ItemService.ItemDatabase
 				from att in id.FriendlyNames.BaseAttributes
 				where !string.IsNullOrWhiteSpace(att)
 				let attClean = att.RemoveAllTQTags().Trim()
@@ -935,7 +798,7 @@ namespace TQVaultAE.GUI
 		{
 			this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag.ToString(), _SelectedFilters.Count());
 
-			var query = ItemDatabase.AsQueryable();
+			var query = ItemService.ItemDatabase.AsQueryable();
 			if (this.scalingComboBoxOperator.SelectedIndex == (int)SearchOperator.And)
 			{
 				// AND operator => item must exist in every filter
@@ -1086,12 +949,12 @@ namespace TQVaultAE.GUI
 			searchTermBoxItem.DisplayValue = txt;
 
 			if (string.IsNullOrWhiteSpace(txt))
-				searchTermBoxItem.MatchingResults = Enumerable.Empty<Result>();
+				searchTermBoxItem.MatchingResults = Enumerable.Empty<ItemLocation>();
 			else
 			{
 				// Item fulltext search
 				searchTermBoxItem.MatchingResults = (
-					from id in ItemDatabase
+					from id in ItemService.ItemDatabase
 					where id.FriendlyNames.FullText.IndexOf(txt, StringComparison.OrdinalIgnoreCase) > -1
 					select id
 				).ToArray();

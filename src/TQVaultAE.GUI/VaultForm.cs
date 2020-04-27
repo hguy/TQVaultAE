@@ -17,6 +17,7 @@ namespace TQVaultAE.GUI
 	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.GUI.Components;
+	using TQVaultAE.GUI.Components.UI;
 	using TQVaultAE.GUI.Models;
 	using TQVaultAE.Presentation;
 

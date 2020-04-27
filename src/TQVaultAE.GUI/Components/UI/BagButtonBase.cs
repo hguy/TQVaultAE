@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components.UI
 {
 	using Microsoft.Extensions.DependencyInjection;
 	using System;
@@ -12,6 +12,7 @@ namespace TQVaultAE.GUI.Components
 	using Tooltip;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Domain.Entities;
+	using TQVaultAE.GUI.Components.Containers;
 
 	/// <summary>
 	/// Delegate for displaying a tooltip with the bag's contents.

@@ -10,6 +10,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Logs;
 using TQVaultAE.Domain.Contracts.Services;
 using Microsoft.Extensions.Logging;
+using TQVaultAE.GUI.Components.Containers;
 
 namespace TQVaultAE.GUI
 {
