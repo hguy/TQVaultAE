@@ -149,9 +149,13 @@ namespace TQVaultAE.GUI
 		{
 		}
 
+
 		#endregion
 
+		private void scalingCheckedListBox2_SelectedIndexChanged(object sender, EventArgs e)
+		{
 
+		}
 	}
 
 }
