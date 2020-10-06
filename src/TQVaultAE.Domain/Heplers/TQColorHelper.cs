@@ -8,6 +8,8 @@ namespace TQVaultAE.Domain.Helpers
 
 	public static class TQColorHelper
 	{
+		public static readonly System.Drawing.Color TQGolden = System.Drawing.Color.FromArgb(223, 188, 97);
+
 		/// <summary>
 		/// Regex Match color tag 4 chars & 2 chars
 		/// </summary>

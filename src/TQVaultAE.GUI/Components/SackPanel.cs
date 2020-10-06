@@ -2831,10 +2831,18 @@ namespace TQVaultAE.GUI.Components
 				return;
 
 			for (int x = 1; x < this.SackSize.Width; ++x)
-				graphics.DrawLine(this.gridPen, this.CellTopLeft(new Point(x, 0)), this.CellBottomLeft(new Point(x, this.SackSize.Height - 1)));
+				graphics.DrawLine(
+					this.gridPen
+					, this.CellTopLeft(new Point(x, 0))
+					, this.CellBottomLeft(new Point(x, this.SackSize.Height - 1))
+				);
 
 			for (int y = 1; y < this.SackSize.Height; ++y)
-				graphics.DrawLine(this.gridPen, this.CellTopLeft(new Point(0, y)), this.CellTopRight(new Point(this.SackSize.Width - 1, y)));
+				graphics.DrawLine(
+					this.gridPen
+					, this.CellTopLeft(new Point(0, y))
+					, this.CellTopRight(new Point(this.SackSize.Width - 1, y))
+				);
 		}
 
 		/// <summary>

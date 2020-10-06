@@ -101,6 +101,7 @@ namespace TQVaultAE.GUI
 				.AddSingleton<ITQDataService, TQDataService>()
 				.AddTransient<IBitmapService, BitmapService>()
 				// Forms
+				.AddSingleton<Tiny.MainForm>()
 				.AddSingleton<MainForm>()
 				.AddTransient<AboutBox>()
 				.AddTransient<CharacterEditDialog>()
@@ -139,7 +140,9 @@ namespace TQVaultAE.GUI
 					}
 				}
 
-				var mainform = Program.ServiceProvider.GetService<MainForm>();
+				//var mainform = Program.ServiceProvider.GetService<MainForm>();
+				var mainform = Program.ServiceProvider.GetService<Tiny.MainForm>();
+				
 				Application.Run(mainform);
 			}
 			catch (Exception ex)
