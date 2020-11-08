@@ -29,19 +29,19 @@
 		private void InitializeComponent()
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.equipment1 = new TQVaultAE.GUI.Tiny.Controls.Equipment();
+            this.bags1 = new TQVaultAE.GUI.Tiny.Controls.Bags();
             this.SuspendLayout();
             // 
-            // equipment1
+            // bags1
             // 
-            this.equipment1.BackColor = System.Drawing.Color.Transparent;
-            this.equipment1.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("equipment1.BackgroundImage")));
-            this.equipment1.Location = new System.Drawing.Point(688, 206);
-            this.equipment1.Margin = new System.Windows.Forms.Padding(2);
-            this.equipment1.MinimumSize = new System.Drawing.Size(328, 488);
-            this.equipment1.Name = "equipment1";
-            this.equipment1.Size = new System.Drawing.Size(328, 488);
-            this.equipment1.TabIndex = 4;
+            this.bags1.AutoSize = true;
+            this.bags1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.bags1.BackColor = System.Drawing.Color.Transparent;
+            this.bags1.Location = new System.Drawing.Point(448, 106);
+            this.bags1.Margin = new System.Windows.Forms.Padding(0);
+            this.bags1.Name = "bags1";
+            this.bags1.Size = new System.Drawing.Size(268, 245);
+            this.bags1.TabIndex = 0;
             // 
             // MainForm
             // 
@@ -50,16 +50,18 @@
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(44)))), ((int)(((byte)(28)))));
             this.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("$this.BackgroundImage")));
             this.ClientSize = new System.Drawing.Size(1186, 768);
-            this.Controls.Add(this.equipment1);
+            this.Controls.Add(this.bags1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "MainForm";
             this.Text = "Tiny Vault AE";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
 		}
 
 		#endregion
-		private Controls.Equipment equipment1;
+
+		private Controls.Bags bags1;
 	}
 }

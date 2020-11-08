@@ -187,11 +187,23 @@
     <Compile Include="Tiny\Controls\Bag.Designer.cs">
       <DependentUpon>Bag.cs</DependentUpon>
     </Compile>
+    <Compile Include="Tiny\Controls\SortHButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Tiny\Controls\BagButton.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Tiny\Controls\Equipment.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Tiny\Controls\Equipment.Designer.cs">
       <DependentUpon>Equipment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Tiny\Controls\Bags.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Tiny\Controls\Bags.Designer.cs">
+      <DependentUpon>Bags.cs</DependentUpon>
     </Compile>
     <Compile Include="Tiny\Controls\VaultSink.cs">
       <SubType>UserControl</SubType>
@@ -343,6 +355,9 @@
       <DependentUpon>AutoSortButton.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Components\BagButton.resx">
+      <DependentUpon>BagButton.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Components\BagButtonBase.resx">
       <DependentUpon>BagButtonBase.cs</DependentUpon>
     </EmbeddedResource>
@@ -382,6 +397,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Tiny\Controls\Equipment.resx">
       <DependentUpon>Equipment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Tiny\Controls\Bags.resx">
+      <DependentUpon>Bags.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Tiny\Controls\VaultSink.resx">
       <DependentUpon>VaultSink.cs</DependentUpon>
@@ -686,9 +704,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
