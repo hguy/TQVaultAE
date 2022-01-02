@@ -5,16 +5,15 @@
 //-----------------------------------------------------------------------
 namespace TQVaultAE.GUI.Components
 {
-	using Microsoft.Extensions.DependencyInjection;
 	using System;
-	using System.Collections.Generic;
 	using System.Drawing;
 	using System.Windows.Forms;
 	using TQVaultAE.GUI.Models;
-	using TQVaultAE.Domain.Contracts.Services;
-	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Entities;
 	using TQVaultAE.Presentation;
+	using System.Collections.Generic;
+	using Microsoft.Extensions.DependencyInjection;
+	using TQVaultAE.Domain.Contracts.Services;
 
 	/// <summary>
 	/// Class for handling the stash panel ui functions
@@ -95,8 +94,6 @@ namespace TQVaultAE.GUI.Components
 		int PLAYERINFO_HEIGHT => Convert.ToInt32(NORMAL_PLAYERINFO_HEIGHT * this.UIService.Scale);
 
 		private readonly ITranslationService TranslationService;
-		private readonly IDatabase Database;
-		private readonly IItemProvider ItemProvider;
 
 		#endregion StashPanel Fields
 
@@ -109,8 +106,6 @@ namespace TQVaultAE.GUI.Components
 		public StashPanel(ItemDragInfo dragInfo, Size panelSize, IServiceProvider serviceProvider) : base(dragInfo, 4, panelSize, 0, AutoMoveLocation.Stash, serviceProvider)
 		{
 			this.TranslationService = this.ServiceProvider.GetService<ITranslationService>();
-			this.Database = this.ServiceProvider.GetService<IDatabase>();
-			this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
 
 			SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
 
@@ -122,7 +117,6 @@ namespace TQVaultAE.GUI.Components
 			this.equipmentPanel.OnItemSelected += new EventHandler<SackPanelEventArgs>(this.ItemSelectedCallback);
 			this.equipmentPanel.OnClearAllItemsSelected += new EventHandler<SackPanelEventArgs>(this.ClearAllItemsSelectedCallback);
 			this.equipmentPanel.OnResizeForm += new EventHandler<ResizeEventArgs>(this.ResizeFormCallback);
-			this.equipmentPanel.OnEquipmentChanged += new EventHandler<SackPanelEventArgs>(this.EquipmentChangedCallback);
 
 			this.Text = Resources.StashPanelText;
 			this.NoPlayerString = Resources.StashPanelText;
@@ -194,48 +188,8 @@ namespace TQVaultAE.GUI.Components
 
 		}
 
-		/// <summary>
-		/// Forces an update to the player panel.
-		/// </summary>
-		public void UpdatePlayerInfo()
-		{ 
-			// Force an update of the Player Info Panel.
-			DisplayPlayerInfoLastName = null;
-			PlayerPanel.Invalidate();
-		}
-
 		private void EquipmentPanel_VisibleChanged(object sender, EventArgs e)
-			=>DisplayPlayerInfo();
-
-		/// <summary>
-		/// Used to signal that the gear stats bonuses have been re-calculated.
-		/// </summary>
-		/// <param name="sender">sender object</param>
-		/// <param name="e">SackPanelEventArgs object</param>
-		private void EquipmentChangedCallback(object sender, SackPanelEventArgs e)
-		{
-			// Force an update of the Player Info Panel.
-			DisplayPlayerInfoLastName = null;
-			DisplayPlayerInfo();
-		}
-
-		/// <summary>
-		/// Calculates the stat bonuses for the equipped gear and updates the player
-		/// </summary>
-		private void GetSkillStatBonus()
-		{
-			if (Database == null || Player == null)
-				return;
-
-			SortedList<string, int> statBonuses = new SortedList<string, int>();
-
-			foreach (SkillRecord skill in Player.PlayerInfo.SkillRecordList)
-				ItemProvider.GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(skill.skillName), skill.skillLevel);
-
-
-			Player.ClearPlayerSkillBonuses();
-			Player.UpdatePlayerSkillBonuses(statBonuses);		
-		}
+			=> DisplayPlayerInfo();
 
 		private void DisplayPlayerInfo()
 		{
@@ -248,7 +202,7 @@ namespace TQVaultAE.GUI.Components
 			this.PlayerPanel.Visible = true;
 
 			if (DisplayPlayerInfoLastName == this.Player.PlayerName) return;
-			
+
 			this.SuspendLayout();
 			this.PlayerPanel.SuspendLayout();
 
@@ -261,7 +215,6 @@ namespace TQVaultAE.GUI.Components
 				var pclass = TranslationService.TranslateXTag(this.Player.PlayerInfo.Class) ?? string.Empty;
 				var mclass = TranslationService.TranslateMastery(this.Player.PlayerInfo.Class) ?? string.Empty;
 				mclass = mclass == Resources.Masteries ? string.Empty : mclass;
-
 				var pi = new Dictionary<string, string>
 				{
 					[Resources.CurrentLevel] = this.Player.PlayerInfo.CurrentLevel.ToString(),
@@ -272,16 +225,11 @@ namespace TQVaultAE.GUI.Components
 					[Resources.Money] = this.Player.PlayerInfo.Money.ToString(),
 					[Resources.SkillPoints] = this.Player.PlayerInfo.SkillPoints.ToString(),
 					[Resources.AttributesPoints] = this.Player.PlayerInfo.AttributesPoints.ToString(),
-					////[Resources.BaseStrength] = this.Player.PlayerInfo.BaseStrength.ToString(),
-					[Resources.CEStrength] = this.Player.PlayerInfo.CalculatedStrength.ToString(),
-					////[Resources.BaseDexterity] = this.Player.PlayerInfo.BaseDexterity.ToString(),
-					[Resources.CEDexterity] = this.Player.PlayerInfo.CalculatedDexterity.ToString(),
-					////[Resources.BaseIntelligence] = this.Player.PlayerInfo.BaseIntelligence.ToString(),
-					[Resources.CEIntelligence] = this.Player.PlayerInfo.CalculatedIntelligence.ToString(),
-					////[Resources.BaseHealth] = this.Player.PlayerInfo.BaseHealth.ToString(),
-					[Resources.CEHealth] = this.Player.PlayerInfo.CalculatedHealth.ToString(),
-					////[Resources.BaseMana] = this.Player.PlayerInfo.BaseMana.ToString(),
-					[Resources.CEMana] = this.Player.PlayerInfo.CalculatedMana.ToString(),
+					[Resources.BaseStrength] = this.Player.PlayerInfo.BaseStrength.ToString(),
+					[Resources.BaseDexterity] = this.Player.PlayerInfo.BaseDexterity.ToString(),
+					[Resources.BaseIntelligence] = this.Player.PlayerInfo.BaseIntelligence.ToString(),
+					[Resources.BaseHealth] = this.Player.PlayerInfo.BaseHealth.ToString(),
+					[Resources.BaseMana] = this.Player.PlayerInfo.BaseMana.ToString(),
 					[Resources.PlayTimeInSeconds] = this.Player.PlayerInfo.PlayTimeInSeconds.ToString(),
 					[Resources.NumberOfDeaths] = this.Player.PlayerInfo.NumberOfDeaths.ToString(),
 					[Resources.NumberOfKills] = this.Player.PlayerInfo.NumberOfKills.ToString(),
@@ -375,7 +323,6 @@ namespace TQVaultAE.GUI.Components
 			var dlg = this.ServiceProvider.GetService<CharacterEditDialog>();
 			dlg.PlayerCollection = this.Player;
 			dlg.ShowDialog();
-			this.GetSkillStatBonus();
 			this.DisplayPlayerInfoLastName = null;
 			this.DisplayPlayerInfo();
 		}
@@ -654,8 +601,7 @@ namespace TQVaultAE.GUI.Components
 			if (this.DrawAsGroupBox)
 				this.Text = Resources.StashPanelText;
 
-			// Player was changed, force an update to the player info panel.
-			this.DisplayPlayerInfoLastName = null;
+			DisplayPlayerInfo();
 		}
 
 		/// <summary>
@@ -693,11 +639,7 @@ namespace TQVaultAE.GUI.Components
 				if (this.Player == null)
 					this.SackPanel.Sack = null;
 				else
-				{
 					this.SackPanel.Sack = this.Player.EquipmentSack;
-					this.equipmentPanel.GetGearStatBonus();
-					GetSkillStatBonus();
-				}
 			}
 			else if (this.currentBag == 1)
 			{
@@ -781,9 +723,6 @@ namespace TQVaultAE.GUI.Components
 			var rect = this.GetBackgroundRect();
 			e.Graphics.DrawImage(this.background, rect);
 			base.PaintCallback(sender, e);
-
-			// Update the player info panel
-			DisplayPlayerInfo();
 		}
 
 		#endregion StashPanel Protected Methods
