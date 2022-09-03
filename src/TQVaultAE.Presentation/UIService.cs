@@ -330,5 +330,28 @@ namespace TQVaultAE.Presentation
 
 		#endregion
 
+		public IProgress<ProgressBarMessage> ShowProgressBar()
+		{
+			var args = new ShowProgressBarEventHandlerArgs();
+			ShowProgressBarEvent?.Invoke(this, args);
+			return args.ProgressBar;
+		}
+
+		public void CloseProgressBar()
+			=> CloseProgressBarEvent?.Invoke(this, EventArgs.Empty);
+
+		public bool DoWorkProgressBar(Func<bool> doWork)
+		{
+			var args = new DoWorkProgressBarEventHandlerArgs()
+			{
+				Workload = doWork
+			};
+			this.DoWorkProgressBarEvent?.Invoke(this, args);
+			return args.Result;
+		}
+
+		public event ShowProgressBarEventHandler ShowProgressBarEvent;
+		public event EventHandler CloseProgressBarEvent;
+		public event DoWorkProgressBarEventHandler DoWorkProgressBarEvent;
 	}
 }

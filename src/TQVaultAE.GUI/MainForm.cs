@@ -279,6 +279,45 @@ Debug Levels
 
 		this.UIService.NotifyUserEvent += UIService_NotifyUserEvent;
 		this.UIService.ShowMessageUserEvent += UIService_ShowMessageUserEvent;
+		this.UIService.ShowProgressBarEvent += UIService_ShowProgressBarEvent;
+		this.UIService.CloseProgressBarEvent += UIService_CloseProgressBarEvent;
+		this.UIService.DoWorkProgressBarEvent += UIService_DoWorkProgressBarEvent;
+	}
+
+	private void UIService_DoWorkProgressBarEvent(object sender, DoWorkProgressBarEventHandlerArgs workload)
+	{
+		workload.Result = workload.Workload();// Need to be executed from UI Thread
+	}
+
+	private void UIService_CloseProgressBarEvent(object sender, EventArgs e)
+	{
+		var pb = this.vaultProgressBar;
+		pb.Visible = false;
+		pb.SendToBack();
+	}
+
+	private void UIService_ShowProgressBarEvent(object sender, ShowProgressBarEventHandlerArgs args)
+	{
+		var pb = this.vaultProgressBar;
+		pb.BringToFront();
+		pb.Visible = true;
+
+		var progress = new Progress<ProgressBarMessage>();
+		progress.ProgressChanged += Progress_ProgressChanged;
+		args.ProgressBar = progress;
+	}
+
+	private void Progress_ProgressChanged(object sender, ProgressBarMessage mess)
+	{
+		var pb = this.vaultProgressBar;
+
+		//pb.SuspendLayout();
+		pb.Title = mess.Title;
+		pb.Value = mess.Percent;
+		Debug.WriteLine(mess);
+		//pb.ResumeLayout(false);
+		//pb.PerformLayout();
+
 	}
 
 	private void UIService_ShowMessageUserEvent(object sender, ShowMessageUserEventHandlerEventArgs message)

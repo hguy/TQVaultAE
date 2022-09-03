@@ -388,7 +388,6 @@ namespace TQVaultAE.GUI
             // 
             this.okayButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.okayButton.BackColor = System.Drawing.Color.Transparent;
-            this.okayButton.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.okayButton.DownBitmap = ((System.Drawing.Bitmap)(resources.GetObject("okayButton.DownBitmap")));
             this.okayButton.FlatAppearance.BorderSize = 0;
             this.okayButton.FlatAppearance.MouseDownBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(51)))), ((int)(((byte)(44)))), ((int)(((byte)(28)))));

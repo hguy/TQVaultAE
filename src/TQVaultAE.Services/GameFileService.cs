@@ -66,78 +66,91 @@ public class GameFileService : IGameFileService
 
 	public bool GitAddCommitTagAndPush()
 	{
-		if (Config.UserSettings.Default.GitBackupEnabled && GamePathService.LocalGitRepositoryGitDirExist)
+		// Get The IProgress and popup the ProgressBar
+		IProgress<ProgressBarMessage> bar = this.UIService.ShowProgressBar();
+
+		// Long Work to be done
+		Func<bool> doWork = () =>
 		{
-			var repoUrl = Config.UserSettings.Default.GitBackupRepository;
-			string errMess = string.Format(Resources.GitUnableToPush, repoUrl);
-			Action<Shell.Options> options = (opt) => opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
-
-			Command status, stageAll, commit, tagVersion, tagLatest, push, pushTags;
-			status = stageAll = commit = tagVersion = tagLatest = push = pushTags = null;
-
-			try
+			if (Config.UserSettings.Default.GitBackupEnabled && GamePathService.LocalGitRepositoryGitDirExist)
 			{
-				/*
-				 * Reporting synchronously via event starts good but break at some point, job is done though.
-				 * 
-				 * IProgress : Should be the new way of reporting progress. 
-				 * It report progress on time and is not blocking, but the Form is delaying result processing and flush them all AFTER the job. 
-				 * 
-				 * BackgroundWorker.ReportProgress() : should work for Winform 
-				 * but Command.Wait() inside BackgroundWorker.DoWork() simply brutaly kill the app, like a BSOD for app. LOL
-				 * 
-				 * I really tried.
-				 * hguy
-				 */
+				var repoUrl = Config.UserSettings.Default.GitBackupRepository;
+				string errMess = string.Format(Resources.GitUnableToPush, repoUrl);
+				Action<Shell.Options> options = (opt) => opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
 
-				// Is there anything new to commit ?
-				status = Command.Run("git", new[] { "status", "-suall" }, options);
-				var statusSuccess = HandleExecuteOut(status, errMess, out var statusoutStd, out var statuserrStd);
-				if (statusSuccess && statusoutStd.Count > 0)
+				Command status, stageAll, commit, tagVersion, tagLatest, push, pushTags;
+				status = stageAll = commit = tagVersion = tagLatest = push = pushTags = null;
+
+				try
 				{
-					stageAll = Command.Run("git", new[] { "stage", "*" }, options);
-					if (HandleExecuteOut(stageAll, errMess, out var stageAlloutStd, out var stageAllerrStd))
+					/*
+					 * Reporting synchronously via event starts good but break at some point, job is done though.
+					 * 
+					 * IProgress : Should be the new way of reporting progress. 
+					 * It report progress on time and is not blocking, but the Form is delaying result processing and flush them all AFTER the job. 
+					 * 
+					 * BackgroundWorker.ReportProgress() : should work for Winform 
+					 * but Command.Wait() inside BackgroundWorker.DoWork() simply brutaly kill the app, like a BSOD for app. LOL
+					 * 
+					 * I really tried.
+					 * hguy
+					 */
+					bar.Report(new("Git Status", 1));
+					// Is there anything new to commit ?
+					status = Command.Run("git", new[] { "status", "-suall" }, options);
+					var statusSuccess = HandleExecuteOut(status, errMess, out var statusoutStd, out var statuserrStd);
+					if (statusSuccess && statusoutStd.Count > 0)
 					{
-						commit = Command.Run("git", new[] { "commit", "-m", @"TQVaultAE update!" }, options);
-						if (HandleExecuteOut(commit, errMess, out var commitoutStd, out var commiterrStd))
+						bar.Report(new("Git Stage", 10));
+						stageAll = Command.Run("git", new[] { "stage", "*" }, options);
+						if (HandleExecuteOut(stageAll, errMess, out var stageAlloutStd, out var stageAllerrStd))
 						{
-							var tag = DateTime.Now.ToString("yy.MM.dd.HHmmss");// Use date for versioning
-
-							tagVersion = Command.Run("git", new[] { "tag", tag, }, options);
-							if (HandleExecuteOut(tagVersion, errMess, out var tagVersionoutStd, out var tagVersionerrStd))
+							bar.Report(new("Git Commit", 20));
+							commit = Command.Run("git", new[] { "commit", "-m", @"TQVaultAE update!" }, options);
+							if (HandleExecuteOut(commit, errMess, out var commitoutStd, out var commiterrStd))
 							{
-								tagLatest = Command.Run("git", new[] { "tag", "-f", "latest" }, options);
-								if (HandleExecuteOut(tagLatest, errMess, out var tagLatestoutStd, out var tagLatesterrStd))
+								var tag = DateTime.Now.ToString("yy.MM.dd.HHmmss");// Use date for versioning
+
+								bar.Report(new("Git Tag", 30));
+								tagVersion = Command.Run("git", new[] { "tag", tag, }, options);
+								if (HandleExecuteOut(tagVersion, errMess, out var tagVersionoutStd, out var tagVersionerrStd))
 								{
-									using (push = Command.Run("git", new[] { "push", "-v", "--progress" } // You need "--progress" to capture percentage in StandardError
-										, (opt) =>
-										{
-											opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
-											//opt.DisposeOnExit(false); // needed for RedirectStandardError = true
-											//opt.StartInfo(si => { si.RedirectStandardError = true; }); // needed for ConsumeStandardOutputAsync
-										})
-									)
+									tagLatest = Command.Run("git", new[] { "tag", "-f", "latest" }, options);
+									if (HandleExecuteOut(tagLatest, errMess, out var tagLatestoutStd, out var tagLatesterrStd))
 									{
-										// Hook console output verbosity
-
-										// --- Method StandardError direct reading
-										//var tsk = Task.Run(() => ConsumeStandardOutputAsync(push.StandardError));
-										//push.Wait();
-										//return push.Result.Success;
-
-										// --- Method BindingList event model
-										//BindingList<string> pushoutStd = new(), pusherrStd = new();
-										//pusherrStd.ListChanged += PusherrStd_ListChanged;
-										//var res = HandleExecuteRef(push, errMess, ref pushoutStd, ref pusherrStd);
-										//return res;
-
-										if (HandleExecuteOut(push, errMess, out var pushoutStd, out var pusherrStd))
+										bar.Report(new("Git Push", 50));
+										using (push = Command.Run("git", new[] { "push", "-v", "--progress" } // You need "--progress" to capture percentage in StandardError
+												, (opt) =>
+												{
+													opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
+													//opt.DisposeOnExit(false); // needed for RedirectStandardError = true
+													//opt.StartInfo(si => { si.RedirectStandardError = true; }); // needed for ConsumeStandardOutputAsync
+												})
+											)
 										{
-											pushTags = Command.Run("git", new[] { "push", "origin", "latest", "-f" }, options);
-											if (HandleExecuteOut(pushTags, errMess, out var pushTagsoutStd, out var pushTagserrStd))
+											// Hook console output verbosity
+
+											// --- Method StandardError direct reading
+											//var tsk = Task.Run(() => ConsumeStandardOutputAsync(push.StandardError));
+											//push.Wait();
+											//return push.Result.Success;
+
+											// --- Method BindingList event model
+											//BindingList<string> pushoutStd = new(), pusherrStd = new();
+											//pusherrStd.ListChanged += PusherrStd_ListChanged;
+											//var res = HandleExecuteRef(push, errMess, ref pushoutStd, ref pusherrStd);
+											//return res;
+
+											if (HandleExecuteOut(push, errMess, out var pushoutStd, out var pusherrStd))
 											{
-												pushTags = Command.Run("git", new[] { "push", "origin", tag }, options);
-												return HandleExecuteOut(pushTags, errMess, out pushTagsoutStd, out pushTagserrStd);
+												bar.Report(new("Git Push 2", 80));
+												pushTags = Command.Run("git", new[] { "push", "origin", "latest", "-f" }, options);
+												if (HandleExecuteOut(pushTags, errMess, out var pushTagsoutStd, out var pushTagserrStd))
+												{
+													bar.Report(new("Git Push 3", 90));
+													pushTags = Command.Run("git", new[] { "push", "origin", tag }, options);
+													return HandleExecuteOut(pushTags, errMess, out pushTagsoutStd, out pushTagserrStd);
+												}
 											}
 										}
 									}
@@ -146,15 +159,22 @@ public class GameFileService : IGameFileService
 						}
 					}
 				}
+				catch (Exception ex)
+				{
+					errMess += Environment.NewLine + ex.Message;
+					this.Log.LogError(ex, errMess);
+					this.UIService.ShowError(errMess, Buttons: ShowMessageButtons.OK);
+				}
+				finally
+				{
+					this.UIService.CloseProgressBar();
+				}
 			}
-			catch (Exception ex)
-			{
-				errMess += Environment.NewLine + ex.Message;
-				this.Log.LogError(ex, errMess);
-				this.UIService.ShowError(errMess, Buttons: ShowMessageButtons.OK);
-			}
-		}
-		return false;
+			return false;
+		};
+
+		// Delegate Long work process to UI Thread
+		return this.UIService.DoWorkProgressBar(doWork);
 	}
 
 	#region MedallionShell output hook

@@ -649,7 +649,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.baseFontComboBox.Items.AddRange(listItem);
 		this.baseFontComboBox.SelectedItem = listItem.Where(i => i.Value == this.BaseFont).FirstOrDefault() ?? listItem.First();
 
-		// Build CsvDelim combo box
+		// Build CsvDelim combo box 
 		this.scalingComboBoxCSVDelim.Items.Clear();
 		var listItemDelim = Enums.GetMembers<CsvDelimiter>()
 			.Select(m =>

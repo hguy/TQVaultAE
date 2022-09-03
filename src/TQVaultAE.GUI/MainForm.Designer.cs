@@ -133,6 +133,7 @@ namespace TQVaultAE.GUI
             this.forgeButton = new TQVaultAE.GUI.Components.ScalingButton();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.highlightFilters = new TQVaultAE.GUI.Components.HighlightFilters();
+            this.vaultProgressBar = new TQVaultAE.GUI.Components.VaultProgressBar();
             this.itemTextPanel.SuspendLayout();
             this.flowLayoutPanelVaultSelector.SuspendLayout();
             this.tableLayoutPanelMain.SuspendLayout();
@@ -363,7 +364,7 @@ namespace TQVaultAE.GUI
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 5F));
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 23F));
+            this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 25F));
             this.tableLayoutPanelMain.Controls.Add(this.tableLayoutPanelHighlight, 0, 3);
             this.tableLayoutPanelMain.Controls.Add(this.flowLayoutPanelRightPanels, 2, 1);
             this.tableLayoutPanelMain.Controls.Add(this.flowLayoutPanelVaultSelector, 0, 0);
@@ -613,6 +614,18 @@ namespace TQVaultAE.GUI
             this.highlightFilters.TabIndex = 25;
             this.highlightFilters.Visible = false;
             // 
+            // vaultProgressBar
+            // 
+            this.vaultProgressBar.BackColor = System.Drawing.Color.Transparent;
+            this.vaultProgressBar.Location = new System.Drawing.Point(542, 320);
+            this.vaultProgressBar.Maximum = 0;
+            this.vaultProgressBar.Minimum = 0;
+            this.vaultProgressBar.Name = "vaultProgressBar";
+            this.vaultProgressBar.Size = new System.Drawing.Size(606, 70);
+            this.vaultProgressBar.TabIndex = 26;
+            this.vaultProgressBar.Value = 0;
+            this.vaultProgressBar.Visible = false;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -621,6 +634,7 @@ namespace TQVaultAE.GUI
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1350, 910);
             this.ConstrainToDesignRatio = true;
+            this.Controls.Add(this.vaultProgressBar);
             this.Controls.Add(this.highlightFilters);
             this.Controls.Add(this.flowLayoutPanelMenuButtons);
             this.Controls.Add(this.tableLayoutPanelMain);
@@ -650,6 +664,7 @@ namespace TQVaultAE.GUI
             this.Controls.SetChildIndex(this.tableLayoutPanelMain, 0);
             this.Controls.SetChildIndex(this.flowLayoutPanelMenuButtons, 0);
             this.Controls.SetChildIndex(this.highlightFilters, 0);
+            this.Controls.SetChildIndex(this.vaultProgressBar, 0);
             this.itemTextPanel.ResumeLayout(false);
             this.flowLayoutPanelVaultSelector.ResumeLayout(false);
             this.tableLayoutPanelMain.ResumeLayout(false);
@@ -687,5 +702,6 @@ namespace TQVaultAE.GUI
 		private ScalingButton forgeButton;
 		internal BufferedTableLayoutPanel tableLayoutPanelMain;
 		private HighlightFilters highlightFilters;
+        private VaultProgressBar vaultProgressBar;
     }
 }
