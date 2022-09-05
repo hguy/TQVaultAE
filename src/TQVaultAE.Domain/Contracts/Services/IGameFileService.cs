@@ -1,4 +1,5 @@
-﻿using TQVaultAE.Domain.Entities;
+﻿using System;
+using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
 
 namespace TQVaultAE.Domain.Contracts.Services;
@@ -13,7 +14,7 @@ public interface IGameFileService
 	/// add, commit, tag and push the git repo.
 	/// </summary>
 	/// <returns><c>true</c> if a change has been pushed</returns>
-	bool GitAddCommitTagAndPush();
+	bool GitAddCommitTagAndPush(IProgress<ProgressBarMessage> progress);
 	/// <summary>
 	/// Backs up the file to the backup folder.
 	/// </summary>

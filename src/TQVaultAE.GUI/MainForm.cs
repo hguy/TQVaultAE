@@ -279,45 +279,6 @@ Debug Levels
 
 		this.UIService.NotifyUserEvent += UIService_NotifyUserEvent;
 		this.UIService.ShowMessageUserEvent += UIService_ShowMessageUserEvent;
-		this.UIService.ShowProgressBarEvent += UIService_ShowProgressBarEvent;
-		this.UIService.CloseProgressBarEvent += UIService_CloseProgressBarEvent;
-		this.UIService.DoWorkProgressBarEvent += UIService_DoWorkProgressBarEvent;
-	}
-
-	private void UIService_DoWorkProgressBarEvent(object sender, DoWorkProgressBarEventHandlerArgs workload)
-	{
-		workload.Result = workload.Workload();// Need to be executed from UI Thread
-	}
-
-	private void UIService_CloseProgressBarEvent(object sender, EventArgs e)
-	{
-		var pb = this.vaultProgressBar;
-		pb.Visible = false;
-		pb.SendToBack();
-	}
-
-	private void UIService_ShowProgressBarEvent(object sender, ShowProgressBarEventHandlerArgs args)
-	{
-		var pb = this.vaultProgressBar;
-		pb.BringToFront();
-		pb.Visible = true;
-
-		var progress = new Progress<ProgressBarMessage>();
-		progress.ProgressChanged += Progress_ProgressChanged;
-		args.ProgressBar = progress;
-	}
-
-	private void Progress_ProgressChanged(object sender, ProgressBarMessage mess)
-	{
-		var pb = this.vaultProgressBar;
-
-		//pb.SuspendLayout();
-		pb.Title = mess.Title;
-		pb.Value = mess.Percent;
-		Debug.WriteLine(mess);
-		//pb.ResumeLayout(false);
-		//pb.PerformLayout();
-
 	}
 
 	private void UIService_ShowMessageUserEvent(object sender, ShowMessageUserEventHandlerEventArgs message)
@@ -388,8 +349,43 @@ Debug Levels
 	/// <param name="sender">sender object</param>
 	/// <param name="e">CancelEventArgs data</param>
 	private void MainFormClosing(object sender, CancelEventArgs e)
-		=> e.Cancel = !this.DoCloseStuff();
+	{
+		if (!_DoCloseStuffCompleted)
+		{
+			var closeOk = this.DoCloseStuff();
+			e.Cancel = true;
+			if (!closeOk) return;
 
+			var pb = this.vaultProgressBar;
+			pb.BringToFront();
+			pb.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+			pb.Minimum =
+			pb.Value = 0;
+			pb.Maximum = 100;
+			pb.TitleForeColor = TQColor.Purple.Color();
+			pb.TitleFont = FontService.GetFont(15F, this.UIService.Scale);
+
+			var x = (this.Size.Width / 2) - (this.vaultProgressBar.Width / 2);
+			var y = (this.Size.Height / 2);
+			var loc = this.PointToClient(this.PointToScreen(Point.Empty));
+			var loc2 = new Point(loc.X + x, loc.Y + y);
+			
+			pb.Location = loc2;
+
+			pb.Visible = true;
+
+			var progress = new Progress<ProgressBarMessage>((mess) =>
+			{
+				this.backgroundWorkerGit.ReportProgress(mess.Percent, mess);
+			});
+
+			this.backgroundWorkerGit.RunWorkerAsync(progress);
+
+			return;
+		}
+	}
+
+	bool _DoCloseStuffCompleted = false;
 	/// <summary>
 	/// Shows things that you may want to know before a close.
 	/// Like holding an item
@@ -412,8 +408,6 @@ Debug Levels
 			// Added by VillageIdiot
 			this.SaveConfiguration();
 
-			this.GameFileService.GitAddCommitTagAndPush();
-
 			ok = true;
 		}
 		catch (IOException exception)
@@ -423,6 +417,30 @@ Debug Levels
 		}
 
 		return ok;
+	}
+
+	private void backgroundWorkerGit_DoWork(object sender, DoWorkEventArgs e)
+	{
+		var arg = e.Argument as Progress<ProgressBarMessage>;
+		this.GameFileService.GitAddCommitTagAndPush(arg);
+	}
+
+	private void backgroundWorkerGit_ProgressChanged(object sender, ProgressChangedEventArgs e)
+	{
+		var mess = e.UserState as ProgressBarMessage;
+		this.vaultProgressBar.Title = mess.Title;
+		this.vaultProgressBar.Value = e.ProgressPercentage;
+		this.vaultProgressBar.Invalidate();
+	}
+
+	private void backgroundWorkerGit_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+	{
+		var pb = this.vaultProgressBar;
+		pb.Visible = false;
+		pb.SendToBack();
+
+		_DoCloseStuffCompleted = true;
+		this.Close();
 	}
 
 	/// <summary>
@@ -1233,4 +1251,5 @@ Debug Levels
 		highlightFilters.Visible = true;
 		highlightFilters.BringToFront();
 	}
+
 }

@@ -134,6 +134,7 @@ namespace TQVaultAE.GUI
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.highlightFilters = new TQVaultAE.GUI.Components.HighlightFilters();
             this.vaultProgressBar = new TQVaultAE.GUI.Components.VaultProgressBar();
+            this.backgroundWorkerGit = new System.ComponentModel.BackgroundWorker();
             this.itemTextPanel.SuspendLayout();
             this.flowLayoutPanelVaultSelector.SuspendLayout();
             this.tableLayoutPanelMain.SuspendLayout();
@@ -364,7 +365,7 @@ namespace TQVaultAE.GUI
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 5F));
             this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
-            this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 25F));
+            this.tableLayoutPanelMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 26F));
             this.tableLayoutPanelMain.Controls.Add(this.tableLayoutPanelHighlight, 0, 3);
             this.tableLayoutPanelMain.Controls.Add(this.flowLayoutPanelRightPanels, 2, 1);
             this.tableLayoutPanelMain.Controls.Add(this.flowLayoutPanelVaultSelector, 0, 0);
@@ -626,6 +627,14 @@ namespace TQVaultAE.GUI
             this.vaultProgressBar.Value = 0;
             this.vaultProgressBar.Visible = false;
             // 
+            // backgroundWorkerGit
+            // 
+            this.backgroundWorkerGit.WorkerReportsProgress = true;
+            this.backgroundWorkerGit.WorkerSupportsCancellation = true;
+            this.backgroundWorkerGit.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerGit_DoWork);
+            this.backgroundWorkerGit.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerGit_ProgressChanged);
+            this.backgroundWorkerGit.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerGit_RunWorkerCompleted);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -703,5 +712,6 @@ namespace TQVaultAE.GUI
 		internal BufferedTableLayoutPanel tableLayoutPanelMain;
 		private HighlightFilters highlightFilters;
         private VaultProgressBar vaultProgressBar;
+        private System.ComponentModel.BackgroundWorker backgroundWorkerGit;
     }
 }

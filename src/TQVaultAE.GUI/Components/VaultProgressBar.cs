@@ -66,7 +66,8 @@ namespace TQVaultAE.GUI.Components
 			// scalingLabelTitle
 			// 
 			this.scalingLabelTitle.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.scalingLabelTitle.ForeColor = System.Drawing.Color.Gold;
+			this.scalingLabelTitle.ForeColor = System.Drawing.Color.Purple;
+			this.scalingLabelTitle.BackColor = System.Drawing.Color.Transparent;
 			this.scalingLabelTitle.Location = new System.Drawing.Point(0, 0);
 			this.scalingLabelTitle.Name = "scalingLabelTitle";
 			this.scalingLabelTitle.Size = new System.Drawing.Size(150, 150);

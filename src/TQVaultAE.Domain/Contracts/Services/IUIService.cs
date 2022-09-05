@@ -105,47 +105,6 @@ public interface IUIService
 	/// <param name="message"></param>
 	ShowMessageUserEventHandlerEventArgs ShowInfo(string message, ShowMessageButtons Buttons = ShowMessageButtons.OK);
 
-	/// <summary>
-	/// Display the progress bar
-	/// </summary>
-	/// <returns></returns>
-	IProgress<ProgressBarMessage> ShowProgressBar();
-	/// <summary>
-	/// Close the progress bar
-	/// </summary>
-	void CloseProgressBar();
-
-	bool DoWorkProgressBar(Func<bool> doWork);
-
-	/// <summary>
-	/// ProgressBar event
-	/// </summary>
-	event DoWorkProgressBarEventHandler DoWorkProgressBarEvent;
-
-	/// <summary>
-	/// ProgressBar event
-	/// </summary>
-	event ShowProgressBarEventHandler ShowProgressBarEvent;
-
-	/// <summary>
-	/// ProgressBar event
-	/// </summary>
-	event EventHandler CloseProgressBarEvent;
-
-}
-
-public delegate void DoWorkProgressBarEventHandler(object sender, DoWorkProgressBarEventHandlerArgs workload);
-public class DoWorkProgressBarEventHandlerArgs
-{
-	public Func<bool> Workload;
-	public bool Result;
-}
-
-public delegate void ShowProgressBarEventHandler(object sender, ShowProgressBarEventHandlerArgs args);
-
-public class ShowProgressBarEventHandlerArgs
-{
-	public IProgress<ProgressBarMessage> ProgressBar;
 }
 
 public record ProgressBarMessage(string Title, int Percent);
