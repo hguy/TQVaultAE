@@ -56,13 +56,11 @@ namespace TQVaultAE.Services
 
 			#region Get the player
 
-			var pf = GamePathResolver.GetPlayerFile(selectedSave.Name, selectedSave.IsImmortalThrone);
+			result.PlayerFile = GamePathResolver.GetPlayerFile(selectedSave.Name, selectedSave.IsImmortalThroneSavePath);
 
-			var resultPC = new PlayerCollection(selectedSave.Name, pf);
+			var resultPC = new PlayerCollection(selectedSave.Name, result.PlayerFile);
 
-			resultPC.IsImmortalThrone = selectedSave.IsImmortalThrone;
-
-			result.PlayerFile = pf;
+			resultPC.IsImmortalThroneSavePath = selectedSave.IsImmortalThroneSavePath;
 
 			PlayerCollection addFactory(string k)
 			{

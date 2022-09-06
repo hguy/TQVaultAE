@@ -269,6 +269,7 @@ namespace TQVaultAE.Data
 				var path = filePathToUse ?? pc.PlayerFile;
 				if (path.EndsWith(".json"))
 				{
+					// For Vault files v4+
 					ParseJsonData(pc, path);
 					return;
 				}
@@ -298,7 +299,7 @@ namespace TQVaultAE.Data
 			pc.Sacks = vaultDto.sacks.Select(s => new SackCollection()
 			{
 				SackType = SackType.Sack,
-				IsImmortalThrone = pc.IsImmortalThrone,
+				IsImmortalThroneSavePath = pc.IsImmortalThroneSavePath,
 				IsModified = false,
 				size = s.items.Count,
 				beginBlockCrap = this.TQData.BeginBlockValue,
@@ -553,6 +554,7 @@ namespace TQVaultAE.Data
 			}
 		}
 
+
 		/// <summary>
 		/// Find character data in player.chr file
 		/// </summary>
@@ -562,7 +564,7 @@ namespace TQVaultAE.Data
 			pi.Modified = false;
 
 			var headerVersion = TQData.ReadIntAfter(pc.rawData, "headerVersion");
-			pi.HeaderVersion = headerVersion.valueAsInt;
+			pi.HeaderVersion = (PlayerFileHeaderVersion)headerVersion.valueAsInt;
 
 			var playerCharacterClass = TQData.ReadCStringAfter(pc.rawData, "playerCharacterClass");
 			pi.PlayerCharacterClass = playerCharacterClass.valueAsString;
@@ -770,7 +772,7 @@ namespace TQVaultAE.Data
 				{
 					pc.Sacks[i] = new SackCollection();
 					pc.Sacks[i].SackType = SackType.Sack;
-					pc.Sacks[i].IsImmortalThrone = pc.IsImmortalThrone;
+					pc.Sacks[i].IsImmortalThroneSavePath = pc.IsImmortalThroneSavePath;
 					SackCollectionProvider.Parse(pc.Sacks[i], reader);
 				}
 
@@ -800,7 +802,7 @@ namespace TQVaultAE.Data
 			{
 				using (BinaryWriter writer = new BinaryWriter(writeStream))
 				{
-					if (pc.IsImmortalThrone)
+					if (pc.IsImmortalThroneSavePath)
 					{
 						TQData.WriteCString(writer, "equipmentCtrlIOStreamVersion");
 						writer.Write(pc.equipmentCtrlIOStreamVersion);
@@ -839,7 +841,7 @@ namespace TQVaultAE.Data
 
 				reader.BaseStream.Seek(offset, SeekOrigin.Begin);
 
-				if (pc.IsImmortalThrone)
+				if (pc.IsImmortalThroneSavePath)
 				{
 					TQData.ValidateNextString("equipmentCtrlIOStreamVersion", reader);
 					pc.equipmentCtrlIOStreamVersion = reader.ReadInt32();
@@ -847,7 +849,7 @@ namespace TQVaultAE.Data
 
 				pc.EquipmentSack = new SackCollection();
 				pc.EquipmentSack.SackType = SackType.Equipment;
-				pc.EquipmentSack.IsImmortalThrone = pc.IsImmortalThrone;
+				pc.EquipmentSack.IsImmortalThroneSavePath = pc.IsImmortalThroneSavePath;
 				SackCollectionProvider.Parse(pc.EquipmentSack, reader);
 
 				//pc.equipmentBlockEnd = (int)reader.BaseStream.Position;

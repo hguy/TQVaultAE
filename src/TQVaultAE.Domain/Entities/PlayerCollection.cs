@@ -88,7 +88,7 @@ namespace TQVaultAE.Domain.Entities
 		/// <summary>
 		/// Gets or sets a value indicating whether this file is an immortal throne file
 		/// </summary>
-		public bool IsImmortalThrone { get; set; }
+		public bool IsImmortalThroneSavePath { get; set; }
 
 		/// <summary>
 		/// Gets the equipment sack for this file.
@@ -155,7 +155,7 @@ namespace TQVaultAE.Domain.Entities
 		/// </summary>
 		public string PlayerName
 		{
-			get => (!this.IsVault && this.IsImmortalThrone) ? string.Concat(this.playerName, " - Immortal Throne") : this.playerName;
+			get => (!this.IsVault && this.IsImmortalThroneSavePath) ? string.Concat(this.playerName, " - Immortal Throne") : this.playerName;
 			private set => this.playerName = value;
 		}
 

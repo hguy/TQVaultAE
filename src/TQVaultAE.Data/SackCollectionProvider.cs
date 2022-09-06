@@ -130,7 +130,7 @@ namespace TQVaultAE.Data
 				}
 				else if (sc.SackType == SackType.Equipment)
 				{
-					if (sc.IsImmortalThrone)
+					if (sc.IsImmortalThroneSavePath)
 					{
 						sc.size = 12;
 						sc.slots = 12;

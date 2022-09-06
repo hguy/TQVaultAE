@@ -54,7 +54,7 @@ public partial class MainForm
 	{
 		// Only if it's IT, TQ doesn't have one
 		var selectedSave = this.characterComboBox.SelectedItem as PlayerSave;
-		if (selectedSave is not null && !selectedSave.IsImmortalThrone)
+		if (!(selectedSave?.IsImmortalThroneSavePath ?? false))
 		{
 			this.stashPanel.TransferStash = null;
 			return null;
@@ -99,7 +99,9 @@ public partial class MainForm
 	{
 		// Only if it's IT, TQ doesn't have one
 		var selectedSave = this.characterComboBox.SelectedItem as PlayerSave;
-		if (selectedSave is not null && !selectedSave.IsImmortalThrone)
+		if (!(selectedSave?.IsImmortalThroneSavePath ?? false)
+			|| selectedSave?.Info?.HeaderVersion != PlayerFileHeaderVersion.TQAE // Relic stash is AE exclusive
+		)
 		{
 			this.stashPanel.RelicVaultStash = null;
 			return null;

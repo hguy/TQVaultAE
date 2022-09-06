@@ -1479,7 +1479,7 @@ public class SackPanel : Panel, IScalingControl
 					).Distinct();
 
 					// TQ original save
-					if (this.userContext.CurrentPlayer is not null && !this.userContext.CurrentPlayer.IsImmortalThrone)
+					if (this.userContext.CurrentPlayer is not null && !this.userContext.CurrentPlayer.IsImmortalThroneSavePath)
 					{
 						autoMoveChoices = autoMoveChoices.Where(loc =>
 							loc != AutoMoveLocation.Stash // There is no Stash on TQ original save
@@ -2426,8 +2426,8 @@ public class SackPanel : Panel, IScalingControl
 	protected virtual bool IsCurrentPlayerReadOnly()
 	{
 		var currPlayer = this.userContext.CurrentPlayer;
-		if (!(currPlayer?.IsImmortalThrone ?? false) // TODO for now TQ Original Player is read only but could be issue #268
-		) return true;
+		//if (!(currPlayer?.IsImmortalThroneSavePath ?? false) // TODO for now TQ Original Player is read only but could be issue #268
+		//) return true;
 
 		return false;
 	}
@@ -2440,8 +2440,13 @@ public class SackPanel : Panel, IScalingControl
 	protected virtual bool IsSuitableForCurrentPlayer(Item item)
 	{
 		var currPlayer = this.userContext.CurrentPlayer;
-		if (!(currPlayer?.IsImmortalThrone ?? false) // Player is TQ Original
+
+		if (!(currPlayer?.IsImmortalThroneSavePath ?? false) // Player is TQ Original
 			&& item.GameDlc != GameDlc.TitanQuest // Non base game item
+		) return false;
+
+		if (currPlayer?.PlayerInfo?.HeaderVersion == PlayerFileHeaderVersion.TQIT // Player is TQIT
+			&& item.GameDlc > GameDlc.ImmortalThrone// Item > TQIT
 		) return false;
 
 		return true;

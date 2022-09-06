@@ -306,7 +306,7 @@ namespace TQVaultAE.Data
 			sta.numberOfSacks = 1;
 			sta.Sack = new SackCollection();
 			sta.Sack.SackType = SackType.Stash;
-			sta.Sack.IsImmortalThrone = true;
+			sta.Sack.IsImmortalThroneSavePath = true;
 			SackCollectionProvider.Parse(sta.Sack, reader);
 
 			// The ValidateNextString Method can throw an ArgumentException.

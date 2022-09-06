@@ -221,13 +221,10 @@ public partial class MainForm
 
 		var resultStash = this.LoadPlayerStash(selectedSave, fromFileWatcher);
 
-		if (selectedSave.IsImmortalThrone)
+		if (selectedSave.IsImmortalThroneSavePath)
 		{
-			if (this.stashPanel.RelicVaultStash == null)
-				LoadRelicVaultStash();
-
-			if (this.stashPanel.TransferStash == null)
-				LoadTransferStash();
+			LoadTransferStash();
+			LoadRelicVaultStash();
 		}
 		else // Titan Quest original
 		{
@@ -275,7 +272,7 @@ public partial class MainForm
 		// Get the player's stash
 
 		// Only if it's IT, TQ doesn't have one
-		if (!selectedSave.IsImmortalThrone)
+		if (!selectedSave.IsImmortalThroneSavePath)
 		{
 			this.stashPanel.Stash = null;
 			return null;

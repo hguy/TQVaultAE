@@ -145,12 +145,9 @@ namespace TQVaultAE.Domain.Entities
 		public SackType StashType { get; set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this is from Immortal Throne
+		/// Gets or sets a value indicating whether this is from Immortal Throne save directory
 		/// </summary>
-		/// <remarks>
-		/// Indicates whether this is Immortal Throne
-		/// </remarks>
-		public bool IsImmortalThrone { get; set; }
+		public bool IsImmortalThroneSavePath { get; set; }
 
 		/// <summary>
 		/// Gets the number of equipment slots
