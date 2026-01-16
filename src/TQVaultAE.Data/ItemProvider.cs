@@ -42,6 +42,7 @@ public class ItemProvider : IItemProvider
 
 	internal static readonly string[] unwantedTags =
 	{
+			"DEFENSIVEABSORPTION",
 			"MAXTRANSPARENCY",
 			"SCALE",
 			"CASTSSHADOWS",
