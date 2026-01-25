@@ -19,12 +19,7 @@ namespace TQVaultAE.Data
 	/// </summary>
 	public class StashProvider : IStashProvider
 	{
-		private readonly ILogger Log;
-		private readonly IItemProvider ItemProvider;
-		private readonly ISackCollectionProvider SackCollectionProvider;
-		private readonly IGamePathService GamePathResolver;
-		private readonly ITQDataService TQData;
-
+	
 		/// <summary>
 		/// Defines the raw data buffer size
 		/// </summary>
@@ -79,15 +74,25 @@ namespace TQVaultAE.Data
 			0x54de5729, 0x23d967bf, 0xb3667a2e, 0xc4614ab8, 0x5d681b02, 0x2a6f2b94,
 			0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
 		};
+		
+	private readonly ILogger Log;
+	private readonly IItemProvider ItemProvider;
+	private readonly ISackCollectionProvider SackCollectionProvider;
+	private readonly IGamePathService GamePathResolver;
+	private readonly ITQDataService TQData;
+	private readonly IFileIO FileIO;
+	private readonly IPathIO PathIO;
 
-		public StashProvider(ILogger<StashProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, IGamePathService gamePathResolver, ITQDataService tQData)
-		{
-			this.Log = log;
-			this.ItemProvider = itemProvider;
-			this.SackCollectionProvider = sackCollectionProvider;
-			this.GamePathResolver = gamePathResolver;
-			this.TQData = tQData;
-		}
+	public StashProvider(ILogger<StashProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, IGamePathService gamePathResolver, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
+	{
+		this.Log = log;
+		this.ItemProvider = itemProvider;
+		this.SackCollectionProvider = sackCollectionProvider;
+		this.GamePathResolver = gamePathResolver;
+		this.TQData = tQData;
+		this.FileIO = fileIO;
+		this.PathIO = pathIO;
+	}
 
 		/// <summary>
 		/// Saves the stash file
@@ -110,7 +115,7 @@ namespace TQVaultAE.Data
 			// Now calculate the CRC for the dxg file
 			data = CalculateCRC(data);
 
-			string dxgFilename = Path.ChangeExtension(fileName, ".dxg");
+			string dxgFilename = this.PathIO.ChangeExtension(fileName, ".dxg");
 			using (FileStream dxgOutStream = new FileStream(dxgFilename, FileMode.Create, FileAccess.Write))
 			{
 				dxgOutStream.Write(data, 0, data.Length);
@@ -177,7 +182,7 @@ namespace TQVaultAE.Data
 		/// <returns>false if the file does not exist otherwise true.</returns>
 		public bool LoadFile(Stash sta)
 		{
-			if (!File.Exists(sta.StashFile))
+			if (!this.FileIO.Exists(sta.StashFile))
 				return false;
 
 			using (FileStream file = new FileStream(sta.StashFile, FileMode.Open, FileAccess.Read))

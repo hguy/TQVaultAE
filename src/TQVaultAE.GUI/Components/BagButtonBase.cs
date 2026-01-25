@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="BagButtonBase.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -12,6 +12,7 @@ using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Helpers;
 using System.Linq;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Components
 {
@@ -31,6 +32,7 @@ namespace TQVaultAE.GUI.Components
 		protected readonly IFontService FontService;
 		protected readonly IUIService UIService;
 		private readonly SessionContext userContext;
+		private readonly UserSettings USettings;
 		internal SackCollection Sack;
 
 		private BagButtonIconInfo _DefaultIconInfo = new BagButtonIconInfo()
@@ -131,6 +133,7 @@ namespace TQVaultAE.GUI.Components
 			this.FontService = this.ServiceProvider.GetService<IFontService>();
 			this.UIService = this.ServiceProvider.GetService<IUIService>();
 			this.userContext = this.ServiceProvider.GetService<SessionContext>();
+			this.USettings = this.ServiceProvider.GetService<UserSettings>();
 
 			this.getToolTip = getToolTip;
 			this.ButtonNumber = bagNumber;
@@ -239,10 +242,10 @@ namespace TQVaultAE.GUI.Components
 				{
 					switch (this.ButtonNumber)
 					{
-						case StashPanel.BAGID_EQUIPMENTPANEL when !Config.UserSettings.Default.DisableTooltipEquipment:
-						case StashPanel.BAGID_PLAYERSTASH when !Config.UserSettings.Default.DisableTooltipStash:
-						case StashPanel.BAGID_RELICVAULTSTASH when !Config.UserSettings.Default.DisableTooltipRelic:
-						case StashPanel.BAGID_TRANSFERSTASH when !Config.UserSettings.Default.DisableTooltipTransfer:
+						case StashPanel.BAGID_EQUIPMENTPANEL when !this.USettings.DisableTooltipEquipment:
+						case StashPanel.BAGID_PLAYERSTASH when !this.USettings.DisableTooltipStash:
+						case StashPanel.BAGID_RELICVAULTSTASH when !this.USettings.DisableTooltipRelic:
+						case StashPanel.BAGID_TRANSFERSTASH when !this.USettings.DisableTooltipTransfer:
 							BagButtonTooltip.ShowTooltip(this.ServiceProvider, this);
 							break;
 					}

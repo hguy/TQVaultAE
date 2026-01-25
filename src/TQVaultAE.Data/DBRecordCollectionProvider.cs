@@ -1,13 +1,20 @@
-﻿using System.IO;
+using System.IO;
 using TQVaultAE.Domain.Contracts.Providers;
+using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Data
 {
 	public class DBRecordCollectionProvider : IDBRecordCollectionProvider
 	{
-		public DBRecordCollectionProvider()
-		{ }
+		private readonly IDirectoryIO DirectoryIO;
+		private readonly IPathIO PathIO;
+
+		public DBRecordCollectionProvider(IDirectoryIO directoryIO, IPathIO pathIO)
+		{
+			this.DirectoryIO = directoryIO;
+			PathIO = pathIO;
+		}
 
 		/// <summary>
 		/// Writes all variables into a file.
@@ -17,24 +24,24 @@ namespace TQVaultAE.Data
 		/// <param name="fileName">file name to be written</param>
 		public void Write(DBRecordCollection drc, string baseFolder, string fileName = null)
 		{
-			// construct the full path
-			string fullPath = Path.Combine(baseFolder, drc.Id.Normalized);
-			string destinationFolder = Path.GetDirectoryName(fullPath);
+			// construct's full path
+			string fullPath = PathIO.Combine(baseFolder, drc.Id.Normalized);
+			string destinationFolder = PathIO.GetDirectoryName(fullPath);
 
 			if (fileName != null)
 			{
-				fullPath = Path.Combine(baseFolder, fileName);
+				fullPath = PathIO.Combine(baseFolder, fileName);
 				destinationFolder = baseFolder;
 			}
 
-			// Create the folder path if necessary
-			if (!Directory.Exists(destinationFolder))
-				Directory.CreateDirectory(destinationFolder);
+			// Create's folder path if necessary
+			if (!DirectoryIO.Exists(destinationFolder))
+				DirectoryIO.CreateDirectory(destinationFolder);
 
-			// Open the file
+			// Open's file
 			using (StreamWriter outStream = new StreamWriter(fullPath, false))
 			{
-				// Write all the variables
+				// Write's all variables
 				foreach (Variable variable in drc)
 				{
 					outStream.WriteLine(variable.ToString());

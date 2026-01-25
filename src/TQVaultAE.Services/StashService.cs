@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.Presentation;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.Services
 {
@@ -17,14 +18,16 @@ namespace TQVaultAE.Services
 		private readonly IStashProvider StashProvider;
 		private readonly IGamePathService GamePathResolver;
 		private readonly IGameFileService GameFileService;
+		private readonly UserSettings UserSettings;
 
-		public StashService(ILogger<StashService> log, SessionContext userContext, IStashProvider stashProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService)
+		public StashService(ILogger<StashService> log, SessionContext userContext, IStashProvider stashProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, UserSettings userSettings)
 		{
 			this.Log = log;
 			this.userContext = userContext;
 			this.StashProvider = stashProvider;
 			this.GamePathResolver = gamePathResolver;
 			this.GameFileService = iGameFileService;
+			this.UserSettings = userSettings;
 		}
 
 		/// <summary>
@@ -178,8 +181,8 @@ namespace TQVaultAE.Services
 				if (stash.IsModified)
 				{
 					stashOnError = stash;
-					
-					if(!Config.UserSettings.Default.DisableLegacyBackup)
+
+					if (!this.UserSettings.DisableLegacyBackup)
 						GameFileService.BackupFile(stash.PlayerName, stashFile);
 
 					StashProvider.Save(stash, stashFile);

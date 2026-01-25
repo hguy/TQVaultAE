@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +9,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.Domain.Search;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.Services
 {
@@ -22,6 +23,9 @@ namespace TQVaultAE.Services
 		private readonly ITranslationService TranslationService;
 		private readonly ITQDataService TQDataService;
 		private readonly ITagService TagService;
+		private readonly IFileIO FileIO;
+		private readonly IPathIO PathIO;
+		private readonly UserSettings UserSettings;
 
 		public PlayerService(
 			ILogger<PlayerService> log
@@ -33,6 +37,9 @@ namespace TQVaultAE.Services
 			, ITranslationService translationService
 			, ITQDataService tQDataService
 			, ITagService tagService
+			, IFileIO fileIO
+			, IPathIO pathIO
+			, UserSettings userSettings
 		)
 		{
 			this.Log = log;
@@ -43,6 +50,9 @@ namespace TQVaultAE.Services
 			this.TranslationService = translationService;
 			this.TQDataService = tQDataService;
 			this.TagService = tagService;
+			this.FileIO = fileIO;
+			this.PathIO = pathIO;
+			this.UserSettings = userSettings;
 		}
 
 
@@ -80,13 +90,15 @@ namespace TQVaultAE.Services
 					resultPC.ArgumentException = argumentException;
 				}
 				return resultPC;
-			};
+			}
+			;
 
 			PlayerCollection updateFactory(string k, PlayerCollection oldValue)
 			{
 				// No check on oldValue
 				return addFactory(k);
-			};
+			}
+			;
 
 			var resultPlayer = fromFileWatcher
 				? this.userContext.Players.AddOrUpdateAtomic(result.PlayerFile, addFactory, updateFactory)
@@ -123,7 +135,7 @@ namespace TQVaultAE.Services
 				{
 					++numModified;
 					playerOnError = player;// if needed by caller
-					if (!Config.UserSettings.Default.DisableLegacyBackup)
+					if (!this.UserSettings.DisableLegacyBackup)
 					{
 						GameFileService.BackupFile(player.PlayerName, playerFile);
 						GameFileService.BackupStupidPlayerBackupFolder(playerFile);
@@ -152,6 +164,7 @@ namespace TQVaultAE.Services
 						, this.GamePathResolver.IsCustom
 						, this.GamePathResolver.MapName
 						, this.TranslationService
+						, this.PathIO
 					)
 				)
 				.OrderBy(ps => ps.Name)
@@ -161,10 +174,10 @@ namespace TQVaultAE.Services
 		public void AlterNameInPlayerFileSave(string newname, string saveFolder)
 		{
 			// Alter name in Player file
-			var newPlayerFile = Path.Combine(saveFolder, this.GamePathResolver.PlayerSaveFileName);
-			var fileContent = File.ReadAllBytes(newPlayerFile);
+			var newPlayerFile = this.PathIO.Combine(saveFolder, this.GamePathResolver.PlayerSaveFileName);
+			var fileContent = this.FileIO.ReadAllBytes(newPlayerFile);
 			this.TQDataService.ReplaceUnicodeValueAfter(ref fileContent, "myPlayerName", newname);
-			File.WriteAllBytes(newPlayerFile, fileContent);
+			this.FileIO.WriteAllBytes(newPlayerFile, fileContent);
 		}
 	}
 }

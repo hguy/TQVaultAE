@@ -1,8 +1,9 @@
-﻿using System;
+﻿using EnumsNET;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using EnumsNET;
+using TQVaultAE.Domain.Contracts.Services;
 
 namespace TQVaultAE.Domain.Entities
 {
@@ -11,6 +12,7 @@ namespace TQVaultAE.Domain.Entities
 	/// </summary>
 	public class PlayerInfo
 	{
+		private readonly IPathIO PathIO;
 		const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
 		public bool MustResetMasteries =>
@@ -104,7 +106,7 @@ namespace TQVaultAE.Domain.Entities
 			{
 				foreach (var mastery in ActiveMasteriesRecordNames)
 				{
-					var recBase = Path.GetDirectoryName(mastery);
+					var recBase = PathIO.GetDirectoryName(mastery);
 					// Remove all skills having the same base skill line (ex :  storm, earth, etc...)
 					this._SkillRecordListRemoved.AddRange(
 						this.SkillRecordList
@@ -199,7 +201,7 @@ namespace TQVaultAE.Domain.Entities
 		/// <returns></returns>
 		public IEnumerable<SkillRecord> GetSkillsByBaseRecordName(RecordId dbr)
 		{
-			var baseRec = Path.GetDirectoryName(dbr.Normalized);
+			var baseRec = PathIO.GetDirectoryName(dbr.Normalized);
 			foreach (var sk in this.SkillRecordList)
 			{
 				if (sk.skillName.StartsWith(baseRec, noCase))
@@ -329,5 +331,10 @@ namespace TQVaultAE.Domain.Entities
 		public int GreatestMonsterKilledLevel { get; set; }
 
 		public int GreatestMonsterKilledLifeAndMana { get; set; }
+
+		public PlayerInfo(IPathIO pathIO)
+		{
+			PathIO = pathIO;
+		}
 	}
 }

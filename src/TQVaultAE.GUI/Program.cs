@@ -22,6 +22,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using TQVaultAE.Services.Win32;
 using Microsoft.Extensions.Logging;
+using TQVaultAE.Config;
 using TQVaultAE.GUI.Inputs.Filters;
 
 namespace TQVaultAE.GUI
@@ -63,7 +64,7 @@ namespace TQVaultAE.GUI
 				Application.SetCompatibleTextRenderingDefault(false);
 
 #if DEBUG
-				//TQDebug.DebugEnabled = true;
+				
 #endif
 				// Setup regular Microsoft.Extensions.Logging abstraction manualy
 				LoggerFactory = new LoggerFactory();
@@ -76,8 +77,14 @@ namespace TQVaultAE.GUI
 				// Logs
 				.AddSingleton(LoggerFactory)
 				.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+				// Config
+				.AddSingleton<UserSettings>(sp => UserSettings.Read())
 				// States
 				.AddSingleton<SessionContext>()
+				// Abstractions
+				.AddTransient<IFileIO, FileIO>()
+				.AddTransient<IPathIO, PathIO>()
+				.AddTransient<IDirectoryIO, DirectoryIO>()
 				// Providers
 				.AddTransient<IRecordInfoProvider, RecordInfoProvider>()
 				.AddTransient<IArcFileProvider, ArcFileProvider>()
@@ -121,13 +128,14 @@ namespace TQVaultAE.GUI
 				Program.ServiceProvider = scol.BuildServiceProvider();
 
 				var gamePathResolver = Program.ServiceProvider.GetService<IGamePathService>();
+				var userSettings = ServiceProvider.GetService<UserSettings>();
 
 				try
 				{
 					ManageCulture();
-					SetUILanguage();
-					SetupGamePaths(gamePathResolver);
-					SetupMapName(gamePathResolver);
+					SetUILanguage(userSettings);
+					SetupGamePaths(gamePathResolver, userSettings);
+					SetupMapName(gamePathResolver, userSettings);
 				}
 				catch (ExGamePathNotFound ex)
 				{
@@ -137,8 +145,8 @@ namespace TQVaultAE.GUI
 
 						if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
 						{
-							Config.UserSettings.Default.ForceGamePath = fbd.SelectedPath;
-							Config.UserSettings.Default.Save();
+							userSettings.ForceGamePath = fbd.SelectedPath;
+							userSettings.Save();
 							goto restart;
 						}
 						else goto exit;
@@ -166,17 +174,17 @@ namespace TQVaultAE.GUI
 		/// <summary>
 		/// Reads the paths from the config files and sets them.
 		/// </summary>
-		private static void SetupGamePaths(IGamePathService gamePathResolver)
+		private static void SetupGamePaths(IGamePathService gamePathResolver, UserSettings userSettings)
 		{
-			if (Config.UserSettings.Default.AutoDetectGamePath)
+			if (userSettings.AutoDetectGamePath)
 			{
 				gamePathResolver.GamePathTQ = gamePathResolver.ResolveGamePath();
 				gamePathResolver.GamePathTQIT = gamePathResolver.ResolveGamePath();
 			}
 			else
 			{
-				gamePathResolver.GamePathTQ = Config.UserSettings.Default.TQPath;
-				gamePathResolver.GamePathTQIT = Config.UserSettings.Default.TQITPath;
+				gamePathResolver.GamePathTQ = userSettings.TQPath;
+				gamePathResolver.GamePathTQIT = userSettings.TQITPath;
 			}
 
 			var titanQuestGamePath = gamePathResolver.GamePathTQ;
@@ -189,7 +197,7 @@ namespace TQVaultAE.GUI
 			Log.LogInformation("Selected TQIT path {0}", gamePathResolver.GamePathTQIT);
 
 			// Show a message that the default path is going to be used.
-			if (string.IsNullOrEmpty(Config.UserSettings.Default.VaultPath))
+			if (string.IsNullOrEmpty(userSettings.VaultPath))
 			{
 				string folderPath = Path.Combine(gamePathResolver.SaveFolderTQ, "TQVaultData");
 
@@ -205,7 +213,7 @@ namespace TQVaultAE.GUI
 				}
 			}
 
-			gamePathResolver.TQVaultSaveFolder = Config.UserSettings.Default.VaultPath;
+			gamePathResolver.TQVaultSaveFolder = userSettings.VaultPath;
 
 			void DetectGameType()
 			{
@@ -216,19 +224,23 @@ namespace TQVaultAE.GUI
 		}
 
 		/// <summary>
-		/// Attempts to read the language from the config file and set the Current Thread's Culture and UICulture.
-		/// Defaults to the OS UI Culture.
+		/// Attempts to read language from config file and set the Current Thread's Culture and UICulture.
+		/// Defaults to to OS UI Culture.
 		/// </summary>
-		private static void SetUILanguage()
+		private static void SetUILanguage(UserSettings userSettings)
 		{
 			string settingsCulture = null;
-			if (!string.IsNullOrEmpty(Config.Settings.Default.UILanguage))
+			if (!string.IsNullOrEmpty(userSettings.UILanguage))
 			{
-				settingsCulture = Config.Settings.Default.UILanguage;
+				settingsCulture = userSettings.UILanguage;
 			}
-			else if (!Config.UserSettings.Default.AutoDetectLanguage)
+			else if (!userSettings.AutoDetectLanguage)
 			{
-				settingsCulture = Config.UserSettings.Default.TQLanguage;
+				settingsCulture = userSettings.TQLanguage;
+			}
+			else if (!userSettings.AutoDetectLanguage)
+			{
+				settingsCulture = userSettings.TQLanguage;
 			}
 
 			if (!string.IsNullOrEmpty(settingsCulture))
@@ -272,12 +284,12 @@ namespace TQVaultAE.GUI
 		/// Sets the name of the game map if a custom map is set in the config file.
 		/// Defaults to Main otherwise.
 		/// </summary>
-		private static void SetupMapName(IGamePathService gamePathResolver)
+		private static void SetupMapName(IGamePathService gamePathResolver, UserSettings userSettings)
 		{
 			// Set the map name.  Command line argument can override this setting in LoadResources().
 			string mapName = "main";
-			if (Config.UserSettings.Default.ModEnabled)
-				mapName = Config.UserSettings.Default.CustomMap;
+			if (userSettings.ModEnabled)
+				mapName = userSettings.CustomMap;
 
 			gamePathResolver.MapName = mapName;
 		}

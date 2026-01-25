@@ -1,12 +1,14 @@
-﻿using EnumsNET;
+using EnumsNET;
 using System.ComponentModel;
 using System.Drawing;
 using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.Presentation
 {
 	public class FontService : IFontService
 	{
+		private readonly UserSettings USettings;
 		public IAddFontToOS FontLoader { get; private set; }
 
 		const string ALBERTUSMT_NAME = "Albertus MT";
@@ -22,7 +24,7 @@ namespace TQVaultAE.Presentation
 					// Code here won't run in Visual Studio designer but runtime 
 					if (FontLoader != null && _FONT_ALBERTUSMT is null)
 					{
-						var baseFont = Enums.Parse<FontFamilyList>(Config.UserSettings.Default.BaseFont ?? FontFamilyList.AlbertusMT.ToString());
+						var baseFont = Enums.Parse<FontFamilyList>(USettings.BaseFont ?? FontFamilyList.AlbertusMT.ToString());
 						switch (baseFont)
 						{
 							case FontFamilyList.AlbertusMT:
@@ -68,7 +70,7 @@ namespace TQVaultAE.Presentation
 					// Code here won't run in Visual Studio designer
 					if (FontLoader != null && _FONT_ALBERTUSMTLIGHT is null)
 					{
-						var baseFont = Enums.Parse<FontFamilyList>(Config.UserSettings.Default.BaseFont ?? FontFamilyList.AlbertusMT.ToString());
+						var baseFont = Enums.Parse<FontFamilyList>(USettings.BaseFont ?? FontFamilyList.AlbertusMT.ToString());
 						switch (baseFont)
 						{
 							case FontFamilyList.AlbertusMT:
@@ -105,9 +107,10 @@ namespace TQVaultAE.Presentation
 			}
 		}
 
-		public FontService(IAddFontToOS addFontToOS)
+		public FontService(IAddFontToOS addFontToOS, UserSettings uSettings)
 		{
 			this.FontLoader = addFontToOS;
+			this.USettings = uSettings;
 		}
 
 		public Font GetFont(float fontSize, FontStyle fontStyle, GraphicsUnit unit)

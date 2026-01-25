@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +7,7 @@ using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.Services
 {
@@ -17,15 +18,21 @@ namespace TQVaultAE.Services
 		private readonly IGamePathService GamePathResolver;
 		private readonly IGameFileService GameFileService;
 		private readonly IPlayerCollectionProvider PlayerCollectionProvider;
+		private readonly IFileIO FileIO;
+		private readonly IPathIO PathIO;
+		private readonly UserSettings UserSettings;
 		public const string MAINVAULT = "Main Vault";
 
-		public VaultService(ILogger<StashService> log, SessionContext userContext, IPlayerCollectionProvider playerCollectionProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService)
+		public VaultService(ILogger<VaultService> log, SessionContext userContext, IPlayerCollectionProvider playerCollectionProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, IFileIO fileIO, IPathIO pathIO, UserSettings userSettings)
 		{
 			this.Log = log;
 			this.userContext = userContext;
 			this.GamePathResolver = gamePathResolver;
 			this.GameFileService = iGameFileService;
 			this.PlayerCollectionProvider = playerCollectionProvider;
+			this.FileIO = fileIO;
+			this.PathIO = pathIO;
+			this.UserSettings = userSettings;
 		}
 
 
@@ -38,13 +45,13 @@ namespace TQVaultAE.Services
 		public PlayerCollection CreateVault(string name, string file)
 		{
 			// From .json to .vault
-			var oldFormatfileName = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file));
+			var oldFormatfileName = this.PathIO.Combine(this.PathIO.GetDirectoryName(file), this.PathIO.GetFileNameWithoutExtension(file));
 
 			PlayerCollection vault = new PlayerCollection(name, file);
 			vault.IsVault = true;
 
 			// Convert by reading old format
-			if (File.Exists(oldFormatfileName))
+			if (this.FileIO.Exists(oldFormatfileName))
 			{
 				LoadVault(vault, oldFormatfileName);
 
@@ -80,7 +87,7 @@ namespace TQVaultAE.Services
 					// backup the file
 					vaultOnError = vault;
 
-					if (!Config.UserSettings.Default.DisableLegacyBackup)
+					if (!this.UserSettings.DisableLegacyBackup)
 						GameFileService.BackupFile(vault.PlayerName, vaultFile);
 
 					PlayerCollectionProvider.Save(vault, vaultFile);
@@ -107,8 +114,8 @@ namespace TQVaultAE.Services
 			var resultVault = this.userContext.Vaults.GetOrAddAtomic(result.Filename, k =>
 			{
 				PlayerCollection pc;
-				// We need to load the vault.
-				if (!File.Exists(k))
+				// We need to load vault.
+				if (!this.FileIO.Exists(k))
 				{
 					// the file does not exist so create a new vault or convert old format to Json.
 					pc = this.CreateVault(vaultName, k);
@@ -155,8 +162,8 @@ namespace TQVaultAE.Services
 		/// <param name="vaultPath">Path to the vault files</param>
 		public void UpdateVaultPath(string vaultPath)
 		{
-			Config.UserSettings.Default.VaultPath = vaultPath;
-			Config.UserSettings.Default.Save();
+			this.UserSettings.VaultPath = vaultPath;
+			this.UserSettings.Save();
 		}
 	}
 }

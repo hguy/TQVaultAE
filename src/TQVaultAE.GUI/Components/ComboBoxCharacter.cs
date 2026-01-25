@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -10,6 +10,7 @@ using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
+using TQVaultAE.Config;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace TQVaultAE.GUI.Components;
@@ -27,6 +28,7 @@ public partial class ComboBoxCharacter : UserControl
 	private IGamePathService GamePathService;
 	private IGameFileService GameFileService;
 	private ITagService TagService;
+	private UserSettings USettings;
 	private Bitmap HUDCHARACTERBUTTONUP01;
 	private Bitmap HUDCHARACTERBUTTONOVER01;
 	private Bitmap HUDCHARACTERBUTTONDOWN01;
@@ -157,6 +159,7 @@ public partial class ComboBoxCharacter : UserControl
 		, IGameFileService gameFileService
 		, IGamePathService gamePathService
 		, ITagService tagService
+		, UserSettings userSettings
 		, Action duplicateCharacterAction
 	)
 	{
@@ -167,6 +170,7 @@ public partial class ComboBoxCharacter : UserControl
 		this.GamePathService = gamePathService;
 		this.GameFileService = gameFileService;
 		this.TagService = tagService;
+		this.USettings = userSettings;
 		this.Form = this.FindForm() as VaultForm;
 		this.Form.GlobalMouseButtonLeft += Form_GlobalMouseButtonLeft;
 		this.DuplicateCharacterAction = duplicateCharacterAction;
@@ -286,7 +290,7 @@ public partial class ComboBoxCharacter : UserControl
 			this.scalingLabelCharName.Text = ps.ToString();
 
 			// Show duplicate feature ?
-			if (Config.UserSettings.Default.AllowCharacterEdit)
+			if (this.USettings.AllowCharacterEdit)
 			{
 				this.duplicateToolStripMenuItem.Visible =
 				this.duplicateSeparatorToolStripMenuItem.Visible = true;

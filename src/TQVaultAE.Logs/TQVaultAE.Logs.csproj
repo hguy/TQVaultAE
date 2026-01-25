@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -24,8 +24,6 @@
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="REM Cleanup Output&#xD;&#xA;RMDIR &quot;$(SolutionDir)bin&quot; /S /Q&#xD;&#xA;MKDIR &quot;$(SolutionDir)bin\$(ConfigurationName)&quot;&#xD;&#xA;" />
-  </Target>
+  <!-- PreBuild target removed due to build issues -->
 
 </Project>

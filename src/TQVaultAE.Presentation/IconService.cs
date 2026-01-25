@@ -21,14 +21,16 @@ namespace TQVaultAE.Presentation
 		private readonly IDatabase Database;
 		private readonly IUIService UIService;
 		private readonly IGamePathService GamePathService;
+		private readonly IFileIO FileIO;
 		private ReadOnlyCollection<IconInfo> Pictures;
 
-		public IconService(ILogger<IconService> log, IDatabase database, IUIService uiService, IGamePathService gamePathService)
+		public IconService(ILogger<IconService> log, IDatabase database, IUIService uiService, IGamePathService gamePathService, IFileIO fileIO)
 		{
 			this.Log = log;
 			this.Database = database;
 			this.UIService = uiService;
 			this.GamePathService = gamePathService;
+			this.FileIO = fileIO;
 		}
 
 		void InitIconList()
@@ -45,7 +47,7 @@ namespace TQVaultAE.Presentation
 				let filename = file.fileName
 				let filenameId = filename.ToRecordId()
 				let arcpath = GamePathService.ResolveArcFileName(filenameId)
-				where File.Exists(arcpath.ArcFileName)
+				where this.FileIO.Exists(arcpath.ArcFileName)
 				let arcfile = Database.ReadARCFile(arcpath.ArcFileName)
 				from key in arcfile?.DirectoryEntries.Keys.Cast<RecordId>() ?? new RecordId[0]
 				select filename + '\\' + key.Normalized;

@@ -9,13 +9,13 @@ namespace TQVaultAE.GUI
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Domain.Helpers;
 	using Microsoft.Extensions.Logging;
+	using TQVaultAE.Config;
 
 	/// <summary>
 	/// Dialog box class for the Item Seed Dialog
 	/// </summary>
 	internal partial class CharacterEditDialog : VaultForm
 	{
-
 		private struct DifficultData
 		{
 			public string Text;
@@ -25,17 +25,15 @@ namespace TQVaultAE.GUI
 		}
 
 		private readonly ILogger Log;
-		private readonly ITranslationService TranslationService;
 
 		internal PlayerCollection PlayerCollection { get; set; }
 
 		/// <summary>
 		/// Initializes a new instance of the ItemSeedDialog class.
 		/// </summary>
-		public CharacterEditDialog(IServiceProvider serviceProvider, ITranslationService translationService, ILogger<CharacterEditDialog> log) : base(serviceProvider)
+		public CharacterEditDialog(IServiceProvider serviceProvider, ILogger<CharacterEditDialog> log) : base(serviceProvider)
 		{
 			this.Log = log;
-			this.TranslationService = translationService;
 
 			this.InitializeComponent();
 
@@ -108,11 +106,11 @@ namespace TQVaultAE.GUI
 
 		private void UpdatePlayerInfo(bool mustResetAttributes = false, bool masteriesResetRequired = false)
 		{
-			if (!Config.UserSettings.Default.AllowCharacterEdit) return;
+			if (!USettings.AllowCharacterEdit) return;
 			if (PlayerCollection.PlayerInfo == null) return;
 			try
 			{
-				var playerInfo = new PlayerInfo();
+				var playerInfo = new PlayerInfo(this.PathIO);
 				playerInfo.CurrentLevel = Convert.ToInt32(levelNumericUpDown.Value);
 
 				if (playerInfo.CurrentLevel < 2)

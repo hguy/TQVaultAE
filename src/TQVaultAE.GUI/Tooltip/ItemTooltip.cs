@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using SixLabors.Shapes;
 using System;
 using System.Collections.Generic;
@@ -13,6 +13,7 @@ using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Tooltip
 {
@@ -86,17 +87,19 @@ namespace TQVaultAE.GUI.Tooltip
 			lock (ToImage)
 			{
 				HideTooltip();
+				
+				var userSettings = serviceProvider.GetService<UserSettings>();
+
 				_Current = new ItemTooltip(
 					serviceProvider.GetService<MainForm>()
 					, serviceProvider.GetService<IItemProvider>()
 					, serviceProvider.GetService<IFontService>()
 					, serviceProvider.GetService<IUIService>()
-					, serviceProvider.GetService<ITranslationService>()
-				)
+					, serviceProvider.GetService<ITranslationService>())
 				{
 					FocusedItem = focusedItem,
 					SackPanel = sackPanel,
-					EnableDetailedTooltipView = enableDetailedTooltipView ?? Config.UserSettings.Default.EnableDetailedTooltipView
+					EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView
 				};
 				ItemTooltipOpened.Add(focusedItem, _Current);
 				_Current.Show();
@@ -115,17 +118,19 @@ namespace TQVaultAE.GUI.Tooltip
 			lock (ToImage)
 			{
 				HideTooltip();
+
+				var userSettings = serviceProvider.GetService<UserSettings>();
+
 				_Current = new ItemTooltip(
 					serviceProvider.GetService<MainForm>()
 					, serviceProvider.GetService<IItemProvider>()
 					, serviceProvider.GetService<IFontService>()
 					, serviceProvider.GetService<IUIService>()
-					, serviceProvider.GetService<ITranslationService>()
-				)
+					, serviceProvider.GetService<ITranslationService>())
 				{
 					FocusedItem = focusedItem,
 					ResultsDialog = resultsDialog,
-					EnableDetailedTooltipView = enableDetailedTooltipView ?? Config.UserSettings.Default.EnableDetailedTooltipView
+					EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView
 				};
 				ItemTooltipOpened.Add(focusedItem, _Current);
 				_Current.Show();
@@ -144,17 +149,19 @@ namespace TQVaultAE.GUI.Tooltip
 			lock (ToImage)
 			{
 				HideTooltip();
+
+				var userSettings = serviceProvider.GetService<UserSettings>();
+
 				_Current = new ItemTooltip(
 					serviceProvider.GetService<MainForm>()
 					, serviceProvider.GetService<IItemProvider>()
 					, serviceProvider.GetService<IFontService>()
 					, serviceProvider.GetService<IUIService>()
-					, serviceProvider.GetService<ITranslationService>()
-				)
+					, serviceProvider.GetService<ITranslationService>())
 				{
 					FocusedItem = focusedItem,
 					PictureBox = picBox,
-					EnableDetailedTooltipView = enableDetailedTooltipView ?? Config.UserSettings.Default.EnableDetailedTooltipView
+					EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView
 				};
 				ItemTooltipOpened.Add(focusedItem, _Current);
 				_Current.Show();

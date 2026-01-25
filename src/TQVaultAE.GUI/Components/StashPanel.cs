@@ -16,6 +16,7 @@ namespace TQVaultAE.GUI.Components
 	using TQVaultAE.Domain.Entities;
 	using TQVaultAE.Domain.Helpers;
 	using TQVaultAE.Presentation;
+	using TQVaultAE.Config;
 
 	/// <summary>
 	/// Class for handling the stash panel ui functions
@@ -345,7 +346,7 @@ namespace TQVaultAE.GUI.Components
 					Font = FontService.GetFontLight(11F),
 					Margin = new Padding(0, 0, 0, 5),
 					Padding = new Padding(10, 0, 10, 0),
-					Visible = Config.UserSettings.Default.AllowCharacterEdit,
+					Visible = this.USettings.AllowCharacterEdit,
 				};
 				editButton.FlatAppearance.BorderSize = 0;
 				editButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(0, 51, 44, 28);
@@ -935,16 +936,16 @@ namespace TQVaultAE.GUI.Components
 				switch (this.CurrentBag)
 				{
 					case BAGID_EQUIPMENTPANEL:
-						Config.UserSettings.Default.DisableTooltipEquipment = true;
+						this.USettings.DisableTooltipEquipment = true;
 						break;
 					case BAGID_PLAYERSTASH:
-						Config.UserSettings.Default.DisableTooltipStash = true;
+						this.USettings.DisableTooltipStash = true;
 						break;
 					case BAGID_RELICVAULTSTASH:
-						Config.UserSettings.Default.DisableTooltipRelic = true;
+						this.USettings.DisableTooltipRelic = true;
 						break;
 					case BAGID_TRANSFERSTASH:
-						Config.UserSettings.Default.DisableTooltipTransfer = true;
+						this.USettings.DisableTooltipTransfer = true;
 						break;
 				}
 			}
@@ -954,21 +955,21 @@ namespace TQVaultAE.GUI.Components
 				switch (this.CurrentBag)
 				{
 					case BAGID_EQUIPMENTPANEL:
-						Config.UserSettings.Default.DisableTooltipEquipment = false;
+						this.USettings.DisableTooltipEquipment = false;
 						break;
 					case BAGID_PLAYERSTASH:
-						Config.UserSettings.Default.DisableTooltipStash = false;
+						this.USettings.DisableTooltipStash = false;
 						break;
 					case BAGID_RELICVAULTSTASH:
-						Config.UserSettings.Default.DisableTooltipRelic = false;
+						this.USettings.DisableTooltipRelic = false;
 						break;
 					case BAGID_TRANSFERSTASH:
-						Config.UserSettings.Default.DisableTooltipTransfer = false;
+						this.USettings.DisableTooltipTransfer = false;
 						break;
 				}
 			}
 
-			Config.UserSettings.Default.Save();
+			this.USettings.Save();
 		}
 
 		private void buttonContextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
@@ -991,16 +992,16 @@ namespace TQVaultAE.GUI.Components
 			switch (sourceButton.ButtonNumber)
 			{
 				case BAGID_EQUIPMENTPANEL:
-					SetMenuItemDisableTooltip(Config.UserSettings.Default.DisableTooltipEquipment);
+					SetMenuItemDisableTooltip(this.USettings.DisableTooltipEquipment);
 					break;
 				case BAGID_PLAYERSTASH:
-					SetMenuItemDisableTooltip(Config.UserSettings.Default.DisableTooltipStash);
+					SetMenuItemDisableTooltip(this.USettings.DisableTooltipStash);
 					break;
 				case BAGID_RELICVAULTSTASH:
-					SetMenuItemDisableTooltip(Config.UserSettings.Default.DisableTooltipRelic);
+					SetMenuItemDisableTooltip(this.USettings.DisableTooltipRelic);
 					break;
 				case BAGID_TRANSFERSTASH:
-					SetMenuItemDisableTooltip(Config.UserSettings.Default.DisableTooltipTransfer);
+					SetMenuItemDisableTooltip(this.USettings.DisableTooltipTransfer);
 					break;
 			}
 		}

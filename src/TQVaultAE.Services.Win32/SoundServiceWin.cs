@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using NAudio.Wave;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.Services.Win32
 {
@@ -19,6 +20,7 @@ namespace TQVaultAE.Services.Win32
 	{
 		private readonly ILogger Log;
 		private readonly IDatabase DataBase;
+		private readonly UserSettings USettings;
 
 		#region Predefined sounds
 
@@ -71,10 +73,11 @@ namespace TQVaultAE.Services.Win32
 		private static Dictionary<RecordId, byte[]> SoundData = new();
 		private static Dictionary<RecordId, (SoundPlayer Player, MemoryStream MS)> LoadedPlayers = new();
 
-		public SoundServiceWin(ILogger<SoundServiceWin> log, IDatabase database)
+		public SoundServiceWin(ILogger<SoundServiceWin> log, IDatabase database, UserSettings uSettings)
 		{
 			this.Log = log;
 			this.DataBase = database;
+			this.USettings = uSettings;
 
 			InitAllPlayers();
 		}
@@ -152,7 +155,7 @@ namespace TQVaultAE.Services.Win32
 
 		public SoundPlayer GetSoundPlayer(RecordId resourceId)
 		{
-			if (!Config.UserSettings.Default.EnableTQVaultSounds)
+			if (!this.USettings.EnableTQVaultSounds)
 				return null;
 
 			if (!IsSoundRecordId(resourceId))
@@ -173,9 +176,9 @@ namespace TQVaultAE.Services.Win32
 			return playerInstance.Player;
 		}
 
-		private static SoundPlayer GetRandomPlayer(SoundPlayer[] pool)
+		private SoundPlayer GetRandomPlayer(SoundPlayer[] pool)
 		{
-			if (!Config.UserSettings.Default.EnableTQVaultSounds)
+			if (!this.USettings.EnableTQVaultSounds)
 				return null;
 
 			var rand = new Random(DateTime.Now.Millisecond);

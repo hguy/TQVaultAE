@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Drawing;
 using System.Globalization;
@@ -106,13 +106,13 @@ public partial class MainForm
 		}
 
 		// See if we should load the last loaded vault
-		if (Config.UserSettings.Default.LoadLastVault)
+		if (base.USettings.LoadLastVault)
 		{
-			currentVault = Config.UserSettings.Default.LastVaultName;
+			currentVault = base.USettings.LastVaultName;
 
 			// Make sure there is something in the config file to load else load the Main Vault
 			// We do not want to create new here.
-			if (string.IsNullOrEmpty(currentVault) || !File.Exists(GamePathResolver.GetVaultFile(currentVault)))
+			if (string.IsNullOrEmpty(currentVault) || !FileIO.Exists(GamePathResolver.GetVaultFile(currentVault)))
 				currentVault = VaultService.MAINVAULT;
 		}
 
@@ -233,9 +233,9 @@ public partial class MainForm
 					this.SaveAllModifiedFiles();
 
 					// Make sure the vault file to copy exists and the new name does not.
-					if (File.Exists(oldFilename) && !File.Exists(newFilename))
+					if (FileIO.Exists(oldFilename) && !FileIO.Exists(newFilename))
 					{
-						File.Copy(oldFilename, newFilename);
+						FileIO.Copy(oldFilename, newFilename);
 
 						// Add the new name to the list
 						this.vaultListComboBox.Items.Add(newName);
@@ -256,9 +256,9 @@ public partial class MainForm
 					this.SaveAllModifiedFiles();
 
 					// Make sure the vault file to delete exists.
-					if (File.Exists(filename))
+					if (FileIO.Exists(filename))
 					{
-						File.Delete(filename);
+						FileIO.Delete(filename);
 					}
 
 					// Remove the file from the cache.
@@ -281,9 +281,9 @@ public partial class MainForm
 					this.SaveAllModifiedFiles();
 
 					// Make sure the vault file to rename exists and the new name does not.
-					if (File.Exists(oldFilename) && !File.Exists(newFilename))
+					if (FileIO.Exists(oldFilename) && !FileIO.Exists(newFilename))
 					{
-						File.Move(oldFilename, newFilename);
+						FileIO.Move(oldFilename, newFilename);
 
 						// Remove the old vault from the cache.
 						userContext.Vaults.TryRemove(oldFilename, out var remOldVault);

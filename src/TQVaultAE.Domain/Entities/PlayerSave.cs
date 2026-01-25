@@ -20,18 +20,20 @@ namespace TQVaultAE.Domain.Entities
 		public readonly string CustomMap;
 		public readonly string CustomMapName;
 		readonly ITranslationService Translate;
+		private readonly IPathIO PathIO;
 		public PlayerInfo Info;
 		public readonly bool IsImmortalThrone;
 
-		public PlayerSave(string folder, bool isImmortalThrone, bool isArchived, bool isCustom, string customMap, ITranslationService translate)
+		public PlayerSave(string folder, bool isImmortalThrone, bool isArchived, bool isCustom, string customMap, ITranslationService translate, IPathIO pathIO)
 		{
 			Folder = folder;
+			PathIO = pathIO;
+			Translate = translate;
 			// Copy the names over without the '_' and strip out the path information.
-			Name = Path.GetFileName(folder).Substring(1);
+			Name = PathIO.GetFileName(folder).Substring(1);
 			IsCustom = isCustom;
 			CustomMap = customMap;
-			CustomMapName = Path.GetFileName(customMap);
-			Translate = translate;
+			CustomMapName = PathIO.GetFileName(customMap);
 			IsImmortalThrone = isImmortalThrone;
 			IsArchived = isArchived;
 		}

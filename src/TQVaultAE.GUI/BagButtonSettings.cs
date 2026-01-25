@@ -19,7 +19,6 @@ namespace TQVaultAE.GUI
 	public partial class BagButtonSettings : VaultForm
 	{
 		// DI
-		private readonly ITranslationService TranslationService;
 		private readonly IIconService iconService;
 		private readonly ILogger<BagButtonSettings> Log;
 
@@ -64,13 +63,11 @@ namespace TQVaultAE.GUI
 #endif
 
 		public BagButtonSettings(MainForm instance
-			, ITranslationService translationService
 			, IIconService iconService
 			, ILogger<BagButtonSettings> log
 		) : base(instance.ServiceProvider)
 		{
 			this.Owner = instance;
-			this.TranslationService = translationService;
 			this.iconService = iconService;
 			this.Log = log;
 
@@ -455,7 +452,7 @@ namespace TQVaultAE.GUI
 			if (picB.Image is null) return;
 
 			var picFilePath = picB.Image.Tag as RecordId;
-			var picName = Path.GetFileNameWithoutExtension(picFilePath.Raw);
+			var picName = this.PathIO.GetFileNameWithoutExtension(picFilePath.Raw);
 			picName = picName[0] + new string(picName.ToLower().Skip(1).ToArray());// Titlecase
 			var info = picB.Tag as IconInfo;
 

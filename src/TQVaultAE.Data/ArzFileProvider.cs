@@ -21,19 +21,21 @@ namespace TQVaultAE.Data
 	/// </summary>
 	public class ArzFileProvider : IArzFileProvider
 	{
-		private readonly ILogger Log = null;
+		private readonly ILogger Log;
 		private readonly ITQDataService TQData;
 		private readonly IRecordInfoProvider infoProv;
+		private readonly UserSettings USettings;
 
 
 		/// <summary>
 		/// Initializes a new instance of the ArzFile class.
 		/// </summary>
-		public ArzFileProvider(ILogger<ArzFileProvider> log, IRecordInfoProvider recordInfoProvider, ITQDataService tQData)
+		public ArzFileProvider(ILogger<ArzFileProvider> log, IRecordInfoProvider recordInfoProvider, ITQDataService tQData, UserSettings uSettings)
 		{
 			this.Log = log;
 			this.TQData = tQData;
 			this.infoProv = recordInfoProvider;
+			USettings = uSettings;
 		}
 
 		/// <summary>
@@ -44,7 +46,7 @@ namespace TQVaultAE.Data
 		{
 			StreamWriter outStream = null;
 
-			if (TQDebug.DatabaseDebugLevel > 2)
+			if (USettings.DatabaseDebugLevel > 2)
 				outStream = new StreamWriter("arzOut.txt", false);
 
 			try

@@ -4,151 +4,204 @@ using System.Xml.Serialization;
 
 namespace TQVaultAE.Config;
 
-[XmlRoot(ElementName = "UserSettings")]
+[XmlRoot(ElementName = nameof(UserSettings))]
 public class UserSettings
 {
 	#region Properties
 	
-	[XmlElement(ElementName = "SkipTitle")]
+	[XmlElement(ElementName = nameof(SkipTitle))]
 	public bool SkipTitle { get; set; } = true;
 
-	[XmlElement(ElementName = "LoadLastVault")]
+	[XmlElement(ElementName = nameof(LoadLastVault))]
 	public bool LoadLastVault { get; set; } = true;
 
-	[XmlElement(ElementName = "LoadLastCharacter")]
+	[XmlElement(ElementName = nameof(LoadLastCharacter))]
 	public bool LoadLastCharacter { get; set; } = true;
 
-	[XmlElement(ElementName = "LastVaultName")]
+	[XmlElement(ElementName = nameof(LastVaultName))]
 	public string LastVaultName { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "LastCharacterName")]
+	[XmlElement(ElementName = nameof(LastCharacterName))]
 	public string LastCharacterName { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "AutoDetectLanguage")]
+	[XmlElement(ElementName = nameof(AutoDetectLanguage))]
 	public bool AutoDetectLanguage { get; set; } = true;
 
-	[XmlElement(ElementName = "AutoDetectGamePath")]
+	[XmlElement(ElementName = nameof(AutoDetectGamePath))]
 	public bool AutoDetectGamePath { get; set; } = true;
 
-	[XmlElement(ElementName = "TQLanguage")]
+	[XmlElement(ElementName = nameof(TQLanguage))]
 	public string TQLanguage { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "VaultPath")]
+	[XmlElement(ElementName = nameof(VaultPath))]
 	public string VaultPath { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "LoadAllFiles")]
+	[XmlElement(ElementName = nameof(LoadAllFiles))]
 	public bool LoadAllFiles { get; set; } = true;
 
-	[XmlElement(ElementName = "SuppressWarnings")]
+	[XmlElement(ElementName = nameof(SuppressWarnings))]
 	public bool SuppressWarnings { get; set; } = false;
 
-	[XmlElement(ElementName = "CheckForNewVersions")]
+	[XmlElement(ElementName = nameof(CheckForNewVersions))]
 	public bool CheckForNewVersions { get; set; } = false;
 
-	[XmlElement(ElementName = "AllowItemCopy")]
+	[XmlElement(ElementName = nameof(AllowItemCopy))]
 	public bool AllowItemCopy { get; set; } = false;
 
-	[XmlElement(ElementName = "AllowItemEdit")]
+	[XmlElement(ElementName = nameof(AllowItemEdit))]
 	public bool AllowItemEdit { get; set; } = false;
 
-	[XmlElement(ElementName = "TQITPath")]
+	[XmlElement(ElementName = nameof(TQITPath))]
 	public string TQITPath { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "TQPath")]
+	[XmlElement(ElementName = nameof(TQPath))]
 	public string TQPath { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "ModEnabled")]
+	[XmlElement(ElementName = nameof(ModEnabled))]
 	public bool ModEnabled { get; set; } = false;
 
-	[XmlElement(ElementName = "CustomMap")]
+	[XmlElement(ElementName = nameof(CustomMap))]
 	public string CustomMap { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "Scale")]
+	[XmlElement(ElementName = nameof(Scale))]
 	public float Scale { get; set; } = 1;
 
-	[XmlElement(ElementName = "LoadAllFilesCompleted")]
+	[XmlElement(ElementName = nameof(LoadAllFilesCompleted))]
 	public bool LoadAllFilesCompleted { get; set; } = true;
 
-	[XmlElement(ElementName = "PlayerReadonly")]
+	[XmlElement(ElementName = nameof(PlayerReadonly))]
 	public bool PlayerReadonly { get; set; } = true;
 
-	[XmlElement(ElementName = "AllowCharacterEdit")]
+	[XmlElement(ElementName = nameof(AllowCharacterEdit))]
 	public bool AllowCharacterEdit { get; set; } = false;
 
-	[XmlElement(ElementName = "AllowCheats")]
+	[XmlElement(ElementName = nameof(AllowCheats))]
 	public bool AllowCheats { get; set; } = false;
 
-	[XmlElement(ElementName = "ForceGamePath")]
+	[XmlElement(ElementName = nameof(ForceGamePath))]
 	public string ForceGamePath { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "BaseFont")]
+	[XmlElement(ElementName = nameof(BaseFont))]
 	public string BaseFont { get; set; } = "AlbertusMT";
 
-	[XmlElement(ElementName = "EnableDetailedTooltipView")]
+	[XmlElement(ElementName = nameof(EnableDetailedTooltipView))]
 	public bool EnableDetailedTooltipView { get; set; } = false;
 
-	[XmlElement(ElementName = "ItemBGColorOpacity")]
+	[XmlElement(ElementName = nameof(ItemBGColorOpacity))]
 	public int ItemBGColorOpacity { get; set; } = 15;
 
-	[XmlElement(ElementName = "EnableItemRequirementRestriction")]
+	[XmlElement(ElementName = nameof(EnableItemRequirementRestriction))]
 	public bool EnableItemRequirementRestriction { get; set; } = false;
 
-	[XmlElement(ElementName = "EnableHotReload")]
+	[XmlElement(ElementName = nameof(EnableHotReload))]
 	public bool EnableHotReload { get; set; } = false;
 
-	[XmlElement(ElementName = "DisableTooltipEquipment")]
+	[XmlElement(ElementName = nameof(DisableTooltipEquipment))]
 	public bool DisableTooltipEquipment { get; set; } = false;
 
-	[XmlElement(ElementName = "DisableTooltipStash")]
+	[XmlElement(ElementName = nameof(DisableTooltipStash))]
 	public bool DisableTooltipStash { get; set; } = false;
 
-	[XmlElement(ElementName = "DisableTooltipTransfer")]
+	[XmlElement(ElementName = nameof(DisableTooltipTransfer))]
 	public bool DisableTooltipTransfer { get; set; } = false;
 
-	[XmlElement(ElementName = "DisableTooltipRelic")]
+	[XmlElement(ElementName = nameof(DisableTooltipRelic))]
 	public bool DisableTooltipRelic { get; set; } = false;
 
-	[XmlElement(ElementName = "EnableTQVaultSounds")]
+	[XmlElement(ElementName = nameof(EnableTQVaultSounds))]
 	public bool EnableTQVaultSounds { get; set; } = true;
 
-	[XmlElement(ElementName = "CSVDelimiter")]
+	[XmlElement(ElementName = nameof(CSVDelimiter))]
 	public string CSVDelimiter { get; set; } = "Comma";
 
-	[XmlElement(ElementName = "EnableEpicLegendaryAffixes")]
+	[XmlElement(ElementName = nameof(EnableEpicLegendaryAffixes))]
 	public bool EnableEpicLegendaryAffixes { get; set; } = false;
 
-	[XmlElement(ElementName = "DisableAutoStacking")]
+	[XmlElement(ElementName = nameof(DisableAutoStacking))]
 	public bool DisableAutoStacking { get; set; } = false;
 
-	[XmlElement(ElementName = "GitBackupEnabled")]
+	[XmlElement(ElementName = nameof(GitBackupEnabled))]
 	public bool GitBackupEnabled { get; set; } = true;
 
-	[XmlElement(ElementName = "GitBackupRepository")]
+	[XmlElement(ElementName = nameof(GitBackupRepository))]
 	public string GitBackupRepository { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = "DisableLegacyBackup")]
+	[XmlElement(ElementName = nameof(DisableLegacyBackup))]
 	public bool DisableLegacyBackup { get; set; } = false;
 
-	[XmlElement(ElementName = "GitBackupPlayerSavesEnabled")]
+	[XmlElement(ElementName = nameof(GitBackupPlayerSavesEnabled))]
 	public bool GitBackupPlayerSavesEnabled { get; set; } = false;
 
-	[XmlElement(ElementName = "EnableOriginalTQSupport")]
+	[XmlElement(ElementName = nameof(EnableOriginalTQSupport))]
 	public bool EnableOriginalTQSupport { get; set; } = false;
 
 	#endregion
 
+	#region AppSettings & DebugLevels
+
+	/// <summary>
+	/// Is loot table debug enabled?
+	/// </summary>
+	[XmlElement(ElementName = nameof(LootTableDebugEnabled))]
+	public bool LootTableDebugEnabled { get; set; }
+	
+	/// <summary>
+	/// Gets or sets the arc file debug level
+	/// </summary>
+	[XmlElement(ElementName = nameof(ARCFileDebugLevel))]
+	public int ARCFileDebugLevel { get; set; }
+	
+	/// <summary>
+	/// Gets or sets the database debug level
+	/// </summary>
+	[XmlElement(ElementName = nameof(DatabaseDebugLevel))]
+	public int DatabaseDebugLevel { get; set; }
+	
+	/// <summary>
+	/// Gets or sets the item debug level
+	/// </summary>
+	[XmlElement(ElementName = nameof(ItemDebugLevel))]
+	public int ItemDebugLevel { get; set; }
+
+	/// <summary>
+	/// Gets or sets the item attributes debug level
+	/// </summary>
+	[XmlElement(ElementName = nameof(ItemAttributesDebugLevel))]
+	public int ItemAttributesDebugLevel { get; set; }
+
+	/// <summary>
+	/// de,en,es,fr,it,pl,ru,cs,zh
+	/// </summary>
+	[XmlElement(ElementName = nameof(GameLanguages))]
+	public string GameLanguages { get; set; } = "de,en,es,fr,it,pl,ru,cs,zh";
+
+	[XmlElement(ElementName = nameof(UILanguage))]
+	public string UILanguage { get; set; }
+
+	/// <summary>
+	/// https://github.com/EtienneLamoureux/TQVaultAE
+	/// </summary>
+	[XmlElement(ElementName = nameof(UpdateURL))]
+	public string UpdateURL { get; set; } = "https://github.com/EtienneLamoureux/TQVaultAE";
+	
+	[XmlElement(ElementName = nameof(ShowSkillLevel))]
+	public bool ShowSkillLevel { get; set; }
+	
+	[XmlElement(ElementName = nameof(FadeInInterval))]
+	public double FadeInInterval { get; set; } = 0.1;
+	
+	[XmlElement(ElementName = nameof(FadeOutInterval))]
+	public double FadeOutInterval { get; set; } = 0.2;
+	
+	[XmlElement(ElementName = nameof(DebugEnabled))]
+ 	public bool DebugEnabled { get; set; }
+
+	[XmlElement(ElementName = nameof(TQOriginalHowtoUrl))]
+	public string TQOriginalHowtoUrl { get; set; } = "https://github.com/EtienneLamoureux/TQVaultAE/blob/master/documentation/TQORIGINAL.md";
+
+	#endregion
 
 	#region Logic
-
-	static UserSettings _Default;
-	public static UserSettings Default
-	{
-		get
-		{
-			if (_Default is null) _Default = Read();
-			return _Default;
-		}
-	}
 
 	public void Save()
 	{

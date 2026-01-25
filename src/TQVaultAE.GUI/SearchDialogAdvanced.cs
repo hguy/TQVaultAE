@@ -28,19 +28,18 @@ namespace TQVaultAE.GUI;
 /// <summary>
 /// Class for the Search Dialog box.
 /// </summary>
-public partial class SearchDialogAdvanced : VaultForm
-{
-	private readonly SessionContext Ctx;
-	private readonly ITranslationService TranslationService;
-	private readonly List<Result> ItemDatabase = new List<Result>();
-	private readonly ILogger Log;
-	private readonly Bitmap ButtonImageUp;
-	private readonly Bitmap ButtonImageDown;
-	private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] _NavMap;
-	private readonly List<BoxItem> _SelectedFilters = new List<BoxItem>();
+	public partial class SearchDialogAdvanced : VaultForm
+	{
+		private readonly SessionContext Ctx;
+		private readonly List<Result> ItemDatabase = new List<Result>();
+		private readonly ILogger Log;
+		private readonly Bitmap ButtonImageUp;
+		private readonly Bitmap ButtonImageDown;
+		private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] _NavMap;
+		private readonly List<BoxItem> _SelectedFilters = new List<BoxItem>();
 
-	public Result[] QueryResults { get; private set; } = new Result[] { };
-	private bool scalingCheckBoxReduceDuringSelection_LastChecked;
+		public Result[] QueryResults { get; private set; } = new Result[] { };
+		private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 	/// <summary>
 	/// Initializes a new instance of the SearchDialog class.
@@ -48,14 +47,11 @@ public partial class SearchDialogAdvanced : VaultForm
 	public SearchDialogAdvanced(
 		MainForm instance
 		, SessionContext sessionContext
-		, IItemProvider itemProvider
-		, ITranslationService translationService
 		, ILogger<SearchDialogAdvanced> log
 	) : base(instance.ServiceProvider)
 	{
 		this.Owner = instance;
 		this.Ctx = sessionContext;
-		this.TranslationService = translationService;
 		this.Log = log;
 
 		this.InitializeComponent();
@@ -166,7 +162,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		#endregion
 
-		this._SearchQueries = SearchQueries.Default(GamePathResolver);
+		this._SearchQueries = SearchQueries.Default(GamePathResolver, FileIO, PathIO);
 
 		// Mapping between nav button & content component
 		if (_NavMap is null)

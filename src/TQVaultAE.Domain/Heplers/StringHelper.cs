@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Domain.Helpers;

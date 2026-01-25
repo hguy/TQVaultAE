@@ -95,7 +95,7 @@ namespace TQVaultAE.GUI
 			this.DrawCustomBorder = true;
 
 			// Load the invalid characters
-			this.invalidChars = Path.GetInvalidFileNameChars();
+			this.invalidChars = this.PathIO.GetInvalidFileNameChars();
 
 			this.GetVaultList();
 		}

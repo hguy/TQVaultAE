@@ -27,15 +27,23 @@ namespace TQVaultAE.Data
 	{
 		private readonly ILogger Log = null;
 		private readonly ITQDataService TQData;
+		private readonly IFileIO FileIO;
+		private readonly IPathIO PathIO;
+		private readonly IDirectoryIO DirectoryIO;
+		private readonly UserSettings USettings;
 
 		/// <summary>
 		/// Ctr
 		/// </summary>
 		/// <param name="fileName">File Name of the ARC file to be read.</param>
-		public ArcFileProvider(ILogger<ArcFileProvider> log, ITQDataService tQData)
+		public ArcFileProvider(ILogger<ArcFileProvider> log, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
 		{
 			this.Log = log;
 			this.TQData = tQData;
+			this.FileIO = fileIO;
+			this.PathIO = pathIO;
+			this.DirectoryIO = directoryIO;
+			USettings = uSettings;
 		}
 
 		#region ArcFile Public Methods
@@ -73,7 +81,7 @@ namespace TQVaultAE.Data
 				if (!file.FileHasBeenRead)
 					this.ReadARCToC(file);
 
-				string dataID = string.Concat(Path.GetFileNameWithoutExtension(file.FileName), "\\", record.Raw);
+				string dataID = string.Concat(this.PathIO.GetFileNameWithoutExtension(file.FileName), "\\", record.Raw);
 				byte[] data = this.GetData(file, dataID);
 				if (data == null)
 					return;
@@ -85,8 +93,9 @@ namespace TQVaultAE.Data
 				destination = string.Concat(destination, destinationFileName);
 
 				// If there is a sub directory in the arc file then we need to create it.
-				if (!Directory.Exists(Path.GetDirectoryName(destination)))
-					Directory.CreateDirectory(Path.GetDirectoryName(destination));
+				var destDirName = PathIO.GetDirectoryName(destination);
+				if (!DirectoryIO.Exists(destDirName))
+					DirectoryIO.CreateDirectory(destDirName);
 
 				using (FileStream outStream = new FileStream(destination, FileMode.Create, FileAccess.Write))
 				{
@@ -107,7 +116,7 @@ namespace TQVaultAE.Data
 		/// <returns>Returns byte array of the data corresponding to the string ID.</returns>
 		public byte[] GetData(ArcFile file, RecordId dataId)
 		{
-			if (TQDebug.ArcFileDebugLevel > 0)
+			if (USettings.ARCFileDebugLevel > 0)
 				Log.LogDebug("ARCFile.GetData({0})", dataId);
 
 			if (!file.FileHasBeenRead)
@@ -115,14 +124,14 @@ namespace TQVaultAE.Data
 
 			if (!file.DirectoryEntries.Any())
 			{
-				if (TQDebug.ArcFileDebugLevel > 1)
+				if (USettings.ARCFileDebugLevel > 1)
 					Log.LogDebug("Error - Could not read {0}", file.FileName);
 
 				// could not read the file
 				return null;
 			}
 
-			if (TQDebug.ArcFileDebugLevel > 1)
+			if (USettings.ARCFileDebugLevel > 1)
 				Log.LogDebug("Normalized dataID = {0}", dataId);
 
 			// Find our file in the toc.
@@ -139,7 +148,7 @@ namespace TQVaultAE.Data
 			else
 			{
 				// record not found
-				if (TQDebug.ArcFileDebugLevel > 1)
+				if (USettings.ARCFileDebugLevel > 1)
 					Log.LogDebug("Error - {0} not found.", dataId);
 
 				return null;
@@ -157,7 +166,7 @@ namespace TQVaultAE.Data
 				// First see if the data was just stored without compression.
 				if ((directoryEntry.StorageType == 1) && (directoryEntry.CompressedSize == directoryEntry.RealSize))
 				{
-					if (TQDebug.ArcFileDebugLevel > 1)
+					if (USettings.ARCFileDebugLevel > 1)
 					{
 						Log.LogDebug("Offset={0}  Size={1}"
 							, directoryEntry.FileOffset
@@ -200,7 +209,7 @@ namespace TQVaultAE.Data
 					}
 				}
 
-				if (TQDebug.ArcFileDebugLevel > 0)
+				if (USettings.ARCFileDebugLevel > 0)
 					Log.LogDebug("Exiting ARCFile.GetData()");
 
 				return data;
@@ -216,7 +225,7 @@ namespace TQVaultAE.Data
 		{
 			try
 			{
-				if (TQDebug.ArcFileDebugLevel > 0)
+				if (USettings.ARCFileDebugLevel > 0)
 					Log.LogDebug("ARCFile.ReadARCFile()");
 
 				if (!file.FileHasBeenRead)
@@ -225,11 +234,11 @@ namespace TQVaultAE.Data
 				foreach (ArcDirEntry dirEntry in file.DirectoryEntries.Values)
 				{
 					RecordId dataID = string.Concat(
-						Path.GetFileNameWithoutExtension(file.FileName), "\\"
+						this.PathIO.GetFileNameWithoutExtension(file.FileName), "\\"
 						, dirEntry.FileName.Raw
 					);
 
-					if (TQDebug.ArcFileDebugLevel > 1)
+					if (USettings.ARCFileDebugLevel > 1)
 					{
 						Log.LogDebug($"Directory Filename = {dirEntry.FileName}");
 						Log.LogDebug($"dataID = {dataID}");
@@ -244,10 +253,11 @@ namespace TQVaultAE.Data
 					filename = string.Concat(filename, dirEntry.FileName);
 
 					// If there is a sub directory in the arc file then we need to create it.
-					if (!Directory.Exists(Path.GetDirectoryName(filename)))
-						Directory.CreateDirectory(Path.GetDirectoryName(filename));
+					var dirName = PathIO.GetDirectoryName(filename);
+					if (!DirectoryIO.Exists(dirName))
+						DirectoryIO.CreateDirectory(dirName);
 
-					if (TQDebug.ArcFileDebugLevel > 1)
+					if (USettings.ARCFileDebugLevel > 1)
 						Log.LogDebug($"Creating File - {filename}");
 
 					using (FileStream outStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
@@ -256,7 +266,7 @@ namespace TQVaultAE.Data
 					}
 				}
 
-				if (TQDebug.ArcFileDebugLevel > 0)
+				if (USettings.ARCFileDebugLevel > 0)
 					Log.LogDebug("Exiting ARCFile.ReadARCFile()");
 
 				return true;
@@ -304,7 +314,7 @@ namespace TQVaultAE.Data
 			// 4-byte int = offset in directory structure for filename
 			file.FileHasBeenRead = true;
 
-			if (TQDebug.ArcFileDebugLevel > 0)
+			if (USettings.ARCFileDebugLevel > 0)
 				Log.LogDebug("ARCFile.ReadARCToC({0})", file.FileName);
 
 			try
@@ -313,7 +323,7 @@ namespace TQVaultAE.Data
 				{
 					using (BinaryReader reader = new BinaryReader(arcFile))
 					{
-						if (TQDebug.ArcFileDebugLevel > 1)
+						if (USettings.ARCFileDebugLevel > 1)
 							Log.LogDebug("File Length={0}", arcFile.Length);
 
 						// check the file header
@@ -334,19 +344,19 @@ namespace TQVaultAE.Data
 						int numEntries = reader.ReadInt32();
 						int numParts = reader.ReadInt32();
 
-						if (TQDebug.ArcFileDebugLevel > 1)
+						if (USettings.ARCFileDebugLevel > 1)
 							Log.LogDebug("numEntries={0}, numParts={1}", numEntries, numParts);
 
 						ArcPartEntry[] parts = new ArcPartEntry[numParts];
 						ArcDirEntry[] records = new ArcDirEntry[numEntries];
 
-						if (TQDebug.ArcFileDebugLevel > 2)
+						if (USettings.ARCFileDebugLevel > 2)
 							Log.LogDebug("Seeking to tocOffset location");
 
 						reader.BaseStream.Seek(0x18, SeekOrigin.Begin);
 						int tocOffset = reader.ReadInt32();
 
-						if (TQDebug.ArcFileDebugLevel > 1)
+						if (USettings.ARCFileDebugLevel > 1)
 							Log.LogDebug("tocOffset = {0}", tocOffset);
 
 						// Make sure all 3 entries exist for the toc entry.
@@ -363,7 +373,7 @@ namespace TQVaultAE.Data
 							parts[i].CompressedSize = reader.ReadInt32();
 							parts[i].RealSize = reader.ReadInt32();
 
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 							{
 								Log.LogDebug("parts[{0}]", i);
 								Log.LogDebug("  fileOffset={0}, compressedSize={1}, realSize={2}"
@@ -382,7 +392,7 @@ namespace TQVaultAE.Data
 						// This offset is from the end of the file.
 						int fileRecordOffset = 44 * numEntries;
 
-						if (TQDebug.ArcFileDebugLevel > 1)
+						if (USettings.ARCFileDebugLevel > 1)
 						{
 							Log.LogDebug("fileNamesOffset = {0}.  Seeking to {1} to read file record data."
 								, fileNamesOffset
@@ -398,7 +408,7 @@ namespace TQVaultAE.Data
 							// storageType = 3 - compressed / 1- non compressed
 							int storageType = reader.ReadInt32();
 
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 								Log.LogDebug("StorageType={0}", storageType);
 
 							// Added by VillageIdiot to support stored types
@@ -407,22 +417,22 @@ namespace TQVaultAE.Data
 							records[i].CompressedSize = reader.ReadInt32();
 							records[i].RealSize = reader.ReadInt32();
 							int crap = reader.ReadInt32(); // crap
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 								Log.LogDebug("Crap2={0}", crap);
 
 							crap = reader.ReadInt32(); // crap
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 								Log.LogDebug("Crap3={0}", crap);
 
 							crap = reader.ReadInt32(); // crap
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 								Log.LogDebug("Crap4={0}", crap);
 
 							int numberOfParts = reader.ReadInt32();
 							if (numberOfParts < 1)
 							{
 								records[i].Parts = null;
-								if (TQDebug.ArcFileDebugLevel > 2)
+								if (USettings.ARCFileDebugLevel > 2)
 									Log.LogDebug("File {0} is not compressed.", i);
 							}
 							else
@@ -430,11 +440,11 @@ namespace TQVaultAE.Data
 
 							int firstPart = reader.ReadInt32();
 							crap = reader.ReadInt32(); // filename length
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 								Log.LogDebug("Filename Length={0}", crap);
 
 							crap = reader.ReadInt32(); // filename offset
-							if (TQDebug.ArcFileDebugLevel > 2)
+							if (USettings.ARCFileDebugLevel > 2)
 							{
 								Log.LogDebug("Filename Offset={0}", crap);
 
@@ -472,7 +482,7 @@ namespace TQVaultAE.Data
 							if (records[i].IsActive)
 							{
 								// For each string, read bytes until I hit a 0x00 byte.
-								if (TQDebug.ArcFileDebugLevel > 2)
+								if (USettings.ARCFileDebugLevel > 2)
 									Log.LogDebug("Reading entry name {0:n0}", i);
 
 								int bufferSize = 0;
@@ -485,7 +495,7 @@ namespace TQVaultAE.Data
 										arcFile.Seek(-1, SeekOrigin.Current); // backup
 										bufferSize--;
 										buffer[bufferSize] = 0x00;
-										if (TQDebug.ArcFileDebugLevel > 2)
+										if (USettings.ARCFileDebugLevel > 2)
 											Log.LogDebug("Null file - inactive?");
 
 										break;
@@ -494,7 +504,7 @@ namespace TQVaultAE.Data
 									if (bufferSize >= buffer.Length)
 									{
 										Log.LogDebug("ARCFile.ReadARCToC() Error - Buffer size of 2048 has been exceeded.");
-										if (TQDebug.ArcFileDebugLevel > 2)
+										if (USettings.ARCFileDebugLevel > 2)
 										{
 											var content = buffer.Select(b => string.Format(CultureInfo.InvariantCulture, "0x{0:X}", b)).ToArray();
 											Log.LogDebug($"Buffer contents:{Environment.NewLine}{string.Join(string.Empty, content)}{Environment.NewLine}{string.Empty}");
@@ -502,7 +512,7 @@ namespace TQVaultAE.Data
 									}
 								}
 
-								if (TQDebug.ArcFileDebugLevel > 2)
+								if (USettings.ARCFileDebugLevel > 2)
 								{
 									Log.LogDebug("Read {0:n0} bytes for name.  Converting to string.", bufferSize);
 								}
@@ -520,7 +530,7 @@ namespace TQVaultAE.Data
 
 								records[i].FileName = newfile;
 
-								if (TQDebug.ArcFileDebugLevel > 2)
+								if (USettings.ARCFileDebugLevel > 2)
 									Log.LogDebug("Name {0:n0} = '{1}'", i, records[i].FileName);
 							}
 						}
@@ -528,7 +538,7 @@ namespace TQVaultAE.Data
 						// Now convert the array of records into a Dictionary.
 						var dictionary = new Dictionary<RecordId, ArcDirEntry>(numEntries);
 
-						if (TQDebug.ArcFileDebugLevel > 1)
+						if (USettings.ARCFileDebugLevel > 1)
 							Log.LogDebug("Creating Dictionary");
 
 						for (i = 0; i < numEntries; ++i)
@@ -539,7 +549,7 @@ namespace TQVaultAE.Data
 
 						file.DirectoryEntries = dictionary;
 
-						if (TQDebug.ArcFileDebugLevel > 0)
+						if (USettings.ARCFileDebugLevel > 0)
 							Log.LogDebug("Exiting ARCFile.ReadARCToC()");
 					}
 				}

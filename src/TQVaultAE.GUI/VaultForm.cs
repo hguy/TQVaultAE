@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="VaultForm.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -15,18 +15,21 @@ namespace TQVaultAE.GUI
 	using System.Security.Permissions;
 	using System.Windows.Forms;
 	using System.Windows.Input;
+	using TQVaultAE.Config;
 	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.GUI.Components;
 	using TQVaultAE.GUI.Inputs;
 	using TQVaultAE.GUI.Models;
 	using TQVaultAE.Presentation;
+	using TQVaultAE.Services;
 
 	/// <summary>
 	/// Abstract class used for constructing TQVault themed forms.
 	/// </summary>
 	public partial class VaultForm : Form, IScalingControl
 	{
+
 		private readonly ILogger Log;
 		/// <summary>
 		/// Holds the last state of the form.  Used to support maximizing.
@@ -123,6 +126,11 @@ namespace TQVaultAE.GUI
 		/// </summary>
 		private bool resizeCustomAllowed;
 
+		protected readonly UserSettings USettings;
+		protected readonly ITranslationService TranslationService;
+		protected readonly IPathIO PathIO;
+		protected readonly IFileIO FileIO;
+		protected readonly IDirectoryIO DirectoryIO;
 		protected readonly IFontService FontService;
 		protected readonly IUIService UIService;
 		protected readonly IDatabase Database;
@@ -156,6 +164,11 @@ namespace TQVaultAE.GUI
 				this.SoundService = this.ServiceProvider.GetService<ISoundService>();
 				this.titleFont = FontService.GetFontLight(9.5F);
 				this.Log = this.ServiceProvider.GetService<ILogger<VaultForm>>();
+				this.TranslationService = this.ServiceProvider.GetService<ITranslationService>();
+				this.PathIO = this.ServiceProvider.GetService<IPathIO>();
+				this.FileIO = this.ServiceProvider.GetService<IFileIO>();
+				this.DirectoryIO = this.ServiceProvider.GetService<IDirectoryIO>();
+				this.USettings = this.ServiceProvider.GetService<UserSettings>();
 
 				InitForm();
 			}
@@ -365,6 +378,7 @@ namespace TQVaultAE.GUI
 		}
 
 		bool _NormalizeBox = true;
+
 		/// <summary>
 		/// Gets a value indicating whether the Normalize button is displayed in the caption bar of the form.
 		/// </summary>
@@ -524,8 +538,8 @@ namespace TQVaultAE.GUI
 				UIService.Scale = newDBScale;
 				this.Scale(new SizeF(scaleFactor, scaleFactor));
 
-				Config.UserSettings.Default.Scale = UIService.Scale;
-				Config.UserSettings.Default.Save();
+				USettings.Scale = UIService.Scale;
+				USettings.Save();
 			}
 			else if (scaleFactor == 1.0F)
 			{
@@ -545,8 +559,8 @@ namespace TQVaultAE.GUI
 					(float)NORMAL_FORMWIDTH / (float)this.Width);
 				this.Scale(size);
 
-				Config.UserSettings.Default.Scale = 1.0F;
-				Config.UserSettings.Default.Save();
+				USettings.Scale = 1.0F;
+				USettings.Save();
 			}
 			else
 			{
@@ -561,13 +575,13 @@ namespace TQVaultAE.GUI
 				UIService.Scale = scaleFactor;
 				this.Scale(new SizeF(scaling, scaling));
 
-				Config.UserSettings.Default.Scale = UIService.Scale;
-				Config.UserSettings.Default.Save();
+				USettings.Scale = UIService.Scale;
+				USettings.Save();
 			}
 
 			RefreshNormalizeBox();
 
-			this.Log.LogDebug("Config.Settings.Default.Scale changed to {0} !", Config.UserSettings.Default.Scale);
+			this.Log.LogDebug("Config.Settings.Default.Scale changed to {0} !", USettings.Scale);
 		}
 
 		/// <summary>
@@ -608,17 +622,17 @@ namespace TQVaultAE.GUI
 					, Convert.ToSingle(workingArea.Height) / Convert.ToSingle(NORMAL_FORMHEIGHT)
 				);
 
-				if (Config.UserSettings.Default.Scale > initialScale)
+				if (USettings.Scale > initialScale)
 				{
-					Config.UserSettings.Default.Scale = initialScale;
-					Config.UserSettings.Default.Save();
+					USettings.Scale = initialScale;
+					USettings.Save();
 				}
 			}
 
 			// Rescale from last saved value
 			var thisClientSize = new Size(
-				(int)Math.Round(NORMAL_FORMWIDTH * Config.UserSettings.Default.Scale)
-				, (int)Math.Round(NORMAL_FORMHEIGHT * Config.UserSettings.Default.Scale)
+				(int)Math.Round(NORMAL_FORMWIDTH * USettings.Scale)
+				, (int)Math.Round(NORMAL_FORMHEIGHT * USettings.Scale)
 			);
 
 			return thisClientSize;

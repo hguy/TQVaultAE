@@ -37,8 +37,12 @@ public class ItemProvider : IItemProvider
 	private readonly ITQDataService TQData;
 	private readonly ITranslationService TranslationService;
 	private readonly IGamePathService GamePathService;
+	private readonly IPathIO PathIO;
+	private readonly UserSettings USettings;
 	private readonly LazyConcurrentDictionary<(Item Item, FriendlyNamesExtraScopes? Scope, bool FilterExtra), ToFriendlyNameResult> FriendlyNamesCache = new LazyConcurrentDictionary<(Item, FriendlyNamesExtraScopes?, bool), ToFriendlyNameResult>();
 	private readonly LazyConcurrentDictionary<RecordId, ItemAffixes> ItemAffixesCache = new();
+
+	#region Tag Lists
 
 	internal static readonly string[] unwantedTags =
 	{
@@ -185,15 +189,19 @@ public class ItemProvider : IItemProvider
 			"OFFENSIVETOTALRESISTANCEREDUCTIONABSOLUTE"
 		};
 
+	#endregion
+
 	public ItemProvider(
-		ILogger<ItemProvider> log
-		, IDatabase database
-		, ILootTableCollectionProvider lootTableCollectionProvider
-		, IItemAttributeProvider itemAttributeProvider
-		, ITQDataService tQData
-		, ITranslationService translationService
-	, IGamePathService gamePathService
-	)
+			ILogger<ItemProvider> log
+			, IDatabase database
+			, ILootTableCollectionProvider lootTableCollectionProvider
+			, IItemAttributeProvider itemAttributeProvider
+			, ITQDataService tQData
+			, ITranslationService translationService
+			, IGamePathService gamePathService
+			, IPathIO pathIO
+			, UserSettings uSettings
+		)
 	{
 		this.Log = log;
 		this.Database = database;
@@ -202,6 +210,8 @@ public class ItemProvider : IItemProvider
 		this.TQData = tQData;
 		this.TranslationService = translationService;
 		this.GamePathService = gamePathService;
+		PathIO = pathIO;
+		USettings = uSettings;
 	}
 
 	public ItemAffixes GetAllAvailableAffixes(GearType type)
@@ -375,17 +385,17 @@ public class ItemProvider : IItemProvider
 			// for artifacts we need to find the formulae that was used to create the artifact.  sucks to be us
 			// The formulas seem to always be in the arcaneformulae subfolder with a _formula on the end
 			// of the filename
-			string folder = Path.GetDirectoryName(itm.BaseItemId.Raw);
-			folder = Path.Combine(folder, "arcaneformulae");
-			string file = Path.GetFileNameWithoutExtension(itm.BaseItemId.Raw);
+			string folder = PathIO.GetDirectoryName(itm.BaseItemId.Raw);
+			folder = PathIO.Combine(folder, "arcaneformulae");
+			string file = PathIO.GetFileNameWithoutExtension(itm.BaseItemId.Raw);
 
 			// Damn it, IL did not keep the filename consistent on Kingslayer (Sands of Kronos)
 			if (file.Equals("E_GA_SANDOFKRONOS", noCase))
 				file = file.Insert(9, "s");
 
 			file = string.Concat(file, "_formula");
-			file = Path.Combine(folder, file);
-			file = Path.ChangeExtension(file, Path.GetExtension(itm.BaseItemId.Raw));
+			file = PathIO.Combine(folder, file);
+			file = PathIO.ChangeExtension(file, PathIO.GetExtension(itm.BaseItemId.Raw));
 
 			// Now lookup itm record.
 			DBRecordCollection record = Database.GetRecordFromFile(file);
@@ -823,7 +833,7 @@ public class ItemProvider : IItemProvider
 	/// </summary>
 	public void GetDBData(Item itm)
 	{
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Item.GetDBData ()   baseItemID = {0}", itm.BaseItemId);
 
 		itm.BaseItemId = CheckExtension(itm.BaseItemId);
@@ -832,7 +842,7 @@ public class ItemProvider : IItemProvider
 		itm.prefixID = CheckExtension(itm.prefixID);
 		itm.suffixID = CheckExtension(itm.suffixID);
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 		{
 			Log.LogDebug("prefixID = {0}", itm.prefixID);
 			Log.LogDebug("suffixID = {0}", itm.suffixID);
@@ -843,7 +853,7 @@ public class ItemProvider : IItemProvider
 		itm.relicID = CheckExtension(itm.relicID);
 		itm.RelicBonusId = CheckExtension(itm.RelicBonusId);
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 		{
 			Log.LogDebug("relicID = {0}", itm.relicID);
 			Log.LogDebug("relicBonusID = {0}", itm.RelicBonusId);
@@ -855,7 +865,7 @@ public class ItemProvider : IItemProvider
 		itm.Relic2Info = Database.GetInfo(itm.relic2ID);
 		itm.RelicBonus2Info = Database.GetInfo(itm.RelicBonus2Id);
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 			Log.LogDebug("'{0}' baseItemInfo is {1} null"
 				, GetFriendlyNames(itm).FullNameBagTooltip
 				, (itm.baseItemInfo == null) ? string.Empty : "NOT"
@@ -868,14 +878,14 @@ public class ItemProvider : IItemProvider
 			{
 				itm.TexImageResourceId = itm.baseItemInfo.ShardBitmap;
 				itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
-				if (TQDebug.ItemDebugLevel > 1)
+				if (USettings.ItemDebugLevel > 1)
 					Log.LogDebug("Loaded shardbitmap ({0})", itm.baseItemInfo.ShardBitmap);
 			}
 			else
 			{
 				itm.TexImageResourceId = itm.baseItemInfo.Bitmap;
 				itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
-				if (TQDebug.ItemDebugLevel > 1)
+				if (USettings.ItemDebugLevel > 1)
 					Log.LogDebug("Loaded regular bitmap ({0})", itm.baseItemInfo.Bitmap);
 			}
 		}
@@ -885,11 +895,11 @@ public class ItemProvider : IItemProvider
 			// Try showing something so unknown items are not invisible.
 			itm.TexImageResourceId = "DefaultBitmap";
 			itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
-			if (TQDebug.ItemDebugLevel > 1)
+			if (USettings.ItemDebugLevel > 1)
 				Log.LogDebug("Try loading (DefaultBitmap)");
 		}
 
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.GetDBData ()");
 	}
 
@@ -1036,7 +1046,7 @@ public class ItemProvider : IItemProvider
 		if (itemId.Normalized.Length < 4)
 			return itemId;
 
-		if (Path.GetExtension(itemId.Normalized).Equals(".DBR"))
+		if (PathIO.GetExtension(itemId.Normalized).Equals(".DBR"))
 			return itemId;
 		else
 			return string.Concat(itemId.Raw, ".dbr");
@@ -1049,23 +1059,23 @@ public class ItemProvider : IItemProvider
 	/// <param name="record">database record</param>
 	private void GetRequirementsFromRecord(SortedList<string, Variable> requirements, DBRecordCollection record)
 	{
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, record);
 
 		if (record == null)
 		{
-			if (TQDebug.ItemDebugLevel > 0)
+			if (USettings.ItemDebugLevel > 0)
 				Log.LogDebug("Error - record was null.");
 
 			return;
 		}
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 			Log.LogDebug(record.Id.Normalized);
 
 		foreach (Variable variable in record)
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug(variable.Name);
 
 			if (FilterValue(variable, false))
@@ -1110,13 +1120,13 @@ public class ItemProvider : IItemProvider
 				}
 			}
 
-			if (TQDebug.ItemDebugLevel > 1)
+			if (USettings.ItemDebugLevel > 1)
 				Log.LogDebug("Added Requirement {0}={1}", key, value);
 
 			requirements.Add(key, variable);
 		}
 
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.GetDynamicRequirementsFromRecord()");
 	}
 
@@ -1127,7 +1137,7 @@ public class ItemProvider : IItemProvider
 	/// <param name="itemInfo">ItemInfo for the item</param>
 	private void GetDynamicRequirementsFromRecord(Item itm, SortedList<string, Variable> requirements, Info itemInfo)
 	{
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, itemInfo);
 
 		DBRecordCollection record = Database.GetRecordFromFile(itemInfo.ItemId);
@@ -1150,7 +1160,7 @@ public class ItemProvider : IItemProvider
 				return;
 		}
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 			Log.LogDebug(record.Id.Normalized);
 
 		string prefix = GetRequirementEquationPrefix(itemInfo.ItemClass);
@@ -1159,7 +1169,7 @@ public class ItemProvider : IItemProvider
 			if (string.Compare(variable.Name, 0, prefix, 0, prefix.Length, noCase) != 0)
 				continue;
 
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug(variable.Name);
 
 			if (FilterValue(variable, true))
@@ -1217,7 +1227,7 @@ VariableValue : {value}
 VariableValue Raw : {valueRaw}
 ""{value}"" can't be evaluated!
 ";
-				if (TQDebug.ItemDebugLevel > 0)
+				if (USettings.ItemDebugLevel > 0)
 					throw new System.Data.EvaluateException(mess);
 				else Log.LogError(mess);
 			}
@@ -1234,13 +1244,13 @@ VariableValue Raw : {valueRaw}
 
 			ans[0] = intVal;
 
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Added Requirement {0}={1}", key, ans.ToStringValue());
 
 			requirements.Add(key, ans);
 		}
 
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.GetDynamicRequirementsFromRecord()");
 	}
 
@@ -1538,7 +1548,7 @@ VariableValue Raw : {valueRaw}
 					// Add Artifact completion bonus
 					if (!RecordId.IsNullOrEmpty(k.Item.RelicBonusId))
 					{
-						var RelicBonusIdExt = Path.GetFileNameWithoutExtension(k.Item.RelicBonusId.Normalized);
+						var RelicBonusIdExt = PathIO.GetFileNameWithoutExtension(k.Item.RelicBonusId.Normalized);
 						res.ArtifactBonus = TranslationService.TranslateXTag("xtagArtifactBonus");
 						res.ArtifactBonusFormat = string.Format(CultureInfo.CurrentCulture, "({0} {1})", res.ArtifactBonus, RelicBonusIdExt);
 					}
@@ -1853,7 +1863,7 @@ VariableValue Raw : {valueRaw}
 	/// <param name="convertStrings">flag on whether we convert attributes to strings.</param>
 	private void GetAttributesFromRecord(Item itm, DBRecordCollection record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true)
 	{
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 		{
 			Log.LogDebug("Item.GetAttributesFromRecord({0}, {1}, {2}, {3}, {4})"
 				, record, filtering, recordId, results, convertStrings
@@ -1864,14 +1874,14 @@ VariableValue Raw : {valueRaw}
 		Dictionary<string, List<Variable>> attrByEffect = new();
 		if (record == null)
 		{
-			if (TQDebug.ItemDebugLevel > 0)
+			if (USettings.ItemDebugLevel > 0)
 				Log.LogDebug("Error - record was null.");
 
 			results.Add("<unknown>");
 			return;
 		}
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 			Log.LogDebug(record.Id);
 
 		// Added by Village Idiot
@@ -1880,7 +1890,7 @@ VariableValue Raw : {valueRaw}
 
 		foreach (Variable variable in record)
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug(variable.Name);
 
 
@@ -1897,7 +1907,7 @@ VariableValue Raw : {valueRaw}
 			if (data == null)
 			{
 				// unknown attribute
-				if (TQDebug.ItemDebugLevel > 2)
+				if (USettings.ItemDebugLevel > 2)
 					Log.LogDebug("Unknown Attribute");
 
 				data = new ItemAttributesData(ItemAttributesEffectType.Other, variable.Name, variable.Name, string.Empty, 0);
@@ -2022,7 +2032,7 @@ VariableValue Raw : {valueRaw}
 				ConvertAttributeListToString(itm, record, attrList, recordId, results);
 		}
 
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.GetAttributesFromRecord()");
 	}
 
@@ -2035,7 +2045,7 @@ VariableValue Raw : {valueRaw}
 	/// <param name="results">List containing the results</param>
 	private void ConvertAttributeListToString(Item itm, DBRecordCollection record, List<Variable> attributeList, RecordId recordId, List<string> results)
 	{
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 		{
 			Log.LogDebug("Item.ConvertAttrListToString ({0}, {1}, {2}, {3})"
 				, record, attributeList, recordId, results
@@ -2048,13 +2058,13 @@ VariableValue Raw : {valueRaw}
 		if (data == null)
 		{
 			// unknown attribute
-			if (TQDebug.ItemDebugLevel > 0)
+			if (USettings.ItemDebugLevel > 0)
 				Log.LogDebug("Error - Unknown Attribute.");
 
 			data = new ItemAttributesData(ItemAttributesEffectType.Other, variable.Name, variable.Name, string.Empty, 0);
 		}
 
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.ConvertAttrListToString ()");
 
 		ConvertOffenseAttributesToString(itm, record, attributeList, data, recordId, results);
@@ -2120,7 +2130,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (range) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2190,7 +2200,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (single) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2271,7 +2281,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (time range) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2301,7 +2311,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (time single) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2342,7 +2352,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (percent) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2370,7 +2380,7 @@ VariableValue Raw : {valueRaw}
 			color = ItemStyle.Legendary.TQColor();
 		}
 
-		if (TQDebug.ItemDebugLevel > 2)
+		if (USettings.ItemDebugLevel > 2)
 			Log.LogDebug("Item.formatspec (chance) = " + formatSpec);
 
 		formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2413,7 +2423,7 @@ VariableValue Raw : {valueRaw}
 			}
 			else
 			{
-				if (TQDebug.ItemDebugLevel > 2)
+				if (USettings.ItemDebugLevel > 2)
 					Log.LogDebug("Item.formatspec (percent) = " + formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2444,7 +2454,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (improved time) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2473,7 +2483,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (chance) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2515,7 +2525,7 @@ VariableValue Raw : {valueRaw}
 			}
 			else
 			{
-				if (TQDebug.ItemDebugLevel > 2)
+				if (USettings.ItemDebugLevel > 2)
 					Log.LogDebug("Item.formatspec (chance of one) = " + formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2556,7 +2566,7 @@ VariableValue Raw : {valueRaw}
 				{
 					finalRace = races[j];
 
-					if (TQDebug.DebugEnabled)
+					if (USettings.DebugEnabled)
 						Log.LogDebug("missing racialBonusRace={0}", finalRace);
 				}
 
@@ -2566,7 +2576,7 @@ VariableValue Raw : {valueRaw}
 					formatSpec = string.Concat(formatTag, " {0} {1}");
 				else
 				{
-					if (TQDebug.ItemDebugLevel > 2)
+					if (USettings.ItemDebugLevel > 2)
 						Log.LogDebug("Item.formatspec (race bonus) = " + formatSpec);
 
 					formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2622,7 +2632,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (augment level) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2662,7 +2672,7 @@ VariableValue Raw : {valueRaw}
 
 		if (string.IsNullOrEmpty(skillName))
 		{
-			skillName = Path.GetFileNameWithoutExtension(augmentMasteryValue);
+			skillName = PathIO.GetFileNameWithoutExtension(augmentMasteryValue);
 			font = ItemStyle.Legendary.TQColor();
 		}
 
@@ -2675,7 +2685,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (augment mastery) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2767,7 +2777,7 @@ VariableValue Raw : {valueRaw}
 			}
 
 			if (string.IsNullOrEmpty(skillName))
-				skillName = Path.GetFileNameWithoutExtension(skillRecordID);
+				skillName = PathIO.GetFileNameWithoutExtension(skillRecordID);
 
 			// now get the formatSpec
 			if (!TranslationService.TryTranslateXTag("ItemSkillIncrement", out var formatSpec))
@@ -2777,7 +2787,7 @@ VariableValue Raw : {valueRaw}
 			}
 			else
 			{
-				if (TQDebug.ItemDebugLevel > 2)
+				if (USettings.ItemDebugLevel > 2)
 					Log.LogDebug("Item.formatspec (item skill) = " + formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -2825,7 +2835,7 @@ VariableValue Raw : {valueRaw}
 			else
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (Artifact cost) = " + formatSpec);
 
 			font = ItemStyle.Rare.TQColor();
@@ -2876,7 +2886,7 @@ VariableValue Raw : {valueRaw}
 				if (!string.IsNullOrEmpty(nameTag))
 				{
 					if (!TranslationService.TryTranslateXTag(nameTag, out skillName))
-						skillName = Path.GetFileNameWithoutExtension(variable.GetString(0));
+						skillName = PathIO.GetFileNameWithoutExtension(variable.GetString(0));
 				}
 			}
 			else
@@ -2889,7 +2899,7 @@ VariableValue Raw : {valueRaw}
 					if (!string.IsNullOrEmpty(nameTag))
 					{
 						if (!TranslationService.TryTranslateXTag(nameTag, out skillName))
-							skillName = Path.GetFileNameWithoutExtension(variable.GetString(0));
+							skillName = PathIO.GetFileNameWithoutExtension(variable.GetString(0));
 					}
 				}
 			}
@@ -2989,7 +2999,7 @@ VariableValue Raw : {valueRaw}
 		}
 		else
 		{
-			if (TQDebug.ItemDebugLevel > 2)
+			if (USettings.ItemDebugLevel > 2)
 				Log.LogDebug("Item.formatspec (pet bonus) = " + formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -3025,7 +3035,7 @@ VariableValue Raw : {valueRaw}
 			color = ItemStyle.Legendary.TQColor();
 		}
 
-		if (TQDebug.ItemDebugLevel > 2)
+		if (USettings.ItemDebugLevel > 2)
 			Log.LogDebug("Item.label (scroll) = " + label);
 
 		label = ItemAttributeProvider.ConvertFormat(label);
@@ -3051,7 +3061,7 @@ VariableValue Raw : {valueRaw}
 			}
 			else
 			{
-				if (TQDebug.ItemDebugLevel > 2)
+				if (USettings.ItemDebugLevel > 2)
 					Log.LogDebug("Item.formatspec (2 parameter) = " + formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -3127,7 +3137,7 @@ VariableValue Raw : {valueRaw}
 	/// <param name="results">List containing the results</param>
 	private void ConvertOffenseAttributesToString(Item itm, DBRecordCollection record, List<Variable> attributeList, ItemAttributesData data, RecordId recordId, List<string> results)
 	{
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 		{
 			Log.LogDebug("Item.ConvertOffenseAttrToString({0}, {1}, {2}, {3}, {4})"
 				, record, attributeList, data, recordId, results
@@ -3266,7 +3276,7 @@ VariableValue Raw : {valueRaw}
 		TQColor? labelColor = null;
 		string label = GetLabelAndColorFromTag(itm, data, recordId, ref labelTag, ref labelColor);
 
-		if (TQDebug.ItemDebugLevel > 1)
+		if (USettings.ItemDebugLevel > 1)
 		{
 			Log.LogDebug("Full attribute = " + data.FullAttribute);
 			Log.LogDebug("Item.label = " + label);
@@ -3564,7 +3574,7 @@ VariableValue Raw : {valueRaw}
 						formatSpec = "{0}";
 					else
 					{
-						if (TQDebug.ItemDebugLevel > 2)
+						if (USettings.ItemDebugLevel > 2)
 							Log.LogDebug("Item.formatspec (Damage type) = " + formatSpec);
 
 						formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
@@ -3636,7 +3646,7 @@ VariableValue Raw : {valueRaw}
 			}
 		}
 
-		if (TQDebug.ItemDebugLevel > 0)
+		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.ConvertOffenseAttrToString()");
 	}
 
@@ -3700,7 +3710,7 @@ VariableValue Raw : {valueRaw}
 								}
 
 								// Show granted skill level
-								if (Config.Settings.Default.ShowSkillLevel)
+								if (this.USettings.ShowSkillLevel)
 								{
 									if (!TranslationService.TryTranslateXTag("MenuLevel", out var formatSpec))
 										formatSpec = "Level:   {0}";
@@ -3738,7 +3748,7 @@ VariableValue Raw : {valueRaw}
 								}
 
 								// Show granted skill level
-								if (Config.Settings.Default.ShowSkillLevel)
+								if (this.USettings.ShowSkillLevel)
 								{
 									if (!TranslationService.TryTranslateXTag("MenuLevel", out var formatSpec))
 										formatSpec = "Level:   {0}";
@@ -4069,7 +4079,7 @@ VariableValue Raw : {valueRaw}
 		List<string> requirements = new List<string>();
 		foreach (KeyValuePair<string, Variable> kvp in requirementVariables)
 		{
-			if (TQDebug.ItemDebugLevel > 1)
+			if (USettings.ItemDebugLevel > 1)
 				Log.LogDebug("Retrieving requirement {0}={1} (type={2})", kvp.Key, kvp.Value, kvp.Value.GetType().ToString());
 
 			Variable variable = kvp.Value;

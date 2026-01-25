@@ -23,10 +23,12 @@ namespace TQVaultAE.Data
 	/// </summary>
 	public class PlayerCollectionProvider : IPlayerCollectionProvider
 	{
-		private readonly ILogger Log;
-		private readonly IItemProvider ItemProvider;
-		private readonly ISackCollectionProvider SackCollectionProvider;
-		private readonly ITQDataService TQData;
+	private readonly ILogger Log;
+	private readonly IItemProvider ItemProvider;
+	private readonly ISackCollectionProvider SackCollectionProvider;
+	private readonly ITQDataService TQData;
+	private readonly IFileIO FileIO;
+	private readonly IPathIO PathIO;
 
 		/// <summary>
 		/// array holding the byte pattern for the beginning of a block in the player file.
@@ -38,13 +40,15 @@ namespace TQVaultAE.Data
 		/// </summary>
 		public byte[] endBlockPattern = { 0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
 
-		public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData)
-		{
-			this.Log = log;
-			this.ItemProvider = itemProvider;
-			this.SackCollectionProvider = sackCollectionProvider;
-			this.TQData = tQData;
-		}
+	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
+	{
+		this.Log = log;
+		this.ItemProvider = itemProvider;
+		this.SackCollectionProvider = sackCollectionProvider;
+		this.TQData = tQData;
+		this.FileIO = fileIO;
+		this.PathIO = pathIO;
+	}
 
 		public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
 		{
@@ -166,7 +170,7 @@ namespace TQVaultAE.Data
 			}
 
 			byte[] data = Encode(pc);
-			File.WriteAllBytes(fileName, data);
+			this.FileIO.WriteAllBytes(fileName, data);
 		}
 
 		/// <summary>
@@ -174,7 +178,7 @@ namespace TQVaultAE.Data
 		/// </summary>
 		/// <param name="pc"></param>
 		/// <param name="fileName"></param>
-		private static void SaveVaultAsJson(PlayerCollection pc, string fileName)
+		private void SaveVaultAsJson(PlayerCollection pc, string fileName)
 		{
 			var pcjson = new VaultDto()
 			{
@@ -203,7 +207,7 @@ namespace TQVaultAE.Data
 				}).ToList()
 			};
 
-			File.WriteAllText(fileName, JsonConvert.SerializeObject(pcjson, Formatting.Indented), Encoding.UTF8);
+			this.FileIO.WriteAllText(fileName, JsonConvert.SerializeObject(pcjson, Formatting.Indented), Encoding.UTF8);
 		}
 
 		/// <summary>
@@ -273,7 +277,7 @@ namespace TQVaultAE.Data
 				}
 
 				// Old binary Format
-				pc.rawData = File.ReadAllBytes(path);
+				pc.rawData = this.FileIO.ReadAllBytes(path);
 				// Now Parse the file
 				ParseRawData(pc);
 			}
@@ -286,7 +290,7 @@ namespace TQVaultAE.Data
 
 		private void ParseJsonData(PlayerCollection pc, string path)
 		{
-			var vaultDto = JsonConvert.DeserializeObject<VaultDto>(File.ReadAllText(path, Encoding.UTF8));
+			var vaultDto = JsonConvert.DeserializeObject<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8));
 
 			pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? new();
 			pc.numberOfSacks = vaultDto.sacks.Count;
@@ -354,7 +358,7 @@ namespace TQVaultAE.Data
 					.Select(s =>
 					{
 						var Id = s.BaseItemId.Normalized;
-						var filename = Path.GetFileNameWithoutExtension(Id);
+						var filename = this.PathIO.GetFileNameWithoutExtension(Id);
 						var filesplit = filename.Split('_');
 						var enumName = filesplit.Reverse().JoinString("_");
 
@@ -565,7 +569,7 @@ namespace TQVaultAE.Data
 		/// </summary>
 		public PlayerInfo ReadPlayerInfo(PlayerCollection pc)
 		{
-			var pi = new PlayerInfo();
+			var pi = new PlayerInfo(this.PathIO);
 			pi.Modified = false;
 
 			var headerVersion = TQData.ReadIntAfter(pc.rawData, "headerVersion");
