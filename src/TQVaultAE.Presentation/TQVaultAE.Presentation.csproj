@@ -32,8 +32,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DDSReader" Version="1.0.8-pre" />
+		
 		<PackageReference Include="Enums.NET" Version="5.0.0" />
+		
+		<PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.10.2" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.2" />

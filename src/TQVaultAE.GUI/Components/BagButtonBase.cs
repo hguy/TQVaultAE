@@ -31,6 +31,7 @@ namespace TQVaultAE.GUI.Components
 		protected readonly IServiceProvider ServiceProvider;
 		protected readonly IFontService FontService;
 		protected readonly IUIService UIService;
+		protected readonly IBitmapService BitmapService;
 		private readonly SessionContext userContext;
 		private readonly UserSettings USettings;
 		internal SackCollection Sack;
@@ -95,6 +96,7 @@ namespace TQVaultAE.GUI.Components
 		/// </summary>
 		private GetToolTip getToolTip;
 
+
 		/// <summary>
 		/// Gets or sets the border for item highlight.
 		/// </summary>
@@ -134,6 +136,7 @@ namespace TQVaultAE.GUI.Components
 			this.UIService = this.ServiceProvider.GetService<IUIService>();
 			this.userContext = this.ServiceProvider.GetService<SessionContext>();
 			this.USettings = this.ServiceProvider.GetService<UserSettings>();
+			this.BitmapService = this.ServiceProvider.GetService<IBitmapService>();
 
 			this.getToolTip = getToolTip;
 			this.ButtonNumber = bagNumber;
@@ -327,7 +330,7 @@ namespace TQVaultAE.GUI.Components
 			// Draw the icon
 			Image bmp;
 			if (this.Parent is VaultPanel vp && vp.Vault is not null)
-				bmp = bitmap.ResizeImage(this.Width, this.Height, maintainAspectRatio: true);
+				bmp = this.BitmapService.ResizeImage(bitmap, this.Width, this.Height, maintainAspectRatio: true);
 			else
 				bmp = bitmap;
 
