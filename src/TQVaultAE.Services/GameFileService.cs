@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualBasic.Devices;
@@ -9,12 +8,9 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;
-using Medallion.Shell;
 using TQVaultAE.Domain.Helpers;
-using System.Text.RegularExpressions;
 using System.ComponentModel;
 using Medallion.Shell.Streams;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using TQVaultAE.Domain.Entities;
 

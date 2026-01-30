@@ -13,7 +13,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
@@ -36,7 +35,6 @@ public class ItemProvider : IItemProvider
 	private readonly IItemAttributeProvider ItemAttributeProvider;
 	private readonly ITQDataService TQData;
 	private readonly ITranslationService TranslationService;
-	private readonly IGamePathService GamePathService;
 	private readonly IPathIO PathIO;
 	private readonly UserSettings USettings;
 	private readonly LazyConcurrentDictionary<(Item Item, FriendlyNamesExtraScopes? Scope, bool FilterExtra), ToFriendlyNameResult> FriendlyNamesCache = new LazyConcurrentDictionary<(Item, FriendlyNamesExtraScopes?, bool), ToFriendlyNameResult>();
@@ -197,9 +195,7 @@ public class ItemProvider : IItemProvider
 			, ILootTableCollectionProvider lootTableCollectionProvider
 			, IItemAttributeProvider itemAttributeProvider
 			, ITQDataService tQData
-			, ITranslationService translationService
-			, IGamePathService gamePathService
-			, IPathIO pathIO
+			, ITranslationService translationService, IPathIO pathIO
 			, UserSettings uSettings
 		)
 	{
@@ -209,7 +205,6 @@ public class ItemProvider : IItemProvider
 		this.ItemAttributeProvider = itemAttributeProvider;
 		this.TQData = tQData;
 		this.TranslationService = translationService;
-		this.GamePathService = gamePathService;
 		PathIO = pathIO;
 		USettings = uSettings;
 	}

@@ -13,8 +13,8 @@ namespace TQVaultAE.Services
 {
 	public class VaultService : IVaultService
 	{
-		private readonly ILogger Log = null;
-		private readonly SessionContext userContext = null;
+		private readonly ILogger Log;
+		private readonly SessionContext userContext;
 		private readonly IGamePathService GamePathResolver;
 		private readonly IGameFileService GameFileService;
 		private readonly IPlayerCollectionProvider PlayerCollectionProvider;

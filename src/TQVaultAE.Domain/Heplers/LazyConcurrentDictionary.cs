@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Drawing;
 using System.Threading;
-using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Domain.Helpers
 {

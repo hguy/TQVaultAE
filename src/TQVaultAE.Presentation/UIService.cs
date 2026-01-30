@@ -13,9 +13,8 @@ namespace TQVaultAE.Presentation
 {
 	public class UIService : IUIService
 	{
-		private readonly ILogger Log = null;
+		private readonly ILogger Log;
 		private readonly IDatabase Database;
-		private readonly ITQDataService TQData;
 		private readonly IBitmapService BitmapService;
 		private readonly UserSettings USettings;
 
@@ -97,14 +96,13 @@ namespace TQVaultAE.Presentation
 			}
 		}
 
-		public UIService(ILogger<UIService> log, IDatabase database, ITQDataService tQData, IBitmapService bitmapService, UserSettings uSettings)
+		public UIService(ILogger<UIService> log, IDatabase database, IBitmapService bitmapService, UserSettings uSettings)
 		{
 			if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
 			{
 				// Code here won't run in Visual Studio designer
 				this.Log = log;
 				this.Database = database;
-				this.TQData = tQData;
 				this.BitmapService = bitmapService;
 				USettings = uSettings;
 				this.LoadRelicOverlayBitmap();

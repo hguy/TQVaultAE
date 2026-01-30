@@ -9,7 +9,6 @@ namespace TQVaultAE.Data
 	using System;
 	using System.Globalization;
 	using System.IO;
-	using TQVaultAE.Config;
 	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Domain.Entities;
@@ -76,19 +75,15 @@ namespace TQVaultAE.Data
 		};
 		
 	private readonly ILogger Log;
-	private readonly IItemProvider ItemProvider;
 	private readonly ISackCollectionProvider SackCollectionProvider;
-	private readonly IGamePathService GamePathResolver;
 	private readonly ITQDataService TQData;
 	private readonly IFileIO FileIO;
 	private readonly IPathIO PathIO;
 
-	public StashProvider(ILogger<StashProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, IGamePathService gamePathResolver, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
+	public StashProvider(ILogger<StashProvider> log, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
 	{
 		this.Log = log;
-		this.ItemProvider = itemProvider;
 		this.SackCollectionProvider = sackCollectionProvider;
-		this.GamePathResolver = gamePathResolver;
 		this.TQData = tQData;
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;

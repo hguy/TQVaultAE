@@ -1,11 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
-using SixLabors.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using System.Windows.Input;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
@@ -17,7 +15,6 @@ using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Tooltip
 {
-
 	public partial class ItemTooltip : BaseTooltip
 	{
 		private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();

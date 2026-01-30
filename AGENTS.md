@@ -159,6 +159,7 @@ Follow IFileIO/IPathIO pattern:
 ## Key Dependencies & Resources
 - **Newtonsoft.Json**: JSON serialization
 - **Microsoft.Extensions.Logging**: Logging infrastructure
+- **Magick.NET-Q8-AnyCPU**: DDS to PNG conversion (requires ImageMagick installed via `winget install ImageMagick.Q8`)
 - **xUnit**: Testing framework
 - **Moq**: Mocking for unit tests
 - **AwesomeAssertions**: Fluent assertions for tests

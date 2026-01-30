@@ -13,8 +13,8 @@ namespace TQVaultAE.Services
 {
 	public class StashService : IStashService
 	{
-		private readonly ILogger Log = null;
-		private readonly SessionContext userContext = null;
+		private readonly ILogger Log;
+		private readonly SessionContext userContext;
 		private readonly IStashProvider StashProvider;
 		private readonly IGamePathService GamePathResolver;
 		private readonly IGameFileService GameFileService;

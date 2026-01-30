@@ -8,15 +8,14 @@ using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
-using TQVaultAE.Domain.Search;
 using TQVaultAE.Config;
 
 namespace TQVaultAE.Services
 {
 	public class PlayerService : IPlayerService
 	{
-		private readonly ILogger Log = null;
-		private readonly SessionContext userContext = null;
+		private readonly ILogger Log;
+		private readonly SessionContext userContext;
 		private readonly IPlayerCollectionProvider PlayerCollectionProvider;
 		private readonly IGameFileService GameFileService;
 		private readonly IGamePathService GamePathResolver;

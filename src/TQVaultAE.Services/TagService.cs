@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Contracts.Services;

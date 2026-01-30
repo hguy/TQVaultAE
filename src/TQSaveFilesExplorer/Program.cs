@@ -1,6 +1,3 @@
-using TQ.SaveFilesExplorer.Entities;
-using TQ.SaveFilesExplorer.Entities.Players;
-using TQ.SaveFilesExplorer.Entities.TransferStash;
 using System;
 using System.Windows.Forms;
 

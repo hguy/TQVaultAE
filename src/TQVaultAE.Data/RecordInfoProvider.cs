@@ -6,7 +6,6 @@ using System.IO.Compression;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data
@@ -18,7 +17,7 @@ namespace TQVaultAE.Data
 	/// </summary>
 	public class RecordInfoProvider : IRecordInfoProvider
 	{
-		private readonly ILogger Log = null;
+		private readonly ILogger Log;
 		private readonly ITQDataService TQData;
 
 		/// <summary>

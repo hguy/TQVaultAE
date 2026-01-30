@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TQVaultAE.Domain.Results
+﻿namespace TQVaultAE.Domain.Results
 {
 	public class GamePathEntry
 	{

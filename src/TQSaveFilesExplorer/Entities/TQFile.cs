@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace TQ.SaveFilesExplorer.Entities
 {
@@ -59,7 +57,7 @@ namespace TQ.SaveFilesExplorer.Entities
 		{
 			get => this.Ext.Equals(Ext_Player, StringComparison.InvariantCultureIgnoreCase);
 		}
-private TQFile()
+		private TQFile()
 		{
 		}
 
@@ -287,7 +285,7 @@ private TQFile()
 				currentLvl.Add(k);
 				if (k.IsStructureClosing) break;
 			}
-return (currentLvl, idx);
+			return (currentLvl, idx);
 		}
 
 		/// <summary>

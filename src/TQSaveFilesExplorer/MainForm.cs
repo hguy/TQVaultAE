@@ -2,7 +2,6 @@ using TQ.SaveFilesExplorer.Components;
 using TQ.SaveFilesExplorer.Entities;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -12,7 +11,7 @@ namespace TQ.SaveFilesExplorer
 {
 	public partial class MainForm : Form
 	{
-internal static MainForm StaticRef { get; private set; } = null;
+		internal static MainForm StaticRef { get; private set; } = null;
 
 		public MainForm()
 		{
@@ -69,7 +68,8 @@ internal static MainForm StaticRef { get; private set; } = null;
 			if (alreadyopend != null)
 			{
 				SetStatusMessage($@"""{alreadyopend.Text}"" file is already opened !");
-			};
+			}
+			;
 			return alreadyopend != null;
 		}
 

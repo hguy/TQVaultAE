@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TQVaultAE.Data.Dto
+﻿namespace TQVaultAE.Data.Dto
 {
 	/// <summary>
 	/// Minimal dataset for item storage

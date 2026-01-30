@@ -488,7 +488,7 @@ public partial class ComboBoxCharacter : UserControl
 				var save = this.Items[e.NewIndex];
 
 				var item = new ComboBoxCharacterItem();
-				item.Init(this.DropDown, save, TranslationService, FontService, Database, TagService);
+				item.Init(save, TranslationService, FontService, Database, TagService);
 				item.SelectedItemChanged += Item_SelectedItemChanged;
 				this.DropDown.Items.Add(item);
 				item.RefreshContent();

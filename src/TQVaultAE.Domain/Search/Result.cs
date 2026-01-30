@@ -9,7 +9,6 @@ namespace TQVaultAE.Domain.Search
 	using System.Collections.Generic;
 	using System.Linq;
 	using TQVaultAE.Domain.Entities;
-	using TQVaultAE.Domain.Helpers;
 	using TQVaultAE.Domain.Results;
 
 	/// <summary>

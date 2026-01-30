@@ -1,9 +1,7 @@
-﻿using SixLabors.Shapes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Runtime.ConstrainedExecution;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
@@ -20,7 +18,6 @@ namespace TQVaultAE.GUI.Components
 		/// </summary>
 		internal const int BASE_HEIGHT = 60;
 
-		private ComboBoxCharacterDropDown DropDown;
 		private IDatabase Database;
 		private ITagService TagService;
 		private ITranslationService TranslationService;
@@ -62,12 +59,11 @@ namespace TQVaultAE.GUI.Components
 			SelectedItemChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		public void Init(ComboBoxCharacterDropDown dropDown, object item, ITranslationService translationService, IFontService fontService, IDatabase database, ITagService tagService)
+		public void Init(object item, ITranslationService translationService, IFontService fontService, IDatabase database, ITagService tagService)
 		{
 			this.Item = item;
 			this.TranslationService = translationService;
 			this.FontService = fontService;
-			this.DropDown = dropDown;
 			this.Database = database;
 			this.TagService = tagService;
 
@@ -86,7 +82,7 @@ namespace TQVaultAE.GUI.Components
 			this.scalingLabelModName.Visible =
 			this.scalingLabelArchived.Visible = false;
 
-			this.scalingLabelCharName.Text = 
+			this.scalingLabelCharName.Text =
 			this.scalingLabelPlayerHeader.Text =
 			this.scalingLabelLevel.Text =
 			this.scalingLabelCLassName.Text = string.Empty;

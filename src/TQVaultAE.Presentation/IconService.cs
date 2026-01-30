@@ -3,7 +3,6 @@ namespace TQVaultAE.Presentation
 	using Microsoft.Extensions.Logging;
 	using Newtonsoft.Json;
 	using System.Linq;
-	using System.IO;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Presentation.Models;
 	using TQVaultAE.Domain.Contracts.Providers;

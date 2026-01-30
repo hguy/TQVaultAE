@@ -7,7 +7,6 @@ using Medallion.Shell;
 using System.Linq;
 using Microsoft.VisualBasic.Devices;
 using Microsoft.VisualBasic.MyServices;
-using System;
 using TQVaultAE.Config;
 
 namespace TQVaultAE.Services.Win32

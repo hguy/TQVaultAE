@@ -1,5 +1,4 @@
-﻿using System.IO;
-using TQVaultAE.Domain.Entities;
+﻿using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
 
 namespace TQVaultAE.Domain.Contracts.Services;

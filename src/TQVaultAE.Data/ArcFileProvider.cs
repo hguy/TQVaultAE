@@ -25,9 +25,7 @@ namespace TQVaultAE.Data
 	/// </summary>
 	public class ArcFileProvider : IArcFileProvider
 	{
-		private readonly ILogger Log = null;
-		private readonly ITQDataService TQData;
-		private readonly IFileIO FileIO;
+		private readonly ILogger Log;
 		private readonly IPathIO PathIO;
 		private readonly IDirectoryIO DirectoryIO;
 		private readonly UserSettings USettings;
@@ -36,14 +34,12 @@ namespace TQVaultAE.Data
 		/// Ctr
 		/// </summary>
 		/// <param name="fileName">File Name of the ARC file to be read.</param>
-		public ArcFileProvider(ILogger<ArcFileProvider> log, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
+		public ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
 		{
 			this.Log = log;
-			this.TQData = tQData;
-			this.FileIO = fileIO;
 			this.PathIO = pathIO;
 			this.DirectoryIO = directoryIO;
-			USettings = uSettings;
+			this.USettings = uSettings;
 		}
 
 		#region ArcFile Public Methods
