@@ -13,6 +13,7 @@ using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Exceptions;
 using TQVaultAE.Presentation;
+using TQVaultAE.Services;
 using TQVaultAE.Services.Win32;
 
 namespace ArzExplorer;
@@ -45,6 +46,10 @@ public static class Program
 		// Logs
 		.AddSingleton(LoggerFactory)// Register factory
 		.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+		// Abstractions
+		.AddTransient<IFileIO, FileIO>()
+		.AddTransient<IPathIO, PathIO>()
+		.AddTransient<IDirectoryIO, DirectoryIO>()
 		// Config
 		.AddSingleton<UserSettings>(sp => UserSettings.Read())
 		// Providers

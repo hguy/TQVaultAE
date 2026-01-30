@@ -56,7 +56,7 @@ public class StashServiceTests
 	public void LoadPlayerStash_WithNullSelectedSave_ReturnsEmptyResult()
 	{
 		// Arrange
-		PlayerSave nullSave = null;
+		PlayerSave? nullSave = null;
 
 		// Act
 		var result = _stashService.LoadPlayerStash(nullSave);
@@ -261,7 +261,7 @@ public class StashServiceTests
 
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => stash);
 
-		Stash stashOnError = null;
+		Stash? stashOnError = null;
 
 		// Act
 		var result = _stashService.SaveAllModifiedStashes(ref stashOnError);
@@ -288,7 +288,7 @@ public class StashServiceTests
 
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => stash);
 
-		Stash stashOnError = null;
+		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		try
@@ -325,7 +325,7 @@ public class StashServiceTests
 
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => stash);
 
-		Stash stashOnError = null;
+		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = false;
 
 		// Act
@@ -363,7 +363,7 @@ public class StashServiceTests
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer1.dxb", _ => stash1);
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer2.dxb", _ => stash2);
 
-		Stash stashOnError = null;
+		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		try
@@ -393,7 +393,7 @@ public class StashServiceTests
 		// Arrange
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => null);
 
-		Stash stashOnError = null;
+		Stash? stashOnError = null;
 
 		// Act
 		var result = _stashService.SaveAllModifiedStashes(ref stashOnError);

@@ -248,6 +248,10 @@
       <Project>{E7A1426B-E531-4D67-9272-18DA5AE79484}</Project>
       <Name>TQVaultAE.Services.Win32</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TQVaultAE.Services\TQVaultAE.Services.csproj">
+      <Project>{23F812FB-B5C7-4022-90A7-3B8D7A793E6A}</Project>
+      <Name>TQVaultAE.Services</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DDSReader">

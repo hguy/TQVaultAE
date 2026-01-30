@@ -130,7 +130,7 @@ public class VaultServiceTests
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 
-		PlayerCollection vaultOnError = null;
+		PlayerCollection? vaultOnError = null;
 
 		// Act
 		var result = _vaultService.SaveAllModifiedVaults(ref vaultOnError);
@@ -158,7 +158,7 @@ public class VaultServiceTests
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 
-		PlayerCollection vaultOnError = null;
+		PlayerCollection? vaultOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		try
@@ -198,7 +198,7 @@ public class VaultServiceTests
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 
-		PlayerCollection vaultOnError = null;
+		PlayerCollection? vaultOnError = null;
 		_userSettings.DisableLegacyBackup = false;
 
 		// Act

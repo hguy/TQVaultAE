@@ -69,7 +69,7 @@ namespace TQVaultAE.Tests.Services;
     public void LoadPlayer_WithNullPlayerSave_ReturnsEmptyResult()
     {
         // Arrange
-        PlayerSave nullPlayerSave = null;
+        PlayerSave? nullPlayerSave = null;
 
         // Act
         var result = _playerService.LoadPlayer(nullPlayerSave);
