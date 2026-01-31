@@ -254,9 +254,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DDSReader">
-      <Version>1.0.8-pre</Version>
-    </PackageReference>
     <PackageReference Include="Enums.NET">
       <Version>5.0.0</Version>
     </PackageReference>
