@@ -19,7 +19,7 @@
     <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkProfile />
     <PublishUrl>D:\TQVaultAE_Release\</PublishUrl>
@@ -165,9 +165,6 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="UIToolbox.CheckGroupBox">
-      <HintPath>..\Assemblies\CheckGroupBox2008\UIToolbox.CheckGroupBox.dll</HintPath>
-    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -600,9 +597,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DDSReader">
-      <Version>1.0.8-pre</Version>
-    </PackageReference>
+    <PackageReference Include="CheckGroupBox" Version="1.0.2" />
     <PackageReference Include="Enums.NET">
       <Version>5.0.0</Version>
     </PackageReference>
