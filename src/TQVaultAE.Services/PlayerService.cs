@@ -10,173 +10,172 @@ using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.Config;
 
-namespace TQVaultAE.Services
+namespace TQVaultAE.Services;
+
+public class PlayerService : IPlayerService
 {
-	public class PlayerService : IPlayerService
+	private readonly ILogger Log;
+	private readonly SessionContext userContext;
+	private readonly IPlayerCollectionProvider PlayerCollectionProvider;
+	private readonly IGameFileService GameFileService;
+	private readonly IGamePathService GamePathResolver;
+	private readonly ITranslationService TranslationService;
+	private readonly ITQDataService TQDataService;
+	private readonly ITagService TagService;
+	private readonly IFileIO FileIO;
+	private readonly IPathIO PathIO;
+	private readonly UserSettings UserSettings;
+
+	public PlayerService(
+		ILogger<PlayerService> log
+		, SessionContext userContext
+		, IPlayerCollectionProvider playerCollectionProvider
+		, IStashProvider stashProvider
+		, IGameFileService iGameFileService
+		, IGamePathService gamePathResolver
+		, ITranslationService translationService
+		, ITQDataService tQDataService
+		, ITagService tagService
+		, IFileIO fileIO
+		, IPathIO pathIO
+		, UserSettings userSettings
+	)
 	{
-		private readonly ILogger Log;
-		private readonly SessionContext userContext;
-		private readonly IPlayerCollectionProvider PlayerCollectionProvider;
-		private readonly IGameFileService GameFileService;
-		private readonly IGamePathService GamePathResolver;
-		private readonly ITranslationService TranslationService;
-		private readonly ITQDataService TQDataService;
-		private readonly ITagService TagService;
-		private readonly IFileIO FileIO;
-		private readonly IPathIO PathIO;
-		private readonly UserSettings UserSettings;
+		this.Log = log;
+		this.userContext = userContext;
+		this.PlayerCollectionProvider = playerCollectionProvider;
+		this.GameFileService = iGameFileService;
+		this.GamePathResolver = gamePathResolver;
+		this.TranslationService = translationService;
+		this.TQDataService = tQDataService;
+		this.TagService = tagService;
+		this.FileIO = fileIO;
+		this.PathIO = pathIO;
+		this.UserSettings = userSettings;
+	}
 
-		public PlayerService(
-			ILogger<PlayerService> log
-			, SessionContext userContext
-			, IPlayerCollectionProvider playerCollectionProvider
-			, IStashProvider stashProvider
-			, IGameFileService iGameFileService
-			, IGamePathService gamePathResolver
-			, ITranslationService translationService
-			, ITQDataService tQDataService
-			, ITagService tagService
-			, IFileIO fileIO
-			, IPathIO pathIO
-			, UserSettings userSettings
-		)
+
+	/// <summary>
+	/// Loads a player using the drop down list.
+	/// </summary>
+	/// <param name="selectedSave">Item from the drop down list.</param>
+	/// <param name="fromFileWatcher">When <code>true</code> called from <see cref="FileSystemWatcher.Changed"/></param>
+	/// <returns></returns>
+	public LoadPlayerResult LoadPlayer(PlayerSave selectedSave, bool fromFileWatcher = false)
+	{
+		var result = new LoadPlayerResult();
+
+		if (string.IsNullOrWhiteSpace(selectedSave?.Name)) return result;
+
+		#region Get the player
+
+		var pf = GamePathResolver.GetPlayerFile(selectedSave.Name, selectedSave.IsImmortalThrone, selectedSave.IsArchived);
+
+		var resultPC = new PlayerCollection(selectedSave.Name, pf);
+
+		resultPC.IsImmortalThrone = selectedSave.IsImmortalThrone;
+
+		result.PlayerFile = pf;
+
+		PlayerCollection addFactory(string k)
 		{
-			this.Log = log;
-			this.userContext = userContext;
-			this.PlayerCollectionProvider = playerCollectionProvider;
-			this.GameFileService = iGameFileService;
-			this.GamePathResolver = gamePathResolver;
-			this.TranslationService = translationService;
-			this.TQDataService = tQDataService;
-			this.TagService = tagService;
-			this.FileIO = fileIO;
-			this.PathIO = pathIO;
-			this.UserSettings = userSettings;
+			try
+			{
+				PlayerCollectionProvider.LoadFile(resultPC);
+				selectedSave.Info = resultPC.PlayerInfo;
+			}
+			catch (ArgumentException argumentException)
+			{
+				resultPC.ArgumentException = argumentException;
+			}
+			return resultPC;
+		}
+		;
+
+		PlayerCollection updateFactory(string k, PlayerCollection oldValue)
+		{
+			// No check on oldValue
+			return addFactory(k);
+		}
+		;
+
+		var resultPlayer = fromFileWatcher
+			? this.userContext.Players.AddOrUpdateAtomic(result.PlayerFile, addFactory, updateFactory)
+			: this.userContext.Players.GetOrAddAtomic(result.PlayerFile, addFactory);
+
+		result.Player = resultPlayer;
+
+		this.TagService.LoadTags(selectedSave);
+
+		#endregion
+
+		return result;
+	}
+
+	/// <summary>
+	/// Attempts to save all modified player files
+	/// </summary>
+	/// <param name="playerOnError"></param>
+	/// <returns>True if there were any modified player files.</returns>
+	/// <exception cref="IOException">can happen during file save</exception>
+	public bool SaveAllModifiedPlayers(ref PlayerCollection playerOnError)
+	{
+		int numModified = 0;
+
+		// Save each player as necessary
+		foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in this.userContext.Players)
+		{
+			string playerFile = kvp.Key;
+			PlayerCollection player = kvp.Value.Value;
+
+			if (player == null) continue;
+
+			if (player.IsModified)
+			{
+				++numModified;
+				playerOnError = player;// if needed by caller
+				if (!this.UserSettings.DisableLegacyBackup)
+				{
+					GameFileService.BackupFile(player.PlayerName, playerFile);
+					GameFileService.BackupStupidPlayerBackupFolder(playerFile);
+				}
+				PlayerCollectionProvider.Save(player, playerFile);
+				player.Saved();
+			}
 		}
 
+		return numModified > 0;
+	}
 
-		/// <summary>
-		/// Loads a player using the drop down list.
-		/// </summary>
-		/// <param name="selectedSave">Item from the drop down list.</param>
-		/// <param name="fromFileWatcher">When <code>true</code> called from <see cref="FileSystemWatcher.Changed"/></param>
-		/// <returns></returns>
-		public LoadPlayerResult LoadPlayer(PlayerSave selectedSave, bool fromFileWatcher = false)
-		{
-			var result = new LoadPlayerResult();
+	/// <summary>
+	/// Gets a list of all of the character files in the save folder.
+	/// </summary>
+	/// <returns>List of character files descriptor</returns>
+	public PlayerSave[] GetPlayerSaveList()
+	{
+		string[] folders = this.GamePathResolver.GetCharacterList();
 
-			if (string.IsNullOrWhiteSpace(selectedSave?.Name)) return result;
-
-			#region Get the player
-
-			var pf = GamePathResolver.GetPlayerFile(selectedSave.Name, selectedSave.IsImmortalThrone, selectedSave.IsArchived);
-
-			var resultPC = new PlayerCollection(selectedSave.Name, pf);
-
-			resultPC.IsImmortalThrone = selectedSave.IsImmortalThrone;
-
-			result.PlayerFile = pf;
-
-			PlayerCollection addFactory(string k)
-			{
-				try
-				{
-					PlayerCollectionProvider.LoadFile(resultPC);
-					selectedSave.Info = resultPC.PlayerInfo;
-				}
-				catch (ArgumentException argumentException)
-				{
-					resultPC.ArgumentException = argumentException;
-				}
-				return resultPC;
-			}
-			;
-
-			PlayerCollection updateFactory(string k, PlayerCollection oldValue)
-			{
-				// No check on oldValue
-				return addFactory(k);
-			}
-			;
-
-			var resultPlayer = fromFileWatcher
-				? this.userContext.Players.AddOrUpdateAtomic(result.PlayerFile, addFactory, updateFactory)
-				: this.userContext.Players.GetOrAddAtomic(result.PlayerFile, addFactory);
-
-			result.Player = resultPlayer;
-
-			this.TagService.LoadTags(selectedSave);
-
-			#endregion
-
-			return result;
-		}
-
-		/// <summary>
-		/// Attempts to save all modified player files
-		/// </summary>
-		/// <param name="playerOnError"></param>
-		/// <returns>True if there were any modified player files.</returns>
-		/// <exception cref="IOException">can happen during file save</exception>
-		public bool SaveAllModifiedPlayers(ref PlayerCollection playerOnError)
-		{
-			int numModified = 0;
-
-			// Save each player as necessary
-			foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in this.userContext.Players)
-			{
-				string playerFile = kvp.Key;
-				PlayerCollection player = kvp.Value.Value;
-
-				if (player == null) continue;
-
-				if (player.IsModified)
-				{
-					++numModified;
-					playerOnError = player;// if needed by caller
-					if (!this.UserSettings.DisableLegacyBackup)
-					{
-						GameFileService.BackupFile(player.PlayerName, playerFile);
-						GameFileService.BackupStupidPlayerBackupFolder(playerFile);
-					}
-					PlayerCollectionProvider.Save(player, playerFile);
-					player.Saved();
-				}
-			}
-
-			return numModified > 0;
-		}
-
-		/// <summary>
-		/// Gets a list of all of the character files in the save folder.
-		/// </summary>
-		/// <returns>List of character files descriptor</returns>
-		public PlayerSave[] GetPlayerSaveList()
-		{
-			string[] folders = this.GamePathResolver.GetCharacterList();
-
-			return folders
-				.Select(f =>
-					new PlayerSave(f
-						, f.ContainsIgnoreCase(GamePathResolver.SaveDirNameTQIT)  // Is TQIT
-						, f.ContainsIgnoreCase(GamePathResolver.ArchiveDirName) // Is Archived
-						, this.GamePathResolver.IsCustom
-						, this.GamePathResolver.MapName
-						, this.TranslationService
-						, this.PathIO
-					)
+		return folders
+			.Select(f =>
+				new PlayerSave(f
+					, f.ContainsIgnoreCase(GamePathResolver.SaveDirNameTQIT)  // Is TQIT
+					, f.ContainsIgnoreCase(GamePathResolver.ArchiveDirName) // Is Archived
+					, this.GamePathResolver.IsCustom
+					, this.GamePathResolver.MapName
+					, this.TranslationService
+					, this.PathIO
 				)
-				.OrderBy(ps => ps.Name)
-				.ToArray();
-		}
+			)
+			.OrderBy(ps => ps.Name)
+			.ToArray();
+	}
 
-		public void AlterNameInPlayerFileSave(string newname, string saveFolder)
-		{
-			// Alter name in Player file
-			var newPlayerFile = this.PathIO.Combine(saveFolder, this.GamePathResolver.PlayerSaveFileName);
-			var fileContent = this.FileIO.ReadAllBytes(newPlayerFile);
-			this.TQDataService.ReplaceUnicodeValueAfter(ref fileContent, "myPlayerName", newname);
-			this.FileIO.WriteAllBytes(newPlayerFile, fileContent);
-		}
+	public void AlterNameInPlayerFileSave(string newname, string saveFolder)
+	{
+		// Alter name in Player file
+		var newPlayerFile = this.PathIO.Combine(saveFolder, this.GamePathResolver.PlayerSaveFileName);
+		var fileContent = this.FileIO.ReadAllBytes(newPlayerFile);
+		this.TQDataService.ReplaceUnicodeValueAfter(ref fileContent, "myPlayerName", newname);
+		this.FileIO.WriteAllBytes(newPlayerFile, fileContent);
 	}
 }

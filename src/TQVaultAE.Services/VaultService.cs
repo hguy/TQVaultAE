@@ -9,161 +9,160 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.Config;
 
-namespace TQVaultAE.Services
+namespace TQVaultAE.Services;
+
+public class VaultService : IVaultService
 {
-	public class VaultService : IVaultService
+	private readonly ILogger Log;
+	private readonly SessionContext userContext;
+	private readonly IGamePathService GamePathResolver;
+	private readonly IGameFileService GameFileService;
+	private readonly IPlayerCollectionProvider PlayerCollectionProvider;
+	private readonly IFileIO FileIO;
+	private readonly IPathIO PathIO;
+	private readonly UserSettings UserSettings;
+	public const string MAINVAULT = "Main Vault";
+
+	public VaultService(ILogger<VaultService> log, SessionContext userContext, IPlayerCollectionProvider playerCollectionProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, IFileIO fileIO, IPathIO pathIO, UserSettings userSettings)
 	{
-		private readonly ILogger Log;
-		private readonly SessionContext userContext;
-		private readonly IGamePathService GamePathResolver;
-		private readonly IGameFileService GameFileService;
-		private readonly IPlayerCollectionProvider PlayerCollectionProvider;
-		private readonly IFileIO FileIO;
-		private readonly IPathIO PathIO;
-		private readonly UserSettings UserSettings;
-		public const string MAINVAULT = "Main Vault";
+		this.Log = log;
+		this.userContext = userContext;
+		this.GamePathResolver = gamePathResolver;
+		this.GameFileService = iGameFileService;
+		this.PlayerCollectionProvider = playerCollectionProvider;
+		this.FileIO = fileIO;
+		this.PathIO = pathIO;
+		this.UserSettings = userSettings;
+	}
 
-		public VaultService(ILogger<VaultService> log, SessionContext userContext, IPlayerCollectionProvider playerCollectionProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, IFileIO fileIO, IPathIO pathIO, UserSettings userSettings)
+
+	/// <summary>
+	/// Creates a new empty vault file
+	/// </summary>
+	/// <param name="name">Name of the vault.</param>
+	/// <param name="file">file name of the vault.</param>
+	/// <returns>Player instance of the new vault.</returns>
+	public PlayerCollection CreateVault(string name, string file)
+	{
+		// From .json to .vault
+		var oldFormatfileName = this.PathIO.Combine(this.PathIO.GetDirectoryName(file), this.PathIO.GetFileNameWithoutExtension(file));
+
+		PlayerCollection vault = new PlayerCollection(name, file);
+		vault.IsVault = true;
+
+		// Convert by reading old format
+		if (this.FileIO.Exists(oldFormatfileName))
 		{
-			this.Log = log;
-			this.userContext = userContext;
-			this.GamePathResolver = gamePathResolver;
-			this.GameFileService = iGameFileService;
-			this.PlayerCollectionProvider = playerCollectionProvider;
-			this.FileIO = fileIO;
-			this.PathIO = pathIO;
-			this.UserSettings = userSettings;
-		}
+			LoadVault(vault, oldFormatfileName);
 
+			if (vault.Sacks.Any())
+				vault.Sacks.First().IsModified = true;// Force Save into json on closing
 
-		/// <summary>
-		/// Creates a new empty vault file
-		/// </summary>
-		/// <param name="name">Name of the vault.</param>
-		/// <param name="file">file name of the vault.</param>
-		/// <returns>Player instance of the new vault.</returns>
-		public PlayerCollection CreateVault(string name, string file)
-		{
-			// From .json to .vault
-			var oldFormatfileName = this.PathIO.Combine(this.PathIO.GetDirectoryName(file), this.PathIO.GetFileNameWithoutExtension(file));
-
-			PlayerCollection vault = new PlayerCollection(name, file);
-			vault.IsVault = true;
-
-			// Convert by reading old format
-			if (this.FileIO.Exists(oldFormatfileName))
-			{
-				LoadVault(vault, oldFormatfileName);
-
-				if (vault.Sacks.Any())
-					vault.Sacks.First().IsModified = true;// Force Save into json on closing
-
-				return vault;
-			}
-
-			// CreatNew
-			vault.CreateEmptySacks(12); // number of bags
 			return vault;
 		}
 
-		/// <summary>
-		/// Attempts to save all modified vault files
-		/// </summary>
-		/// <param name="vaultOnError"></param>
-		/// <exception cref="IOException">can happen during file save</exception>
-		public int SaveAllModifiedVaults(ref PlayerCollection vaultOnError)
+		// CreatNew
+		vault.CreateEmptySacks(12); // number of bags
+		return vault;
+	}
+
+	/// <summary>
+	/// Attempts to save all modified vault files
+	/// </summary>
+	/// <param name="vaultOnError"></param>
+	/// <exception cref="IOException">can happen during file save</exception>
+	public int SaveAllModifiedVaults(ref PlayerCollection vaultOnError)
+	{
+		int saved = 0;
+
+		foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in this.userContext.Vaults)
 		{
-			int saved = 0;
+			string vaultFile = kvp.Key;
+			PlayerCollection vault = kvp.Value.Value;
 
-			foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in this.userContext.Vaults)
+			if (vault == null) continue;
+
+			if (vault.IsModified)
 			{
-				string vaultFile = kvp.Key;
-				PlayerCollection vault = kvp.Value.Value;
+				// backup the file
+				vaultOnError = vault;
 
-				if (vault == null) continue;
+				if (!this.UserSettings.DisableLegacyBackup)
+					GameFileService.BackupFile(vault.PlayerName, vaultFile);
 
-				if (vault.IsModified)
-				{
-					// backup the file
-					vaultOnError = vault;
-
-					if (!this.UserSettings.DisableLegacyBackup)
-						GameFileService.BackupFile(vault.PlayerName, vaultFile);
-
-					PlayerCollectionProvider.Save(vault, vaultFile);
-					vault.Saved();
-					saved++;
-				}
+				PlayerCollectionProvider.Save(vault, vaultFile);
+				vault.Saved();
+				saved++;
 			}
-			return saved;
 		}
+		return saved;
+	}
 
 
-		/// <summary>
-		/// Loads a vault file
-		/// </summary>
-		/// <param name="vaultName">Name of the vault</param>
-		public LoadVaultResult LoadVault(string vaultName)
+	/// <summary>
+	/// Loads a vault file
+	/// </summary>
+	/// <param name="vaultName">Name of the vault</param>
+	public LoadVaultResult LoadVault(string vaultName)
+	{
+		var result = new LoadVaultResult();
+
+		// Get the filename
+		result.Filename = GamePathResolver.GetVaultFile(vaultName);
+
+		// Check the cache
+		var resultVault = this.userContext.Vaults.GetOrAddAtomic(result.Filename, k =>
 		{
-			var result = new LoadVaultResult();
-
-			// Get the filename
-			result.Filename = GamePathResolver.GetVaultFile(vaultName);
-
-			// Check the cache
-			var resultVault = this.userContext.Vaults.GetOrAddAtomic(result.Filename, k =>
+			PlayerCollection pc;
+			// We need to load vault.
+			if (!this.FileIO.Exists(k))
 			{
-				PlayerCollection pc;
-				// We need to load vault.
-				if (!this.FileIO.Exists(k))
-				{
-					// the file does not exist so create a new vault or convert old format to Json.
-					pc = this.CreateVault(vaultName, k);
-					pc.VaultLoaded = true;
-				}
-				else
-				{
-					pc = new PlayerCollection(vaultName, k);
-					pc.IsVault = true;
-					LoadVault(pc);
-				}
-				return pc;
-			});
-			result.Vault = resultVault;
-			result.VaultLoaded = resultVault.VaultLoaded;
-			result.ArgumentException = resultVault.ArgumentException;
-
-			return result;
-		}
-
-		/// <summary>
-		/// Load vault
-		/// </summary>
-		/// <param name="pc"></param>
-		/// <param name="filePathToUse">if not <code>null</code>, use this file instead of <see cref="PlayerCollection.PlayerFile"/> </param>
-		private void LoadVault(PlayerCollection pc, string filePathToUse = null)
-		{
-			try
-			{
-				PlayerCollectionProvider.LoadFile(pc, filePathToUse);
+				// the file does not exist so create a new vault or convert old format to Json.
+				pc = this.CreateVault(vaultName, k);
 				pc.VaultLoaded = true;
 			}
-			catch (ArgumentException argumentException)
+			else
 			{
-				pc.ArgumentException = argumentException;
+				pc = new PlayerCollection(vaultName, k);
+				pc.IsVault = true;
+				LoadVault(pc);
 			}
-		}
+			return pc;
+		});
+		result.Vault = resultVault;
+		result.VaultLoaded = resultVault.VaultLoaded;
+		result.ArgumentException = resultVault.ArgumentException;
 
+		return result;
+	}
 
-		/// <summary>
-		/// Updates VaultPath key from the configuration UI
-		/// Needed since all vaults will need to be reloaded if this key changes.
-		/// </summary>
-		/// <param name="vaultPath">Path to the vault files</param>
-		public void UpdateVaultPath(string vaultPath)
+	/// <summary>
+	/// Load vault
+	/// </summary>
+	/// <param name="pc"></param>
+	/// <param name="filePathToUse">if not <code>null</code>, use this file instead of <see cref="PlayerCollection.PlayerFile"/> </param>
+	private void LoadVault(PlayerCollection pc, string filePathToUse = null)
+	{
+		try
 		{
-			this.UserSettings.VaultPath = vaultPath;
-			this.UserSettings.Save();
+			PlayerCollectionProvider.LoadFile(pc, filePathToUse);
+			pc.VaultLoaded = true;
 		}
+		catch (ArgumentException argumentException)
+		{
+			pc.ArgumentException = argumentException;
+		}
+	}
+
+
+	/// <summary>
+	/// Updates VaultPath key from the configuration UI
+	/// Needed since all vaults will need to be reloaded if this key changes.
+	/// </summary>
+	/// <param name="vaultPath">Path to the vault files</param>
+	public void UpdateVaultPath(string vaultPath)
+	{
+		this.UserSettings.VaultPath = vaultPath;
+		this.UserSettings.Save();
 	}
 }

@@ -27,52 +27,52 @@ using TQVaultAE.Config;
 using TQVaultAE.GUI.Inputs.Filters;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 
-namespace TQVaultAE.GUI
+namespace TQVaultAE.GUI;
+
+/// <summary>
+/// Main Program class
+/// </summary>
+public static class Program
 {
+	private static ILogger Log;
+
 	/// <summary>
-	/// Main Program class
+	/// Right to left reading options for message boxes
 	/// </summary>
-	public static class Program
+	private static MessageBoxOptions rightToLeft;
+
+	internal static ServiceProvider ServiceProvider { get; private set; }
+	private static ILoggerFactory LoggerFactory;
+
+	/// <summary>
+	/// The main entry point for the application.
+	/// </summary>
+	[STAThread]
+	[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
+	public static void Main()
 	{
-		private static ILogger Log;
-
-		/// <summary>
-		/// Right to left reading options for message boxes
-		/// </summary>
-		private static MessageBoxOptions rightToLeft;
-
-		internal static ServiceProvider ServiceProvider { get; private set; }
-		private static ILoggerFactory LoggerFactory;
-
-		/// <summary>
-		/// The main entry point for the application.
-		/// </summary>
-		[STAThread]
-		[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
-		public static void Main()
+		try
 		{
-			try
-			{
-				// Add the event handler for handling UI thread exceptions to the event.
-				Application.ThreadException += new ThreadExceptionEventHandler(MainForm_UIThreadException);
+			// Add the event handler for handling UI thread exceptions to the event.
+			Application.ThreadException += new ThreadExceptionEventHandler(MainForm_UIThreadException);
 
-				// Set the unhandled exception mode to force all Windows Forms errors to go through our handler.
-				Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+			// Set the unhandled exception mode to force all Windows Forms errors to go through our handler.
+			Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 
-				// Add the event handler for handling non-UI thread exceptions to the event.
-				AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+			// Add the event handler for handling non-UI thread exceptions to the event.
+			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-				Application.EnableVisualStyles();
-				Application.SetCompatibleTextRenderingDefault(false);
+			Application.EnableVisualStyles();
+			Application.SetCompatibleTextRenderingDefault(false);
 
-				// Setup regular Microsoft.Extensions.Logging abstraction manualy
-				LoggerFactory = new LoggerFactory();
-				LoggerFactory.AddLog4Net();
-				Log = LoggerFactory.CreateLogger(typeof(Program));// Make static level logger
+			// Setup regular Microsoft.Extensions.Logging abstraction manualy
+			LoggerFactory = new LoggerFactory();
+			LoggerFactory.AddLog4Net();
+			Log = LoggerFactory.CreateLogger(typeof(Program));// Make static level logger
 
 			restart:
-				// Configure DI
-				var scol = new ServiceCollection()
+			// Configure DI
+			var scol = new ServiceCollection()
 				// Logs
 				.AddSingleton(LoggerFactory)
 				.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
@@ -126,245 +126,244 @@ namespace TQVaultAE.GUI
 				.AddTransient<VaultMaintenanceDialog>()
 				.AddTransient<SplashScreenForm>();
 
-				Program.ServiceProvider = scol.BuildServiceProvider();
+			Program.ServiceProvider = scol.BuildServiceProvider();
 
-				var gamePathResolver = Program.ServiceProvider.GetService<IGamePathService>();
-				var userSettings = ServiceProvider.GetService<UserSettings>();
+			var gamePathResolver = Program.ServiceProvider.GetService<IGamePathService>();
+			var userSettings = ServiceProvider.GetService<UserSettings>();
 
-				try
-				{
-					ManageCulture();
-					SetUILanguage(userSettings);
-					SetupGamePaths(gamePathResolver, userSettings);
-					SetupMapName(gamePathResolver, userSettings);
-				}
-				catch (ExGamePathNotFound ex)
-				{
-					using (var fbd = new FolderBrowserDialog() { Description = ex.Message, ShowNewFolderButton = false })
-					{
-						DialogResult result = fbd.ShowDialog();
-
-						if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
-						{
-							userSettings.ForceGamePath = fbd.SelectedPath;
-							userSettings.Save();
-							goto restart;
-						}
-						else goto exit;
-					}
-				}
-
-				var mainform = Program.ServiceProvider.GetService<MainForm>();
-				var filterMouseWheel = new FormFilterMouseWheelGlobally(mainform);
-				var filterMouseButtons = new FormFilterMouseButtonGlobally(mainform);
-				Application.AddMessageFilter(filterMouseWheel);
-				Application.AddMessageFilter(filterMouseButtons);
-				Application.Run(mainform);
-			}
-			catch (Exception ex)
+			try
 			{
-				Log.ErrorException(ex);
-				MessageBox.Show(Log.FormatException(ex), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
+				ManageCulture();
+				SetUILanguage(userSettings);
+				SetupGamePaths(gamePathResolver, userSettings);
+				SetupMapName(gamePathResolver, userSettings);
+			}
+			catch (ExGamePathNotFound ex)
+			{
+				using (var fbd = new FolderBrowserDialog() { Description = ex.Message, ShowNewFolderButton = false })
+				{
+					DialogResult result = fbd.ShowDialog();
+
+					if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+					{
+						userSettings.ForceGamePath = fbd.SelectedPath;
+						userSettings.Save();
+						goto restart;
+					}
+					else goto exit;
+				}
 			}
 
-		exit:;
+			var mainform = Program.ServiceProvider.GetService<MainForm>();
+			var filterMouseWheel = new FormFilterMouseWheelGlobally(mainform);
+			var filterMouseButtons = new FormFilterMouseButtonGlobally(mainform);
+			Application.AddMessageFilter(filterMouseWheel);
+			Application.AddMessageFilter(filterMouseButtons);
+			Application.Run(mainform);
+		}
+		catch (Exception ex)
+		{
+			Log.ErrorException(ex);
+			MessageBox.Show(Log.FormatException(ex), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 		}
 
-		#region Init
+		exit:;
+	}
 
-		/// <summary>
-		/// Reads the paths from the config files and sets them.
-		/// </summary>
-		private static void SetupGamePaths(IGamePathService gamePathResolver, UserSettings userSettings)
+	#region Init
+
+	/// <summary>
+	/// Reads the paths from the config files and sets them.
+	/// </summary>
+	private static void SetupGamePaths(IGamePathService gamePathResolver, UserSettings userSettings)
+	{
+		if (userSettings.AutoDetectGamePath)
 		{
-			if (userSettings.AutoDetectGamePath)
+			gamePathResolver.GamePathTQ = gamePathResolver.ResolveGamePath();
+			gamePathResolver.GamePathTQIT = gamePathResolver.ResolveGamePath();
+		}
+		else
+		{
+			gamePathResolver.GamePathTQ = userSettings.TQPath;
+			gamePathResolver.GamePathTQIT = userSettings.TQITPath;
+		}
+
+		var titanQuestGamePath = gamePathResolver.GamePathTQ;
+		if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
+
+		titanQuestGamePath = gamePathResolver.GamePathTQIT;
+		if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
+
+		Log.LogInformation("Selected TQ path {0}", gamePathResolver.GamePathTQ);
+		Log.LogInformation("Selected TQIT path {0}", gamePathResolver.GamePathTQIT);
+
+		// Show a message that the default path is going to be used.
+		if (string.IsNullOrEmpty(userSettings.VaultPath))
+		{
+			string folderPath = Path.Combine(gamePathResolver.SaveFolderTQ, "TQVaultData");
+
+			// Check to see if we are still using a shortcut to specify the vault path and display a message
+			// to use the configuration UI if we are.
+			if (!Directory.Exists(folderPath) && File.Exists(Path.ChangeExtension(folderPath, ".lnk")))
 			{
-				gamePathResolver.GamePathTQ = gamePathResolver.ResolveGamePath();
-				gamePathResolver.GamePathTQIT = gamePathResolver.ResolveGamePath();
+				MessageBox.Show(Resources.DataLinkMsg, Resources.DataLink, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, VaultForm.RightToLeftOptions);
 			}
 			else
 			{
-				gamePathResolver.GamePathTQ = userSettings.TQPath;
-				gamePathResolver.GamePathTQIT = userSettings.TQITPath;
-			}
-
-			var titanQuestGamePath = gamePathResolver.GamePathTQ;
-			if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
-
-			titanQuestGamePath = gamePathResolver.GamePathTQIT;
-			if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
-
-			Log.LogInformation("Selected TQ path {0}", gamePathResolver.GamePathTQ);
-			Log.LogInformation("Selected TQIT path {0}", gamePathResolver.GamePathTQIT);
-
-			// Show a message that the default path is going to be used.
-			if (string.IsNullOrEmpty(userSettings.VaultPath))
-			{
-				string folderPath = Path.Combine(gamePathResolver.SaveFolderTQ, "TQVaultData");
-
-				// Check to see if we are still using a shortcut to specify the vault path and display a message
-				// to use the configuration UI if we are.
-				if (!Directory.Exists(folderPath) && File.Exists(Path.ChangeExtension(folderPath, ".lnk")))
-				{
-					MessageBox.Show(Resources.DataLinkMsg, Resources.DataLink, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, VaultForm.RightToLeftOptions);
-				}
-				else
-				{
-					MessageBox.Show(Resources.DataDefaultPathMsg, Resources.DataDefaultPath, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, VaultForm.RightToLeftOptions);
-				}
-			}
-
-			gamePathResolver.TQVaultSaveFolder = userSettings.VaultPath;
-
-			void DetectGameType()
-			{
-				if (File.Exists(Path.Combine(titanQuestGamePath, "TQ.exe"))) gamePathResolver.GameType = GameType.TQAE;
-				else if (File.Exists(Path.Combine(titanQuestGamePath, "TQIT.exe"))) gamePathResolver.GameType = GameType.TQIT;
-				else gamePathResolver.GameType = GameType.TQ;
+				MessageBox.Show(Resources.DataDefaultPathMsg, Resources.DataDefaultPath, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, VaultForm.RightToLeftOptions);
 			}
 		}
 
-		/// <summary>
-		/// Attempts to read language from config file and set the Current Thread's Culture and UICulture.
-		/// Defaults to to OS UI Culture.
-		/// </summary>
-		private static void SetUILanguage(UserSettings userSettings)
-		{
-			string settingsCulture = null;
-			if (!string.IsNullOrEmpty(userSettings.UILanguage))
-			{
-				settingsCulture = userSettings.UILanguage;
-			}
-			else if (!userSettings.AutoDetectLanguage)
-			{
-				settingsCulture = userSettings.TQLanguage;
-			}
-			else if (!userSettings.AutoDetectLanguage)
-			{
-				settingsCulture = userSettings.TQLanguage;
-			}
+		gamePathResolver.TQVaultSaveFolder = userSettings.VaultPath;
 
-			if (!string.IsNullOrEmpty(settingsCulture))
+		void DetectGameType()
+		{
+			if (File.Exists(Path.Combine(titanQuestGamePath, "TQ.exe"))) gamePathResolver.GameType = GameType.TQAE;
+			else if (File.Exists(Path.Combine(titanQuestGamePath, "TQIT.exe"))) gamePathResolver.GameType = GameType.TQIT;
+			else gamePathResolver.GameType = GameType.TQ;
+		}
+	}
+
+	/// <summary>
+	/// Attempts to read language from config file and set the Current Thread's Culture and UICulture.
+	/// Defaults to to OS UI Culture.
+	/// </summary>
+	private static void SetUILanguage(UserSettings userSettings)
+	{
+		string settingsCulture = null;
+		if (!string.IsNullOrEmpty(userSettings.UILanguage))
+		{
+			settingsCulture = userSettings.UILanguage;
+		}
+		else if (!userSettings.AutoDetectLanguage)
+		{
+			settingsCulture = userSettings.TQLanguage;
+		}
+		else if (!userSettings.AutoDetectLanguage)
+		{
+			settingsCulture = userSettings.TQLanguage;
+		}
+
+		if (!string.IsNullOrEmpty(settingsCulture))
+		{
+			string myCulture = null;
+			foreach (CultureInfo ci in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
 			{
-				string myCulture = null;
-				foreach (CultureInfo ci in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
+				if (ci.EnglishName.Equals(settingsCulture, StringComparison.InvariantCultureIgnoreCase))
 				{
-					if (ci.EnglishName.Equals(settingsCulture, StringComparison.InvariantCultureIgnoreCase))
-					{
-						myCulture = ci.TextInfo.CultureName;
-						break;
-					}
+					myCulture = ci.TextInfo.CultureName;
+					break;
 				}
-
-				// We found something so we will use it.
-				if (!string.IsNullOrEmpty(myCulture))
-				{
-					try
-					{
-						// Sets the culture
-						Thread.CurrentThread.CurrentCulture = new CultureInfo(myCulture);
-
-						// Sets the UI culture
-						Thread.CurrentThread.CurrentUICulture = new CultureInfo(myCulture);
-					}
-					catch (ArgumentNullException e)
-					{
-						Log.LogError(e, "Argument Null Exception when setting the language");
-					}
-					catch (NotSupportedException e)
-					{
-						Log.LogError(e, "Not Supported Exception when setting the language");
-					}
-				}
-
-				// If not then we just default to the OS UI culture.
-			}
-		}
-
-		/// <summary>
-		/// Sets the name of the game map if a custom map is set in the config file.
-		/// Defaults to Main otherwise.
-		/// </summary>
-		private static void SetupMapName(IGamePathService gamePathResolver, UserSettings userSettings)
-		{
-			// Set the map name.  Command line argument can override this setting in LoadResources().
-			string mapName = "main";
-			if (userSettings.ModEnabled)
-				mapName = userSettings.CustomMap;
-
-			gamePathResolver.MapName = mapName;
-		}
-
-		#endregion
-		private static void ManageCulture()
-		{
-			if (CultureInfo.CurrentCulture.IsNeutralCulture)
-			{
-				// Neutral cultures are not supported. Fallback to application's default.
-				String assemblyCultureName = ((NeutralResourcesLanguageAttribute)Attribute.GetCustomAttribute(
-					Assembly.GetExecutingAssembly(), typeof(NeutralResourcesLanguageAttribute), false))
-				   .CultureName;
-				Thread.CurrentThread.CurrentCulture = new CultureInfo(assemblyCultureName, true);
 			}
 
-			// Set options for Right to Left reading.
-			rightToLeft = (MessageBoxOptions)0;
-			if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-			{
-				rightToLeft = MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
-			}
-		}
-
-		/// <summary>
-		/// Handle the UI exceptions by showing a dialog box, and asking the user whether or not they wish to abort execution.
-		/// </summary>
-		/// <param name="sender">sender object</param>
-		/// <param name="t">ThreadExceptionEventArgs data</param>
-		private static void MainForm_UIThreadException(object sender, ThreadExceptionEventArgs t)
-		{
-			DialogResult result = DialogResult.Cancel;
-			try
-			{
-				Log.LogError(t.Exception, "UI Thread Exception");
-				result = MessageBox.Show(Log.FormatException(t.Exception), "Windows Forms Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Stop, MessageBoxDefaultButton.Button1, rightToLeft);
-			}
-			catch
+			// We found something so we will use it.
+			if (!string.IsNullOrEmpty(myCulture))
 			{
 				try
 				{
-					Log.LogCritical(t.Exception, "Fatal Windows Forms Error");
-					MessageBox.Show(Log.FormatException(t.Exception), "Fatal Windows Forms Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Stop, MessageBoxDefaultButton.Button1, rightToLeft);
+					// Sets the culture
+					Thread.CurrentThread.CurrentCulture = new CultureInfo(myCulture);
+
+					// Sets the UI culture
+					Thread.CurrentThread.CurrentUICulture = new CultureInfo(myCulture);
 				}
-				finally
+				catch (ArgumentNullException e)
 				{
-					Application.Exit();
+					Log.LogError(e, "Argument Null Exception when setting the language");
+				}
+				catch (NotSupportedException e)
+				{
+					Log.LogError(e, "Not Supported Exception when setting the language");
 				}
 			}
 
-			// Exits the program when the user clicks Abort.
-			if (result == DialogResult.Abort)
-			{
-				Application.Exit();
-			}
+			// If not then we just default to the OS UI culture.
+		}
+	}
+
+	/// <summary>
+	/// Sets the name of the game map if a custom map is set in the config file.
+	/// Defaults to Main otherwise.
+	/// </summary>
+	private static void SetupMapName(IGamePathService gamePathResolver, UserSettings userSettings)
+	{
+		// Set the map name.  Command line argument can override this setting in LoadResources().
+		string mapName = "main";
+		if (userSettings.ModEnabled)
+			mapName = userSettings.CustomMap;
+
+		gamePathResolver.MapName = mapName;
+	}
+
+	#endregion
+	private static void ManageCulture()
+	{
+		if (CultureInfo.CurrentCulture.IsNeutralCulture)
+		{
+			// Neutral cultures are not supported. Fallback to application's default.
+			String assemblyCultureName = ((NeutralResourcesLanguageAttribute)Attribute.GetCustomAttribute(
+					Assembly.GetExecutingAssembly(), typeof(NeutralResourcesLanguageAttribute), false))
+				.CultureName;
+			Thread.CurrentThread.CurrentCulture = new CultureInfo(assemblyCultureName, true);
 		}
 
-		/// <summary>
-		/// Handle the UI exceptions by showing a dialog box, and asking the user whether or not they wish to abort execution.
-		/// </summary>
-		/// <remarks>NOTE: This exception cannot be kept from terminating the application - it can only log the event, and inform the user about it.</remarks>
-		/// <param name="sender">sender object</param>
-		/// <param name="e">UnhandledExceptionEventArgs data</param>
-		private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+		// Set options for Right to Left reading.
+		rightToLeft = (MessageBoxOptions)0;
+		if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
+		{
+			rightToLeft = MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
+		}
+	}
+
+	/// <summary>
+	/// Handle the UI exceptions by showing a dialog box, and asking the user whether or not they wish to abort execution.
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="t">ThreadExceptionEventArgs data</param>
+	private static void MainForm_UIThreadException(object sender, ThreadExceptionEventArgs t)
+	{
+		DialogResult result = DialogResult.Cancel;
+		try
+		{
+			Log.LogError(t.Exception, "UI Thread Exception");
+			result = MessageBox.Show(Log.FormatException(t.Exception), "Windows Forms Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Stop, MessageBoxDefaultButton.Button1, rightToLeft);
+		}
+		catch
 		{
 			try
 			{
-				Exception ex = (Exception)e.ExceptionObject;
-				Log.LogError(ex, "An application error occurred.");
+				Log.LogCritical(t.Exception, "Fatal Windows Forms Error");
+				MessageBox.Show(Log.FormatException(t.Exception), "Fatal Windows Forms Error", MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Stop, MessageBoxDefaultButton.Button1, rightToLeft);
 			}
 			finally
 			{
 				Application.Exit();
 			}
+		}
+
+		// Exits the program when the user clicks Abort.
+		if (result == DialogResult.Abort)
+		{
+			Application.Exit();
+		}
+	}
+
+	/// <summary>
+	/// Handle the UI exceptions by showing a dialog box, and asking the user whether or not they wish to abort execution.
+	/// </summary>
+	/// <remarks>NOTE: This exception cannot be kept from terminating the application - it can only log the event, and inform the user about it.</remarks>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">UnhandledExceptionEventArgs data</param>
+	private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+	{
+		try
+		{
+			Exception ex = (Exception)e.ExceptionObject;
+			Log.LogError(ex, "An application error occurred.");
+		}
+		finally
+		{
+			Application.Exit();
 		}
 	}
 }
