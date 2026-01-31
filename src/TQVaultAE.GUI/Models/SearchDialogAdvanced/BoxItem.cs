@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using TQVaultAE.Domain.Search;
 using TQVaultAE.GUI.Components;
 
@@ -32,7 +32,7 @@ namespace TQVaultAE.GUI.Models.SearchDialogAdvanced
 		}
 
 		[JsonIgnore]
-		public IEnumerable<Result> MatchingResults { get; set; }
+		public IEnumerable<Result> MatchingResults { get; set; } = [];
 
 		public string CheckedListName { get; set; }
 		public string CategoryName { get; set; }

@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Presentation.Models
@@ -12,25 +12,25 @@ namespace TQVaultAE.Presentation.Models
 
 	public class ConfFile
 	{
-		[JsonProperty("file")]
+		[JsonPropertyName("file")]
 		public string fileName;
-		[JsonProperty("img")]
+		[JsonPropertyName("img")]
 		public List<ConfMatch> imgMatch;
 	}
 
 	public class ConfMatch
 	{
-		[JsonProperty("ca")]
+		[JsonPropertyName("ca")]
 		public IconCategory Category;
-		[JsonProperty("lt")]
+		[JsonPropertyName("lt")]
 		public List<string> Literal;
-		[JsonProperty("pa")]
+		[JsonPropertyName("pa")]
 		public string Pattern;
-		[JsonProperty("on")]
+		[JsonPropertyName("on")]
 		public string On;
-		[JsonProperty("of")]
+		[JsonPropertyName("of")]
 		public string Off;
-		[JsonProperty("ov")]
+		[JsonPropertyName("ov")]
 		public string Over;
 		public bool IsRegex => !string.IsNullOrWhiteSpace(this.Pattern);
 

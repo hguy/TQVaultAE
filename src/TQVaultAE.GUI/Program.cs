@@ -10,6 +10,7 @@ using System.IO;
 using System.Reflection;
 using System.Resources;
 using System.Security.Permissions;
+using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using TQVaultAE.Data;
@@ -24,6 +25,7 @@ using TQVaultAE.Services.Win32;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Config;
 using TQVaultAE.GUI.Inputs.Filters;
+using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 
 namespace TQVaultAE.GUI
 {
@@ -63,9 +65,6 @@ namespace TQVaultAE.GUI
 				Application.EnableVisualStyles();
 				Application.SetCompatibleTextRenderingDefault(false);
 
-#if DEBUG
-				
-#endif
 				// Setup regular Microsoft.Extensions.Logging abstraction manualy
 				LoggerFactory = new LoggerFactory();
 				LoggerFactory.AddLog4Net();
@@ -79,6 +78,8 @@ namespace TQVaultAE.GUI
 				.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
 				// Config
 				.AddSingleton<UserSettings>(sp => UserSettings.Read())
+				.AddSingleton<SearchQueries>()
+				.AddSingleton(new JsonSerializerOptions { IncludeFields = true, PropertyNameCaseInsensitive = true, WriteIndented = true })
 				// States
 				.AddSingleton<SessionContext>()
 				// Abstractions

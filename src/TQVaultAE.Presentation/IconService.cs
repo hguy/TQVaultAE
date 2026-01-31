@@ -1,8 +1,8 @@
 namespace TQVaultAE.Presentation
 {
 	using Microsoft.Extensions.Logging;
-	using Newtonsoft.Json;
 	using System.Linq;
+	using System.Text.Json;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Presentation.Models;
 	using TQVaultAE.Domain.Contracts.Providers;
@@ -21,15 +21,17 @@ namespace TQVaultAE.Presentation
 		private readonly IUIService UIService;
 		private readonly IGamePathService GamePathService;
 		private readonly IFileIO FileIO;
+		private readonly JsonSerializerOptions JsonOptions;
 		private ReadOnlyCollection<IconInfo> Pictures;
 
-		public IconService(ILogger<IconService> log, IDatabase database, IUIService uiService, IGamePathService gamePathService, IFileIO fileIO)
+		public IconService(ILogger<IconService> log, IDatabase database, IUIService uiService, IGamePathService gamePathService, IFileIO fileIO, JsonSerializerOptions jsonOptions)
 		{
 			this.Log = log;
 			this.Database = database;
 			this.UIService = uiService;
 			this.GamePathService = gamePathService;
 			this.FileIO = fileIO;
+			this.JsonOptions = jsonOptions;
 		}
 
 		void InitIconList()
@@ -38,7 +40,7 @@ namespace TQVaultAE.Presentation
 
 			Log.LogDebug(@"START LOADING ICON DATABASE!");
 
-			var configfile = JsonConvert.DeserializeObject<ConfRoot>(Resources.IconServiceList);
+			var configfile = JsonSerializer.Deserialize<ConfRoot>(Resources.IconServiceList, JsonOptions);
 
 			// Build Keys
 			var consolitatedFilekeys =

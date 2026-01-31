@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Config.Tags;
 using TQVaultAE.Domain.Entities;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Drawing;
 using System.Collections.Generic;
 
@@ -19,18 +19,20 @@ public class TagService : ITagService
 	protected readonly IGamePathService GamePathService;
 	protected readonly IFileIO FileIO;
 	protected readonly IPathIO PathIO;
+	protected readonly JsonSerializerOptions JsonOptions;
 	protected TagConfig TagConfig;
 	public Dictionary<string, Color> Tags => this.TagConfig.tags.OrderBy(t => t.name).ToDictionary(
 		t => t.name,
 		t => Color.FromArgb(t.color.R, t.color.G, t.color.B)
 	);
 
-	public TagService(ILogger<TagService> log, IGamePathService iGamePathService, IFileIO fileIO, IPathIO pathIO)
+	public TagService(ILogger<TagService> log, IGamePathService iGamePathService, IFileIO fileIO, IPathIO pathIO, JsonSerializerOptions jsonOptions)
 	{
 		this.Log = log;
 		this.GamePathService = iGamePathService;
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;
+		this.JsonOptions = jsonOptions;
 		this.ReadConfig();
 	}
 
@@ -152,7 +154,7 @@ public class TagService : ITagService
 		if (this.FileIO.Exists(configFilePath))
 		{
 			var content = this.FileIO.ReadAllText(configFilePath);
-			this.TagConfig = JsonConvert.DeserializeObject<TagConfig>(content);
+			this.TagConfig = JsonSerializer.Deserialize<TagConfig>(content, JsonOptions);
 			return;
 		}
 
@@ -168,7 +170,7 @@ public class TagService : ITagService
 
 		string configFilePath = this.ResolveConfigFilePath();
 
-		var content = JsonConvert.SerializeObject(this.TagConfig, Formatting.Indented);
+		var content = JsonSerializer.Serialize(this.TagConfig, JsonOptions);
 		this.FileIO.WriteAllText(configFilePath, content);
 	}
 

@@ -1,9 +1,7 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
@@ -11,7 +9,6 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace TQVaultAE.GUI.Components;
 

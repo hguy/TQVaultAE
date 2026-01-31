@@ -1,5 +1,8 @@
-﻿namespace TQVaultAE.Domain.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace TQVaultAE.Domain.Entities
 {
+	[JsonConverter(typeof(JsonStringEnumConverter))]
 	public enum IconCategory
 	{
 		Misc,

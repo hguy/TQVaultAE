@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Contracts.Providers;
@@ -15,12 +16,12 @@ using System.Drawing;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
-using Newtonsoft.Json;
 using TQVaultAE.Domain.Results;
 using System.Text.RegularExpressions;
 using static TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery;
 using TQVaultAE.GUI.Models;
 using System.Reflection;
+using System.Windows.Forms.VisualStyles;
 using System.Xml.Linq;
 
 namespace TQVaultAE.GUI;
@@ -28,31 +29,34 @@ namespace TQVaultAE.GUI;
 /// <summary>
 /// Class for the Search Dialog box.
 /// </summary>
-	public partial class SearchDialogAdvanced : VaultForm
-	{
-		private readonly SessionContext Ctx;
-		private readonly List<Result> ItemDatabase = new List<Result>();
-		private readonly ILogger Log;
-		private readonly Bitmap ButtonImageUp;
-		private readonly Bitmap ButtonImageDown;
-		private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] _NavMap;
-		private readonly List<BoxItem> _SelectedFilters = new List<BoxItem>();
+public partial class SearchDialogAdvanced : VaultForm
+{
+	private readonly SessionContext Ctx;
+	private readonly List<Result> ItemDatabase = new();
+	private readonly ILogger Log;
+	private readonly Bitmap ButtonImageUp;
+	private readonly Bitmap ButtonImageDown;
+	private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] NavMap;
+	private readonly List<BoxItem> SelectedFilters = new();
+	private readonly SearchQueries SQueries;
 
-		public Result[] QueryResults { get; private set; } = new Result[] { };
-		private bool scalingCheckBoxReduceDuringSelection_LastChecked;
+	public Result[] QueryResults { get; private set; } = new Result[] { };
+	private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 	/// <summary>
-	/// Initializes a new instance of the SearchDialog class.
+	/// Initializes a new instance of SearchDialog class.
 	/// </summary>
 	public SearchDialogAdvanced(
 		MainForm instance
 		, SessionContext sessionContext
 		, ILogger<SearchDialogAdvanced> log
+		, SearchQueries sQueries
 	) : base(instance.ServiceProvider)
 	{
 		this.Owner = instance;
 		this.Ctx = sessionContext;
 		this.Log = log;
+		this.SQueries = sQueries;
 
 		this.InitializeComponent();
 
@@ -162,12 +166,10 @@ namespace TQVaultAE.GUI;
 
 		#endregion
 
-		this._SearchQueries = SearchQueries.Default(GamePathResolver, FileIO, PathIO);
-
 		// Mapping between nav button & content component
-		if (_NavMap is null)
+		if (NavMap is null)
 		{
-			_NavMap = new (ScalingButton Button, FlowLayoutPanel Panel)[] {
+			NavMap = new (ScalingButton Button, FlowLayoutPanel Panel)[] {
 				(this.scalingButtonMenuAttribute, this.flowLayoutPanelItemAttributes),
 				(this.scalingButtonMenuBaseAttribute, this.flowLayoutPanelBaseAttributes),
 				(this.scalingButtonMenuCharacters, this.flowLayoutPanelCharacters),
@@ -219,7 +221,7 @@ namespace TQVaultAE.GUI;
 	}
 
 	private void SetSearchBoxVisibility(bool isVisible)
-		=> _NavMap.ToList().ForEach(m => m.Panel.Visible = isVisible);
+		=> NavMap.ToList().ForEach(m => m.Panel.Visible = isVisible);
 
 	#region Apply & Cancel
 
@@ -230,11 +232,12 @@ namespace TQVaultAE.GUI;
 	/// <param name="e">EventArgs data</param>
 	private void ApplyButtonClicked(object sender, EventArgs e)
 	{
-		if (!_SelectedFilters.Any())
+		if (!SelectedFilters.Any())
 		{
 			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
 			return;
-		};
+		}
+		;
 
 		this.DialogResult = DialogResult.OK;
 		this.Close();
@@ -934,7 +937,7 @@ namespace TQVaultAE.GUI;
 	private void scalingButtonMenu_Click(object sender, EventArgs e)
 	{
 		// Toggle
-		var (button, panel) = _NavMap.First(m => object.ReferenceEquals(m.Button, sender));
+		var (button, panel) = NavMap.First(m => object.ReferenceEquals(m.Button, sender));
 		panel.Visible = !panel.Visible;
 
 		SyncNaveButton();
@@ -943,7 +946,7 @@ namespace TQVaultAE.GUI;
 	private void SyncNaveButton()
 	{
 		/// Push invisible categories at the end of <see cref="flowLayoutPanelMain"/> so nav buttons define categories order in flowpanel
-		var trail = _NavMap.Where(map => !map.Panel.Visible).Select(map => map.Panel).ToList();
+		var trail = NavMap.Where(map => !map.Panel.Visible).Select(map => map.Panel).ToList();
 		// Remove
 		trail.ForEach(c => this.flowLayoutPanelMain.Controls.Remove(c));
 		// Then Put it back at the end
@@ -954,7 +957,7 @@ namespace TQVaultAE.GUI;
 
 	private void SyncNavButtonImage()
 	{
-		foreach (var map in _NavMap)
+		foreach (var map in NavMap)
 		{
 			// Invert Up & Down each time you click to make it behave like a toggle
 			if (map.Panel.Visible)
@@ -976,19 +979,19 @@ namespace TQVaultAE.GUI;
 
 	private void Sync_SelectedFilters()
 	{
-		_SelectedFilters.Clear();
+		SelectedFilters.Clear();
 
 		// Add the SearchTerm on top 
 		var (_, searchTermBoxItem) = this.scalingTextBoxSearchTerm.GetBoxItem(false);
 		// if i get something to filter with
 		if (!string.IsNullOrWhiteSpace(searchTermBoxItem.DisplayValue))
-			_SelectedFilters.Add(searchTermBoxItem);
+			SelectedFilters.Add(searchTermBoxItem);
 
 		// Crawl winform graf for selected BoxItem
 		flowLayoutPanelMain.ProcessAllControls(c =>
 		{
 			if (c is ScalingCheckedListBox lb)
-				_SelectedFilters.AddRange(lb.CheckedItems.Cast<BoxItem>());
+				SelectedFilters.AddRange(lb.CheckedItems.Cast<BoxItem>());
 		});
 
 		this.Apply_SelectedFilters();
@@ -1031,14 +1034,13 @@ namespace TQVaultAE.GUI;
 	private void scalingLabelFiltersSelected_MouseEnter(object sender, EventArgs e)
 	{
 		var ctrl = sender as Control;
-		SearchFiltersTooltip.ShowTooltip(this.ServiceProvider, ctrl, this._SelectedFilters, (SearchOperator)scalingComboBoxOperator.SelectedIndex);
+		SearchFiltersTooltip.ShowTooltip(this.ServiceProvider, ctrl, this.SelectedFilters, (SearchOperator)scalingComboBoxOperator.SelectedIndex);
 	}
 
 	private void scalingLabelFiltersSelected_MouseLeave(object sender, EventArgs e)
 		=> SearchFiltersTooltip.HideTooltip();
 
 	bool _Apply_SelectedFiltersDisabled = false;
-	private SearchQueries _SearchQueries;
 
 	private void Apply_SelectedFilters()
 	{
@@ -1055,19 +1057,19 @@ namespace TQVaultAE.GUI;
 			MinStr = (int)numericUpDownMinStr.Value;
 		bool MaxRequierement = scalingCheckBoxMaxReq.Checked, MinRequierement = scalingCheckBoxMinReq.Checked;
 
-		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag.ToString(), _SelectedFilters.Count());
+		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag.ToString(), SelectedFilters.Count());
 
 		var query = ItemDatabase.AsQueryable();
 		if (this.scalingComboBoxOperator.SelectedIndex == (int)SearchOperator.And)
 		{
 			// AND operator => item must exist in every filter
-			foreach (var filter in _SelectedFilters)
+			foreach (var filter in SelectedFilters)
 				query = query.Intersect(filter.MatchingResults);// Reducing result at every step
 		}
 		else
 		{
 			// OR Operator => Accumulate & Distinct
-			query = _SelectedFilters.AsQueryable().SelectMany(f => f.MatchingResults).Distinct();
+			query = SelectedFilters.AsQueryable().SelectMany(f => f.MatchingResults).Distinct();
 		}
 
 		// Apply Quick Filters
@@ -1173,13 +1175,13 @@ namespace TQVaultAE.GUI;
 		}
 
 		if (
-			(
+			this.FilterCategories.HasChanged
+			|| (
 				// Category Full Display
 				!scalingCheckBoxReduceDuringSelection.Checked
 				/// But comes from <see cref="scalingCheckBoxReduceDuringSelection_CheckedChanged"/> meaning "from a Category Reduced Display"
 				&& scalingCheckBoxReduceDuringSelection.Checked != scalingCheckBoxReduceDuringSelection_LastChecked
 			)
-			|| this.FilterCategories.HasChanged
 		)
 		{
 			ResetCheckBoxesToFirstLoad();// Restore Full Display
@@ -1221,7 +1223,7 @@ namespace TQVaultAE.GUI;
 				bool isChecked;
 				foreach (var item in tag.DataSource)
 				{
-					isChecked = _SelectedFilters.Contains(item);
+					isChecked = SelectedFilters.Contains(item);
 
 					if (!isChecked // Do not hide already checked
 						/// Should i filter out this check box based on <see cref="FilterCategories"/> ?
@@ -1260,7 +1262,7 @@ namespace TQVaultAE.GUI;
 					bool isChecked;
 					foreach (var item in DSvsQR)
 					{
-						isChecked = _SelectedFilters.Contains(item.Key);
+						isChecked = SelectedFilters.Contains(item.Key);
 
 						if (!isChecked // Do not hide already checked
 							/// Should i filter out this check box based on <see cref="FilterCategories"/> ?
@@ -1426,17 +1428,17 @@ namespace TQVaultAE.GUI;
 
 	private void SavePersonnalQueries()
 	{
-		this._SearchQueries.Save();
+		this.SQueries.Save();
 	}
 
 	private void LoadPersonnalQueries()
 	{
-		if (!this._SearchQueries.Any())
+		if (!this.SQueries.Any())
 			return;
 
 		// Try to retrieve actual instantiated BoxItems related to saved data.
 		var matrix = (
-			from query in this._SearchQueries
+			from query in this.SQueries
 			from boxi in query.CheckedItems
 			select new
 			{
@@ -1528,7 +1530,7 @@ namespace TQVaultAE.GUI;
 		}
 
 		// Name conflict
-		foundIt = this._SearchQueries.FirstOrDefault(q => q.QueryName.Equals(input, StringComparison.OrdinalIgnoreCase));
+		foundIt = this.SQueries.FirstOrDefault(q => q.QueryName.Equals(input, StringComparison.OrdinalIgnoreCase));
 		if (foundIt != null)
 		{
 			overrideIt = MessageBox.Show(
@@ -1556,7 +1558,7 @@ namespace TQVaultAE.GUI;
 
 		// Add scenario
 		var newList = new IEnumerable<SearchQuery>[] {
-			this._SearchQueries
+			this.SQueries
 			, new[] {
 				UpdateQuery(input, new SearchQuery())
 			}
@@ -1565,8 +1567,8 @@ namespace TQVaultAE.GUI;
 		.OrderBy(s => s.QueryName)
 		.ToList();
 
-		this._SearchQueries.Clear();
-		this._SearchQueries.AddRange(newList);
+		this.SQueries.Clear();
+		this.SQueries.AddRange(newList);
 
 		SearchQueriesInit();
 
@@ -1575,7 +1577,7 @@ namespace TQVaultAE.GUI;
 		SearchQuery UpdateQuery(string input, SearchQuery foundIt)
 		{
 			foundIt.QueryName = input;
-			foundIt.CheckedItems = this._SelectedFilters.ToArray();// i need a clone here so ToArray() do the job
+			foundIt.CheckedItems = this.SelectedFilters.ToArray();// i need a clone here so ToArray() do the job
 
 			// Visible elements / category
 			foundIt.MaxElement = this.numericUpDownMaxElement.Value;
@@ -1586,7 +1588,7 @@ namespace TQVaultAE.GUI;
 			// Add Category filter
 			foundIt.Filter = this.scalingTextBoxFilterCategories.Text;
 			// Add Display elements
-			foundIt.Visible = _NavMap.Select(m => new VisibilityItem(m.Button.Name, m.Panel.Visible)).ToList();
+			foundIt.Visible = NavMap.Select(m => new VisibilityItem(m.Button.Name, m.Panel.Visible)).ToList();
 			// Requierements
 			foundIt.MinRequirement = scalingCheckBoxMinReq.Checked;
 			foundIt.MaxRequirement = scalingCheckBoxMaxReq.Checked;
@@ -1608,7 +1610,7 @@ namespace TQVaultAE.GUI;
 
 		bool HaveFilters()
 		{
-			return this._SelectedFilters.Any()
+			return this.SelectedFilters.Any()
 				|| (this.scalingCheckBoxMinReq.Checked
 					&& (
 						this.numericUpDownMinLvl.Value != 0
@@ -1638,7 +1640,7 @@ namespace TQVaultAE.GUI;
 	{
 		scalingComboBoxQueryList.BeginUpdate();
 		scalingComboBoxQueryList.Items.Clear();
-		scalingComboBoxQueryList.Items.AddRange(this._SearchQueries.ToArray());
+		scalingComboBoxQueryList.Items.AddRange(this.SQueries.ToArray());
 		scalingComboBoxQueryList.EndUpdate();
 	}
 
@@ -1663,7 +1665,7 @@ namespace TQVaultAE.GUI;
 
 
 		scalingComboBoxQueryList.Items.RemoveAt(idx);
-		this._SearchQueries.RemoveAt(idx);
+		this.SQueries.RemoveAt(idx);
 
 		SavePersonnalQueries();
 	}
@@ -1671,15 +1673,15 @@ namespace TQVaultAE.GUI;
 	private void scalingComboBoxQueryList_SelectedIndexChanged(object sender, EventArgs e)
 	{
 		var idx = scalingComboBoxQueryList.SelectedIndex;
-		Make_SelectedFilters(this._SearchQueries[idx]);
+		Make_SelectedFilters(this.SQueries[idx]);
 	}
 
 	private void Make_SelectedFilters(SearchQuery searchQuery)
 	{
 		// Make _SelectedFilters from saved query
-		_SelectedFilters.Clear();
+		SelectedFilters.Clear();
 
-		_SelectedFilters.AddRange(searchQuery.CheckedItems);
+		SelectedFilters.AddRange(searchQuery.CheckedItems);
 
 		ResetCheckBoxesToFirstLoad();
 
@@ -1700,7 +1702,7 @@ namespace TQVaultAE.GUI;
 		_Apply_SelectedFiltersDisabled = true;// Prevent filter before ui is fully init
 
 		(// Find category visibility differences and apply
-			from map in this._NavMap
+			from map in this.NavMap
 			join vis in searchQuery.Visible on map.Button.Name equals vis.Name
 			where map.Panel.Visible != vis.Visible
 			select map

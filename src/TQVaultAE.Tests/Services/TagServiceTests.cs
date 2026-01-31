@@ -1,8 +1,8 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using System.Drawing;
+using System.Text.Json;
 using TQVaultAE.Config.Tags;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
@@ -20,6 +20,7 @@ public class TagServiceTests
 	private readonly Mock<IFileIO> _mockFileIO;
 	private readonly Mock<IPathIO> _mockPathIO;
 	private readonly Mock<ITranslationService> _mockTranslationService;
+	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly TagService _tagService;
 	private readonly string _testConfigPath = @"C:\Test\TagConfig.json";
 
@@ -30,6 +31,7 @@ public class TagServiceTests
 		_mockFileIO = new Mock<IFileIO>();
 		_mockPathIO = new Mock<IPathIO>();
 		_mockTranslationService = new Mock<ITranslationService>();
+		_jsonOptions = new JsonSerializerOptions { IncludeFields = true, PropertyNameCaseInsensitive = true };
 
 		_mockGamePathService.Setup(x => x.TQVaultConfigFolder).Returns(@"C:\Test");
 		_mockPathIO.Setup(x => x.Combine(It.IsAny<string>(), It.IsAny<string>())).Returns(_testConfigPath);
@@ -39,7 +41,8 @@ public class TagServiceTests
 			_mockLogger.Object,
 			_mockGamePathService.Object,
 			_mockFileIO.Object,
-			_mockPathIO.Object
+			_mockPathIO.Object,
+			_jsonOptions
 		);
 	}
 
@@ -48,7 +51,7 @@ public class TagServiceTests
 		return new PlayerSave(@"C:\Test\_TestPlayer", false, false, false, "", _mockTranslationService.Object, _mockPathIO.Object);
 	}
 
-	[Fact]
+		[Fact]
 	public void Constructor_WithValidDependencies_InitializesService()
 	{
 		// Arrange & Act
@@ -56,7 +59,8 @@ public class TagServiceTests
 			_mockLogger.Object,
 			_mockGamePathService.Object,
 			_mockFileIO.Object,
-			_mockPathIO.Object
+			_mockPathIO.Object,
+			_jsonOptions
 		);
 
 		// Assert
@@ -85,11 +89,11 @@ public class TagServiceTests
 		{
 			tags = new List<TagInfo>
 			{
-				new TagInfo { name = "ZTag", color = new TagInfoColor { R = 255, G = 0, B = 0 } },
+			new TagInfo { name = "ZTag", color = new TagInfoColor { R = 255, G = 0, B = 0 } },
 				new TagInfo { name = "ATag", color = new TagInfoColor { R = 0, G = 255, B = 0 } }
 			}
 		};
-		var configJson = JsonConvert.SerializeObject(config);
+		var configJson = JsonSerializer.Serialize(config, _jsonOptions);
 		_mockFileIO.Setup(x => x.Exists(_testConfigPath)).Returns(true);
 		_mockFileIO.Setup(x => x.ReadAllText(_testConfigPath)).Returns(configJson);
 
@@ -97,7 +101,8 @@ public class TagServiceTests
 			_mockLogger.Object,
 			_mockGamePathService.Object,
 			_mockFileIO.Object,
-			_mockPathIO.Object
+			_mockPathIO.Object,
+			_jsonOptions
 		);
 
 		// Act
@@ -323,11 +328,11 @@ public class TagServiceTests
 		var config = new TagConfig
 		{
 			tags = new List<TagInfo>
-			{
-				new TagInfo { name = "TestTag", color = new TagInfoColor { R = 255, G = 0, B = 0 } }
+		{
+			new TagInfo { name = "TestTag", color = new TagInfoColor { R = 255, G = 0, B = 0 } }
 			}
 		};
-		var configJson = JsonConvert.SerializeObject(config);
+		var configJson = JsonSerializer.Serialize(config);
 		_mockFileIO.Setup(x => x.Exists(_testConfigPath)).Returns(true);
 		_mockFileIO.Setup(x => x.ReadAllText(_testConfigPath)).Returns(configJson);
 
@@ -369,7 +374,8 @@ public class TagServiceTests
 			_mockLogger.Object,
 			_mockGamePathService.Object,
 			_mockFileIO.Object,
-			_mockPathIO.Object
+			_mockPathIO.Object,
+			_jsonOptions
 		);
 		service.AddTag("TestTag");
 

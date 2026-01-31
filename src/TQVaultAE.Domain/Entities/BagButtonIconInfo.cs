@@ -1,7 +1,7 @@
-﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Domain.Entities
@@ -11,18 +11,18 @@ namespace TQVaultAE.Domain.Entities
 		/// <summary>
 		/// BagButton display mode
 		/// </summary>
-		[JsonProperty("mode")]
+		[JsonPropertyName("mode")]
 		public BagButtonDisplayMode DisplayMode;
 		/// <summary>
 		/// BagButton Custom label 
 		/// </summary>
-		[JsonProperty("label")]
+		[JsonPropertyName("label")]
 		public string Label;
 
 		/// <summary>
 		/// BagButton On icon
 		/// </summary>
-		[JsonProperty("on")]
+		[JsonPropertyName("on")]
 		public string OnStr;
 
 		[JsonIgnore]
@@ -35,7 +35,7 @@ namespace TQVaultAE.Domain.Entities
 		/// <summary>
 		/// BagButton Off icon
 		/// </summary>
-		[JsonProperty("off")]
+		[JsonPropertyName("off")]
 		public string OffStr;
 
 		[JsonIgnore]
@@ -48,7 +48,7 @@ namespace TQVaultAE.Domain.Entities
 		/// <summary>
 		/// BagButton Over icon
 		/// </summary>
-		[JsonProperty("over")]
+		[JsonPropertyName("over")]
 		public string OverStr;
 
 		[JsonIgnore]

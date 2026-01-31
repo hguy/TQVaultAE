@@ -1,5 +1,8 @@
-﻿namespace TQVaultAE.GUI.Models.SearchDialogAdvanced
+﻿using System.Text.Json.Serialization;
+
+namespace TQVaultAE.GUI.Models.SearchDialogAdvanced
 {
+	[JsonConverter(typeof(JsonStringEnumConverter))]
 	public enum SearchOperator
 	{
 		/// <summary>

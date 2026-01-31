@@ -6,11 +6,11 @@
 namespace TQVaultAE.Data
 {
 	using Microsoft.Extensions.Logging;
-	using Newtonsoft.Json;
 	using System;
 	using System.IO;
 	using System.Linq;
 	using System.Text;
+	using System.Text.Json;
 	using TQVaultAE.Domain.Contracts.Providers;
 	using TQVaultAE.Domain.Contracts.Services;
 	using TQVaultAE.Data.Dto;
@@ -22,12 +22,13 @@ namespace TQVaultAE.Data
 	/// </summary>
 	public class PlayerCollectionProvider : IPlayerCollectionProvider
 	{
-	private readonly ILogger Log;
-	private readonly IItemProvider ItemProvider;
-	private readonly ISackCollectionProvider SackCollectionProvider;
-	private readonly ITQDataService TQData;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
+		private readonly ILogger Log;
+		private readonly IItemProvider ItemProvider;
+		private readonly ISackCollectionProvider SackCollectionProvider;
+		private readonly ITQDataService TQData;
+		private readonly IFileIO FileIO;
+		private readonly IPathIO PathIO;
+		private readonly JsonSerializerOptions JsonOptions;
 
 		/// <summary>
 		/// array holding the byte pattern for the beginning of a block in the player file.
@@ -39,7 +40,7 @@ namespace TQVaultAE.Data
 		/// </summary>
 		public byte[] endBlockPattern = { 0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
 
-	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
+	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO, JsonSerializerOptions jsonOptions)
 	{
 		this.Log = log;
 		this.ItemProvider = itemProvider;
@@ -47,6 +48,7 @@ namespace TQVaultAE.Data
 		this.TQData = tQData;
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;
+		this.JsonOptions = jsonOptions;
 	}
 
 		public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
@@ -206,7 +208,7 @@ namespace TQVaultAE.Data
 				}).ToList()
 			};
 
-			this.FileIO.WriteAllText(fileName, JsonConvert.SerializeObject(pcjson, Formatting.Indented), Encoding.UTF8);
+			this.FileIO.WriteAllText(fileName, JsonSerializer.Serialize(pcjson, JsonOptions), Encoding.UTF8);
 		}
 
 		/// <summary>
@@ -289,7 +291,7 @@ namespace TQVaultAE.Data
 
 		private void ParseJsonData(PlayerCollection pc, string path)
 		{
-			var vaultDto = JsonConvert.DeserializeObject<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8));
+			var vaultDto = JsonSerializer.Deserialize<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8), JsonOptions);
 
 			pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? new();
 			pc.numberOfSacks = vaultDto.sacks.Count;

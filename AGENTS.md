@@ -70,7 +70,7 @@ namespace ProjectNamespace
 
 ### Import Ordering
 1. System namespaces
-2. Third-party library namespaces (e.g., Microsoft, Newtonsoft, Moq)
+2. Third-party library namespaces (e.g., Microsoft, Moq)
 3. Project-specific namespaces (e.g., TQVaultAE.Domain)
 
 ### Error Handling
@@ -157,7 +157,7 @@ Follow IFileIO/IPathIO pattern:
 - Update tests to mock the abstraction
 
 ## Key Dependencies & Resources
-- **Newtonsoft.Json**: JSON serialization
+- **System.Text.Json**: JSON serialization (replaced Newtonsoft.Json)
 - **Microsoft.Extensions.Logging**: Logging infrastructure
 - **Magick.NET-Q8-AnyCPU**: DDS to PNG conversion (requires ImageMagick installed via `winget install ImageMagick.Q8`)
 - **xUnit**: Testing framework
