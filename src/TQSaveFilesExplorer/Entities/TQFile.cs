@@ -71,6 +71,15 @@ namespace TQ.SaveFilesExplorer.Entities
 			};
 		}
 
+		private static Regex RegexKeyMatch = new Regex(@"
+(?<Len>.\x00{3})
+(?<Key>
+	(?<Open>\(\*)?
+		(?<Name>[a-zA-Z0-9_\.]+)
+			(?<Close>\))?
+			(?<Ext>\[i\])?
+)", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
+
 		/// <summary>
 		/// Parse file data to raw records
 		/// </summary>
@@ -79,9 +88,7 @@ namespace TQ.SaveFilesExplorer.Entities
 			var asString = TQFileRecord.Encoding1252.GetString(this.Content);
 
 			// Regex save file / Where the magic lies
-			var keyMatches = Regex.Matches(asString
-				, Properties.Settings.Default.RegexKeyMatch
-				, RegexOptions.Singleline)
+			var keyMatches = RegexKeyMatch.Matches(asString)
 				.Cast<Match>().Where(m => m.Success).ToList();
 
 			this.Records = keyMatches.Select(m => new TQFileRecord(this, m))

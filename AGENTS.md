@@ -1,167 +1,166 @@
 # TQVaultAE Agent Guidelines
 
-Guidelines for AI agents working on the TQVaultAE codebase.
+## Build Commands
 
-## Build, Test, and Lint Commands
-
-### Build
 ```bash
+# Build entire solution
 dotnet build TQVaultAE.sln
-dotnet build src/TQVaultAE.Services/TQVaultAE.Services.csproj
 dotnet build TQVaultAE.sln --configuration Release
+
+# Build specific project
+dotnet build src/TQVaultAE.GUI/TQVaultAE.GUI.csproj
+
+# Restore packages
 dotnet restore
 ```
 
-### Test
+## Test Commands
+
 ```bash
 # Run all tests
 dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj
 
-# Run single test
-dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --filter "FullyQualifiedName~ClassName.TestName"
-
 # Run specific test class
-dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --filter "FullyQualifiedName~TQVaultAE.Tests.Services.GameFileServiceTests"
+dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --filter "FullyQualifiedName~TagServiceTests"
 
-# Run tests with coverage
+# Run single test method
+dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --filter "FullyQualifiedName~TagServiceTests.AddTag_WithNewTagName_ReturnsTrue"
+
+# Run with coverage
 dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
 ```
 
-## Code Style Guidelines
+## Code Style
 
 ### Formatting
-- **Indentation**: Tabs (configured in .editorconfig)
-- **Braces**: Mandatory (K&R style)
-- **Language Version**: C# 10.0
-- **No comments** in code (unless explicitly requested)
+- **Indentation**: Tabs (see `.editorconfig`)
+- **Language**: C# 10.0 with file-scoped namespaces
+- **Braces**: Required, K&R style
+- **This**: Use `this.` prefix for instance members (e.g., `this.TagConfig`)
+- **Comments**: Minimize comments unless requested
 
-### Naming Conventions
+### Naming
 - **Classes/Interfaces**: PascalCase (`ItemService`, `IItemService`)
-- **Methods**: PascalCase (`GetItemById()`)
-- **Properties**: PascalCase (`ItemName`)
-- **Local Variables**: camelCase (`itemCount`)
-- **Private Fields**: camelCase with underscore prefix (`_itemCount`)
-- **Constants**: PascalCase (`MaxItems`, `MAINVAULT`)
+- **Methods/Properties**: PascalCase (`GetItemById()`, `ItemName`)
+- **Variables**: camelCase (`itemCount`)
+- **Private fields**: camelCase with underscore (`_itemCount`)
+- **Constants**: PascalCase (`MaxItems`)
 - **Interfaces**: Prefix with `I`
+
+### Import Ordering
+1. System namespaces
+2. Third-party libraries (Microsoft, Moq)
+3. Project namespaces (`TQVaultAE.Domain`)
 
 ### File Structure
 ```csharp
-namespace ProjectNamespace
+using System;
+using Microsoft.Extensions.Logging;
+using TQVaultAE.Domain.Contracts.Services;
+
+namespace TQVaultAE.Services;
+
+public class MyService : IMyService
 {
-    using System;
-    using Other.Namespaces;
+    private readonly ILogger _logger;
+    private readonly IDataService _dataService;
 
-    public class ClassName
+    public MyService(ILogger<MyService> logger, IDataService dataService)
     {
-        private readonly IService _service;
-        private const string CONSTANT = "value";
+        this._logger = logger;
+        this._dataService = dataService;
+    }
 
-        public ClassName(IService service)
-        {
-            _service = service;
-        }
-
-        public void MethodName()
-        {
-        }
+    public void DoWork()
+    {
     }
 }
 ```
 
-### Import Ordering
-1. System namespaces
-2. Third-party library namespaces (e.g., Microsoft, Moq)
-3. Project-specific namespaces (e.g., TQVaultAE.Domain)
+## Testing
 
-### Error Handling
-- Validate method parameters at entry
-- Use exceptions for exceptional cases
-- Log errors using `ILogger<T>`
-- Use `try-catch` blocks appropriately
+### Framework
+- **xUnit** with **AwesomeAssertions** (fluent assertions)
+- **Moq** for mocking
 
-### Dependency Injection
-- Use constructor injection for all service dependencies
-- Register services in `src/TQVaultAE.GUI/Program.cs`
-- Mock dependencies in tests using Moq
-
-### Abstractions Pattern
-- Use IFileIO and IPathIO for file/path operations (enables testability)
-- Store abstractions as private readonly fields
-
-## Test Guidelines
-
-### Test Framework
-- xUnit with AwesomeAssertions for fluent assertions
-- Moq for mocking dependencies
-
-### Test Structure
+### Test Pattern
 ```csharp
+using AwesomeAssertions;
+using Moq;
+
+namespace TQVaultAE.Tests.Services;
+
 public class ServiceTests
 {
     private readonly Mock<ILogger<Service>> _mockLogger;
-    private readonly Mock<IService> _mockService;
     private readonly Service _service;
 
     public ServiceTests()
     {
         _mockLogger = new Mock<ILogger<Service>>();
-        _mockService = new Mock<IService>();
-        _service = new Service(_mockLogger.Object, _mockService.Object);
+        _service = new Service(_mockLogger.Object);
     }
 
     [Fact]
     public void Method_WithCondition_ReturnsExpected()
     {
+        // Arrange
         var input = "test";
+
+        // Act
         var result = _service.Method(input);
+
+        // Assert
         result.Should().Be("expected");
-        _mockService.Verify(x => x.SomeMethod(), Times.Once);
+        _mockLogger.Verify(x => x.LogInformation(It.IsAny<string>()), Times.Once);
     }
 }
 ```
 
-### Testing Best Practices
-- Follow Arrange-Act-Assert pattern
-- Test edge cases including null inputs
-- Use descriptive test names (`Method_WithCondition_ReturnsExpected`)
-- Verify mock calls when dependencies are used
-- Mock IFileIO/IPathIO methods in tests if they're called
-
-## Project Structure
+## Architecture
 
 ### Layer Dependencies
+```
 GUI → Presentation → Services → Domain → Data
+```
 
-### Key Projects
-- **TQVaultAE.GUI**: Windows Forms application (main entry point)
-- **TQVaultAE.Domain**: Entities, contracts, interfaces
-- **TQVaultAE.Services**: Business logic and service implementations
-- **TQVaultAE.Data**: Data access and persistence
-- **TQVaultAE.Tests**: Unit tests (xUnit)
+### Projects
+- **TQVaultAE.GUI**: Windows Forms executable (.NET Framework 4.8)
+- **TQVaultAE.Domain**: Entities, contracts, interfaces (.NET Standard 2.0)
+- **TQVaultAE.Services**: Business logic (.NET Standard 2.0)
+- **TQVaultAE.Data**: Data access (.NET Standard 2.0)
+- **TQVaultAE.Tests**: Unit tests (xUnit, .NET 10.0)
+
+### Dependency Injection
+- Constructor injection for all services
+- Register in `src/TQVaultAE.GUI/Program.cs`
+- Use `IFileIO` and `IPathIO` abstractions for file operations (enables testing)
+
+## Version Management
+
+See [VERSIONING.md](VERSIONING.md) for details. Key points:
+- All 10 projects must share the same version (4 EXEs + 6 DLLs)
+- Source of truth: `version-info.json`
+- CI/CD auto-increments Minor version on `main` branch push
+- **Never** manually edit `AssemblyInfo.cs` or `.csproj` version fields
 
 ## Common Tasks
 
 ### Adding a Service
-1. Define interface in `TQVaultAE.Domain/Contracts/Services/`
+1. Create interface in `TQVaultAE.Domain/Contracts/Services/`
 2. Implement in `TQVaultAE.Services/`
-3. Add IFileIO/IPathIO dependencies for file/path operations
-4. Register in `Program.cs` DI container
-5. Add unit tests in `TQVaultAE.Tests/Services/`
+3. Use `IFileIO`/`IPathIO` for file operations
+4. Register in `Program.cs`
+5. Add tests in `TQVaultAE.Tests/Services/`
 
-### Adding an Abstraction
-Follow IFileIO/IPathIO pattern:
-- Create interface in `Domain/Contracts/Services/`
-- Implement in `Services/` delegating to static methods
-- Register in `Program.cs`
-- Replace static calls with abstraction calls in services
-- Update tests to mock the abstraction
+## Dependencies
+- **System.Text.Json**: JSON serialization
+- **Microsoft.Extensions.Logging**: Logging
+- **Magick.NET-Q8-AnyCPU**: Image processing (requires ImageMagick)
+- **xUnit**: Testing
+- **Moq**: Mocking
+- **AwesomeAssertions**: Assertions
 
-## Key Dependencies & Resources
-- **System.Text.Json**: JSON serialization (replaced Newtonsoft.Json)
-- **Microsoft.Extensions.Logging**: Logging infrastructure
-- **Magick.NET-Q8-AnyCPU**: DDS to PNG conversion (requires ImageMagick installed via `winget install ImageMagick.Q8`)
-- **xUnit**: Testing framework
-- **Moq**: Mocking for unit tests
-- **AwesomeAssertions**: Fluent assertions for tests
+## Resources
 - GitHub: https://github.com/EtienneLamoureux/TQVaultAE
 - Issues: https://github.com/EtienneLamoureux/TQVaultAE/issues

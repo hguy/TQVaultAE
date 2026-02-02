@@ -744,15 +744,7 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>REM Copy Build
-SET SOLDIR=$(SolutionDir)
-SET PLATFORM=$(Platform)
-SET CONFNAME=$(ConfigurationName)
-SET PROJDIR=$(ProjectDir)
-CALL "%25SOLDIR%25src\publishtobin.bat"
-</PostBuildEvent>
-  </PropertyGroup>
+
   <Import Project="..\MsBuildAL1073WarningWorkaround.config" />
   <PropertyGroup>
     <PreBuildEvent>
