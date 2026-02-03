@@ -257,3 +257,4 @@ paket-files/
 
 # Winmerge Diff Backup file
 *.bak
+/nul
