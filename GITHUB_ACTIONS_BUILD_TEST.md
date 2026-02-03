@@ -22,6 +22,40 @@ This document provides comprehensive steps for integrating GitHub Actions to bui
 - GitHub repository with Actions enabled
 - Windows runner support (required for .NET Framework)
 - ImageMagick.Q8: Required by Magick.NET package for DDS to PNG conversion (installed via winget)
+- **Personal Access Token (PAT)**: Required to bypass branch protection rules when pushing version changes (see setup below)
+
+### Setting Up the Version Bump Token (PAT)
+
+The workflow requires a Personal Access Token to push commits and create tags on protected branches. The default `GITHUB_TOKEN` cannot bypass branch protection rules.
+
+**Steps to create the PAT:**
+
+1. Go to your GitHub account → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+2. Click **Generate new token (classic)**
+3. Give it a name like "TQVaultAE Version Bump"
+4. Select scopes:
+   - ✅ `repo` - Full control of private repositories
+   - ✅ `workflow` - Update GitHub Action workflows
+5. Click **Generate token**
+6. **Copy the token immediately** (you won't see it again)
+
+**Add the token to your repository:**
+
+1. Go to your repository on GitHub → **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret**
+3. Name: `VERSION_BUMP_TOKEN`
+4. Value: Paste your PAT from step 6
+5. Click **Add secret**
+
+**Configure branch protection to allow the PAT:**
+
+1. Go to **Settings** → **Branches**
+2. Click **Edit** on your protection rule for `main`/`master`
+3. Under "Allow specified actors to bypass required pull requests", add the GitHub user account associated with the PAT
+4. Alternatively, enable **Allow force pushes** and **Allow deletions** for admin users
+5. Click **Save changes**
+
+**Note**: If using an organization account, the PAT owner must have appropriate permissions in the organization.
 
 ## Projects to Build
 
@@ -55,24 +89,24 @@ This document provides comprehensive steps for integrating GitHub Actions to bui
 - **Same as PR** - Release builds, 3-day retention
 - **Local debugging** - developers build Debug configuration locally
 
-## Automatic Version Management
+## Version Management
 
-The workflow includes automatic version management using a PowerShell script that ensures **version consistency across all 3 executables and 7 DLLs**.
+Version management is **manual** via `version-info.json`. When you edit this file and push to `main`/`master`, CI automatically syncs the version to all project files and creates a release.
 
 For detailed information about version consistency implementation, see [VERSIONING.md](VERSIONING.md).
 
 ### How It Works
 
-1. **Version Storage**: `version-info.json` tracks current version
-2. **Script Execution**: `Update-Version.ps1` increments version
-3. **Assembly Updates**: Updates `AssemblyInfo.cs` in all projects
+1. **Edit version-info.json**: Update the version numbers manually
+2. **Push to main/master**: Commit and push the change
+3. **Auto-sync**: CI detects the change and syncs to all `AssemblyInfo.cs` and `.csproj` files
+4. **Auto-release**: CI creates a git tag and GitHub Release
 
-### Version Increment Rules
+### Why This Approach?
 
-| Event | Version Change | Example |
-|-------|----------------|----------|
-| PR merged to `main` (release) | Minor +1, Build=0 | `4.4.5.0` → `4.5.0.0` |
-| `feature/*` push or PR | None | Uses current version |
+**No infinite loops**: The sync only triggers when `version-info.json` changes. The subsequent commit (with synced files) won't trigger another sync because `version-info.json` wasn't modified in that push.
+
+**Manual control**: You decide when to release by editing the version file, rather than CI auto-incrementing on every merge.
 
 ### Version Format
 
@@ -85,6 +119,31 @@ Example: `4.4.1.0`
 - **Minor** (4): New features, backward compatible  
 - **Build** (1): Build number (manually managed or for hotfixes)
 - **Revision** (0): Reserved (currently 0)
+
+### To Release a New Version
+
+1. Edit `version-info.json` with your new version:
+   ```json
+   {
+     "Major": 4,
+     "Minor": 5,
+     "Build": 0,
+     "Revision": 0
+   }
+   ```
+
+2. Commit and push to `main`/`master`:
+   ```bash
+   git add version-info.json
+   git commit -m "chore: bump version to 4.5.0"
+   git push origin main
+   ```
+
+3. CI will automatically:
+   - Sync the version to all 11 project files
+   - Build and test
+   - Create a git tag (e.g., `4.5.0`)
+   - Create a GitHub Release with artifacts
 
 ### Version Consistency
 
@@ -187,7 +246,18 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.VERSION_BUMP_TOKEN }}
+    
+    - name: Check if version-info.json changed
+      id: version-check
+      run: |
+        $changed = git diff --name-only HEAD~1 HEAD | Select-String -Pattern "version-info.json" -Quiet
+        if ($changed) {
+          Write-Output "changed=true" >> $env:GITHUB_OUTPUT
+        } else {
+          Write-Output "changed=false" >> $env:GITHUB_OUTPUT
+        }
+      shell: pwsh
     
     - name: Setup MSBuild path
       uses: microsoft/setup-msbuild@v2
@@ -203,26 +273,26 @@ jobs:
     - name: Install ImageMagick
       run: winget install ImageMagick.Q8 --accept-source-agreements --accept-package-agreements
     
-    - name: Update Minor Version (main release)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: pwsh -File .github/scripts/Update-Version.ps1 -VersionType "Release"
+    - name: Sync Version (main release)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.version-check.outputs.changed == 'true'
+      run: pwsh -File .github/scripts/Update-Version.ps1 -VersionType "Sync" || echo "Version sync completed"
     
     - name: Commit version changes (main)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.version-check.outputs.changed == 'true'
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add version-info.json src/TQVaultAE.GUI/Properties/AssemblyInfo.cs src/TQSaveFilesExplorer/Properties/AssemblyInfo.cs src/ARZExplorer/Properties/AssemblyInfo.cs src/TQVaultAE.Services.Win32/Properties/AssemblyInfo.cs src/TQVaultAE.Domain/TQVaultAE.Domain.csproj src/TQVaultAE.Services/TQVaultAE.Services.csproj src/TQVaultAE.Presentation/TQVaultAE.Presentation.csproj src/TQVaultAE.Data/TQVaultAE.Data.csproj src/TQVaultAE.Config/TQVaultAE.Config.csproj src/TQVaultAE.Logs/TQVaultAE.Logs.csproj
-        git commit -m "chore: increment version to release"
-        git push
+        git commit -m "chore: sync version to all project files" || echo "No changes to commit"
+        git push || echo "Nothing to push"
     
     - name: Create version tag (main)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.version-check.outputs.changed == 'true'
       run: |
         $versionInfo = Get-Content version-info.json | ConvertFrom-Json
         $tagName = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build)"
-        git tag $tagName
-        git push origin $tagName
+        git tag $tagName || echo "Tag already exists"
+        git push origin $tagName || echo "Tag push skipped"
     
     - name: Restore NuGet packages
       run: nuget restore ${{ env.SOLUTION_FILE }}
@@ -252,7 +322,7 @@ jobs:
         retention-days: 3
     
     - name: Create GitHub Release (main branch)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.version-check.outputs.changed == 'true'
       uses: softprops/action-gh-release@v1
       with:
         files: |
@@ -527,7 +597,7 @@ On your fork, ensure these settings are configured:
 - ✅ **Allow GitHub Actions to create and approve pull requests** (optional)
 
 **Settings → Secrets and variables → Actions:**
-- No additional secrets needed - `GITHUB_TOKEN` is provided automatically
+- `VERSION_BUMP_TOKEN`: Your Personal Access Token (required to push to protected branches)
 
 #### 7. Clean Up After Testing
 
@@ -587,17 +657,25 @@ git push origin --delete $(git tag -l)
 ```
 
 #### Issue: Push permission denied on fork
-**Solution**: Forks run with read-only permissions by default. Fix this by:
+**Solution**: Two scenarios:
+
+**Scenario A - Branch protection on fork:**
+If you see `GH006: Protected branch update failed`, your fork has branch protection enabled. The `GITHUB_TOKEN` cannot bypass these rules.
+1. Create a Personal Access Token (see "Setting Up the Version Bump Token (PAT)" in Prerequisites)
+2. Add it as `VERSION_BUMP_TOKEN` secret in your fork
+3. The workflow uses this token automatically
+
+**Scenario B - Read-only permissions:**
+Forks run with read-only permissions by default. Fix this by:
 1. Go to your fork on GitHub → **Settings** → **Actions** → **General**
 2. Under "Workflow permissions", select **Read and write permissions**
 3. Click **Save**
-4. The workflow already includes `permissions: contents: write` which is required for pushing tags
 
 #### Issue: Git tag creation fails on fork
-**Solution**: Two possible causes:
-1. **Permissions**: Ensure workflow has `contents: write` permission (already included in current workflow)
-2. **Settings**: Go to **Settings** → **Actions** → **General** and enable "Read and write permissions"
-3. **Token**: `GITHUB_TOKEN` should work automatically on forks, but ensure Actions are enabled
+**Solution**: Three possible causes:
+1. **Branch protection**: The `GITHUB_TOKEN` cannot bypass branch protection rules. Set up a `VERSION_BUMP_TOKEN` PAT (see Prerequisites section)
+2. **Permissions**: Ensure workflow has `contents: write` permission (already included in current workflow)
+3. **Settings**: Go to **Settings** → **Actions** → **General** and enable "Read and write permissions"
 
 #### Issue: Version changes not appearing after workflow runs
 **Solution**: On forks, the workflow pushes version changes back to your fork's `main` branch. Make sure to:

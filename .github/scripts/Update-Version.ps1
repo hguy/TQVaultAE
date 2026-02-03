@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$true)]
-    [ValidateSet("Build", "Release")]
+    [ValidateSet("Sync")]
     [string]$VersionType,
 
     [Parameter(Mandatory=$false)]
@@ -29,28 +29,12 @@ if (Test-Path $VersionFile) {
     }
     Write-Host "Loaded version from file: $($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build).$($versionInfo.Revision)"
 } else {
-    $versionInfo = @{
-        Major = 4
-        Minor = 4
-        Build = 0
-        Revision = 0
-    }
-    Write-Host "Using default version: $($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build).$($versionInfo.Revision)"
-}
-
-if ($VersionType -eq "Release") {
-    $versionInfo.Minor = $versionInfo.Minor + 1
-    $versionInfo.Build = 0
-    $versionInfo.Revision = 0
-    Write-Host "Release: Incremented Minor to $($versionInfo.Minor), reset Build/Revision to 0"
-} else {
-    $versionInfo.Build = $versionInfo.Build + 1
-    $versionInfo.Revision = 0
-    Write-Host "Build: Incremented Build to $($versionInfo.Build)"
+    Write-Host "Error: version-info.json not found!"
+    exit 1
 }
 
 $newVersion = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build).$($versionInfo.Revision)"
-Write-Host "New Version: $newVersion"
+Write-Host "Syncing version: $newVersion"
 Write-Host ""
 
 $versionJson = @{
@@ -123,15 +107,9 @@ foreach ($file in $csprojFiles) {
 }
 
 Write-Host ""
-Write-Host "Version management complete: $newVersion"
+Write-Host "Version sync complete: $newVersion"
 Write-Host ""
-Write-Host "Version Consistency:"
-Write-Host "- All EXE projects synchronized to same version"
-Write-Host "- All NET Standard DLL projects synchronized to same version"
-Write-Host "- Single version source: version-info.json"
-Write-Host "- Updated 4 AssemblyInfo.cs files + 6 csproj files"
-Write-Host ""
-Write-Host "Version Consistency:"
-Write-Host "- All projects synchronized to same version"
-Write-Host "- Single version source: version-info.json"
-Write-Host "- Updated 4 AssemblyInfo.cs files"
+Write-Host "Files Updated:"
+Write-Host "- 4 AssemblyInfo.cs files (EXE projects)"
+Write-Host "- 6 csproj files (NET Standard DLL projects)"
+Write-Host "- Total: 10 project files synchronized with version-info.json"

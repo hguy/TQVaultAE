@@ -3,8 +3,12 @@ name: Build and Test
 on:
   push:
     branches: [master]
+    paths:
+      - 'src/**'
   pull_request:
     branches: [master]
+    paths:
+      - 'src/**'
   workflow_dispatch:
 
 env:
@@ -15,16 +19,13 @@ jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: write
+      contents: read
       actions: read
       checks: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup MSBuild path
         uses: microsoft/setup-msbuild@v2
@@ -39,27 +40,6 @@ jobs:
 
       - name: Install ImageMagick
         run: winget install ImageMagick.Q8 --accept-source-agreements --accept-package-agreements
-
-      - name: Update Minor Version (master release)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: pwsh -File .github/scripts/Update-Version.ps1 -VersionType "Release"
-
-      - name: Commit version changes (master)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add version-info.json src/TQVaultAE.GUI/Properties/AssemblyInfo.cs src/TQSaveFilesExplorer/Properties/AssemblyInfo.cs src/ARZExplorer/Properties/AssemblyInfo.cs src/TQVaultAE.Services.Win32/Properties/AssemblyInfo.cs src/TQVaultAE.Domain/TQVaultAE.Domain.csproj src/TQVaultAE.Services/TQVaultAE.Services.csproj src/TQVaultAE.Presentation/TQVaultAE.Presentation.csproj src/TQVaultAE.Data/TQVaultAE.Data.csproj src/TQVaultAE.Config/TQVaultAE.Config.csproj src/TQVaultAE.Logs/TQVaultAE.Logs.csproj
-          git commit -m "chore: increment version to release"
-          git push
-
-      - name: Create version tag (master)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        run: |
-          $versionInfo = Get-Content version-info.json | ConvertFrom-Json
-          $tagName = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build)"
-          git tag $tagName
-          git push origin $tagName
 
       - name: Restore NuGet packages
         run: nuget restore ${{ env.SOLUTION_FILE }}
@@ -87,19 +67,6 @@ jobs:
           name: ARZExplorer-Release
           path: src/ARZExplorer/bin/Release/
           retention-days: 3
-
-      - name: Create GitHub Release (master branch)
-        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            src/TQVaultAE.GUI/bin/AnyCPU/Release/**/*
-            src/TQSaveFilesExplorer/bin/Release/**/*
-            src/ARZExplorer/bin/Release/**/*
-          draft: false
-          prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test:
     runs-on: windows-latest
