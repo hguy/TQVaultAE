@@ -22,6 +22,40 @@ This document provides comprehensive steps for integrating GitHub Actions to bui
 - GitHub repository with Actions enabled
 - Windows runner support (required for .NET Framework)
 - ImageMagick.Q8: Required by Magick.NET package for DDS to PNG conversion (installed via winget)
+- **Personal Access Token (PAT)**: Required to bypass branch protection rules when pushing version changes (see setup below)
+
+### Setting Up the Version Bump Token (PAT)
+
+The workflow requires a Personal Access Token to push commits and create tags on protected branches. The default `GITHUB_TOKEN` cannot bypass branch protection rules.
+
+**Steps to create the PAT:**
+
+1. Go to your GitHub account → **Settings** → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+2. Click **Generate new token (classic)**
+3. Give it a name like "TQVaultAE Version Bump"
+4. Select scopes:
+   - ✅ `repo` - Full control of private repositories
+   - ✅ `workflow` - Update GitHub Action workflows
+5. Click **Generate token**
+6. **Copy the token immediately** (you won't see it again)
+
+**Add the token to your repository:**
+
+1. Go to your repository on GitHub → **Settings** → **Secrets and variables** → **Actions**
+2. Click **New repository secret**
+3. Name: `VERSION_BUMP_TOKEN`
+4. Value: Paste your PAT from step 6
+5. Click **Add secret**
+
+**Configure branch protection to allow the PAT:**
+
+1. Go to **Settings** → **Branches**
+2. Click **Edit** on your protection rule for `main`/`master`
+3. Under "Allow specified actors to bypass required pull requests", add the GitHub user account associated with the PAT
+4. Alternatively, enable **Allow force pushes** and **Allow deletions** for admin users
+5. Click **Save changes**
+
+**Note**: If using an organization account, the PAT owner must have appropriate permissions in the organization.
 
 ## Projects to Build
 
@@ -187,7 +221,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.VERSION_BUMP_TOKEN }}
     
     - name: Setup MSBuild path
       uses: microsoft/setup-msbuild@v2
@@ -527,7 +561,7 @@ On your fork, ensure these settings are configured:
 - ✅ **Allow GitHub Actions to create and approve pull requests** (optional)
 
 **Settings → Secrets and variables → Actions:**
-- No additional secrets needed - `GITHUB_TOKEN` is provided automatically
+- `VERSION_BUMP_TOKEN`: Your Personal Access Token (required to push to protected branches)
 
 #### 7. Clean Up After Testing
 
@@ -587,17 +621,25 @@ git push origin --delete $(git tag -l)
 ```
 
 #### Issue: Push permission denied on fork
-**Solution**: Forks run with read-only permissions by default. Fix this by:
+**Solution**: Two scenarios:
+
+**Scenario A - Branch protection on fork:**
+If you see `GH006: Protected branch update failed`, your fork has branch protection enabled. The `GITHUB_TOKEN` cannot bypass these rules.
+1. Create a Personal Access Token (see "Setting Up the Version Bump Token (PAT)" in Prerequisites)
+2. Add it as `VERSION_BUMP_TOKEN` secret in your fork
+3. The workflow uses this token automatically
+
+**Scenario B - Read-only permissions:**
+Forks run with read-only permissions by default. Fix this by:
 1. Go to your fork on GitHub → **Settings** → **Actions** → **General**
 2. Under "Workflow permissions", select **Read and write permissions**
 3. Click **Save**
-4. The workflow already includes `permissions: contents: write` which is required for pushing tags
 
 #### Issue: Git tag creation fails on fork
-**Solution**: Two possible causes:
-1. **Permissions**: Ensure workflow has `contents: write` permission (already included in current workflow)
-2. **Settings**: Go to **Settings** → **Actions** → **General** and enable "Read and write permissions"
-3. **Token**: `GITHUB_TOKEN` should work automatically on forks, but ensure Actions are enabled
+**Solution**: Three possible causes:
+1. **Branch protection**: The `GITHUB_TOKEN` cannot bypass branch protection rules. Set up a `VERSION_BUMP_TOKEN` PAT (see Prerequisites section)
+2. **Permissions**: Ensure workflow has `contents: write` permission (already included in current workflow)
+3. **Settings**: Go to **Settings** → **Actions** → **General** and enable "Read and write permissions"
 
 #### Issue: Version changes not appearing after workflow runs
 **Solution**: On forks, the workflow pushes version changes back to your fork's `main` branch. Make sure to:
