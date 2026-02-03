@@ -135,8 +135,8 @@ jobs:
         path: '**/TestResults/*.trx'
         retention-days: 3
     
-    - name: Publish test results
-      uses: EnricoMi/publish-unit-test-result-action@v2
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action/windows@v2
       if: always()
       with:
         files: '**/TestResults/*.trx'
