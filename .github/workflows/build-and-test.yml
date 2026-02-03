@@ -40,12 +40,12 @@ jobs:
       - name: Install ImageMagick
         run: winget install ImageMagick.Q8 --accept-source-agreements --accept-package-agreements
 
-      - name: Update Minor Version (main release)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Update Minor Version (master release)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: pwsh -File .github/scripts/Update-Version.ps1 -VersionType "Release"
 
-      - name: Commit version changes (main)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Commit version changes (master)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -53,8 +53,8 @@ jobs:
           git commit -m "chore: increment version to release"
           git push
 
-      - name: Create version tag (main)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Create version tag (master)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         run: |
           $versionInfo = Get-Content version-info.json | ConvertFrom-Json
           $tagName = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build)"
@@ -88,8 +88,8 @@ jobs:
           path: src/ARZExplorer/bin/Release/
           retention-days: 3
 
-      - name: Create GitHub Release (main branch)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Create GitHub Release (master branch)
+        if: github.ref == 'refs/heads/master' && github.event_name == 'push'
         uses: softprops/action-gh-release@v1
         with:
           files: |
