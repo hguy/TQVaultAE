@@ -19,6 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI;
 
@@ -288,7 +289,6 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	public SettingsDialog(MainForm instance) : base(instance.ServiceProvider)
 	{
 		this.Owner = instance;
-
 		this.Log = instance.ServiceProvider.GetService<ILogger<SettingsDialog>>();
 
 		this.InitializeComponent();
@@ -521,42 +521,42 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	private void LoadSettings()
 	{
-		this.BaseFont = Config.UserSettings.Default.BaseFont;
+		this.BaseFont = USettings.BaseFont;
 
-		this.skipTitle = Config.UserSettings.Default.SkipTitle;
-		this.VaultPath = Config.UserSettings.Default.VaultPath;
-		this.allowItemCopy = Config.UserSettings.Default.AllowItemCopy;
-		this.allowItemEdit = Config.UserSettings.Default.AllowItemEdit;
-		this.allowCharacterEdit = Config.UserSettings.Default.AllowCharacterEdit;
-		this.loadLastCharacter = Config.UserSettings.Default.LoadLastCharacter;
-		this.loadLastVault = Config.UserSettings.Default.LoadLastVault;
-		this.detectLanguage = Config.UserSettings.Default.AutoDetectLanguage;
-		this.enableDetailedTooltipView = Config.UserSettings.Default.EnableDetailedTooltipView;
-		this.itemBGColorOpacity = Config.UserSettings.Default.ItemBGColorOpacity;
-		this.enableItemRequirementRestriction = Config.UserSettings.Default.EnableItemRequirementRestriction;
-		this.enableHotReload = Config.UserSettings.Default.EnableHotReload;
-		this.enableTQVaultSounds = Config.UserSettings.Default.EnableTQVaultSounds;
-		this.EnableEpicLegendaryAffixes = Config.UserSettings.Default.EnableEpicLegendaryAffixes;
-		this.disableAutoStacking = Config.UserSettings.Default.DisableAutoStacking;
-		this.allowCheats = Config.UserSettings.Default.AllowCheats;
-		this.enableGitBackup = Config.UserSettings.Default.GitBackupEnabled;
-		this.disableLegacyBackup = Config.UserSettings.Default.DisableLegacyBackup;
-		this.gitBackupRepository = Config.UserSettings.Default.GitBackupRepository;
-		this.enableBackupPlayerSaves = Config.UserSettings.Default.GitBackupPlayerSavesEnabled;
-		this.enableOriginalTQSupport = Config.UserSettings.Default.EnableOriginalTQSupport;
+		this.skipTitle = USettings.SkipTitle;
+		this.VaultPath = USettings.VaultPath;
+		this.allowItemCopy = USettings.AllowItemCopy;
+		this.allowItemEdit = USettings.AllowItemEdit;
+		this.allowCharacterEdit = USettings.AllowCharacterEdit;
+		this.loadLastCharacter = USettings.LoadLastCharacter;
+		this.loadLastVault = USettings.LoadLastVault;
+		this.detectLanguage = USettings.AutoDetectLanguage;
+		this.enableDetailedTooltipView = USettings.EnableDetailedTooltipView;
+		this.itemBGColorOpacity = USettings.ItemBGColorOpacity;
+		this.enableItemRequirementRestriction = USettings.EnableItemRequirementRestriction;
+		this.enableHotReload = USettings.EnableHotReload;
+		this.enableTQVaultSounds = USettings.EnableTQVaultSounds;
+		this.EnableEpicLegendaryAffixes = USettings.EnableEpicLegendaryAffixes;
+		this.disableAutoStacking = USettings.DisableAutoStacking;
+		this.allowCheats = USettings.AllowCheats;
+		this.enableGitBackup = USettings.GitBackupEnabled;
+		this.disableLegacyBackup = USettings.DisableLegacyBackup;
+		this.gitBackupRepository = USettings.GitBackupRepository;
+		this.enableBackupPlayerSaves = USettings.GitBackupPlayerSavesEnabled;
+		this.enableOriginalTQSupport = USettings.EnableOriginalTQSupport;
 
 		// Force English since there was some issue with getting the proper language setting.
 		var gl = Database.GameLanguage;
 		this.titanQuestLanguage = gl == null ? "English" : gl;
 
-		this.detectGamePath = Config.UserSettings.Default.AutoDetectGamePath;
+		this.detectGamePath = USettings.AutoDetectGamePath;
 		this.titanQuestPath = GamePathResolver.GamePathTQ;
 		this.immortalThronePath = GamePathResolver.GamePathTQIT;
-		this.enableMods = Config.UserSettings.Default.ModEnabled;
-		this.customMap = Config.UserSettings.Default.CustomMap;
-		this.loadAllFiles = Config.UserSettings.Default.LoadAllFiles;
-		this.suppressWarnings = Config.UserSettings.Default.SuppressWarnings;
-		this.playerReadonly = Config.UserSettings.Default.PlayerReadonly;
+		this.enableMods = USettings.ModEnabled;
+		this.customMap = USettings.CustomMap;
+		this.loadAllFiles = USettings.LoadAllFiles;
+		this.suppressWarnings = USettings.SuppressWarnings;
+		this.playerReadonly = USettings.PlayerReadonly;
 
 		this.settingsLoaded = true;
 		this.ConfigurationChanged = false;
@@ -582,7 +582,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.languageComboBox.Items.Clear();
 
 		// Read the languages from the config file
-		ComboBoxItem[] languages = Config.Settings.Default.GameLanguages.Split(',').Select(iso =>
+		ComboBoxItem[] languages = USettings.GameLanguages.Split(',').Select(iso =>
 		{
 			CultureInfo ci = new CultureInfo(iso.ToUpperInvariant(), true);
 			return new ComboBoxItem() { Value = ci.EnglishName, DisplayName = ci.DisplayName };// to keep EnglishName as baseline value
@@ -665,13 +665,14 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			}).ToArray();
 		this.scalingComboBoxCSVDelim.Items.AddRange(listItemDelim);
 		this.scalingComboBoxCSVDelim.SelectedItem = listItemDelim
-			.Where(i => i.ComboValue.ToString() == Config.UserSettings.Default.CSVDelimiter)
+			.Where(i => i.ComboValue.ToString() == USettings.CSVDelimiter)
 			.FirstOrDefault() ?? listItemDelim.First();
 
 		this.ResumeLayout(false);
 		this.PerformLayout();
 	}
 
+	// lang=regex
 	const string gitUrlRegex = @"((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?";
 
 	/// <summary>
@@ -694,42 +695,42 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 
 		if (this.ConfigurationChanged)
 		{
-			Config.UserSettings.Default.SkipTitle = this.skipTitle;
-			Config.UserSettings.Default.VaultPath = this.VaultPath;
-			Config.UserSettings.Default.AllowItemCopy = this.allowItemCopy;
-			Config.UserSettings.Default.AllowItemEdit = this.allowItemEdit;
-			Config.UserSettings.Default.AllowCharacterEdit = this.allowCharacterEdit;
-			Config.UserSettings.Default.LoadLastCharacter = this.loadLastCharacter;
-			Config.UserSettings.Default.LoadLastVault = this.loadLastVault;
-			Config.UserSettings.Default.AutoDetectLanguage = this.detectLanguage;
-			Config.UserSettings.Default.TQLanguage = this.titanQuestLanguage;
-			Config.UserSettings.Default.AutoDetectGamePath = this.detectGamePath;
-			Config.UserSettings.Default.TQITPath = this.immortalThronePath;
-			Config.UserSettings.Default.TQPath = this.titanQuestPath;
-			Config.UserSettings.Default.ModEnabled = this.enableMods;
-			Config.UserSettings.Default.CustomMap = this.customMap;
-			Config.UserSettings.Default.LoadAllFiles = this.loadAllFiles;
-			Config.UserSettings.Default.SuppressWarnings = this.suppressWarnings;
-			Config.UserSettings.Default.PlayerReadonly = this.playerReadonly;
-			Config.UserSettings.Default.BaseFont = this.BaseFont;
-			Config.UserSettings.Default.EnableDetailedTooltipView = this.enableDetailedTooltipView;
-			Config.UserSettings.Default.ItemBGColorOpacity = this.itemBGColorOpacity;
-			Config.UserSettings.Default.EnableItemRequirementRestriction = this.enableItemRequirementRestriction;
-			Config.UserSettings.Default.EnableHotReload = this.enableHotReload;
-			Config.UserSettings.Default.EnableTQVaultSounds = this.enableTQVaultSounds;
-			Config.UserSettings.Default.DisableAutoStacking = this.disableAutoStacking;
-			Config.UserSettings.Default.AllowCheats = this.allowCheats;
-			Config.UserSettings.Default.GitBackupEnabled = this.enableGitBackup;
-			Config.UserSettings.Default.DisableLegacyBackup = this.disableLegacyBackup;
-			Config.UserSettings.Default.GitBackupRepository = this.gitBackupRepository;
-			Config.UserSettings.Default.GitBackupPlayerSavesEnabled = this.enableBackupPlayerSaves;
-			Config.UserSettings.Default.EnableOriginalTQSupport = this.enableOriginalTQSupport;
+			USettings.SkipTitle = this.skipTitle;
+			USettings.VaultPath = this.VaultPath;
+			USettings.AllowItemCopy = this.allowItemCopy;
+			USettings.AllowItemEdit = this.allowItemEdit;
+			USettings.AllowCharacterEdit = this.allowCharacterEdit;
+			USettings.LoadLastCharacter = this.loadLastCharacter;
+			USettings.LoadLastVault = this.loadLastVault;
+			USettings.AutoDetectLanguage = this.detectLanguage;
+			USettings.TQLanguage = this.titanQuestLanguage;
+			USettings.AutoDetectGamePath = this.detectGamePath;
+			USettings.TQITPath = this.immortalThronePath;
+			USettings.TQPath = this.titanQuestPath;
+			USettings.ModEnabled = this.enableMods;
+			USettings.CustomMap = this.customMap;
+			USettings.LoadAllFiles = this.loadAllFiles;
+			USettings.SuppressWarnings = this.suppressWarnings;
+			USettings.PlayerReadonly = this.playerReadonly;
+			USettings.BaseFont = this.BaseFont;
+			USettings.EnableDetailedTooltipView = this.enableDetailedTooltipView;
+			USettings.ItemBGColorOpacity = this.itemBGColorOpacity;
+			USettings.EnableItemRequirementRestriction = this.enableItemRequirementRestriction;
+			USettings.EnableHotReload = this.enableHotReload;
+			USettings.EnableTQVaultSounds = this.enableTQVaultSounds;
+			USettings.DisableAutoStacking = this.disableAutoStacking;
+			USettings.AllowCheats = this.allowCheats;
+			USettings.GitBackupEnabled = this.enableGitBackup;
+			USettings.DisableLegacyBackup = this.disableLegacyBackup;
+			USettings.GitBackupRepository = this.gitBackupRepository;
+			USettings.GitBackupPlayerSavesEnabled = this.enableBackupPlayerSaves;
+			USettings.EnableOriginalTQSupport = this.enableOriginalTQSupport;
 
-			Config.UserSettings.Default.EnableEpicLegendaryAffixes =
+			USettings.EnableEpicLegendaryAffixes =
 				this.scalingCheckBoxEnableEpicLegendaryAffixes.Enabled && this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked;
 
 			var delim = (ComboBoxItem<CsvDelimiter, char>)this.scalingComboBoxCSVDelim.SelectedItem;
-			Config.UserSettings.Default.CSVDelimiter = delim.ComboValue.ToString();
+			USettings.CSVDelimiter = delim.ComboValue.ToString();
 		}
 
 		this.DialogResult = DialogResult.OK;
@@ -1034,7 +1035,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			return;
 
 		var custommap = (this.mapListComboBox.SelectedItem as GamePathEntry)?.Path ?? string.Empty;
-		if (custommap != Config.UserSettings.Default.CustomMap)
+		if (custommap != USettings.CustomMap)
 		{
 			this.customMap = custommap;
 			this.ConfigurationChanged = this.CustomMapsChanged = true;
@@ -1134,7 +1135,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		if (font == null)
 			return;
 
-		if (font.Value != Config.UserSettings.Default.BaseFont)
+		if (font.Value != USettings.BaseFont)
 		{
 			this.BaseFont = font.Value;
 			this.ConfigurationChanged = this.UISettingChanged = true;// Force restart
@@ -1348,7 +1349,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	{
 		ProcessStartInfo psInfo = new ProcessStartInfo
 		{
-			FileName = Config.Settings.Default.TQOriginalHowtoUrl,
+			FileName = this.USettings.TQOriginalHowtoUrl,
 			UseShellExecute = true
 		};
 		Process.Start(psInfo);

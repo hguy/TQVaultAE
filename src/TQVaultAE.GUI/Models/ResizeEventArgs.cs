@@ -3,38 +3,37 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Models
+namespace TQVaultAE.GUI.Models;
+
+using System;
+
+/// <summary>
+/// Resizing event data
+/// </summary>
+public class ResizeEventArgs : EventArgs
 {
-	using System;
+	/// <summary>
+	/// Holds the value for how much we are resizing
+	/// </summary>
+	private float resizeDelta;
 
 	/// <summary>
-	/// Resizing event data
+	/// Initializes a new instance of the ResizeEventArgs class.
 	/// </summary>
-	public class ResizeEventArgs : EventArgs
+	/// <param name="resizeDelta">The delta for the resize operation</param>
+	public ResizeEventArgs(float resizeDelta)
 	{
-		/// <summary>
-		/// Holds the value for how much we are resizing
-		/// </summary>
-		private float resizeDelta;
+		this.resizeDelta = resizeDelta;
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the ResizeEventArgs class.
-		/// </summary>
-		/// <param name="resizeDelta">The delta for the resize operation</param>
-		public ResizeEventArgs(float resizeDelta)
+	/// <summary>
+	/// Gets the value for the resize delta.
+	/// </summary>
+	public float ResizeDelta
+	{
+		get
 		{
-			this.resizeDelta = resizeDelta;
-		}
-
-		/// <summary>
-		/// Gets the value for the resize delta.
-		/// </summary>
-		public float ResizeDelta
-		{
-			get
-			{
-				return this.resizeDelta;
-			}
+			return this.resizeDelta;
 		}
 	}
 }

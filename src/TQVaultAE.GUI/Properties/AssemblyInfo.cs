@@ -32,7 +32,16 @@ using System.Windows.Media;
 // CLS compliant attribute
 //[assembly: CLSCompliant(true)]
 
-[assembly: AssemblyVersion("4.4.0")]
-[assembly: AssemblyFileVersion("4.4.0")]
+// Les informations de version pour un assembly se composent des quatre valeurs suivantes :
+//
+//      Version principale
+//      Version secondaire
+//      Numéro de build
+//      Révision
+//
+// Vous pouvez spécifier toutes les valeurs ou indiquer les numéros de build et de révision par défaut
+// en utilisant '*', comme indiqué ci-dessous :
+[assembly: AssemblyVersion("4.4.0.0")]
+[assembly: AssemblyFileVersion("4.4.0.0")]
 [assembly: NeutralResourcesLanguageAttribute("en-US")]
 [assembly: DisableDpiAwareness]

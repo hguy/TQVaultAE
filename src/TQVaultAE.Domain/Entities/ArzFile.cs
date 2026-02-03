@@ -3,59 +3,58 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Domain.Entities
+namespace TQVaultAE.Domain.Entities;
+
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using TQVaultAE.Domain.Helpers;
+
+/// <summary>
+/// Class for decoding Titan Quest ARZ files.
+/// </summary>
+public class ArzFile
 {
-	using System;
-	using System.Collections.Concurrent;
-	using System.Collections.Generic;
-	using System.Linq;
-	using TQVaultAE.Domain.Helpers;
+	/// <summary>
+	/// Name of the ARZ file.
+	/// </summary>
+	public readonly string FileName;
 
 	/// <summary>
-	/// Class for decoding Titan Quest ARZ files.
+	/// String table
 	/// </summary>
-	public class ArzFile
+	public string[] Strings;
+
+	/// <summary>
+	/// RecordInfo keyed by their ID
+	/// </summary>
+	public Dictionary<RecordId, RecordInfo> RecordInfo = new();
+
+	/// <summary>
+	/// Ordered keys for the recordInfo Dictionary
+	/// </summary>
+	public IEnumerable<RecordId> Keys => this.RecordInfo.Keys.OrderBy(v => v);
+
+	/// <summary>
+	/// Initializes a new instance of the ArzFile class.
+	/// </summary>
+	/// <param name="fileName">name of the ARZ file.</param>
+	public ArzFile(string fileName)
 	{
-		/// <summary>
-		/// Name of the ARZ file.
-		/// </summary>
-		public readonly string FileName;
-
-		/// <summary>
-		/// String table
-		/// </summary>
-		public string[] Strings;
-
-		/// <summary>
-		/// RecordInfo keyed by their ID
-		/// </summary>
-		public Dictionary<RecordId, RecordInfo> RecordInfo = new();
-
-		/// <summary>
-		/// Ordered keys for the recordInfo Dictionary
-		/// </summary>
-		public IEnumerable<RecordId> Keys => this.RecordInfo.Keys.OrderBy(v => v);
-
-		/// <summary>
-		/// Initializes a new instance of the ArzFile class.
-		/// </summary>
-		/// <param name="fileName">name of the ARZ file.</param>
-		public ArzFile(string fileName)
-		{
-			this.FileName = fileName;
-		}
-
-		/// <summary>
-		/// Gets the number of DBRecords
-		/// </summary>
-		public int Count => this.RecordInfo?.Count ?? 0;
-
-		/// <summary>
-		/// Retrieves a string from the string table.
-		/// </summary>
-		/// <param name="index">Offset in the string table.</param>
-		/// <returns>string from the string table</returns>
-		public string Getstring(int index) => this.Strings[index];
-
+		this.FileName = fileName;
 	}
+
+	/// <summary>
+	/// Gets the number of DBRecords
+	/// </summary>
+	public int Count => this.RecordInfo?.Count ?? 0;
+
+	/// <summary>
+	/// Retrieves a string from the string table.
+	/// </summary>
+	/// <param name="index">Offset in the string table.</param>
+	/// <returns>string from the string table</returns>
+	public string Getstring(int index) => this.Strings[index];
+
 }

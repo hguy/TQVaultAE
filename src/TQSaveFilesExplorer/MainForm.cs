@@ -1,13 +1,11 @@
-﻿using TQ.SaveFilesExplorer.Components;
+using TQ.SaveFilesExplorer.Components;
 using TQ.SaveFilesExplorer.Entities;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using TQ.SaveFilesExplorer.Helpers;
-using AutoMapper;
 
 namespace TQ.SaveFilesExplorer
 {
@@ -15,13 +13,10 @@ namespace TQ.SaveFilesExplorer
 	{
 		internal static MainForm StaticRef { get; private set; } = null;
 
-		private readonly IMapper _Mapper;
-
-		public MainForm(IMapper mapper)
+		public MainForm()
 		{
 			InitializeComponent();
 			StaticRef = this;
-			_Mapper = mapper;
 		}
 
 		private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
@@ -73,7 +68,8 @@ namespace TQ.SaveFilesExplorer
 			if (alreadyopend != null)
 			{
 				SetStatusMessage($@"""{alreadyopend.Text}"" file is already opened !");
-			};
+			}
+			;
 			return alreadyopend != null;
 		}
 
@@ -163,7 +159,7 @@ namespace TQ.SaveFilesExplorer
 				UseVisualStyleBackColor = this.tabPageTemplate.UseVisualStyleBackColor,
 				Tag = path,
 			};
-			var content = new TabPageFileContent(_Mapper)
+			var content = new TabPageFileContent()
 			{
 				Tag = path,
 				Dock = DockStyle.Fill,

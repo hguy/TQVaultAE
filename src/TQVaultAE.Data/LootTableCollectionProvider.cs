@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,6 +18,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 	private readonly ILogger<LootTableCollectionProvider> Log;
 	private readonly IDatabase Database;
 	private readonly ITranslationService TranslationService;
+	private readonly UserSettings USettings;
 
 	private Dictionary<RecordId, LootTableCollection> LootTableCache = new();
 
@@ -55,7 +56,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 
 					if (r.Value.TranslationTagIsEmpty)
 					{
-						if (TQDebug.LootTableDebugEnabled)
+						if (USettings.LootTableDebugEnabled)
 							Log.LogWarning(@"{RCLASS_LOOTRANDOMIZER} record ""{RecordId}"" dont have translation tag!", Data.Database.RCLASS_LOOTRANDOMIZER, r.Key);
 					}
 					else translation = TranslationService.TranslateXTag(r.Value.Tag).TQCleanup();// Get translation
@@ -79,11 +80,12 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 		}
 	}
 
-	public LootTableCollectionProvider(ILogger<LootTableCollectionProvider> log, IDatabase database, ITranslationService translationService)
+	public LootTableCollectionProvider(ILogger<LootTableCollectionProvider> log, IDatabase database, ITranslationService translationService, UserSettings uSettings)
 	{
 		this.Log = log;
 		this.Database = database;
 		this.TranslationService = translationService;
+		USettings = uSettings;
 	}
 
 	private Dictionary<RecordId, (float Weight, LootRandomizerItem LootRandomizer)> MakeTable(RecordId tableId, DBRecordCollection records)
@@ -152,7 +154,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 			// get affix translations
 			if (!this.AllLootRandomizerTranslated.TryGetValue(affix, out var lootrandom))
 			{
-				if (TQDebug.LootTableDebugEnabled)
+				if (USettings.LootTableDebugEnabled)
 					Log.LogError(@"Unknown affix record ""{RecordId}"" from table ""{TableId}"""
 						, affix, tableId);
 
@@ -185,7 +187,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 			value = new LootTableCollection(tableId, Data);
 			LootTableCache.Add(tableId, value);
 		}
-		else if (TQDebug.LootTableDebugEnabled)
+		else if (USettings.LootTableDebugEnabled)
 		{
 			Log.LogError(@"Unknown {RCLASS_LOOTRANDOMIZERTABLE} record ""{TableId}"""
 				, Data.Database.RCLASS_LOOTRANDOMIZERTABLE, tableId);

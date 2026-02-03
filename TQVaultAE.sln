@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.1.32328.378
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArzExplorer", "src\ARZExplorer\ArzExplorer.csproj", "{F5582F3E-552C-4EDA-B4EE-3F4BD9B0A9CF}"
 EndProject
@@ -12,8 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TQVaultAE.GUI", "src\TQVaul
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{20915EFE-C25B-499E-9CB6-5888F29BC32F}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
 		documentation\ADVANCEDSEARCH.md = documentation\ADVANCEDSEARCH.md
 		documentation\AFFIXES.md = documentation\AFFIXES.md
+		AGENTS.md = AGENTS.md
 		documentation\ARZEXPLORER.md = documentation\ARZEXPLORER.md
 		CHANGELOG.md = CHANGELOG.md
 		documentation\CHARMANAGE.md = documentation\CHARMANAGE.md
@@ -45,6 +47,14 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TQVaultAE.Domain", "src\TQVaultAE.Domain\TQVaultAE.Domain.csproj", "{2A8E56BC-4567-4E29-A67D-202E39FC1748}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TQVaultAE.Services.Win32", "src\TQVaultAE.Services.Win32\TQVaultAE.Services.Win32.csproj", "{E7A1426B-E531-4D67-9272-18DA5AE79484}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TQVaultAE.Tests", "src\TQVaultAE.Tests\TQVaultAE.Tests.csproj", "{5547D949-9995-4DE6-92B2-8A29EF926DBF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{D48E562C-73A2-439A-928A-691DF05E10ED}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\build-and-test.yml = .github\workflows\build-and-test.yml
+		.github\scripts\Update-Version.ps1 = .github\scripts\Update-Version.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -176,6 +186,18 @@ Global
 		{E7A1426B-E531-4D67-9272-18DA5AE79484}.Release|x64.Build.0 = Release|x64
 		{E7A1426B-E531-4D67-9272-18DA5AE79484}.Release|x86.ActiveCfg = Release|x86
 		{E7A1426B-E531-4D67-9272-18DA5AE79484}.Release|x86.Build.0 = Release|x86
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Debug|x64.Build.0 = Debug|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Debug|x86.Build.0 = Debug|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Release|x64.ActiveCfg = Release|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Release|x64.Build.0 = Release|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Release|x86.ActiveCfg = Release|Any CPU
+		{5547D949-9995-4DE6-92B2-8A29EF926DBF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

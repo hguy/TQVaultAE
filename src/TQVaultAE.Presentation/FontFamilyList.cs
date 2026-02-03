@@ -1,14 +1,13 @@
 ﻿using System.ComponentModel;
 
-namespace TQVaultAE.Presentation
+namespace TQVaultAE.Presentation;
+
+public enum FontFamilyList
 {
-	public enum FontFamilyList
-	{
-		[Description("Albertus MT")]
-		AlbertusMT,
-		Arial,
-		Verdana,
-		[Description("Times New Roman")]
-		TimesNewRoman,
-	}
+	[Description("Albertus MT")]
+	AlbertusMT,
+	Arial,
+	Verdana,
+	[Description("Times New Roman")]
+	TimesNewRoman,
 }

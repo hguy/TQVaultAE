@@ -1,0 +1,142 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  SOLUTION_FILE: 'TQVaultAE.sln'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      actions: read
+      checks: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Setup MSBuild path
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Install ImageMagick
+      run: winget install ImageMagick.Q8 --accept-source-agreements --accept-package-agreements
+    
+    - name: Update Minor Version (main release)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: pwsh -File .github/scripts/Update-Version.ps1 -VersionType "Release"
+    
+    - name: Commit version changes (main)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add version-info.json src/TQVaultAE.GUI/Properties/AssemblyInfo.cs src/TQSaveFilesExplorer/Properties/AssemblyInfo.cs src/ARZExplorer/Properties/AssemblyInfo.cs src/TQVaultAE.Services.Win32/Properties/AssemblyInfo.cs src/TQVaultAE.Domain/TQVaultAE.Domain.csproj src/TQVaultAE.Services/TQVaultAE.Services.csproj src/TQVaultAE.Presentation/TQVaultAE.Presentation.csproj src/TQVaultAE.Data/TQVaultAE.Data.csproj src/TQVaultAE.Config/TQVaultAE.Config.csproj src/TQVaultAE.Logs/TQVaultAE.Logs.csproj
+        git commit -m "chore: increment version to release"
+        git push
+    
+    - name: Create version tag (main)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        $versionInfo = Get-Content version-info.json | ConvertFrom-Json
+        $tagName = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build)"
+        git tag $tagName
+        git push origin $tagName
+    
+    - name: Restore NuGet packages
+      run: nuget restore ${{ env.SOLUTION_FILE }}
+    
+    - name: Build Release
+      run: msbuild ${{ env.SOLUTION_FILE }} /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
+    
+    - name: Upload TQVaultAE.GUI artifacts (Release)
+      uses: actions/upload-artifact@v4
+      with:
+        name: TQVaultAE-GUI-Release
+        path: src/TQVaultAE.GUI/bin/AnyCPU/Release/
+        retention-days: 3
+    
+    - name: Upload TQ.SaveFilesExplorer artifacts (Release)
+      uses: actions/upload-artifact@v4
+      with:
+        name: TQ-SaveFilesExplorer-Release
+        path: src/TQSaveFilesExplorer/bin/Release/
+        retention-days: 3
+    
+    - name: Upload ARZExplorer artifacts (Release)
+      uses: actions/upload-artifact@v4
+      with:
+        name: ARZExplorer-Release
+        path: src/ARZExplorer/bin/Release/
+        retention-days: 3
+    
+    - name: Create GitHub Release (main branch)
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          src/TQVaultAE.GUI/bin/AnyCPU/Release/**/*
+          src/TQSaveFilesExplorer/bin/Release/**/*
+          src/ARZExplorer/bin/Release/**/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  test:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    
+    - name: Restore dependencies
+      run: dotnet restore src/TQVaultAE.Tests/TQVaultAE.Tests.csproj
+    
+    - name: Build test project
+      run: dotnet build src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --configuration Release
+    
+    - name: Run tests
+      run: dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --configuration Release --verbosity normal --no-build --logger "trx;LogFileName=test-results.trx"
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: '**/TestResults/*.trx'
+        retention-days: 3
+    
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action/windows@v2
+      if: always()
+      with:
+        files: '**/TestResults/*.trx'

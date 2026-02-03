@@ -1,7 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
   <PropertyGroup>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -13,7 +14,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ArzExplorer</RootNamespace>
     <AssemblyName>ARZExplorer</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -248,19 +249,23 @@
       <Project>{E7A1426B-E531-4D67-9272-18DA5AE79484}</Project>
       <Name>TQVaultAE.Services.Win32</Name>
     </ProjectReference>
+    <ProjectReference Include="..\TQVaultAE.Services\TQVaultAE.Services.csproj">
+      <Project>{23F812FB-B5C7-4022-90A7-3B8D7A793E6A}</Project>
+      <Name>TQVaultAE.Services</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DDSReader">
-      <Version>1.0.8-pre</Version>
+    <PackageReference Include="Enums.NET">
+      <Version>5.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection">
-      <Version>6.0.0</Version>
+      <Version>10.0.2</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore">
-      <Version>6.1.0</Version>
+      <Version>8.0.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NETCore.Platforms">
-      <Version>6.0.5</Version>
+      <Version>7.0.4</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Win32.Primitives">
       <Version>4.3.0</Version>
@@ -272,7 +277,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="System.Buffers">
-      <Version>4.5.1</Version>
+      <Version>4.6.1</Version>
     </PackageReference>
     <PackageReference Include="System.Collections">
       <Version>4.3.0</Version>
@@ -281,7 +286,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="System.Configuration.ConfigurationManager">
-      <Version>6.0.0</Version>
+      <Version>10.0.2</Version>
     </PackageReference>
     <PackageReference Include="System.Console">
       <Version>4.3.1</Version>
@@ -290,7 +295,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>6.0.0</Version>
+      <Version>10.0.2</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.Tools">
       <Version>4.3.0</Version>
@@ -341,7 +346,7 @@
       <Version>4.3.0</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
-      <Version>6.0.0</Version>
+      <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.Extensions">
       <Version>4.3.1</Version>
@@ -382,18 +387,10 @@
     <PackageReference Include="System.Xml.XDocument">
       <Version>4.3.0</Version>
     </PackageReference>
+    <PackageReference Include="System.Resources.Extensions" Version="10.0.2" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>REM Copy Build
-SET SOLDIR=$(SolutionDir)
-SET PLATFORM=.
-SET CONFNAME=$(ConfigurationName)
-SET PROJDIR=$(ProjectDir)
-CALL "%25SOLDIR%25src\publishtobin.bat"
-</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="VaultPanel.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -19,6 +19,7 @@ using TQVaultAE.Domain.Contracts.Services;
 using System.Linq;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Results;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Components;
 
@@ -32,6 +33,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	protected readonly SessionContext userContext;
 	protected readonly IItemProvider ItemProvider;
 	protected readonly IServiceProvider ServiceProvider;
+	protected readonly UserSettings USettings;
 
 	/// <summary>
 	/// Gets the SackPanel instance
@@ -112,6 +114,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.UIService = this.ServiceProvider.GetService<IUIService>();
 		this.userContext = this.ServiceProvider.GetService<SessionContext>();
 		this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
+		this.USettings = this.ServiceProvider.GetService<UserSettings>();
 
 		this.DragInfo = dragInfo;
 		this.AutoMoveLocation = autoMoveLocation;
@@ -541,7 +544,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				// Only show Copy, Merge and Empty if something is in the bag.
 				if (!this.BagSackPanel.Sack.IsEmpty)
 				{
-					if (Config.UserSettings.Default.AllowItemCopy)
+					if (this.USettings.AllowItemCopy)
 					{
 						// Add the copy submenu
 						this.AddSubMenu(Resources.PlayerPanelMenuCopy, this.CopyBagClicked);
@@ -601,7 +604,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 	private (char charDelimiter, CsvDelimiter csvDelimiter) GetCSVDelimiter()
 	{
-		var delimStr = Config.UserSettings.Default.CSVDelimiter;
+		var delimStr = this.USettings.CSVDelimiter;
 
 		char delim = ',';
 
@@ -913,7 +916,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		string selectedItem = e.ClickedItem.Text;
 		if (selectedItem == Resources.PlayerPanelMenuEmpty)
 		{
-			if (Config.UserSettings.Default.SuppressWarnings || MessageBox.Show(
+			if (this.USettings.SuppressWarnings || MessageBox.Show(
 				Resources.PlayerPanelEmptyMsg,
 				Resources.PlayerPanelEmpty,
 				MessageBoxButtons.YesNo,
@@ -981,7 +984,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 			if (!this.Player.GetSack(destinationIndex + this.BagPanelOffset).IsEmpty)
 			{
-				if (Config.UserSettings.Default.SuppressWarnings || MessageBox.Show(
+				if (this.USettings.SuppressWarnings || MessageBox.Show(
 					Resources.PlayerOverwriteSackMsg,
 					Resources.PlayerOverwriteSack,
 					MessageBoxButtons.YesNo,

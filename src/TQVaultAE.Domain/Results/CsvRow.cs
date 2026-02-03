@@ -1,5 +1,4 @@
-﻿using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Helpers;
+﻿using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Domain.Results;
 
