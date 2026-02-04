@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>3.0.0</Version>
+		<Version>4.4.0.0</Version>
 		<Description>Data layer</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/EtienneLamoureux/TQVaultAE</PackageProjectUrl>
@@ -20,7 +20,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="..\IsExternalInit.cs" Link="IsExternalInit.cs" />
+		<Compile Include="..\IsExternalInit.cs" Link="IsExternalInit.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
