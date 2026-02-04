@@ -8,13 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace TQVaultAE.GUI.Components
+namespace TQVaultAE.GUI.Components;
+
+public partial class IconMagnifier : UserControl
 {
-	public partial class IconMagnifier : UserControl
+	public IconMagnifier()
 	{
-		public IconMagnifier()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

@@ -1,50 +1,47 @@
-﻿namespace TQVaultAE.Domain.Entities
+﻿namespace TQVaultAE.Domain.Entities;
+
+/// <summary>
+/// Sack panel types
+/// </summary>
+public enum SackType
 {
+	/// <summary>
+	/// Sack panel
+	/// </summary>
+	Sack = 0,
 
 	/// <summary>
-	/// Sack panel types
+	/// Stash panel
 	/// </summary>
-	public enum SackType
-	{
-		/// <summary>
-		/// Sack panel
-		/// </summary>
-		Sack = 0,
+	Stash,
 
-		/// <summary>
-		/// Stash panel
-		/// </summary>
-		Stash,
+	/// <summary>
+	/// Equipment panel
+	/// </summary>
+	Equipment,
 
-		/// <summary>
-		/// Equipment panel
-		/// </summary>
-		Equipment,
+	/// <summary>
+	/// Player panel
+	/// </summary>
+	Player,
 
-		/// <summary>
-		/// Player panel
-		/// </summary>
-		Player,
+	/// <summary>
+	/// Vault panel
+	/// </summary>
+	Vault,
 
-		/// <summary>
-		/// Vault panel
-		/// </summary>
-		Vault,
+	/// <summary>
+	/// Trash panel
+	/// </summary>
+	Trash,
 
-		/// <summary>
-		/// Trash panel
-		/// </summary>
-		Trash,
+	/// <summary>
+	/// Transfer stash
+	/// </summary>
+	TransferStash,
 
-		/// <summary>
-		/// Transfer stash
-		/// </summary>
-		TransferStash,
-
-		/// <summary>
-		/// Relic Vault stash
-		/// </summary>
-		RelicVaultStash
-	}
-
+	/// <summary>
+	/// Relic Vault stash
+	/// </summary>
+	RelicVaultStash
 }

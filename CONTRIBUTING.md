@@ -1,10 +1,15 @@
 # Contributing in TQVaultAE
 - [Contributing in TQVaultAE](#contributing-in-tqvaultae)
+  * [Prerequisite](#prerequisite)
   * [Style and format](#style-and-format)
   * [Contributions](#contributions)
     + [What to work on](#what-to-work-on)
       - [Note on unsolicited contributions](#note-on-unsolicited-contributions)
     + [Pull requests](#pull-requests)
+
+## Prerequisite
+This project use DDS to PNG conversion from nuget [Magick.NET-Q8-AnyCPU](https://github.com/dlemstra/Magick.NET) so you need to install [ImageMagick](https://imagemagick.org/script/download.php#gsc.tab=0) to resolve DLL during build.<br/>
+The simple way to do that is to use command `winget install ImageMagick.Q8` before opening the solution.
 
 ## Style and format
 TQVaultAE follows the standard C# format and import order. Refrain from submitting white-space changes mixed-in with your functional changes. 
@@ -19,3 +24,5 @@ What if you want to work on something not in the list? No problem, we welcome an
 
 ### Pull requests
 Submit your pull request to the master branch of the [main fork](https://github.com/EtienneLamoureux/TQVaultAE). We consider any outstanding pull request ready to be merged in, so please make sure that the functionality is complete when submitting your change.  Furthermore, the commits will be squashed when merged and the main commit message will be re-written, so feel free to commit often.
+
+

@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -13,6 +12,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using System.Reflection;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.Services.Win32;
 
@@ -49,11 +49,19 @@ public class GamePathServiceWin : IGamePathService
 
 	private readonly ILogger Log;
 	private readonly ITQDataService TQData;
+	private readonly IFileIO FileIO;
+	private readonly IPathIO PathIO;
+	private readonly IDirectoryIO DirectoryIO;
+	private readonly UserSettings USettings;
 
-	public GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQDataService tQDataService)
+	public GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQDataService tQDataService, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
 	{
 		this.Log = log;
 		this.TQData = tQDataService;
+		this.FileIO = fileIO;
+		this.PathIO = pathIO;
+		this.DirectoryIO = directoryIO;
+		this.USettings = uSettings;
 	}
 
 	string _ResolveTQVaultPath;
@@ -64,15 +72,15 @@ public class GamePathServiceWin : IGamePathService
 			if (string.IsNullOrWhiteSpace(_ResolveTQVaultPath))
 			{
 				var currentPath = new System.Uri(Assembly.GetExecutingAssembly().EscapedCodeBase).LocalPath;
-				_ResolveTQVaultPath = Path.GetDirectoryName(currentPath);
+				_ResolveTQVaultPath = this.PathIO.GetDirectoryName(currentPath);
 			}
 			return _ResolveTQVaultPath;
 		}
 	}
 
-	public string LocalGitRepositoryDirectory => Path.Combine(ResolveTQVaultPath, LOCAL_GIT_REPOSITORY_DIRNAME);
-	public string LocalGitRepositoryGitDir => Path.Combine(ResolveTQVaultPath, LOCAL_GIT_REPOSITORY_DIRNAME, @".git");
-	public bool LocalGitRepositoryGitDirExist => Directory.Exists(LocalGitRepositoryGitDir);
+	public string LocalGitRepositoryDirectory => this.PathIO.Combine(ResolveTQVaultPath, LOCAL_GIT_REPOSITORY_DIRNAME);
+	public string LocalGitRepositoryGitDir => this.PathIO.Combine(ResolveTQVaultPath, LOCAL_GIT_REPOSITORY_DIRNAME, @".git");
+	public bool LocalGitRepositoryGitDirExist => DirectoryIO.Exists(LocalGitRepositoryGitDir);
 
 	/// <summary>
 	/// Parses filename to try to determine the base character name.
@@ -82,14 +90,14 @@ public class GamePathServiceWin : IGamePathService
 	public string GetNameFromFile(string filename)
 	{
 		// Strip off the filename
-		string basePath = Path.GetDirectoryName(filename);
+		string basePath = this.PathIO.GetDirectoryName(filename);
 
 		// Get the containing folder
-		string charName = Path.GetFileName(basePath);
+		string charName = this.PathIO.GetFileName(basePath);
 
 		if (charName.ToUpperInvariant() == "SYS")
 		{
-			string fileAndExtension = Path.GetFileName(filename);
+			string fileAndExtension = this.PathIO.GetFileName(filename);
 			if (fileAndExtension.ToUpperInvariant().Contains("MISC"))
 				// Check for the relic vault stash.
 				charName = Resources.GlobalRelicVaultStash;
@@ -121,26 +129,26 @@ public class GamePathServiceWin : IGamePathService
 	/// Resolve as "%USERPROFILE%\Documents\My Games\Titan Quest - Immortal Throne".
 	/// </summary>
 	public string SaveFolderTQIT
-		=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "My Games", SAVE_DIRNAME_TQIT);
+		=> this.PathIO.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "My Games", SAVE_DIRNAME_TQIT);
 
 	/// <summary>
 	/// Gets the Titan Quest Character save folder.
 	/// Resolve as "%USERPROFILE%\Documents\My Games\Titan Quest".
 	/// </summary>
 	public string SaveFolderTQ
-		=> Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "My Games", SAVE_DIRNAME_TQ);
+		=> this.PathIO.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "My Games", SAVE_DIRNAME_TQ);
 
 	/// <summary>
 	/// Gets the name of the game settings file.
 	/// </summary>
 	public string SettingsFileTQ
-		=> Path.Combine(SaveFolderTQ, "Settings", "options.txt");
+		=> this.PathIO.Combine(SaveFolderTQ, "Settings", "options.txt");
 
 	/// <summary>
 	/// Gets the name of the game settings file.
 	/// </summary>
 	public string SettingsFileTQIT
-		=> Path.Combine(SaveFolderTQIT, "Settings", "options.txt");
+		=> this.PathIO.Combine(SaveFolderTQIT, "Settings", "options.txt");
 
 	/// <summary>
 	/// Gets or sets the Titan Quest game path.
@@ -161,9 +169,9 @@ public class GamePathServiceWin : IGamePathService
 		get
 		{
 			if (IsCustom)
-				return Path.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", Path.GetFileName(MapName), TRANSFERSTASHFILENAME);
+				return this.PathIO.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", this.PathIO.GetFileName(MapName), TRANSFERSTASHFILENAME);
 
-			return Path.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", TRANSFERSTASHFILENAME);
+			return this.PathIO.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", TRANSFERSTASHFILENAME);
 		}
 	}
 
@@ -176,9 +184,9 @@ public class GamePathServiceWin : IGamePathService
 		get
 		{
 			if (IsCustom)
-				return Path.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", Path.GetFileName(MapName), RELICVAULTSTASHFILENAME);
+				return this.PathIO.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", this.PathIO.GetFileName(MapName), RELICVAULTSTASHFILENAME);
 
-			return Path.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", RELICVAULTSTASHFILENAME);
+			return this.PathIO.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, "Sys", RELICVAULTSTASHFILENAME);
 		}
 	}
 
@@ -197,16 +205,16 @@ public class GamePathServiceWin : IGamePathService
 		if (IsTQIT)
 		{
 			if (isArchive)
-				return Path.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, mapSaveFolder, this.ArchiveDirName);
+				return this.PathIO.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, mapSaveFolder, this.ArchiveDirName);
 			else
-				return Path.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, mapSaveFolder);
+				return this.PathIO.Combine(SaveFolderTQIT, SAVEDATA_DIRNAME, mapSaveFolder);
 		}
 		else
 		{
 			if (isArchive)
-				return Path.Combine(SaveFolderTQ, SAVEDATA_DIRNAME, mapSaveFolder, this.ArchiveDirName);
+				return this.PathIO.Combine(SaveFolderTQ, SAVEDATA_DIRNAME, mapSaveFolder, this.ArchiveDirName);
 			else
-				return Path.Combine(SaveFolderTQ, SAVEDATA_DIRNAME, mapSaveFolder);
+				return this.PathIO.Combine(SaveFolderTQ, SAVEDATA_DIRNAME, mapSaveFolder);
 		}
 	}
 
@@ -229,7 +237,7 @@ public class GamePathServiceWin : IGamePathService
 	}
 
 	public string GetPlayerFile(string characterName, bool IsTQIT, bool isArchive)
-		=> Path.Combine(GetBaseCharacterFolder(IsTQIT, isArchive), string.Concat("_", characterName), PLAYERSAVEFILENAME);
+		=> this.PathIO.Combine(GetBaseCharacterFolder(IsTQIT, isArchive), string.Concat("_", characterName), PLAYERSAVEFILENAME);
 
 	/// <summary>
 	/// Gets the full path to the player's stash file.
@@ -237,7 +245,7 @@ public class GamePathServiceWin : IGamePathService
 	/// <param name="characterName">name of the character</param>
 	/// <returns>full path to the player stash file</returns>
 	public string GetPlayerStashFile(string characterName, bool isArchive)
-		=> Path.Combine(GetBaseCharacterFolder(true, isArchive), string.Concat("_", characterName), PLAYERSTASHFILENAMEB);
+		=> this.PathIO.Combine(GetBaseCharacterFolder(true, isArchive), string.Concat("_", characterName), PLAYERSTASHFILENAMEB);
 
 	/// <summary>
 	/// Gets a list of all of the character files in the save folder.
@@ -251,21 +259,21 @@ public class GamePathServiceWin : IGamePathService
 		var TQDir = GetBaseCharacterFolder(false, false);// From TQ 
 		var TQITDir = GetBaseCharacterFolder(true, false);// From TQIT
 
-		if (Config.UserSettings.Default.EnableOriginalTQSupport && Directory.Exists(TQDir))
-			dirs.AddRange(Directory.GetDirectories(TQDir, "_*"));
+		if (this.USettings.EnableOriginalTQSupport && DirectoryIO.Exists(TQDir))
+			dirs.AddRange(DirectoryIO.GetDirectories(TQDir, "_*"));
 
-		if (Directory.Exists(TQITDir))
-			dirs.AddRange(Directory.GetDirectories(TQITDir, "_*"));
+		if (DirectoryIO.Exists(TQITDir))
+			dirs.AddRange(DirectoryIO.GetDirectories(TQITDir, "_*"));
 
 		// Archived
 		TQDir = GetBaseCharacterFolder(false, true);// From TQ 
 		TQITDir = GetBaseCharacterFolder(true, true);// From TQIT
 
-		if (Config.UserSettings.Default.EnableOriginalTQSupport && Directory.Exists(TQDir))
-			dirs.AddRange(Directory.GetDirectories(TQDir, "_*"));
+		if (this.USettings.EnableOriginalTQSupport && DirectoryIO.Exists(TQDir))
+			dirs.AddRange(DirectoryIO.GetDirectories(TQDir, "_*"));
 
-		if (Directory.Exists(TQITDir))
-			dirs.AddRange(Directory.GetDirectories(TQITDir, "_*"));
+		if (DirectoryIO.Exists(TQITDir))
+			dirs.AddRange(DirectoryIO.GetDirectories(TQITDir, "_*"));
 
 
 		return dirs.ToArray();
@@ -285,19 +293,19 @@ public class GamePathServiceWin : IGamePathService
 	/// Gets a value indicating whether Ragnarok DLC has been installed.
 	/// </summary>
 	public bool IsRagnarokInstalled
-		=> Directory.Exists(Path.Combine(GamePathTQIT, "Resources", "XPack2"));
+		=> DirectoryIO.Exists(this.PathIO.Combine(GamePathTQIT, "Resources", "XPack2"));
 
 	/// <summary>
 	/// Gets a value indicating whether Atlantis DLC has been installed.
 	/// </summary>
 	public bool IsAtlantisInstalled
-		=> Directory.Exists(Path.Combine(GamePathTQIT, "Resources", "XPack3"));
+		=> DirectoryIO.Exists(this.PathIO.Combine(GamePathTQIT, "Resources", "XPack3"));
 
 	/// <summary>
 	/// Gets a value indicating whether Eternal Embers DLC has been installed.
 	/// </summary>
 	public bool IsEmbersInstalled
-		=> Directory.Exists(Path.Combine(GamePathTQIT, "Resources", "XPack4"));
+		=> DirectoryIO.Exists(this.PathIO.Combine(GamePathTQIT, "Resources", "XPack4"));
 
 	/// <summary>
 	/// Gets or sets the name of the custom map.
@@ -322,17 +330,17 @@ public class GamePathServiceWin : IGamePathService
 	public string ConvertFilePathToBackupPath(string prefix, string filePath)
 	{
 		// Get the actual filename without any path information
-		string filename = Path.GetFileName(filePath);
+		string filename = this.PathIO.GetFileName(filePath);
 
 		// Strip the extension off of it.
-		string extension = Path.GetExtension(filename);
+		string extension = this.PathIO.GetExtension(filename);
 		if (!string.IsNullOrEmpty(extension))
-			filename = Path.GetFileNameWithoutExtension(filename);
+			filename = this.PathIO.GetFileNameWithoutExtension(filename);
 
 		// Now come up with a timestamp string
 		string timestamp = DateTime.Now.ToString("-yyyyMMdd-HHmmss-fffffff-", CultureInfo.InvariantCulture);
 
-		string pathHead = Path.Combine(TQVaultBackupFolder, prefix);
+		string pathHead = this.PathIO.Combine(TQVaultBackupFolder, prefix);
 		pathHead = string.Concat(pathHead, "-", filename, timestamp);
 
 		int uniqueID = 0;
@@ -343,7 +351,7 @@ public class GamePathServiceWin : IGamePathService
 		{
 			string fullFilePath = string.Concat(pathHead, uniqueID.ToString("000", CultureInfo.InvariantCulture), extension);
 
-			if (!File.Exists(fullFilePath))
+			if (!this.FileIO.Exists(fullFilePath))
 				return fullFilePath;
 
 			// try again
@@ -366,14 +374,14 @@ public class GamePathServiceWin : IGamePathService
 		{
 			if (string.IsNullOrEmpty(_VaultFolder))
 			{
-				string folderPath = Path.Combine(SaveFolderTQ, VAULTFILES_DEFAULT_DIRNAME);
+				string folderPath = this.PathIO.Combine(SaveFolderTQ, VAULTFILES_DEFAULT_DIRNAME);
 
 				// Lets see if our path exists and create it if it does not
-				if (!Directory.Exists(folderPath))
+				if (!DirectoryIO.Exists(folderPath))
 				{
 					try
 					{
-						Directory.CreateDirectory(folderPath);
+						DirectoryIO.CreateDirectory(folderPath);
 					}
 					catch (Exception e)
 					{
@@ -392,7 +400,7 @@ public class GamePathServiceWin : IGamePathService
 		// Used to set vault path by configuration UI.
 		set
 		{
-			if (Directory.Exists(value))
+			if (DirectoryIO.Exists(value))
 				_VaultFolder = value;
 		}
 	}
@@ -401,10 +409,10 @@ public class GamePathServiceWin : IGamePathService
 	{
 		get
 		{
-			var path = Path.Combine(TQVaultSaveFolder, @"Config");
+			var path = this.PathIO.Combine(TQVaultSaveFolder, @"Config");
 
-			if (!Directory.Exists(path))
-				Directory.CreateDirectory(path);
+			if (!DirectoryIO.Exists(path))
+				DirectoryIO.CreateDirectory(path);
 
 			return path;
 		}
@@ -418,14 +426,14 @@ public class GamePathServiceWin : IGamePathService
 		get
 		{
 			string baseFolder = TQVaultSaveFolder;
-			string folderPath = Path.Combine(baseFolder, "Backups");
+			string folderPath = this.PathIO.Combine(baseFolder, "Backups");
 
 			// Create the path if it does not yet exist
-			if (!Directory.Exists(folderPath))
+			if (!DirectoryIO.Exists(folderPath))
 			{
 				try
 				{
-					Directory.CreateDirectory(folderPath);
+					DirectoryIO.CreateDirectory(folderPath);
 				}
 				catch (Exception e)
 				{
@@ -448,7 +456,7 @@ public class GamePathServiceWin : IGamePathService
 	public string PlayerStashFileNameG => PLAYERSTASHFILENAMEG;
 
 	public string PlayerSettingsFileName => PLAYERSETTINGSFILENAME;
-	
+
 	public GameType GameType { get; set; }
 
 	/// <summary>
@@ -457,7 +465,7 @@ public class GamePathServiceWin : IGamePathService
 	/// <param name="vaultName">The name of the vault file.</param>
 	/// <returns>The full path along with extension of the vault file.</returns>
 	public string GetVaultFile(string vaultName)
-		=> string.Concat(Path.Combine(TQVaultSaveFolder, vaultName), VAULTFILENAME_EXTENSION_JSON);
+		=> string.Concat(this.PathIO.Combine(TQVaultSaveFolder, vaultName), VAULTFILENAME_EXTENSION_JSON);
 
 	/// <summary>
 	/// Gets a list of all of the vault files.
@@ -469,8 +477,8 @@ public class GamePathServiceWin : IGamePathService
 		try
 		{
 			// Get all files that have a .vault extension.
-			string[] filesOld = Directory.GetFiles(TQVaultSaveFolder, $"*{VAULTFILENAME_EXTENSION_OLD}");
-			string[] filesJson = Directory.GetFiles(TQVaultSaveFolder, $"*{VAULTFILENAME_EXTENSION_JSON}");
+			string[] filesOld = DirectoryIO.GetFiles(TQVaultSaveFolder, $"*{VAULTFILENAME_EXTENSION_OLD}");
+			string[] filesJson = DirectoryIO.GetFiles(TQVaultSaveFolder, $"*{VAULTFILENAME_EXTENSION_JSON}");
 
 			if (!filesOld.Any() && !filesJson.Any())
 				return empty;
@@ -480,7 +488,7 @@ public class GamePathServiceWin : IGamePathService
 			// Strip out the path information and extension.
 			foreach (string file in filesOld)
 			{
-				vaultList.Add(Path.GetFileNameWithoutExtension(file));
+				vaultList.Add(this.PathIO.GetFileNameWithoutExtension(file));
 			}
 
 			// Pure Json vaults
@@ -488,7 +496,7 @@ public class GamePathServiceWin : IGamePathService
 			{
 				if (!filesOld.Any(oldfile => newfile.StartsWith(oldfile)))
 				{
-					var remain = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(newfile));
+					var remain = this.PathIO.GetFileNameWithoutExtension(this.PathIO.GetFileNameWithoutExtension(newfile));
 					vaultList.Add(remain);
 				}
 			}
@@ -518,16 +526,16 @@ public class GamePathServiceWin : IGamePathService
 			if (steamworkshopRootDir == TQITFolder)// regex failed ! This is not a steamapps path
 				return null;
 
-			var modDir = Directory.GetDirectories(steamworkshopRootDir, "*");
+			var modDir = this.DirectoryIO.GetDirectories(steamworkshopRootDir, "*");
 
 			if (!(modDir?.Any() ?? false))
 				return null;
 
 			var customMapList = modDir
 				// Find SubModDir having readable Mod names
-				.SelectMany(rd => Directory.GetDirectories(rd, "*"))
+				.SelectMany(rd => DirectoryIO.GetDirectories(rd, "*"))
 				// Make entries
-				.Select(p => new GamePathEntry(p, $"SteamWorkshop : {Path.GetFileName(p)}"))
+				.Select(p => new GamePathEntry(p, $"SteamWorkshop : {this.PathIO.GetFileName(p)}"))
 				.OrderBy(e => e.DisplayName)// sort alphabetically
 				.ToArray();
 
@@ -550,13 +558,13 @@ public class GamePathServiceWin : IGamePathService
 			// Get all folders in the CustomMaps directory.
 			string saveFolder = SaveFolderTQIT;
 
-			var mapFolders = Directory.GetDirectories(Path.Combine(saveFolder, "CustomMaps"), "*");
+			var mapFolders = DirectoryIO.GetDirectories(this.PathIO.Combine(saveFolder, "CustomMaps"), "*");
 
 			if (!(mapFolders?.Any() ?? false))
 				return null;
 
 			var customMapList = mapFolders
-			.Select(p => new GamePathEntry(p, $"Legacy : {Path.GetFileName(p)}"))
+			.Select(p => new GamePathEntry(p, $"Legacy : {this.PathIO.GetFileName(p)}"))
 			.OrderBy(e => e.DisplayName)// sort alphabetically
 			.ToArray();
 
@@ -577,8 +585,8 @@ public class GamePathServiceWin : IGamePathService
 		string titanQuestGamePath = null;
 
 		// ForceGamePath precedence for dev on PC with partial installation
-		if (!string.IsNullOrEmpty(Config.UserSettings.Default.ForceGamePath))
-			titanQuestGamePath = Config.UserSettings.Default.ForceGamePath;
+		if (!string.IsNullOrEmpty(this.USettings.ForceGamePath))
+			titanQuestGamePath = this.USettings.ForceGamePath;
 
 		// We are either autodetecting or the path has not been set
 		//
@@ -603,18 +611,18 @@ public class GamePathServiceWin : IGamePathService
 			string[] registryPath = { "Software", "Valve", "Steam", "SteamPath" };
 			string steamPath = ReadRegistryKey(Microsoft.Win32.Registry.CurrentUser, registryPath).Replace("/", "\\");
 
-			string fullPath = Path.Combine(steamPath, steamTQPath);
-			string fullPathExe = Path.Combine(fullPath, @"TQ.exe");
-			if (File.Exists(fullPathExe))
+			string fullPath = this.PathIO.Combine(steamPath, steamTQPath);
+			string fullPathExe = this.PathIO.Combine(fullPath, @"TQ.exe");
+			if (this.FileIO.Exists(fullPathExe))
 				titanQuestGamePath = fullPath;
 			else
 			{
 				//further looking for Steam library
 				//read libraryfolders.vdf
-				var vdfFile = Path.Combine(steamPath, @"SteamApps\libraryfolders.vdf");
-				if (File.Exists(vdfFile))
+				var vdfFile = this.PathIO.Combine(steamPath, @"SteamApps\libraryfolders.vdf");
+				if (this.FileIO.Exists(vdfFile))
 				{
-					string[] libFile = File.ReadAllLines(vdfFile);
+					string[] libFile = this.FileIO.ReadAllLines(vdfFile);
 
 					// TODO Old file format ? Is it obsolete ?
 					Regex vdfPathRegex = new Regex(@"""\d+""\t+""([^""]+)""");  // "2"		"D:\\games\\Steam"
@@ -623,8 +631,8 @@ public class GamePathServiceWin : IGamePathService
 						if (vdfPathRegex.Match(line.Trim()) is { Success: true } match)
 						{
 							var vdfPathValue = match.Groups[1].Value.Replace(@"\\", @"\");
-							fullPath = Path.Combine(vdfPathValue, steamTQPath);
-							if (Directory.Exists(fullPath))
+							fullPath = this.PathIO.Combine(vdfPathValue, steamTQPath);
+							if (DirectoryIO.Exists(fullPath))
 							{
 								titanQuestGamePath = fullPath;
 								break;
@@ -651,8 +659,8 @@ public class GamePathServiceWin : IGamePathService
 
 						if (steamPath != string.Empty)
 						{
-							var fullpath = Path.Combine(steamPath, steamTQPath);
-							if (Directory.Exists(fullpath))
+							var fullpath = this.PathIO.Combine(steamPath, steamTQPath);
+							if (DirectoryIO.Exists(fullpath))
 								titanQuestGamePath = fullpath;
 						}
 					}
@@ -708,9 +716,9 @@ Please select the game installation directory.");
 		string vaultname = null;
 
 		if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_JSON, StringComparison.InvariantCultureIgnoreCase))
-			vaultname = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(vaultFilePath));
+			vaultname = this.PathIO.GetFileNameWithoutExtension(this.PathIO.GetFileNameWithoutExtension(vaultFilePath));
 		else if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_OLD, StringComparison.InvariantCultureIgnoreCase))
-			vaultname = Path.GetFileNameWithoutExtension(vaultFilePath);
+			vaultname = this.PathIO.GetFileNameWithoutExtension(vaultFilePath);
 
 		return vaultname;
 	}
@@ -730,32 +738,32 @@ Please select the game installation directory.");
 		{
 			case "XPACK" when segments[1] != "SOUNDS":
 				// Comes from Immortal Throne
-				path = Path.Combine(GamePathTQIT, "Resources", "XPack", segments[1] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Resources", "XPack", segments[1] + ".arc");
 				break;
 			case "XPACK" when segments[1] == "SOUNDS": // Sounds file exception for IT
 													   // Comes from Immortal Throne
-				path = Path.Combine(GamePathTQIT, "Resources", segments[1] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Resources", segments[1] + ".arc");
 				break;
 			case "XPACK2":
 				// Comes from Ragnarok
-				path = Path.Combine(GamePathTQIT, "Resources", "XPack2", segments[1] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Resources", "XPack2", segments[1] + ".arc");
 				break;
 			case "XPACK3":
 				// Comes from Atlantis
-				path = Path.Combine(GamePathTQIT, "Resources", "XPack3", segments[1] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Resources", "XPack3", segments[1] + ".arc");
 				break;
 			case "XPACK4":
 				// Comes from Eternal Embers
-				path = Path.Combine(GamePathTQIT, "Resources", "XPack4", segments[1] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Resources", "XPack4", segments[1] + ".arc");
 				break;
 			case "SOUNDS":
 				// Regular Dialogs/Sounds/Music/PlayerSounds
-				path = Path.Combine(GamePathTQIT, "Audio", segments[0] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Audio", segments[0] + ".arc");
 				isDLC = false;
 				break;
 			default:
 				// Base game
-				path = Path.Combine(GamePathTQIT, "Resources", segments[0] + ".arc");
+				path = this.PathIO.Combine(GamePathTQIT, "Resources", segments[0] + ".arc");
 				isDLC = false;
 				break;
 		}

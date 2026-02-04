@@ -1,12 +1,11 @@
-﻿namespace TQVaultAE.GUI.Components
-{
-	using System.Windows.Forms;
+﻿namespace TQVaultAE.GUI.Components;
 
-	public class BufferedFlowLayoutPanel : FlowLayoutPanel
+using System.Windows.Forms;
+
+public class BufferedFlowLayoutPanel : FlowLayoutPanel
+{
+	public BufferedFlowLayoutPanel()
 	{
-		public BufferedFlowLayoutPanel()
-		{
-			DoubleBuffered = true;
-		}
+		DoubleBuffered = true;
 	}
 }

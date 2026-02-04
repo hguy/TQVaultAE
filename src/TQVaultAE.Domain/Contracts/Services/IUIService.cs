@@ -2,7 +2,6 @@
 using System;
 using System.Drawing;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Domain.Contracts.Services;
 

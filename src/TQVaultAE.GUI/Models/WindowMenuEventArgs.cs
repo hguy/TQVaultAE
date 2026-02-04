@@ -3,39 +3,38 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Models
+namespace TQVaultAE.GUI.Models;
+
+using System;
+
+/// <summary>
+/// Class for the WindowMenuEventArgs
+/// </summary>
+public class WindowMenuEventArgs : EventArgs
 {
-	using System;
+	/// <summary>
+	/// Holds the system command for this menu item
+	/// </summary>
+	private int systemCommand;
 
 	/// <summary>
-	/// Class for the WindowMenuEventArgs
+	/// Initializes a new instance of the WindowMenuEventArgs class.
 	/// </summary>
-	public class WindowMenuEventArgs : EventArgs
+	/// <param name="command">Command for the menu item</param>
+	public WindowMenuEventArgs(int command)
+		: base()
 	{
-		/// <summary>
-		/// Holds the system command for this menu item
-		/// </summary>
-		private int systemCommand;
+		this.systemCommand = command;
+	}
 
-		/// <summary>
-		/// Initializes a new instance of the WindowMenuEventArgs class.
-		/// </summary>
-		/// <param name="command">Command for the menu item</param>
-		public WindowMenuEventArgs(int command)
-			: base()
+	/// <summary>
+	/// Gets the system command.
+	/// </summary>
+	public int SystemCommand
+	{
+		get
 		{
-			this.systemCommand = command;
-		}
-
-		/// <summary>
-		/// Gets the system command.
-		/// </summary>
-		public int SystemCommand
-		{
-			get
-			{
-				return (int)this.systemCommand;
-			}
+			return (int)this.systemCommand;
 		}
 	}
 }
