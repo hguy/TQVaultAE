@@ -37,17 +37,6 @@ $newVersion = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build)
 Write-Host "Syncing version: $newVersion"
 Write-Host ""
 
-$versionJson = @{
-    Major = $versionInfo.Major
-    Minor = $versionInfo.Minor
-    Build = $versionInfo.Build
-    Revision = $versionInfo.Revision
-} | ConvertTo-Json
-
-Set-Content -Path $VersionFile -Value $versionJson -Encoding UTF8
-Write-Host "Saved version info to: $VersionFile"
-Write-Host ""
-
 $assemblyInfoFiles = @(
     "$SolutionRoot\src\TQVaultAE.GUI\Properties\AssemblyInfo.cs",
     "$SolutionRoot\src\TQSaveFilesExplorer\Properties\AssemblyInfo.cs",
