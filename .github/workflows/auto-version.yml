@@ -1,0 +1,104 @@
+name: Auto Version and Release
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'version-info.json'
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  SOLUTION_FILE: "TQVaultAE.sln"
+
+jobs:
+  version-and-release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      checks: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.VERSION_BUMP_TOKEN }}
+
+      - name: Sync version to all projects
+        run: pwsh -File .github/scripts/Update-Version.ps1 -VersionType "Sync"
+
+      - name: Commit version sync
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "chore: sync version from version-info.json" || echo "No changes to commit"
+          git push || echo "Nothing to push"
+
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install ImageMagick
+        run: winget install ImageMagick.Q8 --accept-source-agreements --accept-package-agreements
+
+      - name: Restore NuGet packages
+        run: nuget restore ${{ env.SOLUTION_FILE }}
+
+      - name: Build Release
+        run: msbuild ${{ env.SOLUTION_FILE }} /p:Configuration=Release /p:Platform="Any CPU" /m /v:minimal
+
+      - name: Read version for tag
+        id: version-tag
+        shell: pwsh
+        run: |
+          $versionInfo = Get-Content version-info.json | ConvertFrom-Json
+          $tagName = "$($versionInfo.Major).$($versionInfo.Minor).$($versionInfo.Build)"
+          "version=$tagName" >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $tagName"
+
+      - name: Create version tag
+        run: |
+          git tag ${{ steps.version-tag.outputs.version }}
+          git push origin ${{ steps.version-tag.outputs.version }}
+
+      - name: Upload TQVaultAE.GUI artifacts (Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TQVaultAE-GUI-Release
+          path: src/TQVaultAE.GUI/bin/AnyCPU/Release/
+          retention-days: 3
+
+      - name: Upload TQ.SaveFilesExplorer artifacts (Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: TQ-SaveFilesExplorer-Release
+          path: src/TQSaveFilesExplorer/bin/Release/
+          retention-days: 3
+
+      - name: Upload ARZExplorer artifacts (Release)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ARZExplorer-Release
+          path: src/ARZExplorer/bin/Release/
+          retention-days: 3
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version-tag.outputs.version }}
+          files: |
+            src/TQVaultAE.GUI/bin/AnyCPU/Release/**/*
+            src/TQSaveFilesExplorer/bin/Release/**/*
+            src/ARZExplorer/bin/Release/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
