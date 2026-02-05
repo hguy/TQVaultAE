@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualBasic;
+using Microsoft.VisualBasic;
 using System;
 using System.Drawing;
 using System.Globalization;
@@ -71,7 +71,7 @@ public partial class MainForm
 		var characters = this.playerService.GetPlayerSaveList();
 
 		// Init FileWatcher
-		if (Config.UserSettings.Default.EnableHotReload)
+		if (base.USettings.EnableHotReload)
 		{
 			foreach (var ps in characters)
 			{
@@ -357,7 +357,7 @@ public partial class MainForm
 			if (newname == string.Empty) return;// Cancel button
 
 			// validate new name
-			char[] invalidChars = Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).ToArray();
+			char[] invalidChars = this.PathIO.GetInvalidPathChars().Concat(this.PathIO.GetInvalidFileNameChars()).ToArray();
 			if (string.IsNullOrWhiteSpace(newname) || newname.IndexOfAny(invalidChars) > -1)
 			{
 				MessageBox.Show(Resources.DuplicateCharacter_NewNameMustBeValid, Resources.DuplicateCharacter_ModalTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
@@ -386,7 +386,7 @@ public partial class MainForm
 				// Rollback IO
 				try
 				{
-					if (newFolder is not null) Directory.Delete(newFolder, true);
+					if (newFolder is not null) DirectoryIO.Delete(newFolder, true);
 				}
 				catch (Exception exx)
 				{

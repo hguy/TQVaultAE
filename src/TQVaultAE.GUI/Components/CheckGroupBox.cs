@@ -1,6 +1,5 @@
-﻿namespace TQVaultAE.GUI.Components
+﻿namespace TQVaultAE.GUI.Components;
+
+public class CheckGroupBox : UIToolbox.CheckGroupBox
 {
-	public class CheckGroupBox : UIToolbox.CheckGroupBox
-	{
-	}
 }

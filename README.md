@@ -1,7 +1,8 @@
 # TQVaultAE
 [![Steam](https://img.shields.io/badge/steam-link-lightgrey.svg)](https://steamcommunity.com/sharedfiles/filedetails/?id=1136716167)
-[![Release](https://img.shields.io/badge/stable-4.4.0-blue.svg)](https://github.com/EtienneLamoureux/TQVaultAE/releases)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/EtienneLamoureux/TQVaultAE/blob/master/LICENSE)
+[![Release](https://img.shields.io/github/v/release/EtienneLamoureux/TQVaultAE)](https://github.com/EtienneLamoureux/TQVaultAE/releases)
+[![License](https://img.shields.io/github/license/EtienneLamoureux/TQVaultAE)](https://github.com/EtienneLamoureux/TQVaultAE/blob/master/LICENSE)
+[![Build Status](https://github.com/EtienneLamoureux/TQVaultAE/workflows/Build%20and%20Test/badge.svg)](https://github.com/EtienneLamoureux/TQVaultAE/actions)
 
 TQVaultAE is an external tool for [Titan Quest Anniversary Edition](https://www.thqnordic.com/games/titan-quest) that allows you to store and search your items outside the game.
 Works with all expansions!

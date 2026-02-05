@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace TQ.SaveFilesExplorer.Components
+﻿namespace TQ.SaveFilesExplorer.Components
 {
 	internal class ComboBoxItem
 	{

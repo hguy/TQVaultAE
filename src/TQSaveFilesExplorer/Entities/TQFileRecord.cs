@@ -1,8 +1,6 @@
-﻿using EnumsNET;
-using TQ.SaveFilesExplorer.Entities.Players;
+﻿using TQ.SaveFilesExplorer.Entities.Players;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;

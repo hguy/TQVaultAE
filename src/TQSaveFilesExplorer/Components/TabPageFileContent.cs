@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
@@ -12,22 +12,19 @@ using TQ.SaveFilesExplorer.Entities;
 using System.Diagnostics;
 using System.IO;
 using EnumsNET;
-using AutoMapper;
 
 namespace TQ.SaveFilesExplorer.Components
 {
 	public partial class TabPageFileContent : UserControl
 	{
-		private bool _DisplayDataDecimal = true;
+private bool _DisplayDataDecimal = true;
 		private readonly TQFileService Service;
-		private readonly IMapper _Mapper;
 
 		public TQFile File { get; private set; }
 
-		public TabPageFileContent(IMapper mapper)
+		public TabPageFileContent()
 		{
-			_Mapper = mapper;
-			Service = new TQFileService(mapper);
+			Service = new TQFileService();
 
 			InitializeComponent();
 		}

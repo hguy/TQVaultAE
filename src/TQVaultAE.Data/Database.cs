@@ -39,7 +39,11 @@ public class Database : IDatabase
 
 	#endregion
 
-	private readonly ILogger Log = null;
+	private readonly ILogger Log;
+	private readonly IFileIO FileIO;
+	private readonly IDirectoryIO DirectoryIO;
+	private readonly IPathIO PathIO;
+	private readonly UserSettings USettings;
 
 	#region Database Fields
 
@@ -82,7 +86,7 @@ public class Database : IDatabase
 	#endregion Database Fields
 
 	/// <summary>
-	/// Initializes a new instance of the Database class.
+	/// Initializes a new instance of Database class.
 	/// </summary>
 	public Database(
 		ILogger<Database> log
@@ -91,16 +95,24 @@ public class Database : IDatabase
 		, IItemAttributeProvider itemAttributeProvider
 		, IGamePathService gamePathResolver
 		, ITQDataService tQData
+		, IFileIO fileIO
+		, IDirectoryIO directoryIO
+		, IPathIO pathIO
+		, UserSettings uSettings
 	)
 	{
 		this.Log = log;
-		this.AutoDetectLanguage = Config.UserSettings.Default.AutoDetectLanguage;
-		this.TQLanguage = Config.UserSettings.Default.TQLanguage;
+		USettings = uSettings;
+		this.AutoDetectLanguage = uSettings.AutoDetectLanguage;
+		this.TQLanguage = uSettings.TQLanguage;
 		this.arcProv = arcFileProvider;
 		this.arzProv = arzFileProvider;
 		this.ItemAttributeProvider = itemAttributeProvider;
 		this.GamePathResolver = gamePathResolver;
 		this.TQData = tQData;
+		this.FileIO = fileIO;
+		this.DirectoryIO = directoryIO;
+		this.PathIO = pathIO;
 		this.LoadDBFile();
 	}
 
@@ -184,14 +196,14 @@ public class Database : IDatabase
 				try
 				{
 					string optionsFile = GamePathResolver.SettingsFileTQ;
-					if (!File.Exists(optionsFile))
+					if (!this.FileIO.Exists(optionsFile))
 					{
 						// Try IT Folder if there is no settings file in TQ Folder
 						optionsFile = GamePathResolver.SettingsFileTQIT;
 					}
-					if (File.Exists(optionsFile))
+					if (this.FileIO.Exists(optionsFile))
 					{
-						var fileContent = File.ReadAllText(optionsFile);
+						var fileContent = this.FileIO.ReadAllText(optionsFile);
 						var match = Regex.Match(fileContent, @"(?i)language\s*=\s*(""(?<Language>[^""]+)""|(?<Language>[^\r\n]*))[\r\n]");
 						if (match.Success)
 						{
@@ -236,7 +248,7 @@ public class Database : IDatabase
 	{
 		bool result = false;
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.ExtractARCFile('{0}', '{1}')", arcFileName, destination);
 
 		try
@@ -252,10 +264,10 @@ public class Database : IDatabase
 			result = false;
 		}
 
-		if (TQDebug.DatabaseDebugLevel > 1)
+		if (USettings.DatabaseDebugLevel > 1)
 			Log.LogDebug("Extraction Result = {0}", result);
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Exiting Database.ReadARCFile()");
 
 		return result;
@@ -650,10 +662,10 @@ public class Database : IDatabase
 		if (RecordId.IsNullOrEmpty(resourceId))
 			return null;
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.LoadResource({0})", resourceId);
 
-		if (TQDebug.DatabaseDebugLevel > 1)
+		if (USettings.DatabaseDebugLevel > 1)
 			Log.LogDebug(" Normalized({0})", resourceId);
 
 		byte[] cachedArcFileData = this.resourcesData.GetOrAddAtomic(resourceId, key =>
@@ -672,22 +684,22 @@ public class Database : IDatabase
 			byte[] arcFileData = null;
 			string arcFileBase = resourceIdSplited.First();
 
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 				Log.LogDebug("arcFileBase = {0}", arcFileBase);
 
 			// Added by VillageIdiot
-			// Check the mod folder for the image resource.
+			// Check's mod folder for's image resource.
 			if (GamePathResolver.IsCustom)
 			{
-				if (TQDebug.DatabaseDebugLevel > 1)
+				if (USettings.DatabaseDebugLevel > 1)
 					Log.LogDebug("Checking Custom Resources.");
 
-				rootFolder = Path.Combine(GamePathResolver.MapName, "resources");
+				rootFolder = this.PathIO.Combine(GamePathResolver.MapName, "resources");
 
-				arcFile = Path.Combine(rootFolder, Path.ChangeExtension(arcFileBase, ".arc"));
+				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
 				arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 1 && arcFileData is not null)
+				if (USettings.DatabaseDebugLevel > 1 && arcFileData is not null)
 					Log.LogDebug(@"Custom resource found ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
@@ -695,7 +707,7 @@ public class Database : IDatabase
 			if (arcFileData == null)
 			{
 				// See if this guy is from Immortal Throne expansion pack.
-				if (TQDebug.DatabaseDebugLevel > 1)
+				if (USettings.DatabaseDebugLevel > 1)
 					Log.LogDebug("Checking IT Resources.");
 
 				(arcFile, isDLC) = this.GamePathResolver.ResolveArcFileName(key);
@@ -709,10 +721,10 @@ public class Database : IDatabase
 					key = resourceIdSplited.Skip(1).JoinString("\\");
 				}
 
-				if (File.Exists(arcFile))
+				if (this.FileIO.Exists(arcFile))
 					arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 0 && arcFileData is null)
+				if (USettings.DatabaseDebugLevel > 0 && arcFileData is null)
 					Log.LogError(@"Resource not found ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
@@ -723,50 +735,50 @@ public class Database : IDatabase
 			// Also could be that it says xpack in the record but the file is in the root.
 			if (arcFileData == null)
 			{
-				rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack");
-				arcFile = Path.Combine(rootFolder, Path.ChangeExtension(arcFileBase, ".arc"));
+				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack");
+				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
 
-				if (File.Exists(arcFile))
+				if (this.FileIO.Exists(arcFile))
 					arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 1 && arcFileData is not null)
+				if (USettings.DatabaseDebugLevel > 1 && arcFileData is not null)
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
 			// Now, let's check if the item is in Ragnarok DLC
 			if (arcFileData == null && GamePathResolver.IsRagnarokInstalled)
 			{
-				rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack2");
-				arcFile = Path.Combine(rootFolder, Path.ChangeExtension(arcFileBase, ".arc"));
+				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack2");
+				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
 
-				if (File.Exists(arcFile))
+				if (this.FileIO.Exists(arcFile))
 					arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 1 && arcFileData is not null)
+				if (USettings.DatabaseDebugLevel > 1 && arcFileData is not null)
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
 			if (arcFileData == null && GamePathResolver.IsAtlantisInstalled)
 			{
-				rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack3");
-				arcFile = Path.Combine(rootFolder, Path.ChangeExtension(arcFileBase, ".arc"));
+				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack3");
+				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
 
-				if (File.Exists(arcFile))
+				if (this.FileIO.Exists(arcFile))
 					arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 1 && arcFileData is not null)
+				if (USettings.DatabaseDebugLevel > 1 && arcFileData is not null)
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
 			if (arcFileData == null && GamePathResolver.IsEmbersInstalled)
 			{
-				rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack4");
-				arcFile = Path.Combine(rootFolder, Path.ChangeExtension(arcFileBase, ".arc"));
+				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack4");
+				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
 
-				if (File.Exists(arcFile))
+				if (this.FileIO.Exists(arcFile))
 					arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 1 && arcFileData is not null)
+				if (USettings.DatabaseDebugLevel > 1 && arcFileData is not null)
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
@@ -774,18 +786,18 @@ public class Database : IDatabase
 			{
 				// We are either vanilla TQ or have not found our resource yet.
 				// from the original TQ folder
-				if (TQDebug.DatabaseDebugLevel > 1)
+				if (USettings.DatabaseDebugLevel > 1)
 					Log.LogDebug("Checking TQ Resources.");
 
 				rootFolder = GamePathResolver.GamePathTQ;
-				rootFolder = Path.Combine(rootFolder, "Resources");
+				rootFolder = this.PathIO.Combine(rootFolder, "Resources");
 
-				arcFile = Path.Combine(rootFolder, Path.ChangeExtension(arcFileBase, ".arc"));
+				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
 
-				if (File.Exists(arcFile))
+				if (this.FileIO.Exists(arcFile))
 					arcFileData = this.ReadARCFile(arcFile, key);
 
-				if (TQDebug.DatabaseDebugLevel > 0 && arcFileData is null)
+				if (USettings.DatabaseDebugLevel > 0 && arcFileData is null)
 					Log.LogError(@"Resource unknown ""{resourceId}""", key);
 			}
 
@@ -794,7 +806,7 @@ public class Database : IDatabase
 			return arcFileData;
 		});
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Exiting Database.LoadResource()");
 
 		return cachedArcFileData;
@@ -817,7 +829,7 @@ public class Database : IDatabase
 		// See if we have this arcfile already and if not create it.
 		try
 		{
-			if (TQDebug.DatabaseDebugLevel > 0)
+			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Database.ReadARCFile('{0}', '{1}')", arcFileName, dataId);
 
 			ArcFile arcFile = ReadARCFile(arcFileName);
@@ -828,7 +840,7 @@ public class Database : IDatabase
 			// Now retrieve the data
 			byte[] ans = arcProv.GetData(arcFile, dataId);
 
-			if (TQDebug.DatabaseDebugLevel > 0)
+			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Exiting Database.ReadARCFile()");
 
 			return ans;
@@ -850,7 +862,7 @@ public class Database : IDatabase
 		// See if we have this arcfile already and if not create it.
 		ArcFile arcFile = this.arcFiles.GetOrAddAtomic(arcFileName, k =>
 		{
-			if (!File.Exists(k))
+			if (!this.FileIO.Exists(k))
 				return null;
 
 			var file = new ArcFile(k);
@@ -870,7 +882,7 @@ public class Database : IDatabase
 	/// <returns>Path to the text db file</returns>
 	private string FigureDBFileToUse(string rootFolder)
 	{
-		string baseFile = Path.Combine(rootFolder, "Text_");
+		string baseFile = this.PathIO.Combine(rootFolder, "Text_");
 		string suffix = ".arc";
 
 		// Added explicit set to null though may not be needed
@@ -881,7 +893,7 @@ public class Database : IDatabase
 
 		// First see if we can use the game setting
 		string gameLanguage = this.GameLanguage;
-		if (TQDebug.DatabaseDebugLevel > 1)
+		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("gameLanguage = {0}", gameLanguage == null ? "NULL" : gameLanguage);
 			Log.LogDebug("baseFile = {0}", baseFile);
@@ -890,12 +902,12 @@ public class Database : IDatabase
 		if (gameLanguage != null)
 		{
 			// Try this method of getting the culture
-			if (TQDebug.DatabaseDebugLevel > 2)
+			if (USettings.DatabaseDebugLevel > 2)
 				Log.LogDebug("Try looking up cultureID");
 
 			foreach (CultureInfo cultureInfo in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
 			{
-				if (TQDebug.DatabaseDebugLevel > 2)
+				if (USettings.DatabaseDebugLevel > 2)
 					Log.LogDebug("Trying {0}", cultureInfo.EnglishName.ToUpperInvariant());
 
 				if (cultureInfo.EnglishName.ToUpperInvariant().Equals(gameLanguage.ToUpperInvariant()) || cultureInfo.DisplayName.ToUpperInvariant().Equals(gameLanguage.ToUpperInvariant()))
@@ -926,7 +938,7 @@ public class Database : IDatabase
 				}
 			}
 
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 				Log.LogDebug("cultureID = {0}", cultureID);
 
 			// Moved this inital check for the file into the loop
@@ -934,15 +946,15 @@ public class Database : IDatabase
 			if (cultureID != null)
 			{
 				filename = string.Concat(baseFile, cultureID, suffix);
-				if (TQDebug.DatabaseDebugLevel > 1)
+				if (USettings.DatabaseDebugLevel > 1)
 				{
 					Log.LogDebug("Detected cultureID from gameLanguage");
 					Log.LogDebug("filename = {0}", filename);
 				}
 
-				if (File.Exists(filename))
+				if (this.FileIO.Exists(filename))
 				{
-					if (TQDebug.DatabaseDebugLevel > 0)
+					if (USettings.DatabaseDebugLevel > 0)
 						Log.LogDebug("Exiting Database.FigureDBFileToUse()");
 
 					return filename;
@@ -952,7 +964,7 @@ public class Database : IDatabase
 
 		// try to use the default culture for the OS
 		cultureID = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName;
-		if (TQDebug.DatabaseDebugLevel > 1)
+		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("Using cultureID from OS");
 			Log.LogDebug("cultureID = {0}", cultureID);
@@ -963,12 +975,12 @@ public class Database : IDatabase
 		if (cultureID != null)
 		{
 			filename = string.Concat(baseFile, cultureID, suffix);
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 				Log.LogDebug("filename = {0}", filename);
 
-			if (File.Exists(filename))
+			if (this.FileIO.Exists(filename))
 			{
-				if (TQDebug.DatabaseDebugLevel > 0)
+				if (USettings.DatabaseDebugLevel > 0)
 					Log.LogDebug("Exiting Database.FigureDBFileToUse()");
 
 				return filename;
@@ -978,43 +990,43 @@ public class Database : IDatabase
 		// Now just try EN
 		cultureID = "EN";
 		filename = string.Concat(baseFile, cultureID, suffix);
-		if (TQDebug.DatabaseDebugLevel > 1)
+		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("Forcing English Language");
 			Log.LogDebug("cultureID = {0}", cultureID);
 			Log.LogDebug("filename = {0}", filename);
 		}
 
-		if (File.Exists(filename))
+		if (this.FileIO.Exists(filename))
 		{
-			if (TQDebug.DatabaseDebugLevel > 0)
+			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Database.Exiting FigureDBFileToUse()");
 
 			return filename;
 		}
 
 		// Now just see if we can find anything.
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Detection Failed - searching for files");
 
-		string[] files = Directory.GetFiles(rootFolder, "Text_??.arc");
+		string[] files = DirectoryIO.GetFiles(rootFolder, "Text_??.arc");
 
 		// Added check that files is not null.
 		if (files != null && files.Length > 0)
 		{
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Found some files");
 				Log.LogDebug("filename = {0}", files[0]);
 			}
 
-			if (TQDebug.DatabaseDebugLevel > 0)
+			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Exiting Database.FigureDBFileToUse()");
 
 			return files[0];
 		}
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 		{
 			Log.LogDebug("Failed to determine Language file!");
 			Log.LogDebug("Exiting Database.FigureDBFileToUse()");
@@ -1028,15 +1040,15 @@ public class Database : IDatabase
 	/// </summary>
 	private void LoadTextDB()
 	{
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.LoadTextDB()");
 
 		string rootFolder, databaseFile;
 		if (GamePathResolver.GameType == GameType.TQAE)
 		{
-			rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Text");
+			rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Text");
 
-			if (!Directory.Exists(rootFolder))
+			if (!DirectoryIO.Exists(rootFolder))
 				return;
 
 			databaseFile = this.FigureDBFileToUse(rootFolder);
@@ -1055,8 +1067,8 @@ public class Database : IDatabase
 			 * Disk install without patches use TQ/Text and TQIT/Resources
 			 */
 
-			rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Text");
-			var tqItTextDirExists = Directory.Exists(rootFolder);
+			rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Text");
+			var tqItTextDirExists = DirectoryIO.Exists(rootFolder);
 
 			if (tqItTextDirExists) // Steam Version
 			{
@@ -1067,8 +1079,8 @@ public class Database : IDatabase
 			}
 			else
 			{
-				rootFolder = Path.Combine(GamePathResolver.GamePathTQ, "Text"); // Read text from TQ dir
-				var tqTextDirExists = Directory.Exists(rootFolder);
+				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQ, "Text"); // Read text from TQ dir
+				var tqTextDirExists = DirectoryIO.Exists(rootFolder);
 
 				if (tqTextDirExists)
 				{
@@ -1080,7 +1092,7 @@ public class Database : IDatabase
 			}
 
 			// Resources
-			rootFolder = Path.Combine(GamePathResolver.GamePathTQIT, "Resources");
+			rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources");
 
 			databaseFile = this.FigureDBFileToUse(rootFolder);
 
@@ -1093,9 +1105,9 @@ public class Database : IDatabase
 		else // TQ
 		{
 			// from the original TQ folder
-			rootFolder = Path.Combine(GamePathResolver.GamePathTQ, "Text");
+			rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQ, "Text");
 
-			if (!Directory.Exists(rootFolder))
+			if (!DirectoryIO.Exists(rootFolder))
 				return;
 
 			databaseFile = this.FigureDBFileToUse(rootFolder);
@@ -1140,9 +1152,9 @@ public class Database : IDatabase
 		// For loading custom map text database.
 		if (GamePathResolver.IsCustom)
 		{
-			databaseFile = Path.Combine(GamePathResolver.MapName, "resources", "text.arc");
+			databaseFile = this.PathIO.Combine(GamePathResolver.MapName, "resources", "text.arc");
 
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Find Custom Map text file");
 				Log.LogDebug("dbFile = {0}", databaseFile);
@@ -1155,13 +1167,13 @@ public class Database : IDatabase
 		// Added this check to see if anything was loaded.
 		if (this.textDB.Count == 0)
 		{
-			if (TQDebug.DatabaseDebugLevel > 0)
+			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Exception - Could not load Text DB.");
 
 			throw new FileLoadException("Could not load Text DB.");
 		}
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Exiting Database.LoadTextDB()");
 	}
 
@@ -1200,7 +1212,7 @@ public class Database : IDatabase
 	/// <param name="filename">Name of the text DB file within the arc file</param>
 	private void ParseTextDB(string databaseFile, string filename)
 	{
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.ParseTextDB({0}, {1})", databaseFile, filename);
 
 		byte[] data = this.ReadARCFile(databaseFile, filename);
@@ -1208,7 +1220,7 @@ public class Database : IDatabase
 		if (data == null)
 		{
 			// Changed for mod support.  Sometimes the text file has more entries than just the x or non-x prefix files.
-			if (TQDebug.DatabaseDebugLevel > 0)
+			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Error in ARC File: {0} does not contain an entry for '{1}'", databaseFile, filename);
 
 			return;
@@ -1256,7 +1268,7 @@ public class Database : IDatabase
 			}
 		}
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Exiting Database.ParseTextDB()");
 	}
 
@@ -1265,16 +1277,16 @@ public class Database : IDatabase
 	/// </summary>
 	private void LoadARZFile()
 	{
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.LoadARZFile()");
 
 		// from the original TQ folder
-		string file = Path.Combine(GamePathResolver.GamePathTQ, "Database", "database.arz");
+		string file = this.PathIO.Combine(GamePathResolver.GamePathTQ, "Database", "database.arz");
 
 		this.ArzFile = new ArzFile(file);
 		arzProv.Read(this.ArzFile);
 
-		if (TQDebug.DatabaseDebugLevel > 1)
+		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("Load Titan Quest database arz file");
 			Log.LogDebug("file = {0}", file);
@@ -1285,12 +1297,12 @@ public class Database : IDatabase
 		// now Immortal Throne expansion pack
 		if (!string.IsNullOrWhiteSpace(GamePathResolver.GamePathTQIT) && GamePathResolver.GamePathAreDifferent)
 		{
-			file = Path.Combine(GamePathResolver.GamePathTQIT, "Database", "database.arz");
+			file = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Database", "database.arz");
 
 			this.ArzFileIT = new ArzFile(file);
 			arzProv.Read(this.ArzFileIT);
 
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Load Titan Quest database arz file");
 				Log.LogDebug("file = {0}", file);
@@ -1300,15 +1312,15 @@ public class Database : IDatabase
 		// Added to load a custom map database file.
 		if (GamePathResolver.IsCustom)
 		{
-			file = Path.Combine(GamePathResolver.MapName, "database", $"{Path.GetFileName(GamePathResolver.MapName)}.arz");
+			file = this.PathIO.Combine(GamePathResolver.MapName, "database", $"{this.PathIO.GetFileName(GamePathResolver.MapName)}.arz");
 
-			if (TQDebug.DatabaseDebugLevel > 1)
+			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Load Custom Map database arz file");
 				Log.LogDebug("file = {0}", file);
 			}
 
-			if (File.Exists(file))
+			if (this.FileIO.Exists(file))
 			{
 				this.ArzFileMod = new ArzFile(file);
 				arzProv.Read(this.ArzFileMod);
@@ -1317,7 +1329,7 @@ public class Database : IDatabase
 				this.ArzFileMod = null;
 		}
 
-		if (TQDebug.DatabaseDebugLevel > 0)
+		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Exiting Database.LoadARZFile()");
 	}
 

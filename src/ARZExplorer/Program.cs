@@ -13,6 +13,7 @@ using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Exceptions;
 using TQVaultAE.Presentation;
+using TQVaultAE.Services;
 using TQVaultAE.Services.Win32;
 
 namespace ArzExplorer;
@@ -45,6 +46,12 @@ public static class Program
 		// Logs
 		.AddSingleton(LoggerFactory)// Register factory
 		.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+		// Abstractions
+		.AddTransient<IFileIO, FileIO>()
+		.AddTransient<IPathIO, PathIO>()
+		.AddTransient<IDirectoryIO, DirectoryIO>()
+		// Config
+		.AddSingleton<UserSettings>(sp => UserSettings.Read())
 		// Providers
 		.AddTransient<IRecordInfoProvider, RecordInfoProvider>()
 		.AddTransient<IArcFileProvider, ArcFileProvider>()
@@ -55,7 +62,7 @@ public static class Program
 		.AddTransient<IBitmapService, BitmapService>()
 		.AddSingleton<IGamePathService, GamePathServiceWin>()
 		// Init SoundServiceWin without IDatabase
-		.AddSingleton<SoundServiceWin>(sp => new SoundServiceWin(sp.GetService<ILogger<SoundServiceWin>>(), null))
+		.AddSingleton<SoundServiceWin>(sp => new SoundServiceWin(sp.GetService<ILogger<SoundServiceWin>>(), null, sp.GetService<UserSettings>()))
 		// Forms
 		.AddSingleton<MainForm>()
 		.AddTransient<ExtractProgress>();
@@ -63,6 +70,7 @@ public static class Program
 		Program.ServiceProvider = scol.BuildServiceProvider();
 
 		var gamePathResolver = Program.ServiceProvider.GetService<IGamePathService>();
+		var userSettings = Program.ServiceProvider.GetService<UserSettings>();
 
 		try
 		{
@@ -77,8 +85,8 @@ public static class Program
 
 				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
 				{
-					UserSettings.Default.ForceGamePath = fbd.SelectedPath;
-					UserSettings.Default.Save();
+					userSettings.ForceGamePath = fbd.SelectedPath;
+					userSettings.Save();
 					goto restart;
 				}
 				else goto exit;

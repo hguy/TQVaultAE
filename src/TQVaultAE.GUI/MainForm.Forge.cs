@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using TQVaultAE.GUI.Components;
 
@@ -78,8 +78,8 @@ public partial class MainForm
 		forgePanel.Dock = DockStyle.Left;
 		forgePanel.Visible = true;
 
-		this.lastEnableDetailedTooltipView = Config.UserSettings.Default.EnableDetailedTooltipView;
-		Config.UserSettings.Default.EnableDetailedTooltipView = true;
+		this.lastEnableDetailedTooltipView = base.USettings.EnableDetailedTooltipView;
+		base.USettings.EnableDetailedTooltipView = true;
 	}
 
 	private void ForgeActionForged()
@@ -110,7 +110,7 @@ public partial class MainForm
 		forgePanel.Dock = DockStyle.None;
 		forgePanel.Visible = false;
 
-		Config.UserSettings.Default.EnableDetailedTooltipView = this.lastEnableDetailedTooltipView;
+		base.USettings.EnableDetailedTooltipView = this.lastEnableDetailedTooltipView;
 
 		Refresh();
 	}

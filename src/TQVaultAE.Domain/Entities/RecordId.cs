@@ -1,10 +1,9 @@
-﻿using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Helpers;
 using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Newtonsoft.Json.Linq;
 
 namespace TQVaultAE.Domain.Entities;
 
