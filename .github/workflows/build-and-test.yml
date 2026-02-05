@@ -51,21 +51,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TQVaultAE-GUI-Release
-          path: src/TQVaultAE.GUI/bin/AnyCPU/Release/
+          path: src/TQVaultAE.GUI/bin/Release/net48/
           retention-days: 3
 
       - name: Upload TQ.SaveFilesExplorer artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
           name: TQ-SaveFilesExplorer-Release
-          path: src/TQSaveFilesExplorer/bin/Release/
+          path: src/TQSaveFilesExplorer/bin/Release/net48/
           retention-days: 3
 
       - name: Upload ARZExplorer artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
           name: ARZExplorer-Release
-          path: src/ARZExplorer/bin/Release/
+          path: src/ARZExplorer/bin/Release/net48/
           retention-days: 3
 
   test:

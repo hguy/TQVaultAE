@@ -74,14 +74,14 @@ jobs:
         run: |
           $version = "${{ steps.version-tag.outputs.version }}"
           
-          # Create TQVaultAE.GUI archive
-          Compress-Archive -Path "src/TQVaultAE.GUI/bin/AnyCPU/Release/*" -DestinationPath "TQVaultAE.GUI-$version.zip" -Force
+          # Create TQVaultAE.GUI archive (SDK-style output path)
+          Compress-Archive -Path "src/TQVaultAE.GUI/bin/Release/net48/*" -DestinationPath "TQVaultAE.GUI-$version.zip" -Force
           
-          # Create TQSaveFilesExplorer archive
-          Compress-Archive -Path "src/TQSaveFilesExplorer/bin/Release/*" -DestinationPath "TQSaveFilesExplorer-$version.zip" -Force
+          # Create TQSaveFilesExplorer archive (SDK-style output path)
+          Compress-Archive -Path "src/TQSaveFilesExplorer/bin/Release/net48/*" -DestinationPath "TQSaveFilesExplorer-$version.zip" -Force
           
-          # Create ARZExplorer archive
-          Compress-Archive -Path "src/ARZExplorer/bin/Release/*" -DestinationPath "ARZExplorer-$version.zip" -Force
+          # Create ARZExplorer archive (SDK-style output path)
+          Compress-Archive -Path "src/ARZExplorer/bin/Release/net48/*" -DestinationPath "ARZExplorer-$version.zip" -Force
           
           Write-Host "Created release archives:"
           Get-ChildItem *.zip
@@ -90,21 +90,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TQVaultAE-GUI-Release
-          path: src/TQVaultAE.GUI/bin/AnyCPU/Release/
+          path: src/TQVaultAE.GUI/bin/Release/net48/
           retention-days: 3
 
       - name: Upload TQ.SaveFilesExplorer artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
           name: TQ-SaveFilesExplorer-Release
-          path: src/TQSaveFilesExplorer/bin/Release/
+          path: src/TQSaveFilesExplorer/bin/Release/net48/
           retention-days: 3
 
       - name: Upload ARZExplorer artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
           name: ARZExplorer-Release
-          path: src/ARZExplorer/bin/Release/
+          path: src/ARZExplorer/bin/Release/net48/
           retention-days: 3
 
       - name: Create GitHub Release
