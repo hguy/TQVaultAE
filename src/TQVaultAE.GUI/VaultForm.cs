@@ -704,7 +704,7 @@ public partial class VaultForm : Form, IScalingControl
 			// Reset scaling to 1.0 if resize from minimize/maximize to normal with shift keydown
 			if (fromMinimizedMaximized)
 			{
-				if (Keyboard.IsKeyDown(Key.LeftShift))
+				if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
 				{
 					resizeTo = new Size(NORMAL_FORMWIDTH, NORMAL_FORMHEIGHT);
 					scalingFactor = 1.0F;

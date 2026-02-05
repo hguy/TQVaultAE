@@ -70,7 +70,7 @@ public static class Program
 			LoggerFactory.AddLog4Net();
 			Log = LoggerFactory.CreateLogger(typeof(Program));// Make static level logger
 
-			restart:
+		restart:
 			// Configure DI
 			var scol = new ServiceCollection()
 				// Logs
@@ -167,7 +167,7 @@ public static class Program
 			MessageBox.Show(Log.FormatException(ex), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 		}
 
-		exit:;
+	exit:;
 	}
 
 	#region Init

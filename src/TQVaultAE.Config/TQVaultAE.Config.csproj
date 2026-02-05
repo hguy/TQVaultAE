@@ -1,25 +1,19 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Platforms>AnyCPU;x64;x86</Platforms>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<PlatformTarget>AnyCPU</PlatformTarget>
+		<Version>4.4.0.0</Version>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>10</LangVersion>
-  </PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Enums.NET" Version="5.0.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.2" />
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <LangVersion>10</LangVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Enums.NET" Version="5.0.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
+	</ItemGroup>
 
 </Project>
