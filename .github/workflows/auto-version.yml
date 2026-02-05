@@ -69,6 +69,23 @@ jobs:
           git tag ${{ steps.version-tag.outputs.version }}
           git push origin ${{ steps.version-tag.outputs.version }}
 
+      - name: Create release archives
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version-tag.outputs.version }}"
+          
+          # Create TQVaultAE.GUI archive
+          Compress-Archive -Path "src/TQVaultAE.GUI/bin/AnyCPU/Release/*" -DestinationPath "TQVaultAE.GUI-$version.zip" -Force
+          
+          # Create TQSaveFilesExplorer archive
+          Compress-Archive -Path "src/TQSaveFilesExplorer/bin/Release/*" -DestinationPath "TQSaveFilesExplorer-$version.zip" -Force
+          
+          # Create ARZExplorer archive
+          Compress-Archive -Path "src/ARZExplorer/bin/Release/*" -DestinationPath "ARZExplorer-$version.zip" -Force
+          
+          Write-Host "Created release archives:"
+          Get-ChildItem *.zip
+
       - name: Upload TQVaultAE.GUI artifacts (Release)
         uses: actions/upload-artifact@v4
         with:
@@ -95,9 +112,9 @@ jobs:
         with:
           tag_name: ${{ steps.version-tag.outputs.version }}
           files: |
-            src/TQVaultAE.GUI/bin/AnyCPU/Release/**/*
-            src/TQSaveFilesExplorer/bin/Release/**/*
-            src/ARZExplorer/bin/Release/**/*
+            TQVaultAE.GUI-*.zip
+            TQSaveFilesExplorer-*.zip
+            ARZExplorer-*.zip
           draft: false
           prerelease: false
         env:
