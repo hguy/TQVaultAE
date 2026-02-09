@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Helpers;
 using System;
 using System.Drawing;
 using System.Globalization;
@@ -352,6 +352,10 @@ public partial class MainForm
 					dragItem.PositionX = location.X;
 					dragItem.PositionY = location.Y;
 					this.stashPanel.SackPanel.Sack.AddItem(dragItem);
+
+					// Update item location properties
+					this.UpdateItemLocation(dragItem, this.stashPanel.Player, this.stashPanel.SackPanel);
+
 					this.lastSackPanelHighlighted.Invalidate();
 					this.stashPanel.Refresh();
 					BagButtonTooltip.InvalidateCache(this.stashPanel.SackPanel.Sack);
@@ -401,6 +405,9 @@ public partial class MainForm
 					dragItem.PositionY = location.Y;
 					destinationSackPanel.Sack.AddItem(dragItem);
 
+					// Update item location properties
+					this.UpdateItemLocation(dragItem, destinationPlayerPanel.Player, destinationSackPanel);
+
 					// Set it back to the original sack so the display does not change.
 					var destsack = destinationSackPanel.Sack;
 					destinationSackPanel.Sack = oldSack;
@@ -422,5 +429,49 @@ public partial class MainForm
 	{
 		this.showSecondaryVault = !this.showSecondaryVault;
 		this.UpdateTopPanel();
+	}
+
+	/// <summary>
+	/// Updates the item's location properties after it has been moved to a new container.
+	/// This ensures search results always reflect the current location.
+	/// </summary>
+	/// <param name="item">The item that was moved</param>
+	/// <param name="destinationPlayer">The destination PlayerCollection (vault/player/stash)</param>
+	/// <param name="destinationSackPanel">The destination SackPanel</param>
+	private void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackPanel destinationSackPanel)
+	{
+		if (item == null || destinationPlayer == null || destinationSackPanel == null)
+			return;
+
+		// Update the item's location properties to reflect its new home
+		item.ContainerPath = destinationPlayer.PlayerFile;
+		item.ContainerName = this.GamePathResolver.GetNameFromFile(destinationPlayer.PlayerFile)
+			?? GamePathResolver.GetVaultNameFromPath(destinationPlayer.PlayerFile);
+
+		// Calculate sack number based on sack type
+		switch (destinationSackPanel.SackType)
+		{
+			case SackType.Equipment:
+				item.SackNumber = 0;
+				break;
+			case SackType.TransferStash:
+				item.SackNumber = 1;
+				break;
+			case SackType.Stash:
+				item.SackNumber = 2;
+				break;
+			case SackType.RelicVaultStash:
+				item.SackNumber = 3;
+				break;
+			case SackType.Vault:
+			case SackType.Player:
+			case SackType.Sack:
+			default:
+				// For vaults and player sacks, use the current sack index
+				item.SackNumber = destinationSackPanel.CurrentSack;
+				break;
+		}
+
+		item.ContainerType = destinationSackPanel.SackType;
 	}
 }

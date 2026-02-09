@@ -287,6 +287,21 @@ public class Item
 	public SackType ContainerType { get; set; }
 
 	/// <summary>
+	/// Gets or sets the container file path (vault/player/stash file)
+	/// </summary>
+	public string ContainerPath { get; set; }
+
+	/// <summary>
+	/// Gets or sets the container display name
+	/// </summary>
+	public string ContainerName { get; set; }
+
+	/// <summary>
+	/// Gets or sets the sack number within the container
+	/// </summary>
+	public int SackNumber { get; set; }
+
+	/// <summary>
 	/// Gets a value indicating whether the item is in an equipment weapon slot.
 	/// </summary>
 	public bool IsInWeaponSlot => this.PositionX == WeaponSlotIndicator;

@@ -411,8 +411,18 @@ public class SackPanel : Panel, IScalingControl
 	public SackType SackType { get; set; }
 
 	/// <summary>
+	/// Gets or sets the container file path for items in this panel.
+	/// </summary>
+	public string ContainerPath { get; set; }
+
+	/// <summary>
+	/// Gets or sets the container display name for items in this panel.
+	/// </summary>
+	public string ContainerName { get; set; }
+
+	/// <summary>
 	/// Gets MessageBoxOptions for right to left reading.
-	/// </summary>7
+	/// </summary>
 	protected static MessageBoxOptions RightToLeftOptions
 	{
 		get
@@ -1278,6 +1288,9 @@ public class SackPanel : Panel, IScalingControl
 
 				// Now add the item to our sack
 				this.Sack.AddItem(dragItem);
+
+				// Update item location properties to reflect new position
+				this.UpdateItemLocation(dragItem);
 			}
 
 			// clear the "last drag" variables
@@ -3809,9 +3822,25 @@ public class SackPanel : Panel, IScalingControl
 				}
 			}
 
-			ItemTooltip.HideTooltip();
+		ItemTooltip.HideTooltip();
 			BagButtonTooltip.InvalidateCache(this.Sack);
 		}
+	}
+
+	/// <summary>
+	/// Updates the item's location properties to reflect its current position in this panel.
+	/// This ensures search results always show the correct location.
+	/// </summary>
+	/// <param name="item">The item to update</param>
+	protected void UpdateItemLocation(Item item)
+	{
+		if (item == null)
+			return;
+
+		item.ContainerPath = this.ContainerPath ?? string.Empty;
+		item.ContainerName = this.ContainerName ?? string.Empty;
+		item.SackNumber = this.CurrentSack;
+		item.ContainerType = this.SackType;
 	}
 
 	#endregion SackPanel Private Methods

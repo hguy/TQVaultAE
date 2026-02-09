@@ -77,9 +77,7 @@ public class TQDataService : ITQDataService
 	{
 		// Convert the string to ascii
 		// Vorbis' fix for extended characters in the database.
-		Encoding ascii = Encoding.GetEncoding(1252);
-
-		byte[] rawstring = ascii.GetBytes(value);
+		byte[] rawstring = Encoding1252.GetBytes(value);
 
 		// Write the 4-byte length of the string
 		writer.Write(rawstring.Length);
@@ -101,12 +99,10 @@ public class TQDataService : ITQDataService
 
 		// Convert the next len bytes into a string
 		// Vorbis' fix for extended characters in the database.
-		Encoding ascii = Encoding.GetEncoding(1252);
-
 		byte[] rawData = reader.ReadBytes(len);
 
-		char[] chars = new char[ascii.GetCharCount(rawData, 0, len)];
-		ascii.GetChars(rawData, 0, len, chars, 0);
+		char[] chars = new char[Encoding1252.GetCharCount(rawData, 0, len)];
+		Encoding1252.GetChars(rawData, 0, len, chars, 0);
 
 		string ans = new string(chars);
 
@@ -127,7 +123,7 @@ public class TQDataService : ITQDataService
 		var rawData = reader.ReadBytes(len);
 
 		//convert bytes string
-		return (UnicodeEncoding.Unicode.GetString(rawData));
+		return EncodingUnicode.GetString(rawData);
 	}
 
 	public (int indexOf, int valueOffset, int nextOffset, byte[] valueAsByteArray, int valueAsInt) WriteIntAfter(byte[] playerFileContent, string keyToLookFor, int newValue, int offset = 0)

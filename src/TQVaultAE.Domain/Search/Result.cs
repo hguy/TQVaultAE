@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="Result.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -16,10 +16,31 @@ using TQVaultAE.Domain.Results;
 /// </summary>
 public class Result
 {
-	public readonly string Container;
-	public readonly string ContainerName;
-	public readonly int SackNumber;
-	public readonly SackType SackType;
+	/// <summary>
+	/// Reference to the Item - contains current location and all item data
+	/// </summary>
+	public readonly Item Item;
+
+	/// <summary>
+	/// Gets the container file path from the Item
+	/// </summary>
+	public string Container => this.Item?.ContainerPath ?? string.Empty;
+
+	/// <summary>
+	/// Gets the container display name from the Item
+	/// </summary>
+	public string ContainerName => this.Item?.ContainerName ?? string.Empty;
+
+	/// <summary>
+	/// Gets the sack number from the Item
+	/// </summary>
+	public int SackNumber => this.Item?.SackNumber ?? 0;
+
+	/// <summary>
+	/// Gets the sack type from the Item
+	/// </summary>
+	public SackType SackType => this.Item?.ContainerType ?? default;
+
 	private readonly Lazy<ToFriendlyNameResult> FriendlyNamesLazyLoader;
 	public ToFriendlyNameResult FriendlyNames { get; private set; }
 	public string ItemName { get; private set; }
@@ -33,24 +54,18 @@ public class Result
 			, ContainerName
 			, SackNumber.ToString()
 			, this.SackType.ToString()
-			, this.FriendlyNames.FullNameBagTooltip
+			, this.FriendlyNames?.FullNameBagTooltip ?? string.Empty
 		});
 
 
 	/// <summary>
-	/// Advanced Ctrs
+	/// Creates a new Result wrapping an Item
 	/// </summary>
-	/// <param name="container"></param>
-	/// <param name="containerName"></param>
-	/// <param name="sackNumber"></param>
-	/// <param name="sackType"></param>
-	/// <param name="fnames"></param>
-	public Result(string container, string containerName, int sackNumber, SackType sackType, Lazy<ToFriendlyNameResult> fnames)
+	/// <param name="item">The Item to wrap</param>
+	/// <param name="fnames">Lazy loader for friendly names</param>
+	public Result(Item item, Lazy<ToFriendlyNameResult> fnames)
 	{
-		this.Container = container ?? throw new ArgumentNullException(nameof(container));
-		this.ContainerName = containerName ?? throw new ArgumentNullException(nameof(containerName));
-		this.SackNumber = sackNumber;
-		this.SackType = sackType;
+		this.Item = item ?? throw new ArgumentNullException(nameof(item));
 		this.FriendlyNamesLazyLoader = fnames ?? throw new ArgumentNullException(nameof(fnames));
 	}
 
@@ -58,8 +73,8 @@ public class Result
 	{
 		this.FriendlyNames = this.FriendlyNamesLazyLoader.Value;
 		this.ItemName = this.FriendlyNames.FullNameClean;
-		this.ItemStyle = this.FriendlyNames.Item.ItemStyle;
-		this.TQColor = this.FriendlyNames.Item.ItemStyle.TQColor();
+		this.ItemStyle = this.Item.ItemStyle;
+		this.TQColor = this.Item.ItemStyle.TQColor();
 		this.RequiredLevel = GetRequirement(this.FriendlyNames.RequirementVariables.Values, "levelRequirement");
 	}
 

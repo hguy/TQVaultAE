@@ -301,14 +301,17 @@ public partial class SearchDialogAdvanced : VaultForm
 				if (sack == null)
 					continue;
 
+				var vaultName = GamePathResolver.GetVaultNameFromPath(vaultFile);
 				foreach (var item in sack.Cast<Item>())
 				{
-					var vaultName = GamePathResolver.GetVaultNameFromPath(vaultFile);
+					// Set item location properties
+					item.ContainerPath = vaultFile;
+					item.ContainerName = vaultName;
+					item.SackNumber = vaultNumber;
+					item.ContainerType = SackType.Vault;
+
 					ItemDatabase.Add(new Result(
-						vaultFile
-						, vaultName
-						, vaultNumber
-						, SackType.Vault
+						item
 						, new Lazy<Domain.Results.ToFriendlyNameResult>(
 							() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
 							, LazyThreadSafetyMode.ExecutionAndPublication
@@ -339,11 +342,14 @@ public partial class SearchDialogAdvanced : VaultForm
 
 				foreach (var item in sack.Cast<Item>())
 				{
+					// Set item location properties
+					item.ContainerPath = playerFile;
+					item.ContainerName = playerName;
+					item.SackNumber = sackNumber;
+					item.ContainerType = SackType.Player;
+
 					this.ItemDatabase.Add(new Result(
-						playerFile
-						, playerName
-						, sackNumber
-						, SackType.Player
+						item
 						, new Lazy<Domain.Results.ToFriendlyNameResult>(
 							() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
 							, LazyThreadSafetyMode.ExecutionAndPublication
@@ -359,11 +365,14 @@ public partial class SearchDialogAdvanced : VaultForm
 
 			foreach (var item in equipmentSack.Cast<Item>())
 			{
+				// Set item location properties
+				item.ContainerPath = playerFile;
+				item.ContainerName = playerName;
+				item.SackNumber = 0;
+				item.ContainerType = SackType.Equipment;
+
 				ItemDatabase.Add(new Result(
-					playerFile
-					, playerName
-					, 0
-					, SackType.Equipment
+					item
 					, new Lazy<Domain.Results.ToFriendlyNameResult>(
 						() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
 						, LazyThreadSafetyMode.ExecutionAndPublication
@@ -404,11 +413,14 @@ public partial class SearchDialogAdvanced : VaultForm
 
 			foreach (var item in sack.Cast<Item>())
 			{
+				// Set item location properties
+				item.ContainerPath = stashFile;
+				item.ContainerName = stashName;
+				item.SackNumber = sackNumber;
+				item.ContainerType = sackType;
+
 				ItemDatabase.Add(new Result(
-					stashFile
-					, stashName
-					, sackNumber
-					, sackType
+					item
 					, new Lazy<Domain.Results.ToFriendlyNameResult>(
 						() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
 						, LazyThreadSafetyMode.ExecutionAndPublication
