@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TQ.SaveFilesExplorer.Entities.TransferStash
+﻿namespace TQ.SaveFilesExplorer.Entities.TransferStash
 {
 	/// <summary>
 	/// List of keys in player save file with data size as [DataType]

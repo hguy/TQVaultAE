@@ -1,13 +1,10 @@
-﻿using AutoMapper;
 using TQ.SaveFilesExplorer.Entities.Players;
 using TQ.SaveFilesExplorer.Entities.TransferStash;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace TQ.SaveFilesExplorer.Entities
 {
@@ -60,22 +57,28 @@ namespace TQ.SaveFilesExplorer.Entities
 		{
 			get => this.Ext.Equals(Ext_Player, StringComparison.InvariantCultureIgnoreCase);
 		}
-		public IMapper _Mapper { get; }
-
-		private TQFile(IMapper mapper)
+		private TQFile()
 		{
-			_Mapper = mapper;
 		}
 
-		public static TQFile ReadFile(string path, IMapper mapper)
+		public static TQFile ReadFile(string path)
 		{
-			return new TQFile(mapper)
+			return new TQFile()
 			{
 				Path = path,
 				Ext = System.IO.Path.GetExtension(path).ToLower(),
 				Content = File.ReadAllBytes(path),
 			};
 		}
+
+		private static Regex RegexKeyMatch = new Regex(@"
+(?<Len>.\x00{3})
+(?<Key>
+	(?<Open>\(\*)?
+		(?<Name>[a-zA-Z0-9_\.]+)
+			(?<Close>\))?
+			(?<Ext>\[i\])?
+)", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
 
 		/// <summary>
 		/// Parse file data to raw records
@@ -85,9 +88,7 @@ namespace TQ.SaveFilesExplorer.Entities
 			var asString = TQFileRecord.Encoding1252.GetString(this.Content);
 
 			// Regex save file / Where the magic lies
-			var keyMatches = Regex.Matches(asString
-				, Properties.Settings.Default.RegexKeyMatch
-				, RegexOptions.Singleline)
+			var keyMatches = RegexKeyMatch.Matches(asString)
 				.Cast<Match>().Where(m => m.Success).ToList();
 
 			this.Records = keyMatches.Select(m => new TQFileRecord(this, m))
@@ -137,17 +138,17 @@ namespace TQ.SaveFilesExplorer.Entities
 			#region select record type
 
 			var records = this.Records
-			.Select(m =>
+.Select(m =>
 			{
 				TQFileRecord retval = null;
 				switch (this.Ext)
 				{
 					case Ext_Player:
-						retval = _Mapper.Map<TQFilePlayerRecord>(m);
+						retval = MapToPlayerRecord(m);
 						break;
 					case Ext_SharedStash:
 					case Ext_SharedStashBackup:
-						retval = _Mapper.Map<TQFilePlayerTransferStashRecord>(m);
+						retval = MapToTransferStashRecord(m);
 						break;
 					default:
 						throw new ArgumentException("must be a file with extension chr, dxb, dxg");
@@ -292,6 +293,52 @@ namespace TQ.SaveFilesExplorer.Entities
 				if (k.IsStructureClosing) break;
 			}
 			return (currentLvl, idx);
+		}
+
+		/// <summary>
+		/// Maps TQFileRecord to TQFilePlayerRecord manually
+		/// </summary>
+		private static TQFilePlayerRecord MapToPlayerRecord(TQFileRecord source)
+		{
+			return new TQFilePlayerRecord
+			{
+				RegExMatch = source.RegExMatch,
+				KeyLength = source.KeyLength,
+				KeyLengthAsInt = source.KeyLengthAsInt,
+				KeyRaw = source.KeyRaw,
+				KeyName = source.KeyName,
+				DataType = source.DataType,
+				File = source.File,
+				ValueStart = source.ValueStart,
+				ValueEnd = source.ValueEnd,
+				DataAsStr = source.DataAsStr,
+				DataAsByteArray = source.DataAsByteArray,
+				DataAsInt = source.DataAsInt,
+				DataAsFloat = source.DataAsFloat
+			};
+		}
+
+		/// <summary>
+		/// Maps TQFileRecord to TQFilePlayerTransferStashRecord manually
+		/// </summary>
+		private static TQFilePlayerTransferStashRecord MapToTransferStashRecord(TQFileRecord source)
+		{
+			return new TQFilePlayerTransferStashRecord
+			{
+				RegExMatch = source.RegExMatch,
+				KeyLength = source.KeyLength,
+				KeyLengthAsInt = source.KeyLengthAsInt,
+				KeyRaw = source.KeyRaw,
+				KeyName = source.KeyName,
+				DataType = source.DataType,
+				File = source.File,
+				ValueStart = source.ValueStart,
+				ValueEnd = source.ValueEnd,
+				DataAsStr = source.DataAsStr,
+				DataAsByteArray = source.DataAsByteArray,
+				DataAsInt = source.DataAsInt,
+				DataAsFloat = source.DataAsFloat
+			};
 		}
 	}
 }

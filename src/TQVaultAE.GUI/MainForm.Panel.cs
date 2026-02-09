@@ -36,7 +36,7 @@ public partial class MainForm
 				GamePathResolver.MapName.ToUpper().Contains(@"\CUSTOMMAPS\") 
 					? "Legacy : " + Resources.MainFormCustomMapLabel
 					: "Steam : " + Resources.MainFormCustomMapLabel
-				, Path.GetFileName(GamePathResolver.MapName)
+				, this.PathIO.GetFileName(GamePathResolver.MapName)
 			);
 		}
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -13,7 +13,7 @@ using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components;
 
-public partial class ForgePanel : UserControl
+public partial class ForgePanel : UserControl, IScalingControl
 {
 	#region Internal Types
 
@@ -174,6 +174,13 @@ public partial class ForgePanel : UserControl
 		ForgeButton.Font = FontService.GetFontLight(12F);
 		ResetButton.Font = FontService.GetFontLight(12F);
 		CancelButton.Font = FontService.GetFontLight(12F);
+
+		// ComboBox scaling
+		comboBoxPrefix.Font =
+		comboBoxSuffix.Font =
+		comboBoxRelic1.Font =
+		comboBoxRelic2.Font =
+			FontService.GetFont(9.75F, FontStyle.Regular, UIService.Scale);
 
 		scalingRadioButtonGod.Text = Resources.ForgeGodMode;
 		toolTip.SetToolTip(scalingRadioButtonGod, Resources.ForgeGodModeTT);

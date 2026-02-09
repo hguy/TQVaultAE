@@ -1,0 +1,56 @@
+<Solution>
+  <!-- 
+    Slim Solution File (Modern Format)
+    
+    This is the modern XML-based solution format introduced in Visual Studio 2022.
+    Benefits:
+    - Human-readable XML instead of custom format
+    - ~80% smaller file size
+    - Easier Git merges (no GUID conflicts)
+    - Auto-discovers project dependencies
+    
+    Limitations:
+    - Requires Visual Studio 2022 17.10+ or .NET 9 SDK+
+    - Limited platform configuration support in current dotnet CLI
+    
+    Usage:
+    - For Any CPU builds: dotnet build TQVaultAE.slnx
+    - For x64/x86 builds: Use TQVaultAE.sln (classic format)
+  -->
+  
+  <!-- Executables -->
+  <Project Path="src\ARZExplorer\ArzExplorer.csproj" />
+  <Project Path="src\TQVaultAE.GUI\TQVaultAE.GUI.csproj" />
+  <Project Path="src\TQSaveFilesExplorer\TQ.SaveFilesExplorer.csproj" />
+  <Project Path="src\TQVaultAE.Services.Win32\TQVaultAE.Services.Win32.csproj" />
+  
+  <!-- Libraries -->
+  <Project Path="src\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
+  <Project Path="src\TQVaultAE.Services\TQVaultAE.Services.csproj" />
+  <Project Path="src\TQVaultAE.Data\TQVaultAE.Data.csproj" />
+  <Project Path="src\TQVaultAE.Presentation\TQVaultAE.Presentation.csproj" />
+  <Project Path="src\TQVaultAE.Config\TQVaultAE.Config.csproj" />
+  <Project Path="src\TQVaultAE.Logs\TQVaultAE.Logs.csproj" />
+  
+  <!-- Tests -->
+  <Project Path="src\TQVaultAE.Tests\TQVaultAE.Tests.csproj" />
+  
+  <!-- Folders -->
+  <Folder Name="/Solution Items/" Id="solution-items">
+    <File Path=".gitignore" />
+    <File Path="AGENTS.md" />
+    <File Path="CHANGELOG.md" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="GITHUB_ACTIONS_BUILD_TEST.md" />
+    <File Path="README.md" />
+    <File Path="VERSIONING.md" />
+    <File Path="version-info.json" />
+  </Folder>
+  
+  <Folder Name="/.github/" Id="github-folder">
+    <File Path=".github\workflows\auto-version.yml" />
+    <File Path=".github\workflows\build-and-test.yml" />
+    <File Path=".github\scripts\Update-Version.ps1" />
+    <File Path="version-info.json" />
+  </Folder>
+</Solution>

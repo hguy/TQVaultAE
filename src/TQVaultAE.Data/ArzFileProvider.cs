@@ -3,206 +3,207 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Data
+namespace TQVaultAE.Data;
+
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using TQVaultAE.Config;
+using TQVaultAE.Domain.Contracts.Providers;
+using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Logs;
+
+/// <summary>
+/// Class for decoding Titan Quest ARZ files.
+/// </summary>
+public class ArzFileProvider : IArzFileProvider
 {
-	using Microsoft.Extensions.Logging;
-	using System;
-	using System.Collections.Generic;
-	using System.IO;
-	using System.Linq;
-	using TQVaultAE.Config;
-	using TQVaultAE.Domain.Contracts.Providers;
-	using TQVaultAE.Domain.Contracts.Services;
-	using TQVaultAE.Domain.Entities;
-	using TQVaultAE.Logs;
+	private readonly ILogger Log;
+	private readonly ITQDataService TQData;
+	private readonly IRecordInfoProvider infoProv;
+	private readonly UserSettings USettings;
+
 
 	/// <summary>
-	/// Class for decoding Titan Quest ARZ files.
+	/// Initializes a new instance of the ArzFile class.
 	/// </summary>
-	public class ArzFileProvider : IArzFileProvider
+	public ArzFileProvider(ILogger<ArzFileProvider> log, IRecordInfoProvider recordInfoProvider, ITQDataService tQData, UserSettings uSettings)
 	{
-		private readonly ILogger Log = null;
-		private readonly ITQDataService TQData;
-		private readonly IRecordInfoProvider infoProv;
+		this.Log = log;
+		this.TQData = tQData;
+		this.infoProv = recordInfoProvider;
+		USettings = uSettings;
+	}
 
+	/// <summary>
+	/// Reads the ARZ file.
+	/// </summary>
+	/// <returns>true on success</returns>
+	public bool Read(ArzFile file)
+	{
+		StreamWriter outStream = null;
 
-		/// <summary>
-		/// Initializes a new instance of the ArzFile class.
-		/// </summary>
-		public ArzFileProvider(ILogger<ArzFileProvider> log, IRecordInfoProvider recordInfoProvider, ITQDataService tQData)
+		if (USettings.DatabaseDebugLevel > 2)
+			outStream = new StreamWriter("arzOut.txt", false);
+
+		try
 		{
-			this.Log = log;
-			this.TQData = tQData;
-			this.infoProv = recordInfoProvider;
-		}
-
-		/// <summary>
-		/// Reads the ARZ file.
-		/// </summary>
-		/// <returns>true on success</returns>
-		public bool Read(ArzFile file)
-		{
-			StreamWriter outStream = null;
-
-			if (TQDebug.DatabaseDebugLevel > 2)
-				outStream = new StreamWriter("arzOut.txt", false);
-
-			try
+			// ARZ header file format
+			//
+			// 0x000000 int32
+			// 0x000004 int32 start of dbRecord table
+			// 0x000008 int32 size in bytes of dbRecord table
+			// 0x00000c int32 numEntries in dbRecord table
+			// 0x000010 int32 start of string table
+			// 0x000014 int32 size in bytes of string table
+			using (FileStream instream = new FileStream(file.FileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+			using (BinaryReader reader = new BinaryReader(instream))
 			{
-				// ARZ header file format
-				//
-				// 0x000000 int32
-				// 0x000004 int32 start of dbRecord table
-				// 0x000008 int32 size in bytes of dbRecord table
-				// 0x00000c int32 numEntries in dbRecord table
-				// 0x000010 int32 start of string table
-				// 0x000014 int32 size in bytes of string table
-				using (FileStream instream = new FileStream(file.FileName, FileMode.Open, FileAccess.Read, FileShare.Read))
-				using (BinaryReader reader = new BinaryReader(instream))
+				try
 				{
-					try
+					int[] header = new int[6];
+
+					for (int i = 0; i < 6; ++i)
 					{
-						int[] header = new int[6];
-
-						for (int i = 0; i < 6; ++i)
-						{
-							header[i] = reader.ReadInt32();
-							if (outStream != null)
-								outStream.WriteLine("Header[{0}] = {1:n0} (0x{1:X})", i, header[i]);
-						}
-
-						int firstTableStart = header[1];
-						int firstTableCount = header[3];
-						int secondTableStart = header[4];
-
-						this.ReadStringTable(file, secondTableStart, reader, outStream);
-						this.ReadRecordTable(file, firstTableStart, firstTableCount, reader, outStream);
-
-						// 4 final int32's from file
-						// first int32 is numstrings in the stringtable
-						// second int32 is something ;)
-						// 3rd and 4th are crap (timestamps maybe?)
-						for (int i = 0; i < 4; ++i)
-						{
-							int val = reader.ReadInt32();
-							if (outStream != null)
-								outStream.WriteLine("{0:n0} 0x{0:X}", val);
-						}
+						header[i] = reader.ReadInt32();
+						if (outStream != null)
+							outStream.WriteLine("Header[{0}] = {1:n0} (0x{1:X})", i, header[i]);
 					}
-					catch (IOException ex)
+
+					int firstTableStart = header[1];
+					int firstTableCount = header[3];
+					int secondTableStart = header[4];
+
+					this.ReadStringTable(file, secondTableStart, reader, outStream);
+					this.ReadRecordTable(file, firstTableStart, firstTableCount, reader, outStream);
+
+					// 4 final int32's from file
+					// first int32 is numstrings in the stringtable
+					// second int32 is something ;)
+					// 3rd and 4th are crap (timestamps maybe?)
+					for (int i = 0; i < 4; ++i)
 					{
-						Log.ErrorException(ex);
-						throw;
+						int val = reader.ReadInt32();
+						if (outStream != null)
+							outStream.WriteLine("{0:n0} 0x{0:X}", val);
 					}
 				}
-			}
-			catch (IOException exception)
-			{
-				Log.ErrorException(exception);
-				return false;
-			}
-			finally
-			{
-				if (outStream != null)
+				catch (IOException ex)
 				{
-					outStream.Close();
+					Log.ErrorException(ex);
+					throw;
 				}
 			}
-
-			return true;
 		}
-
-		/// <summary>
-		/// Gets the DBRecord for a particular ID.
-		/// </summary>
-		/// <param name="recordId">string ID of the record will be normalized internally</param>
-		/// <returns>DBRecord corresponding to the string ID.</returns>
-		public DBRecordCollection GetItem(ArzFile file, RecordId recordId)
+		catch (IOException exception)
 		{
-			if (recordId is null) return null;
-
-			RecordInfo rawRecord;
-			if (file.RecordInfo.ContainsKey(recordId))
-				rawRecord = file.RecordInfo[recordId];
-			else
-				// record not found
-				return null;
-
-			return infoProv.Decompress(file, rawRecord);
+			Log.ErrorException(exception);
+			return false;
 		}
-
-		/// <summary>
-		/// Gets a database record without adding it to the cache.
-		/// </summary>
-		/// <remarks>
-		/// The Item property caches the DBRecords, which is great when you are only using a few 100 (1000?) records and are requesting
-		/// them many times.  Not great if you are looping through all the records as it eats alot of memory.  This method will create
-		/// the record on the fly if it is not in the cache so when you are done with it, it can be reclaimed by the garbage collector.
-		/// Great for when you want to loop through all the records for some reason.  It will take longer, but use less memory.
-		/// </remarks>
-		/// <param name="recordId">String ID of the record.  Will be normalized internally.</param>
-		/// <returns>Decompressed RecordInfo record</returns>
-		public DBRecordCollection GetRecordNotCached(ArzFile file, RecordId recordId)
-			=> infoProv.Decompress(file, file.RecordInfo[recordId]);
-
-
-		/// <summary>
-		/// Reads the whole string table into memory from a stream.
-		/// </summary>
-		/// <remarks>
-		/// string Table Format
-		/// first 4 bytes is the number of entries
-		/// then
-		/// one string followed by another...
-		/// </remarks>
-		/// <param name="pos">position within the file.</param>
-		/// <param name="reader">input BinaryReader</param>
-		/// <param name="outStream">output StreamWriter.</param>
-		private void ReadStringTable(ArzFile file, int pos, BinaryReader reader, StreamWriter outStream)
+		finally
 		{
-			reader.BaseStream.Seek(pos, SeekOrigin.Begin);
-			int numstrings = reader.ReadInt32();
-
-			file.Strings = new string[numstrings];
-
 			if (outStream != null)
-				outStream.WriteLine("stringTable located at 0x{1:X} numstrings= {0:n0}", numstrings, pos);
-
-			for (int i = 0; i < numstrings; ++i)
 			{
-				file.Strings[i] = TQData.ReadCString(reader);
-
-				if (outStream != null)
-					outStream.WriteLine("{0},{1}", i, file.Strings[i]);
+				outStream.Close();
 			}
 		}
 
-		/// <summary>
-		/// Reads the entire record table into memory from a stream.
-		/// </summary>
-		/// <param name="pos">position within the file.</param>
-		/// <param name="numEntries">number of entries in the file.</param>
-		/// <param name="reader">input BinaryReader</param>
-		/// <param name="outStream">output StreamWriter.</param>
-		private void ReadRecordTable(ArzFile file, int pos, int numEntries, BinaryReader reader, StreamWriter outStream)
+		return true;
+	}
+
+	/// <summary>
+	/// Gets the DBRecord for a particular ID.
+	/// </summary>
+	/// <param name="recordId">string ID of the record will be normalized internally</param>
+	/// <returns>DBRecord corresponding to the string ID.</returns>
+	public DBRecordCollection GetItem(ArzFile file, RecordId recordId)
+	{
+		if (recordId is null) return null;
+
+		RecordInfo rawRecord;
+		if (file.RecordInfo.ContainsKey(recordId))
+			rawRecord = file.RecordInfo[recordId];
+		else
+			// record not found
+			return null;
+
+		return infoProv.Decompress(file, rawRecord);
+	}
+
+	/// <summary>
+	/// Gets a database record without adding it to the cache.
+	/// </summary>
+	/// <remarks>
+	/// The Item property caches the DBRecords, which is great when you are only using a few 100 (1000?) records and are requesting
+	/// them many times.  Not great if you are looping through all the records as it eats alot of memory.  This method will create
+	/// the record on the fly if it is not in the cache so when you are done with it, it can be reclaimed by the garbage collector.
+	/// Great for when you want to loop through all the records for some reason.  It will take longer, but use less memory.
+	/// </remarks>
+	/// <param name="recordId">String ID of the record.  Will be normalized internally.</param>
+	/// <returns>Decompressed RecordInfo record</returns>
+	public DBRecordCollection GetRecordNotCached(ArzFile file, RecordId recordId)
+		=> infoProv.Decompress(file, file.RecordInfo[recordId]);
+
+
+	/// <summary>
+	/// Reads the whole string table into memory from a stream.
+	/// </summary>
+	/// <remarks>
+	/// string Table Format
+	/// first 4 bytes is the number of entries
+	/// then
+	/// one string followed by another...
+	/// </remarks>
+	/// <param name="pos">position within the file.</param>
+	/// <param name="reader">input BinaryReader</param>
+	/// <param name="outStream">output StreamWriter.</param>
+	private void ReadStringTable(ArzFile file, int pos, BinaryReader reader, StreamWriter outStream)
+	{
+		reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+		int numstrings = reader.ReadInt32();
+
+		file.Strings = new string[numstrings];
+
+		if (outStream != null)
+			outStream.WriteLine("stringTable located at 0x{1:X} numstrings= {0:n0}", numstrings, pos);
+
+		for (int i = 0; i < numstrings; ++i)
 		{
-			reader.BaseStream.Seek(pos, SeekOrigin.Begin);
+			file.Strings[i] = TQData.ReadCString(reader);
 
 			if (outStream != null)
-				outStream.WriteLine("RecordTable located at 0x{0:X}", pos);
+				outStream.WriteLine("{0},{1}", i, file.Strings[i]);
+		}
+	}
 
-			for (int i = 0; i < numEntries; ++i)
-			{
-				RecordInfo recordInfo = new RecordInfo();
+	/// <summary>
+	/// Reads the entire record table into memory from a stream.
+	/// </summary>
+	/// <param name="pos">position within the file.</param>
+	/// <param name="numEntries">number of entries in the file.</param>
+	/// <param name="reader">input BinaryReader</param>
+	/// <param name="outStream">output StreamWriter.</param>
+	private void ReadRecordTable(ArzFile file, int pos, int numEntries, BinaryReader reader, StreamWriter outStream)
+	{
+		reader.BaseStream.Seek(pos, SeekOrigin.Begin);
 
-				infoProv.Decode(recordInfo, reader, 24, file); // 24 is the offset of where all record data begins
+		if (outStream != null)
+			outStream.WriteLine("RecordTable located at 0x{0:X}", pos);
 
-				file.RecordInfo.Add(recordInfo.ID, recordInfo);
+		for (int i = 0; i < numEntries; ++i)
+		{
+			RecordInfo recordInfo = new RecordInfo();
 
-				// output this record
-				if (outStream != null)
-					outStream.WriteLine("{0},{1},{2}", i, recordInfo.ID, recordInfo.RecordType);
-			}
+			infoProv.Decode(recordInfo, reader, 24, file); // 24 is the offset of where all record data begins
+
+			file.RecordInfo.Add(recordInfo.ID, recordInfo);
+
+			// output this record
+			if (outStream != null)
+				outStream.WriteLine("{0},{1},{2}", i, recordInfo.ID, recordInfo.RecordType);
 		}
 	}
 }

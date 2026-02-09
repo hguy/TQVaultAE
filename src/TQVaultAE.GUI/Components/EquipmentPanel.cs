@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 // <copyright file="EquipmentPanel.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -14,6 +14,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
 using TQVaultAE.GUI.Tooltip;
 using Microsoft.Extensions.Logging;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Components;
 
@@ -23,6 +24,7 @@ namespace TQVaultAE.GUI.Components;
 public class EquipmentPanel : SackPanel, IScalingControl
 {
 	private readonly ILogger Log = null;
+	private readonly UserSettings USettings;
 
 	/// <summary>
 	/// Initializes a new instance of the EquipmentPanel class.
@@ -35,6 +37,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		: base(sackWidth, sackHeight, dragInfo, autoMoveLocation, serviceProvider)
 	{
 		this.Log = serviceProvider.GetService<ILogger<EquipmentPanel>>();
+		this.USettings = serviceProvider.GetService<UserSettings>();
 
 		this.SackType = SackType.Equipment;
 		this.BackColor = Color.Transparent;
@@ -336,7 +339,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 				return;
 
 			// If the requirement setting is enabled check to see if the item can be equipped.
-			if (Config.UserSettings.Default.EnableItemRequirementRestriction && !this.PlayerMeetRequierements(dragItem))
+			if (this.USettings.EnableItemRequirementRestriction && !this.PlayerMeetRequierements(dragItem))
 				return;
 
 			// Yes we can drop it here!
@@ -765,7 +768,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			else if (
 				!this.SecondaryVaultShown
 				&& (
-					(Config.UserSettings.Default.EnableItemRequirementRestriction && !this.PlayerMeetRequierements(item))
+					(this.USettings.EnableItemRequirementRestriction && !this.PlayerMeetRequierements(item))
 					|| !IsSuitableForCurrentPlayer(item)
 				)
 			)
@@ -793,7 +796,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 					{
 						backgroundColor = this.HighlightValidItemColor;
 						if (
-							(Config.UserSettings.Default.EnableItemRequirementRestriction && !this.PlayerMeetRequierements(DragInfo.Item))
+							(this.USettings.EnableItemRequirementRestriction && !this.PlayerMeetRequierements(DragInfo.Item))
 							|| !IsSuitableForCurrentPlayer(DragInfo.Item)
 						) backgroundColor = this.HighlightInvalidItemColor;
 					}
@@ -865,7 +868,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 
 					if (!this.CheckItemType(this.DragInfo.Item, slot)
 						|| (
-							Config.UserSettings.Default.EnableItemRequirementRestriction
+							this.USettings.EnableItemRequirementRestriction
 							&& !this.PlayerMeetRequierements(DragInfo.Item)
 						)
 						|| !IsSuitableForCurrentPlayer(DragInfo.Item)

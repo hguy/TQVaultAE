@@ -1,16 +1,14 @@
-﻿using System;
+using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
-using static System.Net.Mime.MediaTypeNames;
+using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Components;
 
@@ -27,6 +25,7 @@ public partial class ComboBoxCharacter : UserControl
 	private IGamePathService GamePathService;
 	private IGameFileService GameFileService;
 	private ITagService TagService;
+	private UserSettings USettings;
 	private Bitmap HUDCHARACTERBUTTONUP01;
 	private Bitmap HUDCHARACTERBUTTONOVER01;
 	private Bitmap HUDCHARACTERBUTTONDOWN01;
@@ -157,6 +156,7 @@ public partial class ComboBoxCharacter : UserControl
 		, IGameFileService gameFileService
 		, IGamePathService gamePathService
 		, ITagService tagService
+		, UserSettings userSettings
 		, Action duplicateCharacterAction
 	)
 	{
@@ -167,6 +167,7 @@ public partial class ComboBoxCharacter : UserControl
 		this.GamePathService = gamePathService;
 		this.GameFileService = gameFileService;
 		this.TagService = tagService;
+		this.USettings = userSettings;
 		this.Form = this.FindForm() as VaultForm;
 		this.Form.GlobalMouseButtonLeft += Form_GlobalMouseButtonLeft;
 		this.DuplicateCharacterAction = duplicateCharacterAction;
@@ -286,7 +287,7 @@ public partial class ComboBoxCharacter : UserControl
 			this.scalingLabelCharName.Text = ps.ToString();
 
 			// Show duplicate feature ?
-			if (Config.UserSettings.Default.AllowCharacterEdit)
+			if (this.USettings.AllowCharacterEdit)
 			{
 				this.duplicateToolStripMenuItem.Visible =
 				this.duplicateSeparatorToolStripMenuItem.Visible = true;
@@ -484,7 +485,7 @@ public partial class ComboBoxCharacter : UserControl
 				var save = this.Items[e.NewIndex];
 
 				var item = new ComboBoxCharacterItem();
-				item.Init(this.DropDown, save, TranslationService, FontService, Database, TagService);
+				item.Init(save, TranslationService, FontService, Database, TagService);
 				item.SelectedItemChanged += Item_SelectedItemChanged;
 				this.DropDown.Items.Add(item);
 				item.RefreshContent();
