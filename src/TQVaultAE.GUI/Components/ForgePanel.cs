@@ -695,7 +695,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 		) as PictureBox;
 
 		var drgItm = DragInfo.Item;
-		var drgSack = DragInfo.Sack;
+		var drgSack = DragInfo.SrcSack;
 
 		if (found == pictureBoxBaseItem)
 		{
@@ -980,7 +980,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private bool ItemMustBeInsideASack()
 	{
 		// Happen when i copy an item without droping it in a sack first
-		if (DragInfo.Sack is null)
+		if (DragInfo.SrcSack is null)
 		{
 			this.UIService.NotifyUser(Resources.ForgeItemMustBeStoredFirst, TQColor.Red);
 

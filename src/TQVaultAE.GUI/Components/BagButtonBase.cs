@@ -245,10 +245,10 @@ public class BagButtonBase : Panel
 			{
 				switch (this.ButtonNumber)
 				{
-					case StashPanel.BAGID_EQUIPMENTPANEL when !this.USettings.DisableTooltipEquipment:
-					case StashPanel.BAGID_PLAYERSTASH when !this.USettings.DisableTooltipStash:
-					case StashPanel.BAGID_RELICVAULTSTASH when !this.USettings.DisableTooltipRelic:
-					case StashPanel.BAGID_TRANSFERSTASH when !this.USettings.DisableTooltipTransfer:
+					case BagIdConstants.BAGID_EQUIPMENTPANEL when !this.USettings.DisableTooltipEquipment:
+					case BagIdConstants.BAGID_PLAYERSTASH when !this.USettings.DisableTooltipStash:
+					case BagIdConstants.BAGID_RELICVAULTSTASH when !this.USettings.DisableTooltipRelic:
+					case BagIdConstants.BAGID_TRANSFERSTASH when !this.USettings.DisableTooltipTransfer:
 						BagButtonTooltip.ShowTooltip(this.ServiceProvider, this);
 						break;
 				}

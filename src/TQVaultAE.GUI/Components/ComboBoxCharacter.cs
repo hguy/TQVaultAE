@@ -80,6 +80,7 @@ public partial class ComboBoxCharacter : UserControl
 		get => _SelectedIndex;
 		set
 		{
+			if (_SelectedIndex == value) return;
 			if (Items.Count > 0 && value >= 0 && value < Items.Count)
 			{
 				_SelectedIndex = value;
@@ -199,7 +200,7 @@ public partial class ComboBoxCharacter : UserControl
 			this.renameToolStripMenuItem.Text = Resources.GlobalRename;
 			this.archiveAllToolStripMenuItemGlobal.Text =
 			this.archiveAllToolStripMenuItem.Text = Resources.GlobalArchiveAll;
-			this.unarchiveAllToolStripMenuItemGlobal.Text = 
+			this.unarchiveAllToolStripMenuItemGlobal.Text =
 			this.unarchiveAllToolStripMenuItem.Text = Resources.GlobalUnArchiveAll;
 			this.renameToolStripMenuItem.Text = Resources.GlobalRename;
 			this.colorToolStripMenuItem.Text = TranslationService.TranslateXTag("x3tagGraphicOption02");
@@ -645,11 +646,11 @@ public partial class ComboBoxCharacter : UserControl
 		// Find Saves having the tag that are archived
 		var taggedSaves =
 			from ps in this.Items.OfType<PlayerSave>()
-			where ps.Tags.ContainsKey(parentTagMenuItem.Text) && ps.IsArchived 
+			where ps.Tags.ContainsKey(parentTagMenuItem.Text) && ps.IsArchived
 			select ps;
 
 		foreach (var taggedSave in taggedSaves)
-			 this.GameFileService.Unarchive(taggedSave);
+			this.GameFileService.Unarchive(taggedSave);
 
 		RefreshItems();
 		RefreshContent();
@@ -774,7 +775,7 @@ public partial class ComboBoxCharacter : UserControl
 			where !ps.IsArchived
 			select ps;
 
-		foreach (var activeSave in activeSaves) 
+		foreach (var activeSave in activeSaves)
 			GameFileService.Archive(activeSave);
 
 		RefreshItems();

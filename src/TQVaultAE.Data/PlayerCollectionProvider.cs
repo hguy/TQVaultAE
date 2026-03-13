@@ -300,7 +300,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 
 		pc.Sacks = vaultDto.sacks.Select(s => new SackCollection()
 		{
-			SackType = SackType.Sack,
+			SackType = SackType.Player,
 			IsImmortalThrone = pc.IsImmortalThrone,
 			IsModified = false,
 			size = s.items.Count,
@@ -312,7 +312,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				var itm = new Item()
 				{
 					// General
-					ContainerType = SackType.Sack,
+					Place = new ContainerPlace { SackType = SackType.Player },
 					beginBlockCrap1 = this.TQData.BeginBlockValue,
 					beginBlockCrap2 = this.TQData.BeginBlockValue,
 					BaseItemId = s.baseName,
@@ -781,7 +781,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 			for (int i = 0; i < pc.numberOfSacks; ++i)
 			{
 				pc.Sacks[i] = new SackCollection();
-				pc.Sacks[i].SackType = SackType.Sack;
+				pc.Sacks[i].SackType = SackType.Player;
 				pc.Sacks[i].IsImmortalThrone = pc.IsImmortalThrone;
 				SackCollectionProvider.Parse(pc.Sacks[i], reader);
 			}

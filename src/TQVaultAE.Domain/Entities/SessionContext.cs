@@ -1,10 +1,13 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading;
 using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
+using TQVaultAE.Domain.Search;
 
 namespace TQVaultAE.Domain.Entities;
 
@@ -98,10 +101,11 @@ public class SessionContext
 		if (hasSearch || hasFilter)
 		{
 			this.HighlightedItems.Clear();
-				
+
 			// Check for players
 			var sacksplayers = this.Players.Select(p => p.Value.Value)
-				.SelectMany(p => {
+				.SelectMany(p =>
+				{
 					var retval = new List<SackCollection>();
 
 					if (p.EquipmentSack is not null)
@@ -249,7 +253,7 @@ public class SessionContext
 
 				if (this.HighlightFilter.HavingSuffix)
 					availableItems = availableItems.Where(i => i.Item.HasSuffix);
-					
+
 				if (this.HighlightFilter.HavingRelic)
 					availableItems = availableItems.Where(i => i.Item.HasRelic);
 
@@ -274,6 +278,169 @@ public class SessionContext
 		this.HighlightedItems.Clear();
 		this.HighlightSearch = null;
 		this.HighlightFilter = null;
+	}
+
+	#endregion
+
+	#region Search Item Database
+
+	/// <summary>
+	/// Global searchable item database containing all items across all loaded containers
+	/// </summary>
+	public ConcurrentBag<Result> ItemDatabase { get; private set; } = new();
+
+	/// <summary>
+	/// Adds an item to the search database if it's not already present.
+	/// Location properties should already be set on the item before calling this.
+	/// </summary>
+	/// <param name="item">The item to add</param>
+	/// <returns>True if the item was added, false if it already exists</returns>
+	public bool TryAddItemToDatabase(Item item)
+	{
+		if (item == null)
+			return false;
+
+		// Check if already exists (by reference) - ConcurrentBag doesn't have FirstOrDefault
+		foreach (var existing in this.ItemDatabase)
+		{
+			if (existing.Item == item)
+				return false; // Already exists
+		}
+
+		var result = new Result(
+			item,
+			new Lazy<ToFriendlyNameResult>(
+				() => this.ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay),
+				LazyThreadSafetyMode.ExecutionAndPublication
+			)
+		);
+		this.ItemDatabase.Add(result);
+		return true;
+	}
+
+	/// <summary>
+	/// Adds an item to the search database with its container information.
+	/// Updates item location properties and adds to database if not already present.
+	/// </summary>
+	public void AddItemToDatabase(Item item, string containerPath, string containerName, int sackNumber, SackType sackType, StashType? stashType = null)
+	{
+		if (item == null)
+			return;
+
+		// Update item location properties
+		item.Place.Path = containerPath;
+		item.Place.Name = containerName;
+		item.Place.SackNumber = sackNumber;
+		item.Place.SackType = sackType;
+		item.Place.StashType = stashType;
+
+		// Add to database if not already present
+		this.TryAddItemToDatabase(item);
+	}
+
+	/// <summary>
+	/// Removes an item from the search database
+	/// </summary>
+	public void RemoveItemFromDatabase(Item item)
+	{
+		if (item == null)
+			return;
+
+		// ConcurrentBag doesn't support RemoveAll, so we rebuild without the item
+		var itemsToKeep = this.ItemDatabase.Where(r => r.Item != item).ToList();
+
+		ClearItemDatabase();
+
+		foreach (var result in itemsToKeep)
+		{
+			this.ItemDatabase.Add(result);
+		}
+	}
+
+	/// <summary>
+	/// Clears all items from the search database
+	/// </summary>
+	public void ClearItemDatabase()
+		=> this.ItemDatabase = new();
+
+	/// <summary>
+	/// Populates the item database from all loaded containers (Vaults, Players, Stashes)
+	/// </summary>
+	public void RebuildItemDatabase()
+	{
+		this.ClearItemDatabase();
+
+		// Add vault items
+		foreach (var kvp in this.Vaults)
+		{
+			var vault = kvp.Value.Value;
+			if (vault == null)
+				continue;
+
+			int sackNumber = -1;
+			foreach (var sack in vault)
+			{
+				sackNumber++;
+				if (sack == null)
+					continue;
+
+				foreach (var item in sack)
+					this.AddItemToDatabase(item, kvp.Key, vault.PlayerName, sackNumber, SackType.Vault);
+			}
+		}
+
+		// Add player items
+		foreach (var kvp in this.Players)
+		{
+			var player = kvp.Value.Value;
+			if (player == null)
+				continue;
+
+			// Player sacks
+			int sackNumber = -1;
+			foreach (var sack in player)
+			{
+				sackNumber++;
+				if (sack == null)
+					continue;
+
+				foreach (var item in sack)
+					this.AddItemToDatabase(item, kvp.Key, player.PlayerName, sackNumber, SackType.Player);
+			}
+
+			// Equipment sack
+			if (player.EquipmentSack != null)
+			{
+				foreach (var item in player.EquipmentSack)
+					this.AddItemToDatabase(item, kvp.Key, player.PlayerName, BagIdConstants.BAGID_EQUIPMENTPANEL, SackType.Equipment);
+			}
+		}
+
+		// Add stash items
+		foreach (var kvp in this.Stashes)
+		{
+			var stash = kvp.Value.Value;
+			if (stash?.Sack == null)
+				continue;
+
+			int sackNumber = BagIdConstants.BAGID_PLAYERSTASH;
+			StashType stashType = StashType.PlayerStash;
+
+			if (stash.Sack.StashType == StashType.TransferStash)
+			{
+
+				sackNumber = BagIdConstants.BAGID_TRANSFERSTASH;
+				stashType = StashType.TransferStash;
+			}
+			else if (stash.Sack.StashType == StashType.RelicVaultStash)
+			{
+				sackNumber = BagIdConstants.BAGID_RELICVAULTSTASH;
+				stashType = StashType.RelicVaultStash;
+			}
+
+			foreach (var item in stash.Sack)
+				this.AddItemToDatabase(item, kvp.Key, stash.PlayerName, sackNumber, SackType.Stash, stashType);
+		}
 	}
 
 	#endregion

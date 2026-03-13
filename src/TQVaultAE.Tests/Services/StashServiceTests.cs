@@ -219,7 +219,7 @@ public class StashServiceTests
 		result.Stash.Should().NotBeNull();
 		result.Stash.StashFound.Should().BeTrue();
 		result.Stash.IsImmortalThrone.Should().BeTrue();
-		result.Stash.Sack.StashType.Should().Be(SackType.RelicVaultStash);
+		result.Stash.Sack.StashType.Should().Be(StashType.RelicVaultStash);
 	}
 
 	/// <summary>

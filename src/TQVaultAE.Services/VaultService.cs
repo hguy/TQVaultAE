@@ -127,6 +127,19 @@ public class VaultService : IVaultService
 				pc.IsVault = true;
 				LoadVault(pc);
 			}
+
+			// Add vault items to the search database
+			int sackNumber = -1;
+			foreach (var sack in pc)
+			{
+				sackNumber++;
+				if (sack == null)
+					continue;
+
+				foreach (var item in sack)
+					this.userContext.AddItemToDatabase(item, k, vaultName, sackNumber, SackType.Vault);
+			}
+
 			return pc;
 		});
 		result.Vault = resultVault;

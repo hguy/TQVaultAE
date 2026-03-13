@@ -10,23 +10,24 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
-using System.Windows.Forms;
-using TQVaultAE.GUI.Models;
-using TQVaultAE.Domain.Entities;
-using TQVaultAE.Presentation;
-using TQVaultAE.GUI.Tooltip;
-using TQVaultAE.Domain.Contracts.Services;
 using System.Linq;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Results;
+using System.Windows.Forms;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Contracts.Providers;
+using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Results;
+using TQVaultAE.GUI.Models;
+using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.Presentation;
+using static TQVaultAE.GUI.Components.VaultPanel;
 
 namespace TQVaultAE.GUI.Components;
 
 /// <summary>
 /// Represents a TQ Vault control that displays a frame around a group of TQ Vault panels with an optional caption.
 /// </summary>
-public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
+public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 {
 	protected readonly IFontService FontService;
 	protected readonly IUIService UIService;
@@ -299,6 +300,9 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 			this.player = value;
 
+			// Set container reference for the sack panel to track item locations
+			this.BagSackPanel.PlayerCollection = value;
+
 			this.UpdateText();
 
 			this.ApplyCustomButtonIcons();
@@ -528,7 +532,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			this.CurrentBag = bagID;
 			this.BagSackPanel.ClearSelectedItems();
 			this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
-			this.BagSackPanel.CurrentSack = this.CurrentBag;
+			this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 		}
 
 		if (e.Button == MouseButtons.Right)
@@ -852,19 +856,19 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	private void AddSubMenu(string menuText, EventHandler menuCallback)
 	{
 		var menuChoices = new ToolStripItem[this.BagButtons.Count - 1];
-		for (int i = 0, j = 0; i < this.BagButtons.Count; ++i)
+		for (int i = 0; i < this.BagButtons.Count; i++)
 		{
 			if (i != this.CurrentBag)
 			{
 				int val = i + 1;
-				menuChoices[j] = new ToolStripMenuItem(string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val)
+				menuChoices[i] = new ToolStripMenuItem(string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val)
 					, null, menuCallback, string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val))
 				{
 					BackColor = this.contextMenu.BackColor,
 					Font = this.contextMenu.Font,
 					ForeColor = this.contextMenu.ForeColor,
+					Tag = new MenuItemTagBagIndex(i),
 				};
-				++j;
 			}
 		}
 
@@ -1005,7 +1009,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 					this.BagButtons[destinationIndex].IsOn = true;
 					this.CurrentBag = destinationIndex;
 					this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
-					this.BagSackPanel.CurrentSack = this.CurrentBag;
+					this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 				}
 			}
 		}
@@ -1031,7 +1035,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 					this.BagButtons[destinationIndex].IsOn = true;
 					this.CurrentBag = destinationIndex;
 					this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
-					this.BagSackPanel.CurrentSack = this.CurrentBag;
+					this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 				}
 
 				ApplyCustomButtonIcons();
@@ -1065,7 +1069,7 @@ public class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				this.BagButtons[destinationIndex].IsOn = true;
 				this.CurrentBag = destinationIndex;
 				this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
-				this.BagSackPanel.CurrentSack = this.CurrentBag;
+				this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 			}
 		}
 	}

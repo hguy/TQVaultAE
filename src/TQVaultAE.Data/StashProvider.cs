@@ -306,6 +306,7 @@ public class StashProvider : IStashProvider
 		sta.numberOfSacks = 1;
 		sta.Sack = new SackCollection();
 		sta.Sack.SackType = SackType.Stash;
+		sta.Sack.StashType = null;
 		sta.Sack.IsImmortalThrone = true;
 		SackCollectionProvider.Parse(sta.Sack, reader);
 

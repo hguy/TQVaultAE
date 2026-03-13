@@ -91,7 +91,20 @@ public class PlayerPanel : VaultPanel
 			this.BagSackPanel.Location.X + this.BagSackPanel.Width - AutoSortButtons[1].Width,
 			this.BagSackPanel.Location.Y - AutoSortButtons[1].Height);
 
-		this.BagSackPanel.SackType = SackType.Sack;
+		this.BagSackPanel.SackType = SackType.Player;
+	}
+
+	/// <summary>
+	/// Gets or sets the player instance
+	/// </summary>
+	public new PlayerCollection Player
+	{
+		get => base.Player;
+		set
+		{
+			base.Player = value;
+			this.mainSackPanel.PlayerCollection = value;
+		}
 	}
 
 	/// <summary>

@@ -583,10 +583,10 @@ public class ItemProvider : IItemProvider
 		int cy = itm.PositionY;
 		int cseed = itm.Seed;
 
-		if (itm.ContainerType != SackType.Sack && itm.ContainerType != SackType.Player)
+		if (itm.Place.SackType != SackType.Player)
 		{
 			// Equipment, Stashes, Vaults
-			if (itm.ContainerType == SackType.Stash)
+			if (itm.Place.SackType == SackType.Stash)
 			{
 				TQData.WriteCString(writer, "stackCount");
 				writer.Write(itemCount - 1);
@@ -631,7 +631,7 @@ public class ItemProvider : IItemProvider
 			TQData.WriteCString(writer, "end_block");
 			writer.Write(itm.endBlockCrap2);
 
-			if (itm.ContainerType == SackType.Stash)
+			if (itm.Place.SackType == SackType.Stash)
 			{
 				TQData.WriteCString(writer, "xOffset");
 				writer.Write(Convert.ToSingle(cx, CultureInfo.InvariantCulture));
@@ -721,12 +721,12 @@ public class ItemProvider : IItemProvider
 		try
 		{
 			string valueStr = string.Empty;
-			if (itm.ContainerType == SackType.Stash)
+			if (itm.Place.SackType == SackType.Stash)
 			{
 				TQData.ValidateNextString("stackCount", reader);
 				itm.beginBlockCrap1 = reader.ReadInt32();
 			}
-			else if (itm.ContainerType == SackType.Sack || itm.ContainerType == SackType.Player)
+			else if (itm.Place.SackType == SackType.Player)
 			{
 				TQData.ValidateNextString("begin_block", reader); // make sure we just read a new block
 				itm.beginBlockCrap1 = reader.ReadInt32();
@@ -781,7 +781,7 @@ public class ItemProvider : IItemProvider
 			TQData.ValidateNextString("end_block", reader);
 			itm.endBlockCrap2 = reader.ReadInt32();
 
-			if (itm.ContainerType == SackType.Stash)
+			if (itm.Place.SackType == SackType.Stash)
 			{
 				TQData.ValidateNextString("xOffset", reader);
 				itm.PositionX = Convert.ToInt32(reader.ReadSingle(), CultureInfo.InvariantCulture);
@@ -789,7 +789,7 @@ public class ItemProvider : IItemProvider
 				TQData.ValidateNextString("yOffset", reader);
 				itm.PositionY = Convert.ToInt32(reader.ReadSingle(), CultureInfo.InvariantCulture);
 			}
-			else if (itm.ContainerType == SackType.Equipment)
+			else if (itm.Place.SackType == SackType.Equipment)
 			{
 				// Initially set the coordinates to (0, 0)
 				itm.PositionX = 0;
@@ -809,7 +809,7 @@ public class ItemProvider : IItemProvider
 
 			GetDBData(itm);
 
-			if (itm.ContainerType == SackType.Stash)
+			if (itm.Place.SackType == SackType.Stash)
 				itm.StackSize = itm.beginBlockCrap1 + 1;
 			else
 				itm.StackSize = 1;

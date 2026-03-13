@@ -201,7 +201,7 @@ public partial class MainForm
 		{
 			this.playerPanel.Player = null;
 			this.stashPanel.Player = null;
-			this.stashPanel.CurrentBag = StashPanel.BAGID_EQUIPMENTPANEL;
+			this.stashPanel.CurrentBag = BagIdConstants.BAGID_EQUIPMENTPANEL;
 
 			if (this.stashPanel.Stash != null)
 				this.stashPanel.Stash = null;
@@ -256,7 +256,7 @@ public partial class MainForm
 			{
 				this.playerPanel.Player = result.Player;
 				this.stashPanel.Player = result.Player;
-				this.stashPanel.CurrentBag = StashPanel.BAGID_EQUIPMENTPANEL;
+				this.stashPanel.CurrentBag = BagIdConstants.BAGID_EQUIPMENTPANEL;
 			}
 			this.comboBoxCharacter.RefreshItem(selectedSave);
 		}

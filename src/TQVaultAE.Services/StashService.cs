@@ -22,12 +22,12 @@ public class StashService : IStashService
 
 	public StashService(ILogger<StashService> log, SessionContext userContext, IStashProvider stashProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, UserSettings userSettings)
 	{
-		this.Log = log;
+		Log = log;
 		this.userContext = userContext;
-		this.StashProvider = stashProvider;
-		this.GamePathResolver = gamePathResolver;
-		this.GameFileService = iGameFileService;
-		this.UserSettings = userSettings;
+		StashProvider = stashProvider;
+		GamePathResolver = gamePathResolver;
+		GameFileService = iGameFileService;
+		UserSettings = userSettings;
 	}
 
 	/// <summary>
@@ -52,6 +52,15 @@ public class StashService : IStashService
 			try
 			{
 				stash.StashFound = StashProvider.LoadFile(stash);
+				if (stash.StashFound ?? false)
+					stash.Sack.StashType = StashType.PlayerStash;
+
+				// Add stash items to the search database
+				if (stash.Sack != null)
+				{
+					foreach (var item in stash.Sack)
+						userContext.AddItemToDatabase(item, k, selectedSave.Name, BagIdConstants.BAGID_PLAYERSTASH, SackType.Stash, StashType.PlayerStash);
+				}
 			}
 			catch (ArgumentException argumentException)
 			{
@@ -67,8 +76,8 @@ public class StashService : IStashService
 		}
 
 		result.Stash = fromFileWatcher
-			? this.userContext.Stashes.AddOrUpdateAtomic(result.StashFile, addStash, updateStash)
-			: this.userContext.Stashes.GetOrAddAtomic(result.StashFile, addStash);
+			? userContext.Stashes.AddOrUpdateAtomic(result.StashFile, addStash, updateStash)
+			: userContext.Stashes.GetOrAddAtomic(result.StashFile, addStash);
 
 		#endregion
 
@@ -92,6 +101,15 @@ public class StashService : IStashService
 			try
 			{
 				stash.StashFound = StashProvider.LoadFile(stash);
+				if (stash.StashFound ?? false)
+					stash.Sack.StashType = StashType.TransferStash;
+
+				// Add transfer stash items to the search database
+				if (stash.Sack != null)
+				{
+					foreach (var item in stash.Sack)
+						userContext.AddItemToDatabase(item, k, Resources.GlobalTransferStash, BagIdConstants.BAGID_TRANSFERSTASH, SackType.Stash, StashType.TransferStash);
+				}
 			}
 			catch (ArgumentException argumentException)
 			{
@@ -106,8 +124,8 @@ public class StashService : IStashService
 		}
 
 		var resultStash = fromFileWatcher
-			? this.userContext.Stashes.AddOrUpdateAtomic(result.TransferStashFile, addStash, updateStash)
-			: this.userContext.Stashes.GetOrAddAtomic(result.TransferStashFile, addStash);
+			? userContext.Stashes.AddOrUpdateAtomic(result.TransferStashFile, addStash, updateStash)
+			: userContext.Stashes.GetOrAddAtomic(result.TransferStashFile, addStash);
 
 		result.Stash = resultStash;
 		result.Stash.IsImmortalThrone = true;
@@ -134,8 +152,15 @@ public class StashService : IStashService
 			try
 			{
 				stash.StashFound = StashProvider.LoadFile(stash);
-				if (stash.StashFound.Value)
-					stash.Sack.StashType = SackType.RelicVaultStash;
+				if (stash.StashFound ?? false)
+					stash.Sack.StashType = StashType.RelicVaultStash;
+
+				// Add relic vault stash items to the search database
+				if (stash.Sack != null)
+				{
+					foreach (var item in stash.Sack)
+						userContext.AddItemToDatabase(item, k, Resources.GlobalRelicVaultStash, BagIdConstants.BAGID_RELICVAULTSTASH, SackType.Stash, StashType.RelicVaultStash);
+				}
 			}
 			catch (ArgumentException argumentException)
 			{
@@ -152,8 +177,8 @@ public class StashService : IStashService
 
 		// Get the relic vault stash
 		var resultStash = fromFileWatcher
-			? this.userContext.Stashes.AddOrUpdateAtomic(result.RelicVaultStashFile, addStash, updateStash)
-			: this.userContext.Stashes.GetOrAddAtomic(result.RelicVaultStashFile, addStash);
+			? userContext.Stashes.AddOrUpdateAtomic(result.RelicVaultStashFile, addStash, updateStash)
+			: userContext.Stashes.GetOrAddAtomic(result.RelicVaultStashFile, addStash);
 
 		result.Stash = resultStash;
 		result.Stash.IsImmortalThrone = true;
@@ -171,7 +196,7 @@ public class StashService : IStashService
 	{
 		// Save each stash as necessary
 		int saved = 0;
-		foreach (KeyValuePair<string, Lazy<Stash>> kvp in this.userContext.Stashes)
+		foreach (KeyValuePair<string, Lazy<Stash>> kvp in userContext.Stashes)
 		{
 			string stashFile = kvp.Key;
 			Stash stash = kvp.Value.Value;
@@ -182,7 +207,7 @@ public class StashService : IStashService
 			{
 				stashOnError = stash;
 
-				if (!this.UserSettings.DisableLegacyBackup)
+				if (!UserSettings.DisableLegacyBackup)
 					GameFileService.BackupFile(stash.PlayerName, stashFile);
 
 				StashProvider.Save(stash, stashFile);

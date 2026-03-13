@@ -83,6 +83,25 @@ public class PlayerService : IPlayerService
 			{
 				PlayerCollectionProvider.LoadFile(resultPC);
 				selectedSave.Info = resultPC.PlayerInfo;
+
+				// Add player items to the search database
+				int sackNumber = -1;
+				foreach (var sack in resultPC)
+				{
+					sackNumber++;
+					if (sack == null)
+						continue;
+
+					foreach (var item in sack)
+						this.userContext.AddItemToDatabase(item, k, selectedSave.Name, sackNumber, SackType.Player);
+				}
+
+				// Add equipment items
+				if (resultPC.EquipmentSack != null)
+				{
+					foreach (var item in resultPC.EquipmentSack)
+						this.userContext.AddItemToDatabase(item, k, selectedSave.Name, 0, SackType.Equipment);
+				}
 			}
 			catch (ArgumentException argumentException)
 			{

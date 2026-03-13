@@ -280,11 +280,10 @@ public class Item
 	/// </summary>
 	public int Bottom => this.Location.Y + this.Height;
 
-
 	/// <summary>
-	/// Gets or sets the item container type
+	/// Gets or sets the container location information for this item
 	/// </summary>
-	public SackType ContainerType { get; set; }
+	public ContainerPlace Place { get; set; } = new();
 
 	/// <summary>
 	/// Gets a value indicating whether the item is in an equipment weapon slot.

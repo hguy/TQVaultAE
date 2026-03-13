@@ -67,7 +67,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		base.CancelDrag(dragInfo);
 
 		// Check to see if we need to restore the shadow slot.
-		if (this.Sack == dragInfo.Sack && dragInfo.Item.Is2HWeapon)
+		if (this.Sack == dragInfo.SrcSack && dragInfo.Item.Is2HWeapon)
 		{
 			try
 			{
@@ -466,6 +466,12 @@ public class EquipmentPanel : SackPanel, IScalingControl
 					// so we always remove and insert.
 					this.Sack.RemoveAtItem(slot);
 					this.Sack.InsertItem(slot, dragItem);
+
+					// Update item location properties to reflect new position
+					this.UpdateItemLocation(dragItem);
+
+					// Register new items in the database (existing items are already tracked)
+					this.userContext.TryAddItemToDatabase(dragItem);
 				}
 			}
 

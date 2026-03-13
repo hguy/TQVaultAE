@@ -155,7 +155,8 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public string PlayerName
 	{
-		get => (!this.IsVault && this.IsImmortalThrone) ? string.Concat(this.playerName, " - Immortal Throne") : this.playerName;
+		//get => (!this.IsVault && this.IsImmortalThrone) ? string.Concat(this.playerName, " - Immortal Throne") : this.playerName;
+		get => this.playerName;
 		private set => this.playerName = value;
 	}
 

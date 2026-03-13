@@ -102,7 +102,7 @@ public partial class MainForm
 			this.vaultPanel.CurrentBag = selectedResult.SackNumber;
 			this.vaultPanel.SackPanel.SelectItem(selectedResult.FriendlyNames.Item.Location);
 		}
-		else if (selectedResult.SackType == SackType.Player || selectedResult.SackType == SackType.Equipment || selectedResult.SackType == SackType.Stash)
+		else if (selectedResult.SackType is SackType.Player or SackType.Equipment or SackType.Stash)
 		{
 			// Switch to the selected player
 			if (this.showSecondaryVault)
@@ -135,7 +135,7 @@ public partial class MainForm
 				this.stashPanel.SackPanel.SelectItem(selectedResult.FriendlyNames.Item.Location);
 			}
 		}
-		else if ((selectedResult.SackType == SackType.TransferStash) || (selectedResult.SackType == SackType.RelicVaultStash))
+		else if (selectedResult.StashType.HasValue)
 		{
 			// Switch to the Stash bag
 			this.stashPanel.CurrentBag = selectedResult.SackNumber;

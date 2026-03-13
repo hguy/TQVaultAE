@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,17 +14,16 @@ using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Windows.Forms;
-using TQVaultAE.GUI.Models;
-using TQVaultAE.Logs;
-using TQVaultAE.Domain.Entities;
-using TQVaultAE.Presentation;
-using TQVaultAE.GUI.Tooltip;
-using TQVaultAE.Domain.Contracts.Services;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Helpers;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic.Logging;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Contracts.Providers;
+using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GUI.Models;
+using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.Logs;
+using TQVaultAE.Presentation;
+using static TQVaultAE.GUI.Components.VaultPanel;
 
 namespace TQVaultAE.GUI.Components;
 
@@ -234,7 +235,7 @@ public class SackPanel : Panel, IScalingControl
 		this.contextMenuCellWithFocus = InvalidDragLocation;
 
 		this.SackSize = new Size(sackWidth, sackHeight);
-		this.SackType = SackType.Sack;
+		this.SackType = SackType.Player;
 
 		this.itemsUnderDragItem = new Collection<Item>();
 		this.itemsUnderOldDragLocation = new Collection<Item>();
@@ -411,8 +412,14 @@ public class SackPanel : Panel, IScalingControl
 	public SackType SackType { get; set; }
 
 	/// <summary>
+	/// Gets or sets the container (vault/player/stash) that owns this sack.
+	/// Used to track item locations for search functionality.
+	/// </summary>
+	public PlayerCollection PlayerCollection { get; set; }
+
+	/// <summary>
 	/// Gets MessageBoxOptions for right to left reading.
-	/// </summary>7
+	/// </summary>
 	protected static MessageBoxOptions RightToLeftOptions
 	{
 		get
@@ -726,7 +733,7 @@ public class SackPanel : Panel, IScalingControl
 	}
 
 	/// <summary>
-  /// Selects all highlighted items in the sack
+	/// Selects all highlighted items in the sack
 	/// </summary>
 	public void SelectAllHighlightedItems()
 	{
@@ -744,19 +751,19 @@ public class SackPanel : Panel, IScalingControl
 		}
 	}
 
-  /// <summary>
+	/// <summary>
 	/// Moves selected items by one space in a direction, does not move any items if one of them can't move
 	/// </summary>
 	public void MoveSelectedItemsInSack(string direction)
 	{
 		// Set offsets for the movement direction
 		int offsetX = 0, offsetY = 0;
-		switch(direction)
+		switch (direction)
 		{
-			case "up":		offsetY = -1;	break;
-			case "down":	offsetY = 1;	break;
-			case "left":	offsetX = -1;	break;
-			case "right":	offsetX = 1;	break;
+			case "up": offsetY = -1; break;
+			case "down": offsetY = 1; break;
+			case "left": offsetX = -1; break;
+			case "right": offsetX = 1; break;
 		}
 
 		// Disable feature in the equipment panel
@@ -766,7 +773,7 @@ public class SackPanel : Panel, IScalingControl
 		// Make sure we are not holding an item.
 		if (this.DragInfo.IsActive)
 			return;
-		
+
 		if (this.Sack == null || this.Sack.IsEmpty)
 			return;
 
@@ -782,14 +789,14 @@ public class SackPanel : Panel, IScalingControl
 			movedItemArea = new Rectangle(new Point(item.PositionX + offsetX, item.PositionY + offsetY), item.Size);
 
 			// Find items in the new location and add them to the list, if they aren't one of the selected items
-			foreach(Item blockingItem in this.FindAllItems(movedItemArea))
+			foreach (Item blockingItem in this.FindAllItems(movedItemArea))
 			{
 				if (!this.selectedItems.Contains(blockingItem))
 					return;
 			}
 
 			// Check if we are still inside the area of the sack
-			if (movedItemArea.Top < 0 | movedItemArea.Left < 0 | movedItemArea.Bottom-1 >= this.SackSize.Height | movedItemArea.Right-1 >= this.SackSize.Width)
+			if (movedItemArea.Top < 0 | movedItemArea.Left < 0 | movedItemArea.Bottom - 1 >= this.SackSize.Height | movedItemArea.Right - 1 >= this.SackSize.Width)
 				return;
 		}
 
@@ -831,7 +838,8 @@ public class SackPanel : Panel, IScalingControl
 					{
 						// Check to make sure the last item got placed.
 						this.DragInfo.Set(this, this.Sack, item, new Point(1, 1));
-						this.DragInfo.AutoMove = (AutoMoveLocation)destination;
+						this.DragInfo.AutoMoveDestination = this.AutoMoveLocation;
+						this.DragInfo.DestIndex = destination;
 						this.OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
 					}
 				}
@@ -856,7 +864,7 @@ public class SackPanel : Panel, IScalingControl
 	/// <param name="itemToCheck">Item the method is going to validate</param>
 	/// <returns></returns>
 	public bool IsItemValidForPlacement(Item itemToCheck)
-		=> this.sack.StashType != SackType.RelicVaultStash || itemToCheck.IsArtifact || itemToCheck.IsRelicOrCharm || itemToCheck.IsFormulae;
+		=> this.sack.StashType != Domain.Entities.StashType.RelicVaultStash || itemToCheck.IsArtifact || itemToCheck.IsRelicOrCharm || itemToCheck.IsFormulae;
 
 	/// <summary>
 	/// Cancels an item drag
@@ -865,7 +873,7 @@ public class SackPanel : Panel, IScalingControl
 	public virtual void CancelDrag(ItemDragInfo dragInfo)
 	{
 		// if the drag sack is not visible then we really do not need to do anything
-		if (this.Sack == dragInfo.Sack)
+		if (this.Sack == dragInfo.SrcSack)
 			this.Invalidate(this.GetItemScreenRectangle(dragInfo.Item));
 	}
 
@@ -1231,7 +1239,7 @@ public class SackPanel : Panel, IScalingControl
 						if ((
 							this.SackType == SackType.Player
 							|| this.SackType == SackType.Equipment
-							|| this.SackType == SackType.Sack
+							|| this.SackType == SackType.Player
 							) && IsCurrentPlayerReadOnly()
 						) return;
 			 */
@@ -1242,7 +1250,7 @@ public class SackPanel : Panel, IScalingControl
 			if ((
 				this.SackType == SackType.Player
 				|| this.SackType == SackType.Equipment
-				|| this.SackType == SackType.Sack
+				|| this.SackType == SackType.Player
 				) && !IsSuitableForCurrentPlayer(dragItem)
 			) return;
 
@@ -1278,6 +1286,12 @@ public class SackPanel : Panel, IScalingControl
 
 				// Now add the item to our sack
 				this.Sack.AddItem(dragItem);
+
+				// Update item location properties to reflect new position
+				this.UpdateItemLocation(dragItem);
+
+				// Register new items in the database (existing items are already tracked)
+				this.userContext.TryAddItemToDatabase(dragItem);
 			}
 
 			// clear the "last drag" variables
@@ -1520,36 +1534,26 @@ public class SackPanel : Panel, IScalingControl
 
 				if ((focusedItem != null || this.selectedItems != null) && !isEquipmentReadOnly)
 				{
-					List<string> choices = new List<string>();
+					List<(string label, int? bagIndex)> choices = new();
 
 					if (this.MaxSacks > 1)
 					{
-						// Calculate offsets for the Player's sack panels.
-						int offset = 1; // This is for the numerical display in the menu.
-						int offset2 = 0; // This is for comparison of the current sack.
-
-						if (this.SackType == SackType.Player || this.SackType == SackType.Sack)
-						{
-							// Since the player panel bag's are already starting with 1.
-							offset = 0;
-
-							// But internally to the sack panel they are still zero based
-							// so we need to account for that.
-							if (this.SackType == SackType.Sack)
-								offset2 = 1;
-						}
-
 						for (int i = 0; i < this.MaxSacks; ++i)
 						{
 							// The sacks do not need to list sack#0 since it is the Main player panel
-							// and it will be accounted for later.
-							if (this.SackType == SackType.Sack && i == 0)
-								continue;
-
-							if (i != this.CurrentSack + offset2)
+							var bagOffest = focusedItem.Place.SackType switch
 							{
-								int val = i + offset;
-								choices.Add(string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val));
+								SackType.Player => 0,
+								SackType.Vault => 1,
+							};
+
+							var label = (this.SackType == SackType.Player && i == 0)
+								? Resources.SackPanelMenuPlayer
+								: string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, i + bagOffest);
+
+							if (i != focusedItem.Place.SackNumber)
+							{
+								choices.Add((label, i));
 							}
 						}
 					}
@@ -1581,17 +1585,18 @@ public class SackPanel : Panel, IScalingControl
 					{
 						string location = this.GetStringFromAutoMove(choice);
 						if (!string.IsNullOrEmpty(location))
-							choices.Add(location);
+							choices.Add((location, null));
 					}
 
 					var moveChoices = new List<ToolStripItem>();
 					foreach (var choice in choices)
 					{
-						var moveChoice = new ToolStripMenuItem(choice, null, MoveItemClicked, choice)
+						var moveChoice = new ToolStripMenuItem(choice.label, null, MoveItemClicked, choice.label)
 						{
 							BackColor = this.CustomContextMenu.BackColor,
 							Font = this.CustomContextMenu.Font,
 							ForeColor = this.CustomContextMenu.ForeColor,
+							Tag = choice.bagIndex.HasValue ? new MenuItemTagBagIndex(choice.bagIndex.Value) : null,
 						};
 						moveChoices.Add(moveChoice);
 					}
@@ -1614,7 +1619,7 @@ public class SackPanel : Panel, IScalingControl
 					{
 						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSeed);
 						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSeedForce);
-						
+
 						// Add option to complete a charm or relic if
 						// not already completed.
 						if (focusedItem.IsRelicOrCharm && !focusedItem.IsRelicComplete)
@@ -2501,7 +2506,7 @@ public class SackPanel : Panel, IScalingControl
 
 		return true;
 	}
-	
+
 	/// <summary>
 	/// Indicates whether the current player file can be edited.
 	/// </summary>
@@ -2827,6 +2832,8 @@ public class SackPanel : Panel, IScalingControl
 			{
 				// remove item
 				this.Sack.RemoveItem(focusedItem);
+				// Remove from search database
+				this.userContext.RemoveItemFromDatabase(focusedItem);
 				this.Refresh();
 				BagButtonTooltip.InvalidateCache(this.Sack);
 			}
@@ -2974,26 +2981,16 @@ public class SackPanel : Panel, IScalingControl
 		{
 			Item focusedItem;
 			AutoMoveLocation automoveDestination = AutoMoveLocation.NotSet;
+			int destIndex = -1;
 
 			// Find out what was selected
 			ToolStripMenuItem toolStripItem = (ToolStripMenuItem)sender;
 			if (toolStripItem != null)
 			{
-				// Now that the bag can have a different name
-				// we cannot hard code it.
-				int hashSign = Resources.GlobalMenuBag.IndexOf(Resources.GlobalMenuBagDelimiter, StringComparison.OrdinalIgnoreCase) + 1;
-				if (hashSign == -1)
-					return;
-
-				if (toolStripItem.Name.StartsWith(Resources.GlobalMenuBag.Substring(0, hashSign), StringComparison.OrdinalIgnoreCase))
+				if (toolStripItem.Tag is MenuItemTagBagIndex mit)
 				{
-					int offset = 1;
-
-					// For the player panel we do not need an offset since the bags are already offset by 1.
-					if (this.SackType == SackType.Player || this.SackType == SackType.Sack)
-						offset = 0;
-
-					automoveDestination = (AutoMoveLocation)(Convert.ToInt32(toolStripItem.Name.Substring(hashSign), CultureInfo.InvariantCulture) - offset);
+					automoveDestination = this.AutoMoveLocation;
+					destIndex = mit.Index;
 				}
 				else if (toolStripItem.Name == Resources.SackPanelMenuVault)
 					automoveDestination = AutoMoveLocation.Vault;
@@ -3021,7 +3018,8 @@ public class SackPanel : Panel, IScalingControl
 					{
 						// Check to make sure the last item got placed.
 						this.DragInfo.Set(this, this.Sack, item, new Point(1, 1));
-						this.DragInfo.AutoMove = automoveDestination;
+						this.DragInfo.AutoMoveDestination = automoveDestination;
+						this.DragInfo.DestIndex = destIndex;
 						this.OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
 					}
 				}
@@ -3035,7 +3033,8 @@ public class SackPanel : Panel, IScalingControl
 				if (focusedItem != null)
 				{
 					this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
-					this.DragInfo.AutoMove = automoveDestination;
+					this.DragInfo.AutoMoveDestination = automoveDestination;
+					this.DragInfo.DestIndex = destIndex;
 					this.OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
 				}
 			}
@@ -3537,17 +3536,17 @@ public class SackPanel : Panel, IScalingControl
 			// Calculate offsets for the Player's sack panels.
 			int offset2 = 0; // This is for comparison of the current sack.
 
-			if (SackType == SackType.Player || SackType == SackType.Sack)
+			if (SackType == SackType.Player || SackType == SackType.Player)
 			{
 				// But internally to the sack panel they are still zero based
 				// so we need to account for that.
-				if (SackType == SackType.Sack)
+				if (SackType == SackType.Player)
 					offset2 = 1;
 			}
 
 			if (sackNumber != CurrentSack + offset2)
 			{
-				QuickMovePanel((AutoMoveLocation)sackNumber);// + offset2);					
+				QuickMovePanel(this.AutoMoveLocation, sackNumber);
 			}
 		}
 	}
@@ -3556,7 +3555,8 @@ public class SackPanel : Panel, IScalingControl
 	/// Moves an item from one panel to another without context menu.
 	/// </summary>
 	/// <param name="location">Destination AutoMoveLocation</param>
-	private void QuickMovePanel(AutoMoveLocation location)
+	/// <param name="destIndex">Bag index within the destination (or -1 for auto-find)</param>
+	private void QuickMovePanel(AutoMoveLocation location, int destIndex = -1)
 	{
 		if (Sack == null)
 			return;
@@ -3593,7 +3593,8 @@ public class SackPanel : Panel, IScalingControl
 				{
 					// Check to make sure the last item got placed.
 					DragInfo.Set(this, Sack, item, new Point(1, 1));
-					DragInfo.AutoMove = destination;
+					DragInfo.AutoMoveDestination = destination;
+					DragInfo.DestIndex = destIndex;
 					OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
 				}
 			}
@@ -3604,7 +3605,8 @@ public class SackPanel : Panel, IScalingControl
 		{
 			// Single item highlighted
 			DragInfo.Set(this, Sack, focusedItem, new Point(1, 1));
-			DragInfo.AutoMove = destination;
+			DragInfo.AutoMoveDestination = destination;
+			DragInfo.DestIndex = destIndex;
 			OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
 		}
 
@@ -3812,6 +3814,29 @@ public class SackPanel : Panel, IScalingControl
 			ItemTooltip.HideTooltip();
 			BagButtonTooltip.InvalidateCache(this.Sack);
 		}
+	}
+
+	/// <summary>
+	/// Updates the item's location properties to reflect its current position in this panel.
+	/// This ensures search results always show the correct location.
+	/// Also adds the item to the search database if it's not already present.
+	/// </summary>
+	/// <param name="item">The item to update</param>
+	protected void UpdateItemLocation(Item item)
+	{
+		if (item == null)
+			return;
+
+		item.Place.SackType = this.SackType;
+		item.Place.Path = this.PlayerCollection?.PlayerFile ?? string.Empty;
+		item.Place.Name = this.PlayerCollection?.PlayerName ?? string.Empty;
+		item.Place.StashType = this.Sack.StashType;
+		item.Place.SackNumber = (this.Sack.SackType, this.Sack.StashType) switch
+		{
+			(SackType.Stash, _) => (int)this.Sack.StashType!,
+			(SackType.Equipment, _) => BagIdConstants.BAGID_EQUIPMENTPANEL,
+			_ => this.CurrentSack,
+		};
 	}
 
 	#endregion SackPanel Private Methods

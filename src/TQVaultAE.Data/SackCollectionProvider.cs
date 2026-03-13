@@ -63,7 +63,7 @@ public class SackCollectionProvider : ISackCollectionProvider
 		foreach (Item item in sc)
 		{
 			++slotNumber;
-			item.ContainerType = sc.SackType;
+			item.Place.SackType = sc.SackType;
 			int itemAttached = 0;
 			int alternate = 0;
 
@@ -173,7 +173,7 @@ public class SackCollectionProvider : ISackCollectionProvider
 				}
 
 				Item item = new Item();
-				item.ContainerType = sc.SackType;
+				item.Place.SackType = sc.SackType;
 				ItemProvider.Parse(item, reader);
 
 				// Stack sc item with the previous item if necessary

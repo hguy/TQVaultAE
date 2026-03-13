@@ -1,11 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Threading;
 using System.Windows.Forms;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Search;
 using TQVaultAE.GUI.Components;
@@ -16,13 +12,9 @@ using System.Drawing;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
-using TQVaultAE.Domain.Results;
 using System.Text.RegularExpressions;
 using static TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery;
 using TQVaultAE.GUI.Models;
-using System.Reflection;
-using System.Windows.Forms.VisualStyles;
-using System.Xml.Linq;
 
 namespace TQVaultAE.GUI;
 
@@ -32,7 +24,7 @@ namespace TQVaultAE.GUI;
 public partial class SearchDialogAdvanced : VaultForm
 {
 	private readonly SessionContext Ctx;
-	private readonly List<Result> ItemDatabase = new();
+	private System.Collections.Concurrent.ConcurrentBag<Result> ItemDatabase => Ctx.ItemDatabase;
 	private readonly ILogger Log;
 	private readonly Bitmap ButtonImageUp;
 	private readonly Bitmap ButtonImageDown;
@@ -279,143 +271,9 @@ public partial class SearchDialogAdvanced : VaultForm
 	#region Load & Init
 
 	private void SearchDialogAdvanced_Load(object sender, EventArgs e)
-		=> BuildItemDatabase();
-
-	/// <summary>
-	/// Seek for all available items
-	/// </summary>
-	private void BuildItemDatabase()
 	{
-		foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in Ctx.Vaults)
-		{
-			string vaultFile = kvp.Key;
-			PlayerCollection vault = kvp.Value.Value;
-
-			if (vault == null)
-				continue;
-
-			int vaultNumber = -1;
-			foreach (SackCollection sack in vault)
-			{
-				vaultNumber++;
-				if (sack == null)
-					continue;
-
-				foreach (var item in sack.Cast<Item>())
-				{
-					var vaultName = GamePathResolver.GetVaultNameFromPath(vaultFile);
-					ItemDatabase.Add(new Result(
-						vaultFile
-						, vaultName
-						, vaultNumber
-						, SackType.Vault
-						, new Lazy<Domain.Results.ToFriendlyNameResult>(
-							() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-							, LazyThreadSafetyMode.ExecutionAndPublication
-						)
-					));
-				}
-			}
-		}
-
-		foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in Ctx.Players)
-		{
-			string playerFile = kvp.Key;
-			PlayerCollection player = kvp.Value.Value;
-
-			if (player == null)
-				continue;
-
-			string playerName = this.GamePathResolver.GetNameFromFile(playerFile);
-			if (playerName == null)
-				continue;
-
-			int sackNumber = -1;
-			foreach (SackCollection sack in player)
-			{
-				sackNumber++;
-				if (sack == null)
-					continue;
-
-				foreach (var item in sack.Cast<Item>())
-				{
-					this.ItemDatabase.Add(new Result(
-						playerFile
-						, playerName
-						, sackNumber
-						, SackType.Player
-						, new Lazy<Domain.Results.ToFriendlyNameResult>(
-							() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-							, LazyThreadSafetyMode.ExecutionAndPublication
-						)
-					));
-				}
-			}
-
-			// Now search the Equipment panel
-			var equipmentSack = player.EquipmentSack;
-			if (equipmentSack == null)
-				continue;
-
-			foreach (var item in equipmentSack.Cast<Item>())
-			{
-				ItemDatabase.Add(new Result(
-					playerFile
-					, playerName
-					, 0
-					, SackType.Equipment
-					, new Lazy<Domain.Results.ToFriendlyNameResult>(
-						() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-						, LazyThreadSafetyMode.ExecutionAndPublication
-					)
-				));
-			}
-		}
-
-		foreach (KeyValuePair<string, Lazy<Stash>> kvp in Ctx.Stashes)
-		{
-			string stashFile = kvp.Key;
-			Stash stash = kvp.Value.Value;
-
-			// Make sure we have a valid name and stash.
-			if (stash == null)
-				continue;
-
-			string stashName = this.GamePathResolver.GetNameFromFile(stashFile);
-			if (stashName == null)
-				continue;
-
-			SackCollection sack = stash.Sack;
-			if (sack == null)
-				continue;
-
-			int sackNumber = 2;
-			SackType sackType = SackType.Stash;
-			if (stashName == Resources.GlobalTransferStash)
-			{
-				sackNumber = 1;
-				sackType = SackType.TransferStash;
-			}
-			else if (stashName == Resources.GlobalRelicVaultStash)
-			{
-				sackNumber = 3;
-				sackType = SackType.RelicVaultStash;
-			}
-
-			foreach (var item in sack.Cast<Item>())
-			{
-				ItemDatabase.Add(new Result(
-					stashFile
-					, stashName
-					, sackNumber
-					, sackType
-					, new Lazy<Domain.Results.ToFriendlyNameResult>(
-						() => ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay)
-						, LazyThreadSafetyMode.ExecutionAndPublication
-					)
-				));
-			}
-		}
+		// ItemDatabase is already populated during container loading via SessionContext
+		// No need to rebuild it here - just lazy-load the friendly names
 	}
 
 	/// <summary>
@@ -429,8 +287,15 @@ public partial class SearchDialogAdvanced : VaultForm
 			item.LazyLoad();
 			this.backgroundWorkerBuildDB.ReportProgress(1);
 		}
-		// Cleanup zombies
-		ItemDatabase.RemoveAll(id => string.IsNullOrWhiteSpace(id.ItemName));
+		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
+		var validItems = ItemDatabase.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
+
+		Ctx.ClearItemDatabase();
+
+		foreach (var item in validItems)
+		{
+			ItemDatabase.Add(item);
+		}
 	}
 
 	#endregion
