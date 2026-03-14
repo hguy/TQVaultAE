@@ -1,8 +1,3 @@
-//-----------------------------------------------------------------------
-// <copyright file="ArcFile.cs" company="None">
-//     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
 namespace TQVaultAE.Data;
 
 using Microsoft.Extensions.Logging;
@@ -20,25 +15,26 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Logs;
 
-/// <summary>
-/// Reads and decodes a Titan Quest ARC file.
-/// </summary>
 public class ArcFileProvider : IArcFileProvider
 {
 	private readonly ILogger Log;
 	private readonly IPathIO PathIO;
 	private readonly IDirectoryIO DirectoryIO;
+	private readonly IFileDataService FileData;
+	private readonly IDecompressionService Decompression;
 	private readonly UserSettings USettings;
 
 	/// <summary>
 	/// Ctr
 	/// </summary>
 	/// <param name="fileName">File Name of the ARC file to be read.</param>
-	public ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
+	public ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings, IFileDataService fileData, IDecompressionService decompression)
 	{
 		this.Log = log;
 		this.PathIO = pathIO;
 		this.DirectoryIO = directoryIO;
+		this.FileData = fileData;
+		this.Decompression = decompression;
 		this.USettings = uSettings;
 	}
 
@@ -123,93 +119,59 @@ public class ArcFileProvider : IArcFileProvider
 			if (USettings.ARCFileDebugLevel > 1)
 				Log.LogDebug("Error - Could not read {0}", file.FileName);
 
-			// could not read the file
 			return null;
 		}
 
 		if (USettings.ARCFileDebugLevel > 1)
 			Log.LogDebug("Normalized dataID = {0}", dataId);
 
-		// Find our file in the toc.
-		// First strip off the leading folder since it is just the ARC name
 		int firstPathDelim = dataId.Normalized.IndexOf('\\');
 		if (firstPathDelim != -1)
 			dataId = dataId.Normalized.Substring(firstPathDelim + 1);
 
-		// Now see if this file is in the toc.
 		ArcDirEntry directoryEntry;
 
 		if (file.DirectoryEntries.ContainsKey(dataId))
 			directoryEntry = file.DirectoryEntries[dataId];
 		else
 		{
-			// record not found
 			if (USettings.ARCFileDebugLevel > 1)
 				Log.LogDebug("Error - {0} not found.", dataId);
 
 			return null;
 		}
 
-		// Now open the ARC file and read in the record.
-		using (FileStream arcFile = new FileStream(file.FileName, FileMode.Open, FileAccess.Read))
+		byte[] data = new byte[directoryEntry.RealSize];
+		int startPosition = 0;
+
+		if ((directoryEntry.StorageType == 1) && (directoryEntry.CompressedSize == directoryEntry.RealSize))
 		{
-			// Allocate memory for the uncompressed data
-			byte[] data = new byte[directoryEntry.RealSize];
-
-			// Now process each part of this record
-			int startPosition = 0;
-
-			// First see if the data was just stored without compression.
-			if ((directoryEntry.StorageType == 1) && (directoryEntry.CompressedSize == directoryEntry.RealSize))
+			if (USettings.ARCFileDebugLevel > 1)
 			{
-				if (USettings.ARCFileDebugLevel > 1)
-				{
-					Log.LogDebug("Offset={0}  Size={1}"
-						, directoryEntry.FileOffset
-						, directoryEntry.RealSize
-					);
-				}
-
-				arcFile.Seek(directoryEntry.FileOffset, SeekOrigin.Begin);
-				arcFile.Read(data, 0, directoryEntry.RealSize);
-			}
-			else
-			{
-				// The data was compressed so we attempt to decompress it.
-				foreach (ArcPartEntry partEntry in directoryEntry.Parts)
-				{
-					// seek to the part we want
-					arcFile.Seek(partEntry.FileOffset, SeekOrigin.Begin);
-
-					// Ignore the zlib compression method.
-					arcFile.ReadByte();
-
-					// Ignore the zlib compression flags.
-					arcFile.ReadByte();
-
-					// Create a deflate stream.
-					using (DeflateStream deflate = new DeflateStream(arcFile, CompressionMode.Decompress, true))
-					{
-						int bytesRead;
-						int partLength = 0;
-						while ((bytesRead = deflate.Read(data, startPosition, data.Length - startPosition)) > 0)
-						{
-							startPosition += bytesRead;
-							partLength += bytesRead;
-
-							// break out of the read loop if we have processed this part completely.
-							if (partLength >= partEntry.RealSize)
-								break;
-						}
-					}
-				}
+				Log.LogDebug("Offset={0}  Size={1}"
+					, directoryEntry.FileOffset
+					, directoryEntry.RealSize
+				);
 			}
 
-			if (USettings.ARCFileDebugLevel > 0)
-				Log.LogDebug("Exiting ARCFile.GetData()");
-
-			return data;
+			var rawData = this.FileData.GetReadOnlySpan(file.FileName, directoryEntry.FileOffset, directoryEntry.RealSize);
+			rawData.CopyTo(data);
 		}
+		else
+		{
+			foreach (ArcPartEntry partEntry in directoryEntry.Parts)
+			{
+				var compressedData = this.FileData.GetMemory(file.FileName, partEntry.FileOffset + 2, partEntry.CompressedSize - 2);
+				var decompressed = this.Decompression.DecompressZlib(compressedData);
+				Buffer.BlockCopy(decompressed, 0, data, startPosition, decompressed.Length);
+				startPosition += decompressed.Length;
+			}
+		}
+
+		if (USettings.ARCFileDebugLevel > 0)
+			Log.LogDebug("Exiting ARCFile.GetData()");
+
+		return data;
 	}
 
 	/// <summary>

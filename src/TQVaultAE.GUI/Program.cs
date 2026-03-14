@@ -113,6 +113,13 @@ public static class Program
 				.AddSingleton<ISoundService, SoundServiceWin>()
 				.AddTransient<IGameFileService, GameFileServiceWin>()
 				.AddSingleton<ITagService, TagService>()
+				.AddTransient<IDecompressionService, DeflateDecompressionService>()
+
+				// Performance: Memory-Mapped File Services
+				// To revert to old logic, change to:
+				//.AddTransient<IFileDataService, LegacyFileDataService>()
+				.AddSingleton<IFileDataService, MemoryMappedFileService>()
+
 				// Forms
 				.AddSingleton<MainForm>()
 				.AddTransient<AboutBox>()
