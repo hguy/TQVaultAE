@@ -125,19 +125,26 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 			var end_block = TQData.ReadIntAfter(pc.rawData, "end_block", max.nextOffset);
 			var masteriesAllowed = TQData.ReadIntAfter(pc.rawData, "masteriesAllowed", max.nextOffset);// Boundary bottom
 
-			// Split file
-			var startfile = pc.rawData.Take(max.nextOffset).ToArray();
-			var endfile = pc.rawData.Skip(masteriesAllowed.indexOf - 4).ToArray(); // -4 include key name length
-
-			// make binary section
+			// Split file using Span-based slicing (single allocation)
 			var section = pc.PlayerInfo.SkillRecordList.SelectMany(s => s.ToBinary(secondblock.valueAsInt, end_block.valueAsInt)).ToArray();
+			int startLen = max.nextOffset;
+			int endLen = pc.rawData.Length - (masteriesAllowed.indexOf - 4);
+			int totalLen = startLen + section.Length + endLen;
+			var result = new byte[totalLen];
+			var resultSpan = result.AsSpan();
 
-			// put pieces back together
-			pc.rawData = new[] {
-				startfile,
-				section,
-				endfile,
-			}.SelectMany(a => a).ToArray();
+		// startfile
+		pc.rawData.AsSpan(0, startLen).CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(startLen);
+
+		// section
+		section.AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(section.Length);
+
+		// endfile
+		pc.rawData.AsSpan(masteriesAllowed.indexOf - 4).CopyTo(resultSpan);
+
+		pc.rawData = result;
 
 			// Adjust "max" value (need to find new offsets)
 			firstblock = TQData.ReadIntAfter(pc.rawData, "begin_block");
@@ -239,24 +246,32 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		var equipmentBlockEnd = TQData.BinaryFindEndBlockOf(pc.rawData, "useAlternate");
 		var equipmentBlockEndOffset = equipmentBlockEnd.nextOffset;
 
-		var ans = new[] {
-			// Begining of the file
-			pc.rawData.Take(itemBlockStartOffset).ToArray(),
+		// Build result using Span-based splicing (single allocation)
+		int totalLen = itemBlockStartOffset + rawItemData.Length + (equipmentBlockStartOffset - itemBlockEndOffset) + rawEquipmentData.Length + (pc.rawData.Length - equipmentBlockEndOffset);
+		var result = new byte[totalLen];
+		var resultSpan = result.AsSpan();
 
-			// new item segment
-			rawItemData,
+		// Beginning of the file
+		pc.rawData.AsSpan(0, itemBlockStartOffset).CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(itemBlockStartOffset);
 
-			// In between segment
-			new ArraySegment<byte>(pc.rawData, itemBlockEndOffset, equipmentBlockStartOffset - itemBlockEndOffset).ToArray(),
+		// New item segment
+		rawItemData.AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(rawItemData.Length);
 
-			// new equipment segment
-			rawEquipmentData,
+		// In between segment
+		int betweenLen = equipmentBlockStartOffset - itemBlockEndOffset;
+		pc.rawData.AsSpan(itemBlockEndOffset, betweenLen).CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(betweenLen);
 
-			// End of file
-			pc.rawData.Skip(equipmentBlockEndOffset).ToArray(),
-		}.SelectMany(b => b).ToArray();
+		// New equipment segment
+		rawEquipmentData.AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(rawEquipmentData.Length);
 
-		return ans;
+		// End of file
+		pc.rawData.AsSpan(equipmentBlockEndOffset).CopyTo(resultSpan);
+
+		return result;
 	}
 
 

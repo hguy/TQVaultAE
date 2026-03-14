@@ -7,9 +7,11 @@ namespace TQVaultAE.Data;
 
 using Microsoft.Extensions.Logging;
 using System;
+using System.Buffers.Binary;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Logs;
@@ -158,7 +160,8 @@ public class TQDataService : ITQDataService
 		if (idx.indexOf == -1)// Not found
 			return (idx.indexOf, idx.nextOffset, idx.nextOffset, value, 0);
 
-		value = new ArraySegment<byte>(playerFileContent, idx.nextOffset, sizeof(float)).ToArray();
+		var span = playerFileContent.AsSpan(idx.nextOffset, sizeof(float));
+		value = span.ToArray();
 		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(float), value, BitConverter.ToSingle(value, 0));
 	}
 
@@ -170,8 +173,10 @@ public class TQDataService : ITQDataService
 		if (idx.indexOf == -1)// Not found
 			return (idx.indexOf, idx.nextOffset, idx.nextOffset, value, 0);
 
-		value = new ArraySegment<byte>(playerFileContent, idx.nextOffset, sizeof(int)).ToArray();
-		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(int), value, BitConverter.ToInt32(value, 0));
+		var span = playerFileContent.AsSpan(idx.nextOffset, sizeof(int));
+		value = span.ToArray();
+		int intValue = BinaryPrimitives.ReadInt32LittleEndian(span);
+		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(int), value, intValue);
 	}
 
 	public (int indexOf, int valueOffset, int nextOffset, int valueLen, byte[] valueAsByteArray, string valueAsString) ReadCStringAfter(byte[] playerFileContent, string keyToLookFor, int offset = 0)
@@ -182,9 +187,13 @@ public class TQDataService : ITQDataService
 		if (idx.indexOf == -1)// Not found
 			return (idx.indexOf, idx.nextOffset, idx.nextOffset, 0, Empty, "");
 
-		var len = BitConverter.ToInt32(new ArraySegment<byte>(playerFileContent, idx.nextOffset, sizeof(int)).ToArray(), 0);
-		var stringArray = new ArraySegment<byte>(playerFileContent, idx.nextOffset + sizeof(int), len).ToArray();
-		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(int) + len, len, stringArray, Encoding1252.GetString(stringArray));
+		// Read the string length (4 bytes)
+		var lenSpan = playerFileContent.AsSpan(idx.nextOffset, sizeof(int));
+		int len = BinaryPrimitives.ReadInt32LittleEndian(lenSpan);
+		// Read the string data
+		var stringSpan = playerFileContent.AsSpan(idx.nextOffset + sizeof(int), len);
+		value = stringSpan.ToArray();
+		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(int) + len, len, value, Encoding1252.GetString(value));
 	}
 
 	public (int indexOf, int valueOffset, int nextOffset, int valueLen, byte[] valueAsByteArray, string valueAsString) ReadUnicodeStringAfter(byte[] playerFileContent, string keyToLookFor, int offset = 0)
@@ -195,16 +204,20 @@ public class TQDataService : ITQDataService
 		if (idx.indexOf == -1)// Not found
 			return (idx.indexOf, idx.nextOffset, idx.nextOffset, 0, Empty, "");
 
-		var len = BitConverter.ToInt32(new ArraySegment<byte>(playerFileContent, idx.nextOffset, sizeof(int)).ToArray(), 0);
-		var stringArray = new ArraySegment<byte>(playerFileContent, idx.nextOffset + sizeof(int), len * 2).ToArray();
-		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(int) + len * 2, len, stringArray, EncodingUnicode.GetString(stringArray));
+		// Read the string length (4 bytes) - multiply by 2 for 2-byte chars
+		var lenSpan = playerFileContent.AsSpan(idx.nextOffset, sizeof(int));
+		int len = BinaryPrimitives.ReadInt32LittleEndian(lenSpan);
+		// Read the unicode string data (2 bytes per character)
+		var stringSpan = playerFileContent.AsSpan(idx.nextOffset + sizeof(int), len * 2);
+		value = stringSpan.ToArray();
+		return (idx.indexOf, idx.nextOffset, idx.nextOffset + sizeof(int) + len * 2, len, value, EncodingUnicode.GetString(value));
 	}
 
 	public (int indexOf, int nextOffset) BinaryFindKey(byte[] dataSource, string key, int offset = 0)
 	{
 		// Add the length of the key to help filter out unwanted hits.
 		byte[] keyWithLen = BitConverter.GetBytes(key.Length).Concat(Encoding1252.GetBytes(key)).ToArray();
-		var result = BinaryFindKey(dataSource, keyWithLen, offset);
+		var result = BinaryFindKey(dataSource.AsSpan(), keyWithLen.AsSpan(), offset);
 		// compensate the added length before returning the value
 		return result.indexOf == -1 // not found
 			? (result.indexOf, offset)
@@ -212,6 +225,11 @@ public class TQDataService : ITQDataService
 	}
 
 	public (int indexOf, int nextOffset) BinaryFindKey(byte[] dataSource, byte[] key, int offset = 0)
+	{
+		return BinaryFindKey(dataSource.AsSpan(), key.AsSpan(), offset);
+	}
+
+	private static (int indexOf, int nextOffset) BinaryFindKey(ReadOnlySpan<byte> dataSource, ReadOnlySpan<byte> key, int offset = 0)
 	{
 		// adapted From https://www.codeproject.com/Questions/479424/C-23plusbinaryplusfilesplusfindingplusstrings
 		int i = offset, j = 0;
@@ -287,16 +305,30 @@ public class TQDataService : ITQDataService
 		var found = ReadCStringAfter(playerFileContent, keyToLookFor, offset);
 		if (found.indexOf == -1) return false;
 
-		// Remove CString value
+		// Remove CString value using Span-based slicing
 		var keyBytes = Encoding1252.GetBytes(keyToLookFor);
-		playerFileContent = new[] {
-			playerFileContent.Take(found.indexOf - sizeof(int)).ToArray(),// start content
-			BitConverter.GetBytes(keyToLookFor.Length),// KeyLen
-			keyBytes,// Key
-			BitConverter.GetBytes(0),// ValueLen
-			playerFileContent.Skip(found.nextOffset).ToArray(),// end content
-		}.SelectMany(a => a).ToArray();
+		int startLen = found.indexOf - sizeof(int);
+		int endLen = playerFileContent.Length - found.nextOffset;
+		int totalLen = startLen + sizeof(int) + keyBytes.Length + sizeof(int) + endLen;
+		var result = new byte[totalLen];
+		var resultSpan = result.AsSpan();
 
+		// start content
+		playerFileContent.AsSpan(0, startLen).CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(startLen);
+		// KeyLen
+		BitConverter.GetBytes(keyToLookFor.Length).AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(sizeof(int));
+		// Key
+		keyBytes.AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(keyBytes.Length);
+		// ValueLen (set to 0 to remove)
+		BitConverter.GetBytes(0).AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(sizeof(int));
+		// end content
+		playerFileContent.AsSpan(found.nextOffset).CopyTo(resultSpan);
+
+		playerFileContent = result;
 		return true;
 	}
 
@@ -305,17 +337,34 @@ public class TQDataService : ITQDataService
 		var found = ReadUnicodeStringAfter(playerFileContent, keyToLookFor, offset);
 		if (found.indexOf == -1) return false;
 
-		// Replace Unicode String value
+		// Replace Unicode String value using Span-based slicing
 		var keyBytes = Encoding1252.GetBytes(keyToLookFor);
-		playerFileContent = new[] {
-			playerFileContent.Take(found.indexOf - sizeof(int)).ToArray(),// start content
-			BitConverter.GetBytes(keyToLookFor.Length),// KeyLen
-			keyBytes,// Key
-			BitConverter.GetBytes(replacement.Length),// ValueLen
-			EncodingUnicode.GetBytes(replacement),// Value
-			playerFileContent.Skip(found.nextOffset).ToArray(),// end content
-		}.SelectMany(a => a).ToArray();
+		var valueBytes = EncodingUnicode.GetBytes(replacement);
+		int startLen = found.indexOf - sizeof(int);
+		int endLen = playerFileContent.Length - found.nextOffset;
+		int totalLen = startLen + sizeof(int) + keyBytes.Length + sizeof(int) + valueBytes.Length + endLen;
+		var result = new byte[totalLen];
+		var resultSpan = result.AsSpan();
 
+		// start content
+		playerFileContent.AsSpan(0, startLen).CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(startLen);
+		// KeyLen
+		BitConverter.GetBytes(keyToLookFor.Length).AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(sizeof(int));
+		// Key
+		keyBytes.AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(keyBytes.Length);
+		// ValueLen
+		BitConverter.GetBytes(replacement.Length).AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(sizeof(int));
+		// Value
+		valueBytes.AsSpan().CopyTo(resultSpan);
+		resultSpan = resultSpan.Slice(valueBytes.Length);
+		// end content
+		playerFileContent.AsSpan(found.nextOffset).CopyTo(resultSpan);
+
+		playerFileContent = result;
 		return true;
 	}
 }

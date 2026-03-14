@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
+using System.Buffers.Binary;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -77,69 +78,86 @@ public class RecordInfoProvider : IRecordInfoProvider
 
 		DBRecordCollection record = new DBRecordCollection(info.ID, info.RecordType);
 
-		// Create a memory stream to read the binary data
-		using (BinaryReader inReader = new BinaryReader(new MemoryStream(data, false)))
+		// Use ReadOnlySpan for bounds-check elimination
+		var dataSpan = new ReadOnlySpan<byte>(data);
+		int offset = 0;
+		int i = 0;
+		while (i < numberOfDWords)
 		{
-			int i = 0;
-			while (i < numberOfDWords)
+			// Read dataType (int16)
+			short dataType = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(offset));
+			offset += 2;
+
+			// Read valCount (int16)
+			short valCount = BinaryPrimitives.ReadInt16LittleEndian(dataSpan.Slice(offset));
+			offset += 2;
+
+			// Read variableID (int32)
+			int variableID = BinaryPrimitives.ReadInt32LittleEndian(dataSpan.Slice(offset));
+			offset += 4;
+
+			string variableName = arzFile.Getstring(variableID);
+
+			if (variableName == null)
 			{
-				short dataType = inReader.ReadInt16();
-				short valCount = inReader.ReadInt16();
-				int variableID = inReader.ReadInt32();
-				string variableName = arzFile.Getstring(variableID);
-
-				if (variableName == null)
-				{
-					var ex = new ArgumentNullException(string.Format("Error while parsing arz record {0}, variable is NULL", info.ID));
-					Log.LogError("Error in ARZFile - {0}", arzFile.FileName);
-					Log.ErrorException(ex);
-					throw ex;
-				}
-
-				if (dataType < 0 || dataType > 3)
-				{
-					var ex = new ArgumentOutOfRangeException(string.Format("Error while parsing arz record {0}, variable {1}, bad dataType {2}", info.ID, variableName, dataType));
-					Log.LogError("Error in ARZFile - {0}", arzFile.FileName);
-					Log.ErrorException(ex);
-					throw ex;
-				}
-
-				Variable v = new Variable(variableName, (VariableDataType)dataType, valCount);
-
-				if (valCount < 1)
-				{
-					var ex = new ArgumentException(string.Format("Error while parsing arz record {0}, variable {1}, bad valCount {2}", info.ID, variableName, valCount));
-					Log.LogError("Error in ARZFile - {0}", arzFile.FileName);
-					Log.ErrorException(ex);
-					throw ex;
-				}
-
-				// increment our dword count
-				i += 2 + valCount;
-
-				for (int j = 0; j < valCount; ++j)
-				{
-					switch (v.DataType)
-					{
-						case VariableDataType.Integer:
-						case VariableDataType.Boolean:
-							v[j] = inReader.ReadInt32();
-							break;
-						case VariableDataType.Float:
-							v[j] = inReader.ReadSingle();
-							break;
-						case VariableDataType.StringVar:
-							int id = inReader.ReadInt32();
-							v[j] = arzFile.Getstring(id)?.Trim() ?? string.Empty;
-							break;
-						default:
-							v[j] = inReader.ReadInt32();
-							break;
-					}
-				}
-
-				record.Set(v);
+				var ex = new ArgumentNullException(string.Format("Error while parsing arz record {0}, variable is NULL", info.ID));
+				Log.LogError("Error in ARZFile - {0}", arzFile.FileName);
+				Log.ErrorException(ex);
+				throw ex;
 			}
+
+			if (dataType < 0 || dataType > 3)
+			{
+				var ex = new ArgumentOutOfRangeException(string.Format("Error while parsing arz record {0}, variable {1}, bad dataType {2}", info.ID, variableName, dataType));
+				Log.LogError("Error in ARZFile - {0}", arzFile.FileName);
+				Log.ErrorException(ex);
+				throw ex;
+			}
+
+			Variable v = new Variable(variableName, (VariableDataType)dataType, valCount);
+
+			if (valCount < 1)
+			{
+				var ex = new ArgumentException(string.Format("Error while parsing arz record {0}, variable {1}, bad valCount {2}", info.ID, variableName, valCount));
+				Log.LogError("Error in ARZFile - {0}", arzFile.FileName);
+				Log.ErrorException(ex);
+				throw ex;
+			}
+
+			// increment our dword count
+			i += 2 + valCount;
+
+			for (int j = 0; j < valCount; ++j)
+			{
+				switch (v.DataType)
+				{
+					case VariableDataType.Integer:
+					case VariableDataType.Boolean:
+						v[j] = BinaryPrimitives.ReadInt32LittleEndian(dataSpan.Slice(offset));
+						offset += 4;
+						break;
+					case VariableDataType.Float:
+						{
+							// Convert int32 bits to float using BitConverter
+							int intBits = BinaryPrimitives.ReadInt32LittleEndian(dataSpan.Slice(offset));
+							byte[] bytes = BitConverter.GetBytes(intBits);
+							v[j] = BitConverter.ToSingle(bytes, 0);
+							offset += 4;
+						}
+						break;
+					case VariableDataType.StringVar:
+						int id = BinaryPrimitives.ReadInt32LittleEndian(dataSpan.Slice(offset));
+						offset += 4;
+						v[j] = arzFile.Getstring(id)?.Trim() ?? string.Empty;
+						break;
+					default:
+						v[j] = BinaryPrimitives.ReadInt32LittleEndian(dataSpan.Slice(offset));
+						offset += 4;
+						break;
+				}
+			}
+
+			record.Set(v);
 		}
 
 		return record;

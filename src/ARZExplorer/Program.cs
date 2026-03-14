@@ -61,6 +61,8 @@ public static class Program
 		.AddSingleton<ITQDataService, TQDataService>()
 		.AddTransient<IBitmapService, BitmapService>()
 		.AddSingleton<IGamePathService, GamePathServiceWin>()
+		.AddTransient<IDecompressionService, DeflateDecompressionService>()
+		.AddSingleton<IFileDataService, MemoryMappedFileService>()
 		// Init SoundServiceWin without IDatabase
 		.AddSingleton<SoundServiceWin>(sp => new SoundServiceWin(sp.GetService<ILogger<SoundServiceWin>>(), null, sp.GetService<UserSettings>()))
 		// Forms

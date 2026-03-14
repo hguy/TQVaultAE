@@ -63,21 +63,20 @@ public static class StringHelper
 
 	public static string MakeMD5(this string input)
 	{
-		string hash;
-
 		using var md5Hash = MD5.Create();
 
 		// Convert the input string to a byte array and compute the hash.
 		byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
 
-		StringBuilder sBuilder = new StringBuilder();
+		// Pre-allocate StringBuilder with exact capacity
+		var sBuilder = new StringBuilder(data.Length * 2, data.Length * 2);
 
-		for (int i = 0; i < data.Length; i++)
-			sBuilder.Append(data[i].ToString("x2"));
+		// Use span-based hex conversion for better performance
+		var dataSpan = data.AsSpan();
+		for (int i = 0; i < dataSpan.Length; i++)
+			sBuilder.Append(dataSpan[i].ToString("x2"));
 
-		hash = sBuilder.ToString();
-
-		return hash;
+		return sBuilder.ToString();
 	}
 
 	public static string ToFirstCharUpperCase(this string text)

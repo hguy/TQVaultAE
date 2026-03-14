@@ -27,7 +27,7 @@ public class StashProvider : IStashProvider
 	/// <summary>
 	/// CRC32 hash table.  Used for calculating the file CRC
 	/// </summary>
-	private uint[] crc32Table =
+	public uint[] crc32Table =
 	{
 		0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
 		0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -235,29 +235,31 @@ public class StashProvider : IStashProvider
 	/// </summary>
 	/// <param name="data">raw file data we are calculating</param>
 	/// <returns>raw file data with the crc calculated and inserted into the proper field</returns>
-	private byte[] CalculateCRC(byte[] data)
+	public byte[] CalculateCRC(byte[] data)
 	{
-		using (BinaryReader reader = new BinaryReader(new MemoryStream(data, false)))
+		// Use ReadOnlySpan for bounds-check elimination
+		var dataSpan = new ReadOnlySpan<byte>(data);
+		uint crc32Result = 0;
+		Span<byte> buffer = stackalloc byte[BUFFERSIZE];
+
+		int offset = 0;
+		while (offset < data.Length)
 		{
-			uint crc32Result = 0;
-			byte[] buffer = new byte[BUFFERSIZE];
-			int readSize = BUFFERSIZE;
+			// Copy chunk to stack buffer
+			int readSize = Math.Min(BUFFERSIZE, data.Length - offset);
+			dataSpan.Slice(offset, readSize).CopyTo(buffer);
 
-			int count = reader.Read(buffer, 0, readSize);
-			while (count > 0)
-			{
-				for (int i = 0; i < count; i++)
-					crc32Result = (crc32Result >> 8) ^ crc32Table[buffer[i] ^ (crc32Result & 0x000000FF)];
+			for (int i = 0; i < readSize; i++)
+				crc32Result = (crc32Result >> 8) ^ crc32Table[buffer[i] ^ (crc32Result & 0x000000FF)];
 
-				count = reader.Read(buffer, 0, readSize);
-			}
-
-			// Put the data into the stream
-			data[3] = Convert.ToByte((crc32Result & 0xFF000000) >> 24, CultureInfo.InvariantCulture);
-			data[2] = Convert.ToByte((crc32Result & 0x00FF0000) >> 16, CultureInfo.InvariantCulture);
-			data[1] = Convert.ToByte((crc32Result & 0x0000FF00) >> 8, CultureInfo.InvariantCulture);
-			data[0] = Convert.ToByte(crc32Result & 0x000000FF, CultureInfo.InvariantCulture);
+			offset += readSize;
 		}
+
+		// Put the CRC into the data (4 bytes at start)
+		data[3] = (byte)((crc32Result & 0xFF000000) >> 24);
+		data[2] = (byte)((crc32Result & 0x00FF0000) >> 16);
+		data[1] = (byte)((crc32Result & 0x0000FF00) >> 8);
+		data[0] = (byte)(crc32Result & 0x000000FF);
 
 		return data;
 	}
