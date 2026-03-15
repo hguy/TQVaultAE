@@ -2,8 +2,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using Microsoft.Extensions.Logging;
-using TQVaultAE.Domain.Contracts.Services;
-using TQVaultAE.Logs;
+using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.Services;
 

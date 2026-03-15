@@ -8,10 +8,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.GUI.Tooltip;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.GUI.Helpers;
 using System.Linq;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Components;

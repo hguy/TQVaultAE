@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using TQVaultAE.Application.Search;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
-using TQVaultAE.Domain.Search;
 
 namespace TQVaultAE.GUI;
 

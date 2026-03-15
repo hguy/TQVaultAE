@@ -3,18 +3,18 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Data;
 
+using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Buffers.Binary;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Logs;
+
+namespace TQVaultAE.Data;
 
 /// <summary>
 /// TQData is used to store information about reading and writing the data files in TQ.

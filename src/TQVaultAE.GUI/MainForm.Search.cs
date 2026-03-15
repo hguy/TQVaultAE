@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using TQVaultAE.Application.Search;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Search;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 

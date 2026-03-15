@@ -5,10 +5,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.Presentation;
 
@@ -121,7 +120,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 		var searchTermsGroup = // TODO Maybe multiple in the future using old notation
 			from f in this.Filters
-			where f.CheckedList is null
+			where f.CheckedList is null && f.Category is not null
 			let cleanName = FillToolTipRegEx.Replace(f.Category.Text, string.Empty)
 			group f by cleanName into grp
 			orderby grp.Key

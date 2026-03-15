@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
 using System.IO;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
 using Medallion.Shell;
 using System.Linq;
 using Microsoft.VisualBasic.Devices;
 using Microsoft.VisualBasic.MyServices;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 
 namespace TQVaultAE.Services.Win32;

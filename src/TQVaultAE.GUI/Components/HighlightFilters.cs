@@ -2,7 +2,8 @@
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Helpers;
 using TQVaultAE.GUI.Models;

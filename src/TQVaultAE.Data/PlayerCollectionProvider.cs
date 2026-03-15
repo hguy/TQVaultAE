@@ -3,19 +3,21 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Data;
 
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Data.Dto;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Logs;
+
+namespace TQVaultAE.Data;
 
 /// <summary>
 /// Loads, decodes, encodes and saves a Titan Quest player file.

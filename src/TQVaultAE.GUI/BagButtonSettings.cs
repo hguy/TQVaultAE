@@ -3,16 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.GUI.Helpers;
-
 using TQVaultAE.Presentation;
 using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components;
 using System.Linq;
-using System.IO;
 using System.Diagnostics;
+using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.GUI;
 

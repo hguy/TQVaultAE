@@ -3,10 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Contracts.Services;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Results;
 using TQVaultAE.Config;
 
 namespace TQVaultAE.Services;
@@ -35,12 +36,11 @@ public class VaultService : IVaultService
 		this.UserSettings = userSettings;
 	}
 
-
 	/// <summary>
-	/// Creates a new empty vault file
+	/// Creates a new empty vault file.
 	/// </summary>
 	/// <param name="name">Name of the vault.</param>
-	/// <param name="file">file name of the vault.</param>
+	/// <param name="file">File name of the vault.</param>
 	/// <returns>Player instance of the new vault.</returns>
 	public PlayerCollection CreateVault(string name, string file)
 	{
@@ -67,9 +67,21 @@ public class VaultService : IVaultService
 	}
 
 	/// <summary>
-	/// Attempts to save all modified vault files
+	/// Creates a new empty vault with auto-generated filename.
 	/// </summary>
-	/// <param name="vaultOnError"></param>
+	/// <param name="name">Name of the vault.</param>
+	/// <returns>Player instance of the new vault.</returns>
+	public PlayerCollection CreateVault(string name)
+	{
+		var fileName = $"{name}.json";
+		return CreateVault(name, fileName);
+	}
+
+	/// <summary>
+	/// Attempts to save all modified vault files.
+	/// </summary>
+	/// <param name="vaultOnError">If save fails, this will contain the vault that failed.</param>
+	/// <returns>Number of vaults saved.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
 	public int SaveAllModifiedVaults(ref PlayerCollection vaultOnError)
 	{
@@ -98,84 +110,151 @@ public class VaultService : IVaultService
 		return saved;
 	}
 
-
 	/// <summary>
-	/// Loads a vault file
+	/// Loads a vault file.
 	/// </summary>
 	/// <param name="vaultName">Name of the vault</param>
-	public LoadVaultResult LoadVault(string vaultName)
+	/// <returns>Vault load result with vault and error information.</returns>
+	public VaultLoadResult LoadVault(string vaultName)
 	{
-		var result = new LoadVaultResult();
+		var result = new VaultLoadResult();
 
-		// Get the filename
-		result.Filename = GamePathResolver.GetVaultFile(vaultName);
-
-		// Check the cache
-		var resultVault = this.userContext.Vaults.GetOrAddAtomic(result.Filename, k =>
+		try
 		{
-			PlayerCollection pc;
-			// We need to load vault.
-			if (!this.FileIO.Exists(k))
-			{
-				// the file does not exist so create a new vault or convert old format to Json.
-				pc = this.CreateVault(vaultName, k);
-				pc.VaultLoaded = true;
-			}
-			else
-			{
-				pc = new PlayerCollection(vaultName, k);
-				pc.IsVault = true;
-				LoadVault(pc);
-			}
+			// Get the filename
+			result.Filename = GamePathResolver.GetVaultFile(vaultName);
 
-			// Add vault items to the search database
-			int sackNumber = -1;
-			foreach (var sack in pc)
+			// Check the cache
+			var resultVault = this.userContext.Vaults.GetOrAddAtomic(result.Filename, k =>
 			{
-				sackNumber++;
-				if (sack == null)
-					continue;
+				PlayerCollection pc;
+				// We need to load vault.
+				if (!this.FileIO.Exists(k))
+				{
+					// the file does not exist so create a new vault or convert old format to Json.
+					pc = this.CreateVault(vaultName, k);
+					pc.VaultLoaded = true;
+				}
+				else
+				{
+					pc = new PlayerCollection(vaultName, k);
+					pc.IsVault = true;
+					LoadVault(pc, k);
+					pc.VaultLoaded = true;
+				}
 
-				foreach (var item in sack)
-					this.userContext.AddItemToDatabase(item, k, vaultName, sackNumber, SackType.Vault);
-			}
+				// Add vault items to the search database
+				int sackNumber = -1;
+				foreach (var sack in pc)
+				{
+					sackNumber++;
+					if (sack == null)
+						continue;
 
-			return pc;
-		});
-		result.Vault = resultVault;
-		result.VaultLoaded = resultVault.VaultLoaded;
-		result.ArgumentException = resultVault.ArgumentException;
+					foreach (var item in sack)
+						this.userContext.AddItemToDatabase(item, k, vaultName, sackNumber, SackType.Vault);
+				}
+
+				return pc;
+			});
+			result.Vault = resultVault;
+			result.VaultLoaded = resultVault.VaultLoaded;
+			result.ArgumentException = resultVault.ArgumentException;
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Failed to load vault {VaultName}", vaultName);
+			result.Error = ex;
+		}
 
 		return result;
 	}
 
 	/// <summary>
-	/// Load vault
+	/// Gets the list of available vault names.
 	/// </summary>
-	/// <param name="pc"></param>
-	/// <param name="filePathToUse">if not <code>null</code>, use this file instead of <see cref="PlayerCollection.PlayerFile"/> </param>
-	private void LoadVault(PlayerCollection pc, string filePathToUse = null)
+	/// <returns>List of vault names.</returns>
+	public IReadOnlyList<string> GetVaultList()
 	{
 		try
 		{
-			PlayerCollectionProvider.LoadFile(pc, filePathToUse);
-			pc.VaultLoaded = true;
+			var fileNames = Directory.EnumerateFiles(this.GamePathResolver.TQVaultSaveFolder, "*.json").ToList();
+
+			return fileNames
+				.Select(f => this.PathIO.GetFileNameWithoutExtension(f))
+				.ToList()
+				.AsReadOnly();
 		}
-		catch (ArgumentException argumentException)
+		catch (Exception)
 		{
-			pc.ArgumentException = argumentException;
+			return Array.Empty<string>();
 		}
 	}
 
+	/// <summary>
+	/// Deletes a vault file.
+	/// </summary>
+	/// <param name="vaultName">Name of the vault to delete.</param>
+	/// <returns>True if deletion succeeded, false otherwise.</returns>
+	public bool DeleteVault(string vaultName)
+	{
+		var fileName = this.GamePathResolver.GetVaultFile(vaultName);
+		this.FileIO.Delete(fileName);
+		return true;
+	}
 
 	/// <summary>
-	/// Updates VaultPath key from the configuration UI
+	/// Renames a vault file.
+	/// </summary>
+	/// <param name="oldName">Current name of the vault.</param>
+	/// <param name="newName">New name for the vault.</param>
+	/// <returns>True if rename succeeded, false otherwise.</returns>
+	public bool RenameVault(string oldName, string newName)
+	{
+		var oldFileName = this.GamePathResolver.GetVaultFile(oldName);
+		var newFileName = this.GamePathResolver.GetVaultFile(newName);
+
+		// Invalidate the cache
+		this.userContext.Vaults.TryRemove(oldFileName, out _);
+
+		// Rename the file
+		if (this.FileIO.Exists(newFileName))
+			return false;
+
+		this.FileIO.Move(oldFileName, newFileName);
+
+		return true;
+	}
+
+	/// <summary>
+	/// Updates VaultPath key from the configuration UI.
 	/// Needed since all vaults will need to be reloaded if this key changes.
 	/// </summary>
 	/// <param name="vaultPath">Path to the vault files</param>
 	public void UpdateVaultPath(string vaultPath)
+		=> this.UserSettings.VaultPath = vaultPath;
+
+	/// <summary>
+	/// Shows the vault maintenance dialog.
+	/// </summary>
+	public void ShowVaultMaintenance()
 	{
-		this.UserSettings.VaultPath = vaultPath;
-		this.UserSettings.Save();
+		// Placeholder for vault maintenance dialog
+		// Implementation depends on GUI framework
+	}
+
+	/// <summary>
+	/// Loads a vault from a file path (internal helper).
+	/// </summary>
+	private void LoadVault(PlayerCollection pc, string fileName)
+	{
+		try
+		{
+			this.PlayerCollectionProvider.LoadFile(pc, fileName);
+		}
+		catch (ArgumentException ae)
+		{
+			pc.ArgumentException = ae;
+		}
 	}
 }

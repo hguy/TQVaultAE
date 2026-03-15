@@ -3,6 +3,7 @@ using System;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using TQVaultAE.Application;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
@@ -260,7 +261,8 @@ public partial class MainForm
 	/// </summary>
 	private (VaultPanel Panel, SackPanel SackPanel, int SackNumber) GetAutoMoveDestination(SackPanel sourcePanel)
 	{
-		if (this.DragInfo.DestIndex > -1)
+		var sacNumber = this.DragInfo.DestIndex;
+		if (sacNumber > -1)
 		{
 			VaultPanel panel = sourcePanel.SackType == SackType.Vault && sourcePanel.IsSecondaryVault
 				? this.secondaryVaultPanel
@@ -268,7 +270,7 @@ public partial class MainForm
 					? this.vaultPanel
 					: this.playerPanel;
 
-			return (panel, sourcePanel, this.DragInfo.DestIndex);
+			return (panel, sourcePanel, sacNumber);
 		}
 
 		return this.DragInfo.AutoMoveDestination switch
@@ -354,7 +356,7 @@ public partial class MainForm
 		Point location = destinationSackPanel.FindOpenCells(this.DragInfo.Item.Width, this.DragInfo.Item.Height);
 		int destination = this.GetDestinationIndex(destinationSackPanel, destinationPanel.CurrentBag, destSackNumber);
 
-		if (location.X == -1 || (destinationPanel.CurrentBag == destination && this.DragInfo.SrcSackPanel == destinationSackPanel))
+		if (location.X == -1)
 		{
 			destinationSackPanel.Sack = oldSack;
 			this.DragInfo.Cancel();

@@ -3,10 +3,12 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
+
+using TQVaultAE.Application.Search;
+
 namespace TQVaultAE.GUI.Models;
 
 using System;
-using TQVaultAE.Domain.Search;
 
 /// <summary>
 /// Encapsulates the ResultsChanged event data

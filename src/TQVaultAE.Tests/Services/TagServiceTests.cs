@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Drawing;
 using System.Text.Json;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config.Tags;
-using TQVaultAE.Domain.Contracts.Services;
-using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 
 namespace TQVaultAE.Tests.Services;

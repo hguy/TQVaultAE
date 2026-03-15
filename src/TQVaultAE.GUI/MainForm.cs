@@ -18,15 +18,15 @@ using TQVaultAE.GUI.Models;
 using TQVaultAE.Logs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
-using TQVaultAE.Config;
 using TQVaultAE.Services;
-using TQVaultAE.Domain.Contracts.Services;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using TQVaultAE.Domain.Results;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts;
+using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.GUI;
 
@@ -38,6 +38,13 @@ public partial class MainForm : VaultForm
 	private readonly ILogger Log = null;
 
 	public ITagService TagService { get; }
+
+	/// <summary>
+	/// Application layer services
+	/// </summary>
+	private readonly IPlayerService playerService;
+	private readonly IVaultService vaultService;
+	private readonly IStashService stashService;
 
 	#region	Fields
 
@@ -674,13 +681,13 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		stopWatch.Start();
 
 		// Load all of the Immortal Throne player files and stashes.
-		var bagPlayer = new ConcurrentBag<LoadPlayerResult>();
-		var bagPlayerStashes = new ConcurrentBag<LoadPlayerStashResult>();
-		var bagVault = new ConcurrentBag<LoadVaultResult>();
+		var bagPlayer = new ConcurrentBag<PlayerLoadResult>();
+		var bagPlayerStashes = new ConcurrentBag<StashLoadResult>();
+		var bagVault = new ConcurrentBag<VaultLoadResult>();
 
 		var lambdacharactersIT = charactersIT.Select(c => (Action)(() =>
 		{
-			// Get the player 
+			// Get the player
 			var result = this.playerService.LoadPlayer(c);
 			bagPlayer.Add(result);
 			this.backgroundWorkerLoadAllFiles.ReportProgress(1);
@@ -789,7 +796,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			this.ShowMainForm();
 		}
 		else
-			Application.Exit();
+			System.Windows.Forms.Application.Exit();
 	}
 
 	/// <summary>
@@ -904,12 +911,12 @@ Item Debug Level: {USettings.ItemDebugLevel}
 				, MessageBoxIcon.Exclamation
 				, MessageBoxDefaultButton.Button1
 				, RightToLeftOptions) == DialogResult.Yes
-			) Application.Restart();
+			) System.Windows.Forms.Application.Restart();
 			else
-				Application.Exit();
+				System.Windows.Forms.Application.Exit();
 		}
 		else if (e.Cancelled && !this.resourcesLoaded)
-			Application.Exit();
+			System.Windows.Forms.Application.Exit();
 		else if (e.Result.Equals(true))
 		{
 			this.loadingComplete = true;
@@ -995,7 +1002,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 				MessageBoxIcon.Exclamation,
 				MessageBoxDefaultButton.Button1,
 				RightToLeftOptions);
-			Application.Exit();
+			System.Windows.Forms.Application.Exit();
 		}
 	}
 
@@ -1153,7 +1160,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			if (result == DialogResult.Yes)
 			{
 				if (this.DoCloseStuff())
-					Application.Restart();
+					System.Windows.Forms.Application.Restart();
 			}
 		}
 	}

@@ -3,11 +3,12 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Data;
 
+using TQVaultAE.Application.Contracts.Providers;
 using System.Collections.Generic;
-using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Entities;
+
+namespace TQVaultAE.Data;
 
 /// <summary>
 /// Used for autosorting of items within a group

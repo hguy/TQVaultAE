@@ -3,12 +3,14 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.Data;
 
+using TQVaultAE.Application.Contracts.Providers;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using TQVaultAE.Domain.Contracts.Providers;
 using TQVaultAE.Domain.Entities;
+
+namespace TQVaultAE.Data;
+
 
 /// <summary>
 /// Used to sort AttributeEffect groups so that effects that belong together stay together

@@ -2,17 +2,16 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.VisualBasic.Devices;
 using Medallion.Shell;
 using Microsoft.Extensions.Logging;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Helpers;
 using System.ComponentModel;
 using Medallion.Shell.Streams;
 using System.Threading.Tasks;
-using TQVaultAE.Domain.Entities;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.Services;
 
@@ -507,14 +506,33 @@ public class GameFileService : IGameFileService
 		if (this.FileIO.Exists(stashFileG)) this.FileIO.Copy(stashFileG, this.PathIO.Combine(newFolder, GamePathService.PlayerStashFileNameG));
 		if (this.FileIO.Exists(settingsFile)) this.FileIO.Copy(settingsFile, this.PathIO.Combine(newFolder, GamePathService.PlayerSettingsFileName));
 
-		// Copy Progression
-		// Easyest way of doing that (why VB has all the easy stuff?)
-		new Computer().FileSystem.CopyDirectory(
-			this.PathIO.Combine(playerSaveDirectory, "Levels_World_World01.map")
-			, this.PathIO.Combine(newFolder, "Levels_World_World01.map")
-		);
+		// Copy Progression directory
+		var sourceProgressionDir = this.PathIO.Combine(playerSaveDirectory, "Levels_World_World01.map");
+		var destProgressionDir = this.PathIO.Combine(newFolder, "Levels_World_World01.map");
+		if (DirectoryIO.Exists(sourceProgressionDir))
+		{
+			CopyDirectoryRecursive(sourceProgressionDir, destProgressionDir);
+		}
 
 		return newFolder;
+	}
+
+	private void CopyDirectoryRecursive(string sourceDir, string destDir)
+	{
+		if (!DirectoryIO.Exists(destDir))
+			DirectoryIO.CreateDirectory(destDir);
+
+		foreach (var file in DirectoryIO.GetFiles(sourceDir))
+		{
+			var destFile = this.PathIO.Combine(destDir, this.PathIO.GetFileName(file));
+			this.FileIO.Copy(file, destFile, true);
+		}
+
+		foreach (var subDir in DirectoryIO.GetDirectories(sourceDir))
+		{
+			var destSubDir = this.PathIO.Combine(destDir, this.PathIO.GetFileName(subDir));
+			CopyDirectoryRecursive(subDir, destSubDir);
+		}
 	}
 
 	public void BackupStupidPlayerBackupFolder(string playerFile)

@@ -1,15 +1,15 @@
-namespace TQVaultAE.Presentation;
-
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Text.Json;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Presentation.Models;
-using TQVaultAE.Domain.Contracts.Providers;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+
+namespace TQVaultAE.Presentation;
 
 /// <summary>
 /// Loads Titan Quest Icons.

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using TQVaultAE.Domain.Contracts.Providers;
 
 namespace TQVaultAE.Domain.Entities;
 

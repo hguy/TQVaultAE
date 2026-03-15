@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using TQVaultAE.Domain.Search;
+using TQVaultAE.Application.Search;
 using TQVaultAE.GUI.Components;
 
 namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;

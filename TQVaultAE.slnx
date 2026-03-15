@@ -27,6 +27,7 @@
   <!-- Libraries -->
   <Project Path="src\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
   <Project Path="src\TQVaultAE.Services\TQVaultAE.Services.csproj" />
+  <Project Path="src\TQVaultAE.Application\TQVaultAE.Application.csproj" />
   <Project Path="src\TQVaultAE.Data\TQVaultAE.Data.csproj" />
   <Project Path="src\TQVaultAE.Presentation\TQVaultAE.Presentation.csproj" />
   <Project Path="src\TQVaultAE.Config\TQVaultAE.Config.csproj" />

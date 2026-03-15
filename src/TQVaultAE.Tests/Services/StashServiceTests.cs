@@ -1,9 +1,11 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
-using TQVaultAE.Domain.Contracts.Providers;
-using TQVaultAE.Domain.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 
@@ -169,7 +171,7 @@ public class StashServiceTests
 
 		// Assert
 		result.Should().NotBeNull();
-		result.TransferStashFile.Should().Be(transferStashFile);
+		result.StashFile.Should().Be(transferStashFile);
 		result.Stash.Should().NotBeNull();
 		result.Stash.StashFound.Should().BeTrue();
 		result.Stash.IsImmortalThrone.Should().BeTrue();
@@ -215,7 +217,7 @@ public class StashServiceTests
 
 		// Assert
 		result.Should().NotBeNull();
-		result.RelicVaultStashFile.Should().Be(relicVaultStashFile);
+		result.StashFile.Should().Be(relicVaultStashFile);
 		result.Stash.Should().NotBeNull();
 		result.Stash.StashFound.Should().BeTrue();
 		result.Stash.IsImmortalThrone.Should().BeTrue();

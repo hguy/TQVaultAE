@@ -3,6 +3,9 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
+
+using TQVaultAE.Application.Contracts.Services;
+
 namespace TQVaultAE.GUI.Models;
 
 using System.Collections.Generic;
@@ -11,7 +14,6 @@ using System.Drawing;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Tooltip;
-using TQVaultAE.Domain.Contracts.Services;
 
 /// <summary>
 /// Stores information about the item being dragged around by the user

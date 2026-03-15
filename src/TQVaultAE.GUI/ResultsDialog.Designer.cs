@@ -53,7 +53,6 @@ namespace TQVaultAE.GUI
             this.columnQuality = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.columnContainerName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.columnContainerType = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.columnIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.columnLevel = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.resultsDataGridView)).BeginInit();
             this.SuspendLayout();
@@ -82,7 +81,6 @@ namespace TQVaultAE.GUI
             this.columnQuality,
             this.columnContainerName,
             this.columnContainerType,
-            this.columnIndex,
             this.columnLevel});
             this.resultsDataGridView.GridColor = System.Drawing.Color.Khaki;
             this.resultsDataGridView.Location = new System.Drawing.Point(10, 35);
@@ -165,24 +163,9 @@ namespace TQVaultAE.GUI
             this.columnContainerType.Name = "columnContainerType";
             this.columnContainerType.ReadOnly = true;
             this.columnContainerType.Width = 133;
-			// 
-			// columnIndex
-			// 
-			this.columnIndex.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
-			dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-			dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle6.ForeColor = System.Drawing.Color.White;
-			dataGridViewCellStyle6.SelectionBackColor = System.Drawing.Color.Gold;
-			dataGridViewCellStyle6.SelectionForeColor = System.Drawing.Color.Black;
-			this.columnIndex.DefaultCellStyle = dataGridViewCellStyle6;
-            this.columnIndex.HeaderText = "Index";
-            this.columnIndex.MinimumWidth = 6;
-            this.columnIndex.Name = "columnIndex";
-            this.columnIndex.ReadOnly = true;
-            this.columnIndex.Width = 71;
             // 
             // columnLevel
-            // 
+            //
             this.columnLevel.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.AllCells;
             dataGridViewCellStyle6.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
             dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -231,7 +214,6 @@ namespace TQVaultAE.GUI
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnQuality;
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnContainerName;
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnContainerType;
-		private System.Windows.Forms.DataGridViewTextBoxColumn columnIndex;
 		private System.Windows.Forms.DataGridViewTextBoxColumn columnLevel;
 	}
 }

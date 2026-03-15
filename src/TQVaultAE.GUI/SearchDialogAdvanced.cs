@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Search;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Helpers;
 using TQVaultAE.Presentation;
@@ -13,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
 using System.Text.RegularExpressions;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Search;
 using static TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery;
 using TQVaultAE.GUI.Models;
 
@@ -255,7 +256,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// <param name="e">EventArgs data</param>
 	private void SearchDialogShown(object sender, EventArgs e)
 	{
-		Application.DoEvents();// Force control rendering (VaultForm stuff like custom borders etc...)
+		System.Windows.Forms.Application.DoEvents();// Force control rendering (VaultForm stuff like custom borders etc...)
 
 		// Init Data Base
 		scalingLabelProgress.Text = Resources.SearchBuildingData;
