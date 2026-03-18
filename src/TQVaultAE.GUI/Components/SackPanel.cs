@@ -1928,24 +1928,23 @@ public class SackPanel : Panel, IScalingControl
 					let _AffixIdDlc = grp.Key.AffixId.Dlc
 					let _translation = f.LootRandomizer.Translation
 					let _WeightPercent = grp.Max(v => v.WeightPercent)
-					select
-					(
-						TypeId: grp.Key.TypeId,
-						AffixId: grp.Key.AffixId,
-						AffixIdDlc: _AffixIdDlc,
-						Translation: _translation,
-						WeightPercent: _WeightPercent,
-						FormatedText: string.Format("{0} : {1} ({2:p2}) {3}" // Default format for Order by affix name
+					let affixEntry = new AffixEntry(
+						grp.Key.TypeId,
+						grp.Key.AffixId,
+						_AffixIdDlc,
+						_translation,
+						_WeightPercent,
+						string.Format("{0} : {1} ({2:p2}) {3}" // Default format for Order by affix name
 							, _translation
 							, grp.Key.AffixId.PrettyFileName
 							, _WeightPercent
 							, _AffixIdDlc.GetSuffix()
 						),
 						f.LootRandomizer
-					) into flattenedAffix
-					group flattenedAffix by (flattenedAffix.TypeId, flattenedAffix.Translation) into grp2
+					)
+					group affixEntry by new AffixGroupKey(affixEntry.TypeId, affixEntry.Translation) into grp2
 					orderby grp2.Key.TypeId, grp2.Key.Translation // Order by affix name
-					select grp2;
+					select new AffixGroup(grp2.Key, grp2);
 
 				#endregion
 
@@ -2080,13 +2079,7 @@ public class SackPanel : Panel, IScalingControl
 		RecordId currentSelectedAffix
 		, ToolStripMenuItem currentchoicesMenu
 		, EventHandler handler
-		, IEnumerable<IGrouping<
-			(int TypeId, string Translation)
-			, (int TypeId, RecordId AffixId, GameDlc AffixIdDlc
-				, string Translation, float WeightPercent
-				, string FormatedText, LootRandomizerItem LootRandomizer
-			)>
-		> currentaffixGroup
+		, IEnumerable<AffixGroup> currentaffixGroup
 	)
 	{
 		var fnt = this.CustomContextMenu.Font;
@@ -2101,14 +2094,13 @@ public class SackPanel : Panel, IScalingControl
 				from grp in currentaffixGroup
 				from av in grp
 				let effect = av.AffixId.PrettyFileNameExploded.Effect
-				select
-				(
+				let flattenedAffix = new AffixEntry(
 					av.TypeId,
 					av.AffixId,
 					av.AffixIdDlc,
-					Translation: effect,
+					effect,
 					av.WeightPercent,
-					FormatedText: string.Format("{0} : ({1}) {2} ({3:p2}) {4}"
+					string.Format("{0} : ({1}) {2} ({3:p2}) {4}"
 						, effect
 						, av.AffixId.PrettyFileNameExploded.Number
 						, av.Translation
@@ -2116,10 +2108,10 @@ public class SackPanel : Panel, IScalingControl
 						, av.AffixIdDlc.GetSuffix()
 					),
 					av.LootRandomizer
-				) into flattenedAffix
+				)
 				orderby flattenedAffix.Translation, flattenedAffix.AffixId.PrettyFileNameExploded.Number
-				group flattenedAffix by (flattenedAffix.TypeId, flattenedAffix.Translation) into grp2
-				select grp2;
+				group flattenedAffix by new AffixGroupKey(flattenedAffix.TypeId, flattenedAffix.Translation) into grp2
+				select new AffixGroup(grp2.Key, grp2);
 		}
 
 		foreach (var grp in currentaffixGroup)
@@ -2146,7 +2138,7 @@ public class SackPanel : Panel, IScalingControl
 			{
 				var choice = new ToolStripMenuItem()
 				{
-					Text = val.FormatedText,
+					Text = val.FormattedText,
 					Name = val.AffixId.Raw,
 					ToolTipText = val.AffixId.Raw,
 					BackColor = backC,
