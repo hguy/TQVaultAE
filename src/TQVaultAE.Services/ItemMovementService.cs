@@ -1,12 +1,13 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Drawing;
+using TQVaultAE.Application;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Application.Contracts;
-using TQVaultAE.Application.DTOs;
+using TQVaultAE.Application.Results;
 
-namespace TQVaultAE.Application.Services;
+namespace TQVaultAE.Services;
 
 /// <summary>
 /// Service for handling item movement operations.

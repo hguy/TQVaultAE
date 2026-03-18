@@ -9,7 +9,7 @@ using TQVaultAE.Presentation;
 using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
-using TQVaultAE.Application.Search;
+using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI.Tooltip;
 
@@ -22,7 +22,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 	private int LeftSide;
 	private static FoundResultsTooltip _Current = null;
 	public Control AnchorControl { get; private set; }
-	public IEnumerable<Result> ResultsToDisplay { get; private set; }
+	public IEnumerable<SearchResult> ResultsToDisplay { get; private set; }
 
 	// to avoid Mainform lost focus with this.TopMost = false
 	protected override bool ShowWithoutActivation => true;
@@ -50,7 +50,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 	}
 
 
-	public static void InvalidateCache(params IEnumerable<Result>[] resultlistCollection)
+	public static void InvalidateCache(params IEnumerable<SearchResult>[] resultlistCollection)
 	{
 		var hashlisttoremove = resultlistCollection.Where(s => s?.Any() ?? false).Select(l => MakeHash(l));
 
@@ -61,7 +61,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 		cacheentrytoremove.ForEach(c => ToImage.Remove(c));
 	}
 
-	private static string MakeHash(IEnumerable<Result> list)
+	private static string MakeHash(IEnumerable<SearchResult> list)
 	{
 		var input = string.Join(string.Empty, list.Select(bi => bi.IdString).ToArray());
 		return input.MakeMD5();
@@ -76,7 +76,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 		}
 	}
 
-	public static FoundResultsTooltip ShowTooltip(IServiceProvider serviceProvider, Control anchorControl, IEnumerable<Result> results)
+	public static FoundResultsTooltip ShowTooltip(IServiceProvider serviceProvider, Control anchorControl, IEnumerable<SearchResult> results)
 	{
 		if (anchorControl is null) return null;
 		if (!(results?.Any() ?? false)) return null;

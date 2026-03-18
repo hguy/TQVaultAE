@@ -1,7 +1,7 @@
 using System.Drawing;
 using TQVaultAE.Domain.Entities;
 
-namespace TQVaultAE.Application.DTOs;
+namespace TQVaultAE.Application.Results;
 
 /// <summary>
 /// Result of an item move operation.

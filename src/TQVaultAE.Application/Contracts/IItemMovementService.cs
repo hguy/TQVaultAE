@@ -1,6 +1,6 @@
 using System.Drawing;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Application.DTOs;
+using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.Application.Contracts;
 

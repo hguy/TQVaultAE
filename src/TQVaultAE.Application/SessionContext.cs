@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading;
 using TQVaultAE.Application.Contracts.Providers;
-using TQVaultAE.Application.Search;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
@@ -288,7 +288,7 @@ public class SessionContext
 	/// <summary>
 	/// Global searchable item database containing all items across all loaded containers
 	/// </summary>
-	public ConcurrentBag<Result> ItemDatabase { get; private set; } = new();
+	public ConcurrentBag<SearchResult> ItemDatabase { get; private set; } = new();
 
 	/// <summary>
 	/// Adds an item to the search database if it's not already present.
@@ -308,7 +308,7 @@ public class SessionContext
 				return false; // Already exists
 		}
 
-		var result = new Result(
+		var result = new SearchResult(
 			item,
 			new Lazy<ToFriendlyNameResult>(
 				() => this.ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.ItemFullDisplay),

@@ -25,7 +25,6 @@ using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
-using TQVaultAE.Application.Services;
 using TQVaultAE.Config;
 using TQVaultAE.GUI.Inputs.Filters;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;

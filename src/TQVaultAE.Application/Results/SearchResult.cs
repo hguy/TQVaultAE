@@ -10,12 +10,12 @@ using System.Linq;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
 
-namespace TQVaultAE.Application.Search;
+namespace TQVaultAE.Application.Results;
 
 /// <summary>
 /// Class for an individual result in the results list.
 /// </summary>
-public class Result
+public class SearchResult
 {
 	/// <summary>
 	/// Reference to the Item - contains current location and all item data
@@ -69,7 +69,7 @@ public class Result
 	/// </summary>
 	/// <param name="item">The Item to wrap</param>
 	/// <param name="fnames">Lazy loader for friendly names</param>
-	public Result(Item item, Lazy<ToFriendlyNameResult> fnames)
+	public SearchResult(Item item, Lazy<ToFriendlyNameResult> fnames)
 	{
 		this.Item = item ?? throw new ArgumentNullException(nameof(item));
 		this.FriendlyNamesLazyLoader = fnames ?? throw new ArgumentNullException(nameof(fnames));

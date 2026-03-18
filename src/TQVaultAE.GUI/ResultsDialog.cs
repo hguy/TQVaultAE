@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-using TQVaultAE.Application.Search;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
+using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI;
 
@@ -23,12 +23,12 @@ public partial class ResultsDialog : VaultForm
 	/// <summary>
 	/// List of all results
 	/// </summary>
-	private List<Result> resultsList;
+	private List<SearchResult> resultsList;
 
 	/// <summary>
 	/// User selected result from the list
 	/// </summary>
-	private Result selectedResult;
+	private SearchResult selectedResult;
 
 	/// <summary>
 	/// Search string passed from user
@@ -56,7 +56,7 @@ public partial class ResultsDialog : VaultForm
 
 		#endregion
 
-		this.resultsList = new List<Result>();
+		this.resultsList = new List<SearchResult>();
 
 		this.columnItem.HeaderText = Resources.ResultsItem;
 		this.columnContainerName.HeaderText = Resources.ResultsContainer;
@@ -90,7 +90,7 @@ public partial class ResultsDialog : VaultForm
 	/// <summary>
 	/// Gets the list of results collection
 	/// </summary>
-	public List<Result> ResultsList => this.resultsList;
+	public List<SearchResult> ResultsList => this.resultsList;
 
 	/// <summary>
 	/// Sets the user search string
@@ -169,7 +169,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="selectedResult">Currently selected Result</param>
 	/// <returns>String containing the tool tip for the Result.</returns>
-	private void GetToolTip(Result selectedResult)
+	private void GetToolTip(SearchResult selectedResult)
 	{
 		if (selectedResult == null || selectedResult.FriendlyNames == null)
 			ItemTooltip.HideTooltip();
@@ -192,7 +192,7 @@ public partial class ResultsDialog : VaultForm
 
 		for (int i = 0; i < this.resultsList.Count; i++)
 		{
-			Result result = this.resultsList[i];
+			SearchResult result = this.resultsList[i];
 			// Add the result to the DataGridView
 			int currentRow = this.resultsDataGridView.Rows.Add(
 				result.ItemName

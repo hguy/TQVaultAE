@@ -13,9 +13,9 @@ using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
 using System.Text.RegularExpressions;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Search;
 using static TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI;
 
@@ -25,7 +25,7 @@ namespace TQVaultAE.GUI;
 public partial class SearchDialogAdvanced : VaultForm
 {
 	private readonly SessionContext Ctx;
-	private System.Collections.Concurrent.ConcurrentBag<Result> ItemDatabase => Ctx.ItemDatabase;
+	private System.Collections.Concurrent.ConcurrentBag<SearchResult> ItemDatabase => Ctx.ItemDatabase;
 	private readonly ILogger Log;
 	private readonly Bitmap ButtonImageUp;
 	private readonly Bitmap ButtonImageDown;
@@ -33,7 +33,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	private readonly List<BoxItem> SelectedFilters = new();
 	private readonly SearchQueries SQueries;
 
-	public Result[] QueryResults { get; private set; } = new Result[] { };
+	public SearchResult[] QueryResults { get; private set; } = new SearchResult[] { };
 	private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 	/// <summary>
@@ -1238,7 +1238,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		searchTermBoxItem.DisplayValue = txt;
 
 		if (string.IsNullOrWhiteSpace(txt))
-			searchTermBoxItem.MatchingResults = Enumerable.Empty<Result>();
+			searchTermBoxItem.MatchingResults = Enumerable.Empty<SearchResult>();
 		else
 		{
 			// Item fulltext search

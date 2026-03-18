@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using TQVaultAE.Application.DTOs;
-using TQVaultAE.Application.Search;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application.Contracts;
@@ -34,7 +34,7 @@ public interface IApplicationStateService
     /// <summary>
     /// Gets the global searchable item database containing all items across all loaded containers.
     /// </summary>
-    IReadOnlyList<Result> ItemDatabase { get; }
+    IReadOnlyList<SearchResult> ItemDatabase { get; }
     
     /// <summary>
     /// Sets the current player.
@@ -60,7 +60,7 @@ public interface IApplicationStateService
     /// </summary>
     /// <param name="query">The search query parameters.</param>
     /// <returns>List of matching results.</returns>
-    IReadOnlyList<Result> ExecuteSearch(SearchQueryDto query);
+    IReadOnlyList<SearchResult> ExecuteSearch(SearchQueryRequest query);
     
     /// <summary>
     /// Filters results based on criteria.
@@ -68,7 +68,7 @@ public interface IApplicationStateService
     /// <param name="results">The results to filter.</param>
     /// <param name="filter">The filter criteria.</param>
     /// <returns>Filtered results.</returns>
-    IReadOnlyList<Result> FilterResults(IEnumerable<Result> results, SearchFilterDto filter);
+    IReadOnlyList<SearchResult> FilterResults(IEnumerable<SearchResult> results, SearchFilterDto filter);
     
     /// <summary>
     /// Performs a full-text search on items.
@@ -76,7 +76,7 @@ public interface IApplicationStateService
     /// <param name="searchText">The search text.</param>
     /// <param name="isRegex">Whether the search text is a regex pattern.</param>
     /// <returns>Matching results.</returns>
-    IReadOnlyList<Result> FullTextSearch(string searchText, bool isRegex = false);
+    IReadOnlyList<SearchResult> FullTextSearch(string searchText, bool isRegex = false);
 
     #endregion
 }

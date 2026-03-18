@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using TQVaultAE.Application.Search;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
@@ -59,7 +59,7 @@ public partial class MainForm
 		}
 	}
 
-	private void DisplayResults(string searchString, IEnumerable<Result> results)
+	private void DisplayResults(string searchString, IEnumerable<SearchResult> results)
 	{
 		if (results is null || !results.Any())
 		{
@@ -90,7 +90,7 @@ public partial class MainForm
 	/// <param name="e">ResultChangedEventArgs data</param>
 	private void SelectResult(object sender, ResultChangedEventArgs e)
 	{
-		Result selectedResult = e.Result;
+		SearchResult selectedResult = e.Result;
 		if (selectedResult == null || selectedResult.FriendlyNames == null) return;
 
 		this.ClearAllItemsSelectedCallback(this, new SackPanelEventArgs(null, null));

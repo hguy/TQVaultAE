@@ -6,7 +6,7 @@ namespace TQVaultAE.Application.DTOs;
 /// <summary>
 /// Data transfer object for search queries.
 /// </summary>
-public class SearchQueryDto
+public class SearchQueryRequest
 {
     /// <summary>
     /// The search text to match against item names and attributes.

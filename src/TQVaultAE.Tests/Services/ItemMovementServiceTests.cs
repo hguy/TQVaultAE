@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Drawing;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts;
-using TQVaultAE.Application.Services;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Domain.Results;
+using TQVaultAE.Services;
 
 namespace TQVaultAE.Tests.Services;
 

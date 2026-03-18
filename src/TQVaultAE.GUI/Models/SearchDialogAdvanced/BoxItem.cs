@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using TQVaultAE.Application.Search;
+using TQVaultAE.Application.Results;
 using TQVaultAE.GUI.Components;
 
 namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
@@ -32,7 +32,7 @@ public class BoxItem
 	}
 
 	[JsonIgnore]
-	public IEnumerable<Result> MatchingResults { get; set; } = [];
+	public IEnumerable<SearchResult> MatchingResults { get; set; } = [];
 
 	public string CheckedListName { get; set; }
 	public string CategoryName { get; set; }

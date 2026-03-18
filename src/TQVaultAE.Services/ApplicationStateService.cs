@@ -3,13 +3,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.DTOs;
-using TQVaultAE.Application.Search;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 
-namespace TQVaultAE.Application.Services;
+namespace TQVaultAE.Services;
 
 /// <summary>
 /// Service for managing application state and searching items.
@@ -64,7 +65,7 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Gets the global searchable item database containing all items across all loaded containers.
     /// </summary>
-    public IReadOnlyList<Result> ItemDatabase
+    public IReadOnlyList<SearchResult> ItemDatabase
         => this._sessionContext.ItemDatabase.ToList();
 
     /// <summary>
@@ -104,14 +105,14 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Executes a search query and returns matching results.
     /// </summary>
-    public IReadOnlyList<Result> ExecuteSearch(SearchQueryDto query)
+    public IReadOnlyList<SearchResult> ExecuteSearch(SearchQueryRequest query)
     {
         if (query == null)
-            return Array.Empty<Result>();
+            return Array.Empty<SearchResult>();
 
         var itemDatabase = _sessionContext.ItemDatabase;
         if (itemDatabase == null || itemDatabase.IsEmpty)
-            return Array.Empty<Result>();
+            return Array.Empty<SearchResult>();
 
         // Start with all items
         var results = itemDatabase.AsQueryable();
@@ -138,10 +139,10 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Filters results based on criteria.
     /// </summary>
-    public IReadOnlyList<Result> FilterResults(IEnumerable<Result> results, SearchFilterDto filter)
+    public IReadOnlyList<SearchResult> FilterResults(IEnumerable<SearchResult> results, SearchFilterDto filter)
     {
         if (results == null || filter == null)
-            return Array.Empty<Result>();
+            return Array.Empty<SearchResult>();
 
         return ApplyFilter(results.AsQueryable(), filter).ToList();
     }
@@ -149,14 +150,14 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Performs a full-text search on items.
     /// </summary>
-    public IReadOnlyList<Result> FullTextSearch(string searchText, bool isRegex = false)
+    public IReadOnlyList<SearchResult> FullTextSearch(string searchText, bool isRegex = false)
     {
         if (string.IsNullOrWhiteSpace(searchText))
-            return Array.Empty<Result>();
+            return Array.Empty<SearchResult>();
 
         var itemDatabase = _sessionContext.ItemDatabase;
         if (itemDatabase == null || itemDatabase.IsEmpty)
-            return Array.Empty<Result>();
+            return Array.Empty<SearchResult>();
 
         return ApplyTextSearch(itemDatabase.AsQueryable(), searchText, isRegex).ToList();
     }
@@ -168,7 +169,7 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Applies text search to results.
     /// </summary>
-    private IQueryable<Result> ApplyTextSearch(IQueryable<Result> results, string searchText, bool isRegex)
+    private IQueryable<SearchResult> ApplyTextSearch(IQueryable<SearchResult> results, string searchText, bool isRegex)
     {
         if (string.IsNullOrWhiteSpace(searchText))
             return results;
@@ -198,7 +199,7 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Applies multiple filters to results.
     /// </summary>
-    private IQueryable<Result> ApplyFilters(IQueryable<Result> results, List<SearchFilterDto> filters, SearchOperator op)
+    private IQueryable<SearchResult> ApplyFilters(IQueryable<SearchResult> results, List<SearchFilterDto> filters, SearchOperator op)
     {
         if (filters == null || filters.Count == 0)
             return results;
@@ -215,7 +216,7 @@ public class ApplicationStateService : IApplicationStateService
         else
         {
             // OR operator: item must match any filter
-            var allMatches = new List<Result>();
+            var allMatches = new List<SearchResult>();
             foreach (var filter in filters)
             {
                 var matches = ApplyFilter(results, filter).ToList();
@@ -228,7 +229,7 @@ public class ApplicationStateService : IApplicationStateService
     /// <summary>
     /// Applies a single filter to results.
     /// </summary>
-    private IQueryable<Result> ApplyFilter(IQueryable<Result> results, SearchFilterDto filter)
+    private IQueryable<SearchResult> ApplyFilter(IQueryable<SearchResult> results, SearchFilterDto filter)
     {
         if (filter?.Value == null)
             return results;
