@@ -59,4 +59,11 @@ public interface IPlayerService
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
 	FileSystemWatcher CreatePlayerFileWatcher(PlayerSave playerSave, Action<PlayerSave, bool> onChanged);
+
+	/// <summary>
+	/// Updates the player file path in the player collection cache after archiving/unarchiving.
+	/// </summary>
+	/// <param name="oldPath">The old file path of the player.</param>
+	/// <param name="newPath">The new file path of the player.</param>
+	void UpdatePlayerFilePath(string oldPath, string newPath);
 }

@@ -260,4 +260,29 @@ public class PlayerService : IPlayerService
 
 		return watcher;
 	}
+
+	/// <summary>
+	/// Updates the player file path in the player collection cache after archiving/unarchiving.
+	/// </summary>
+	/// <param name="oldPath">The old file path of the player.</param>
+	/// <param name="newPath">The new file path of the player.</param>
+	public void UpdatePlayerFilePath(string oldPath, string newPath)
+	{
+		if (string.IsNullOrWhiteSpace(oldPath) || string.IsNullOrWhiteSpace(newPath))
+			return;
+
+		if (this.userContext.Players.TryGetValue(oldPath, out var lazyPlayer))
+		{
+			var player = lazyPlayer.Value;
+			if (player is not null)
+			{
+				// Remove from old key
+				this.userContext.Players.TryRemove(oldPath, out _);
+				// Update the player's file path
+				player.PlayerFile = newPath;
+				// Add with new key
+				this.userContext.Players.GetOrAddAtomic(newPath, _ => player);
+			}
+		}
+	}
 }

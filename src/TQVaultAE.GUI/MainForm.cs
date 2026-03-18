@@ -262,6 +262,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			, this.GameFileService
 			, this.GamePathResolver
 			, this.TagService
+			, this.playerService
 			, USettings
 			, () => DuplicateCharacter()
 		);
