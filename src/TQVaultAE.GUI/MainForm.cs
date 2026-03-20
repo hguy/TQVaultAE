@@ -1180,7 +1180,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 
 		this.userContext.HighlightSearch = value;
 		this.userContext.FindHighlight();
-		this.Invoke(new MethodInvoker(this.Refresh));
+		this.Invoke(new System.Windows.Forms.MethodInvoker(this.Refresh));
 	}
 
 

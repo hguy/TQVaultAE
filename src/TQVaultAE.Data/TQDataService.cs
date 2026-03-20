@@ -28,8 +28,26 @@ public class TQDataService : ITQDataService
 	public int EndBlockValue => END_BLOCK_VALUE;
 
 	private readonly ILogger Log;
-	internal static readonly Encoding Encoding1252 = Encoding.GetEncoding(1252);
-	internal static readonly Encoding EncodingUnicode = Encoding.Unicode;
+
+	/// <summary>
+	/// Lazy-initialized CP1252 encoding for Titan Quest file parsing.
+	/// Encoding.RegisterProvider is idempotent - safe to call multiple times.
+	/// </summary>
+	private static readonly Lazy<Encoding> _encoding1252 = new(static () =>
+	{
+		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		return Encoding.GetEncoding(1252);
+	});
+
+	/// <summary>
+	/// Gets the CP1252 (Windows-1252) encoding used for TQ file parsing.
+	/// </summary>
+	internal static Encoding Encoding1252 => _encoding1252.Value;
+
+	/// <summary>
+	/// Gets the Unicode UTF-16 encoding.
+	/// </summary>
+	internal static Encoding EncodingUnicode => Encoding.Unicode;
 
 	public TQDataService(ILogger<TQDataService> log)
 	{

@@ -1,4 +1,3 @@
-using Microsoft.VisualBasic;
 using System;
 using System.Drawing;
 using System.Globalization;
@@ -352,7 +351,7 @@ public partial class MainForm
 
 		askAgain:
 			// Ask for new name
-			var newname = Interaction.InputBox(Resources.DuplicateCharacter_NewNameRequired, Resources.DuplicateCharacter_ModalTitle, "NewName").Trim();
+			var newname = InputDialog.Show(Resources.DuplicateCharacter_NewNameRequired, Resources.DuplicateCharacter_ModalTitle, "NewName").Trim();
 			if (newname == string.Empty) return;// Cancel button
 
 			// validate new name

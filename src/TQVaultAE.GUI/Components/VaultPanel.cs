@@ -856,12 +856,13 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	private void AddSubMenu(string menuText, EventHandler menuCallback)
 	{
 		var menuChoices = new ToolStripItem[this.BagButtons.Count - 1];
+		int menuIndex = 0;
 		for (int i = 0; i < this.BagButtons.Count; i++)
 		{
 			if (i != this.CurrentBag)
 			{
 				int val = i + 1;
-				menuChoices[i] = new ToolStripMenuItem(string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val)
+				menuChoices[menuIndex] = new ToolStripMenuItem(string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val)
 					, null, menuCallback, string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, val))
 				{
 					BackColor = this.contextMenu.BackColor,
@@ -869,6 +870,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 					ForeColor = this.contextMenu.ForeColor,
 					Tag = new MenuItemTagBagIndex(i),
 				};
+				menuIndex++;
 			}
 		}
 

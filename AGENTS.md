@@ -158,12 +158,14 @@ Application (DTOs, Results, Search)
 ### Projects
 | Project | Framework | Purpose |
 |---------|-----------|---------|
-| TQVaultAE.GUI | .NET Framework 4.8 | Windows Forms UI |
-| TQVaultAE.Domain | .NET Standard 2.0 | Entities, interfaces |
-| TQVaultAE.Services | .NET Standard 2.0 | Business logic |
-| TQVaultAE.Application | .NET Standard 2.0 | DTOs, Results, Search |
-| TQVaultAE.Data | .NET Standard 2.0 | Data access |
+| TQVaultAE.GUI | .NET 10.0 | Windows Forms UI |
+| TQVaultAE.Domain | .NET 10.0 | Entities, interfaces |
+| TQVaultAE.Services | .NET 10.0 | Business logic |
+| TQVaultAE.Application | .NET 10.0 | DTOs, Results, Search |
+| TQVaultAE.Data | .NET 10.0 | Data access |
 | TQVaultAE.Tests | .NET 10.0 | Unit tests |
+| ARZExplorer | .NET 10.0 | ARZ/ARC file extractor |
+| TQSaveFilesExplorer | .NET Framework 4.8 | Save file explorer |
 
 ### Dependency Injection
 - Constructor injection for all services
@@ -200,6 +202,7 @@ Application (DTOs, Results, Search)
 | Microsoft.Extensions.Logging | Logging abstraction |
 | System.Text.Json | JSON serialization |
 | EnumsNET | Enum operations |
+| Magick.NET | Image processing |
 
 ## Resources
 - GitHub: https://github.com/EtienneLamoureux/TQVaultAE

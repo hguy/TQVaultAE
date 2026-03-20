@@ -7,7 +7,20 @@ namespace TQVaultAE.Domain.Entities;
 
 public class SkillRecord
 {
-	internal static readonly Encoding Encoding1252 = Encoding.GetEncoding(1252);
+	/// <summary>
+	/// Lazy-initialized CP1252 encoding for Titan Quest file parsing.
+	/// Encoding.RegisterProvider is idempotent - safe to call multiple times.
+	/// </summary>
+	private static readonly Lazy<Encoding> _encoding1252 = new(static () =>
+	{
+		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+		return Encoding.GetEncoding(1252);
+	});
+
+	/// <summary>
+	/// Gets the CP1252 (Windows-1252) encoding used for TQ file parsing.
+	/// </summary>
+	internal static Encoding Encoding1252 => _encoding1252.Value;
 
 	public string skillName { get; set; }
 	public int skillLevel { get; set; }

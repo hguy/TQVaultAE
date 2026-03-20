@@ -253,7 +253,7 @@ namespace TQVaultAE.Logs
 					this.additionalInfo.Add("TimeStamp", DateTime.UtcNow.ToString(CultureInfo.CurrentCulture));
 					this.additionalInfo.Add("FullName", Assembly.GetExecutingAssembly().FullName);
 					this.additionalInfo.Add("AppDomainName", AppDomain.CurrentDomain.FriendlyName);
-					this.additionalInfo.Add("ThreadIdentity", Thread.CurrentPrincipal.Identity.Name);
+					this.additionalInfo.Add("ThreadIdentity", Thread.CurrentPrincipal?.Identity?.Name);
 				}
 				return this.additionalInfo;
 			}

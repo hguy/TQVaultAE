@@ -189,6 +189,9 @@ public partial class ComboBoxCharacter : UserControl
 			this.pictureBoxChar.Image = HUDCHARACTERBUTTONUP01;
 			this.pictureBoxChar.Size = HUDCHARACTERBUTTONUP01.Size;
 
+			// Set row height to match the actual bitmap height for proper alignment
+			this.bufferedTableLayoutPanelSkeleton.RowStyles[0].Height = HUDCHARACTERBUTTONUP01.Height;
+
 			this.scalingButtonTools.Image = HUDMENUSKILLBUTTONUP01;
 			this.scalingButtonTools.Size = HUDMENUSKILLBUTTONUP01.Size;
 			this.scalingButtonTools.UpBitmap = HUDMENUSKILLBUTTONUP01;
