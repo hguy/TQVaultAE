@@ -1,13 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Windows.Forms;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Helpers;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Helpers;
-using System.Drawing;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
@@ -25,12 +20,13 @@ namespace TQVaultAE.GUI;
 public partial class SearchDialogAdvanced : VaultForm
 {
 	private readonly SessionContext Ctx;
-	private System.Collections.Concurrent.ConcurrentBag<SearchResult> ItemDatabase => Ctx.ItemDatabase;
 	private readonly ILogger Log;
 	private readonly Bitmap ButtonImageUp;
 	private readonly Bitmap ButtonImageDown;
 	private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] NavMap;
 	private readonly List<BoxItem> SelectedFilters = new();
+	private readonly HashSet<BoxItem> SelectedFiltersSet = new();
+	private readonly List<ScalingCheckedListBox> CachedCheckedListBoxes = new();
 	private readonly SearchQueries SQueries;
 
 	public SearchResult[] QueryResults { get; private set; } = new SearchResult[] { };
@@ -191,6 +187,14 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Remove design time fake elements
 		scalingComboBoxQueryList.Items.Clear();
 
+		// Cache all ScalingCheckedListBox references for performance
+		this.flowLayoutPanelMain.ProcessAllControls(c =>
+		{
+			if (c is ScalingCheckedListBox lb)
+				this.CachedCheckedListBoxes.Add(lb);
+		});
+
+		// Now ClearAllCheckBoxes will work correctly
 		CleanAllCheckBoxes();
 
 		// Set numerical to default
@@ -202,15 +206,20 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void CleanAllCheckBoxes()
 	{
-		this.ProcessAllControls(c =>
+		this.flowLayoutPanelMain.SuspendLayout();
+		try
 		{
-			if (c is ScalingCheckedListBox lb)
+			foreach (var lb in this.CachedCheckedListBoxes)
 			{
 				lb.BeginUpdate();
 				lb.Items.Clear();
 				lb.EndUpdate();
 			}
-		});
+		}
+		finally
+		{
+			this.flowLayoutPanelMain.ResumeLayout(true);
+		}
 	}
 
 	private void SetSearchBoxVisibility(bool isVisible)
@@ -227,7 +236,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		if (!SelectedFilters.Any())
 		{
-			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
+			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, Ctx.ItemDatabase.Count())}";
 			return;
 		}
 		;
@@ -263,7 +272,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		scalingLabelProgress.Visible = true;
 
 		vaultProgressBar.Minimum = 0;
-		vaultProgressBar.Maximum = ItemDatabase.Count();
+		vaultProgressBar.Maximum = Ctx.ItemDatabase.Count();
 		vaultProgressBar.Visible = true;
 
 		this.backgroundWorkerBuildDB.RunWorkerAsync();
@@ -273,7 +282,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void SearchDialogAdvanced_Load(object sender, EventArgs e)
 	{
-		// ItemDatabase is already populated during container loading via SessionContext
+		// Ctx.ItemDatabase is already populated during container loading via SessionContext
 		// No need to rebuild it here - just lazy-load the friendly names
 	}
 
@@ -283,19 +292,27 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void InitItemDatabase()
 	{
 		// Must not change UI Controls. Just update backgroundWorker which handle this for you through his event pipeline.
-		foreach (var item in ItemDatabase)
+
+		// Parallel lazy loading for much faster database initialization
+		var items = Ctx.ItemDatabase.ToList();
+		var totalItems = items.Count;
+		var processedCount = 0;
+
+		Parallel.ForEach(items, item =>
 		{
 			item.LazyLoad();
+			Interlocked.Increment(ref processedCount);
 			this.backgroundWorkerBuildDB.ReportProgress(1);
-		}
+		});
+
 		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
-		var validItems = ItemDatabase.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
+		var validItems = items.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
 
 		Ctx.ClearItemDatabase();
 
 		foreach (var item in validItems)
 		{
-			ItemDatabase.Add(item);
+			Ctx.ItemDatabase.Add(item);
 		}
 	}
 
@@ -319,13 +336,16 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void SearchEngineReady()
 	{
-		scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, ItemDatabase.Count())}";
+		scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, Ctx.ItemDatabase.Count())}";
 
 		PopulateCheckBoxes();
 
-		AdjustCheckBoxesWidth();
-
-		AdjustCheckBoxesHeight();
+		// Defer expensive operations to after form is shown
+		this.BeginInvoke(new Action(() =>
+		{
+			AdjustCheckBoxesWidth();
+			AdjustCheckBoxesHeight();
+		}));
 
 		SetSearchBoxVisibility(true);
 
@@ -337,65 +357,70 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void AdjustCheckBoxesHeight()
 	{
-		flowLayoutPanelMain.ProcessAllControls(c =>
+		var maxRow = (int)this.numericUpDownMaxElement.Value;
+		foreach (var lb in this.CachedCheckedListBoxes)
 		{
 			// Adjust to current UI setting
-			if (c is ScalingCheckedListBox lb)
+			int height = 0, currrow = 0;
+			foreach (var line in lb.Items)
 			{
-				var maxRow = (int)this.numericUpDownMaxElement.Value;
-				int height = 0, currrow = 0;
-				foreach (var line in lb.Items)
-				{
-					if (currrow == maxRow) break;
-					height += lb.GetItemHeight(currrow);
-					currrow++;
-				}
-				height += SystemInformation.HorizontalScrollBarHeight;
-				lb.Height = height;
+				if (currrow == maxRow) break;
+				height += lb.GetItemHeight(currrow);
+				currrow++;
 			}
-		});
+			height += SystemInformation.HorizontalScrollBarHeight;
+			lb.Height = height;
+		}
 	}
 
 	private void AdjustCheckBoxesWidth()
 	{
-		flowLayoutPanelMain.ProcessAllControls(c =>
-		{
-			if (c is ScalingCheckedListBox lb)
-				lb.AdjustToMaxTextWidth((int)this.numericUpDownMaxElement.Value);
-		});
+		if (this.CachedCheckedListBoxes.Count == 0)
+			return;
+
+		var maxElement = (int)this.numericUpDownMaxElement.Value;
+		foreach (var lb in this.CachedCheckedListBoxes)
+			lb.AdjustToMaxTextWidth(maxElement);
 	}
 
 	#region Populate
 
 	private void PopulateCheckBoxes()
 	{
-		PopulateCharacters();
-		PopulateItemType();
-		PopulateRarity();
-		PopulateStyle();
-		PopulateQuality();
-		PopulateVaults();
-		PopulateWithCharm();
-		PopulateWithRelic();
-		PopulateOrigin();
-		PopulateSetItems();
+		this.flowLayoutPanelMain.SuspendLayout();
+		try
+		{
+			PopulateCharacters();
+			PopulateItemType();
+			PopulateRarity();
+			PopulateStyle();
+			PopulateQuality();
+			PopulateVaults();
+			PopulateWithCharm();
+			PopulateWithRelic();
+			PopulateOrigin();
+			PopulateSetItems();
 
-		PopulateItemAttributes();
-		PopulateBaseAttributes();
+			PopulateItemAttributes();
+			PopulateBaseAttributes();
 
-		PopulatePrefixName();
-		PopulatePrefixAttributes();
+			PopulatePrefixName();
+			PopulatePrefixAttributes();
 
-		PopulateSuffixName();
-		PopulateSuffixAttributes();
-
+			PopulateSuffixName();
+			PopulateSuffixAttributes();
+		}
+		finally
+		{
+			this.flowLayoutPanelMain.ResumeLayout(true);
+		}
 	}
 
 	private void PopulateSetItems()
 	{
 		var clb = scalingCheckedListBoxSetItems;
 		var setitems =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			let set = id.FriendlyNames.ItemSet
 			where set is not null
@@ -441,7 +466,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		};
 
 		var originItems =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			from org in originList
 			where itm.GameDlc == org.Value
@@ -462,7 +487,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxWithRelic;
 		var WithRelic =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			where itm.HasRelicOrCharmSlot1 && !itm.IsRelic1Charm || itm.HasRelicOrCharmSlot2 && !itm.IsRelic2Charm
 			from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
@@ -493,7 +518,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxWithCharm;
 		var WithCharm =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			where itm.HasRelicOrCharmSlot1 && itm.IsRelic1Charm || itm.HasRelicOrCharmSlot2 && itm.IsRelic2Charm
 			from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
@@ -515,7 +540,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxVaults;
 		var Vaults =
-			from id in ItemDatabase.Where(i => i.SackType == SackType.Vault)
+			from id in Ctx.ItemDatabase.Where(i => i.SackType == SackType.Vault)
 			let att = id.ContainerName
 			orderby att
 			group id by att into grp
@@ -533,7 +558,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxQuality;
 		var Quality =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let att = id.FriendlyNames.BaseItemInfoQuality
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -553,7 +578,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxSuffixName;
 		var SuffixName =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let att = id.FriendlyNames.SuffixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -573,7 +598,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxSuffixAttributes;
 		var SuffixAttributes =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			from att in id.FriendlyNames.SuffixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -593,7 +618,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxStyle;
 		var Style =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let att = id.FriendlyNames.BaseItemInfoStyle
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -621,7 +646,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		};
 		var clb = scalingCheckedListBoxRarity;
 		var Rarity =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			where equipmentOnly.Contains(id.ItemStyle)
 			let att = id.FriendlyNames.BaseItemRarity
 			where !string.IsNullOrWhiteSpace(att)
@@ -642,7 +667,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxPrefixName;
 		var PrefixName =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let att = id.FriendlyNames.PrefixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.TQCleanup().Trim()
@@ -662,7 +687,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxPrefixAttributes;
 		var PrefixAttributes =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			from att in id.FriendlyNames.PrefixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -682,7 +707,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxCharacters;
 		var Players =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			where id.SackType == SackType.Player || id.SackType == SackType.Equipment
 			let att = id.ContainerName
 			orderby att
@@ -701,7 +726,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxItemType;
 		var ItemType =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			let att = id.FriendlyNames.BaseItemInfoClass ?? id.FriendlyNames.Item.ItemClass
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -721,7 +746,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxItemAttributes;
 		var ItemAttributes =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			from att in id.FriendlyNames.AttributesAll
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -741,7 +766,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxBaseAttributes;
 		var BaseAttributes =
-			from id in ItemDatabase
+			from id in Ctx.ItemDatabase
 			from att in id.FriendlyNames.BaseAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -775,7 +800,10 @@ public partial class SearchDialogAdvanced : VaultForm
 			if (tag.LastTooltipIndex > -1)
 			{
 				var item = lstBox.Items[focusedIdx] as BoxItem;
-				toolTip.SetToolTip(lstBox, string.Format(Resources.SearchMatchingItemsTT, item.MatchingResults.Count()));
+				if (item is not null && item.MatchingResults is not null)
+					toolTip.SetToolTip(lstBox, string.Format(Resources.SearchMatchingItemsTT, item.MatchingResults.Count()));
+				else
+					toolTip.SetToolTip(lstBox, string.Empty);
 			}
 		}
 
@@ -784,20 +812,14 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void buttonCollapseAll_Click(object sender, EventArgs e)
 	{
-		flowLayoutPanelMain.ProcessAllControls(c =>
-		{
-			if (c is ScalingCheckedListBox lb)
-				lb.Visible = false;
-		});
+		foreach (var lb in this.CachedCheckedListBoxes)
+			lb.Visible = false;
 	}
 
 	private void buttonExpandAll_Click(object sender, EventArgs e)
 	{
-		flowLayoutPanelMain.ProcessAllControls(c =>
-		{
-			if (c is ScalingCheckedListBox lb)
-				lb.Visible = true;
-		});
+		foreach (var lb in this.CachedCheckedListBoxes)
+			lb.Visible = true;
 	}
 
 	private void scalingButtonMenu_Click(object sender, EventArgs e)
@@ -845,20 +867,26 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void Sync_SelectedFilters()
 	{
-		SelectedFilters.Clear();
+		this.SelectedFilters.Clear();
+		this.SelectedFiltersSet.Clear();
 
 		// Add the SearchTerm on top 
 		var (_, searchTermBoxItem) = this.scalingTextBoxSearchTerm.GetBoxItem(false);
 		// if i get something to filter with
 		if (!string.IsNullOrWhiteSpace(searchTermBoxItem.DisplayValue))
-			SelectedFilters.Add(searchTermBoxItem);
-
-		// Crawl winform graf for selected BoxItem
-		flowLayoutPanelMain.ProcessAllControls(c =>
 		{
-			if (c is ScalingCheckedListBox lb)
-				SelectedFilters.AddRange(lb.CheckedItems.Cast<BoxItem>());
-		});
+			this.SelectedFilters.Add(searchTermBoxItem);
+			this.SelectedFiltersSet.Add(searchTermBoxItem);
+		}
+
+		// Use cached list for performance
+		// Use OfType instead of Cast to handle any non-BoxItem objects gracefully
+		foreach (var lb in this.CachedCheckedListBoxes)
+			this.SelectedFilters.AddRange(lb.CheckedItems.OfType<BoxItem>());
+
+		// Populate HashSet for O(1) lookups
+		foreach (var filter in this.SelectedFilters)
+			this.SelectedFiltersSet.Add(filter);
 
 		this.Apply_SelectedFilters();
 	}
@@ -886,15 +914,37 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void UncheckCategories(Control flowpanel)
 	{
-		flowpanel.ProcessAllControls(c =>
+		// Optimize for main flowLayoutPanel - use cached list
+		if (flowpanel == flowLayoutPanelMain)
 		{
-			if (c is ScalingCheckedListBox lb)
+			this.flowLayoutPanelMain.SuspendLayout();
+			try
 			{
-				lb.BeginUpdate();
-				lb.CheckedIndices.Cast<int>().ToList().ForEach(idx => lb.SetItemChecked(idx, false));
-				lb.EndUpdate();
+				foreach (var lb in this.CachedCheckedListBoxes)
+				{
+					lb.BeginUpdate();
+					lb.CheckedIndices.Cast<int>().ToList().ForEach(idx => lb.SetItemChecked(idx, false));
+					lb.EndUpdate();
+				}
 			}
-		});
+			finally
+			{
+				this.flowLayoutPanelMain.ResumeLayout(true);
+			}
+		}
+		else
+		{
+			// Individual category panel - traverse
+			flowpanel.ProcessAllControls(c =>
+			{
+				if (c is ScalingCheckedListBox lb)
+				{
+					lb.BeginUpdate();
+					lb.CheckedIndices.Cast<int>().ToList().ForEach(idx => lb.SetItemChecked(idx, false));
+					lb.EndUpdate();
+				}
+			});
+		}
 	}
 
 	private void scalingLabelFiltersSelected_MouseEnter(object sender, EventArgs e)
@@ -925,7 +975,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag.ToString(), SelectedFilters.Count());
 
-		var query = ItemDatabase.AsQueryable();
+		var query = Ctx.ItemDatabase.AsQueryable();
 		if (this.scalingComboBoxOperator.SelectedIndex == (int)SearchOperator.And)
 		{
 			// AND operator => item must exist in every filter
@@ -1080,27 +1130,32 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Reset to FirstLoad
 		CleanAllCheckBoxes();
 
-		flowLayoutPanelMain.ProcessAllControls(c =>
+		this.flowLayoutPanelMain.SuspendLayout();
+		try
 		{
-			if (c is ScalingCheckedListBox lb)
+			foreach (var lb in this.CachedCheckedListBoxes)
 			{
 				var (_, tag) = lb.GetBoxTag();
 				lb.BeginUpdate();
-				bool isChecked;
 				foreach (var item in tag.DataSource)
 				{
-					isChecked = SelectedFilters.Contains(item);
+					// Use HashSet for O(1) lookup instead of O(n) List.Contains
+					var isChecked = this.SelectedFiltersSet.Contains(item);
 
 					if (!isChecked // Do not hide already checked
 						/// Should i filter out this check box based on <see cref="FilterCategories"/> ?
-						&& FilterCategories.AvoidDisplayAttribute(item.DisplayValue)
+						&& this.FilterCategories.AvoidDisplayAttribute(item.DisplayValue)
 					) continue;
 
 					lb.Items.Add(item, isChecked);
 				}
 				lb.EndUpdate();
 			}
-		});
+		}
+		finally
+		{
+			this.flowLayoutPanelMain.ResumeLayout(true);
+		}
 	}
 
 	private void ReduceCheckBoxesToQueryResult()
@@ -1108,10 +1163,12 @@ public partial class SearchDialogAdvanced : VaultForm
 		if (this.QueryResults.Any())
 		{
 			CleanAllCheckBoxes();
-			// Reset to QueryResult.
-			flowLayoutPanelMain.ProcessAllControls(c =>
+
+			this.flowLayoutPanelMain.SuspendLayout();
+			try
 			{
-				if (c is ScalingCheckedListBox lb)
+				// Reset to QueryResult.
+				foreach (var lb in this.CachedCheckedListBoxes)
 				{
 					var (_, tag) = lb.GetBoxTag();
 
@@ -1125,21 +1182,25 @@ public partial class SearchDialogAdvanced : VaultForm
 						select grp;
 
 					lb.BeginUpdate();
-					bool isChecked;
 					foreach (var item in DSvsQR)
 					{
-						isChecked = SelectedFilters.Contains(item.Key);
+						// Use HashSet for O(1) lookup instead of O(n) List.Contains
+						var isChecked = this.SelectedFiltersSet.Contains(item.Key);
 
 						if (!isChecked // Do not hide already checked
 							/// Should i filter out this check box based on <see cref="FilterCategories"/> ?
-							&& FilterCategories.AvoidDisplayAttribute(item.Key.DisplayValue)
+							&& this.FilterCategories.AvoidDisplayAttribute(item.Key.DisplayValue)
 						) continue;
 
 						lb.Items.Add(item.Key, isChecked);
 					}
 					lb.EndUpdate();
 				}
-			});
+			}
+			finally
+			{
+				this.flowLayoutPanelMain.ResumeLayout(true);
+			}
 		}
 	}
 
@@ -1211,18 +1272,22 @@ public partial class SearchDialogAdvanced : VaultForm
 			(f.IsRegex, f.Search, f.Regex, f.RegexIsValid)
 				= StringHelper.IsTQVaultSearchRegEx(f.SearchRaw);
 
-		/// Wrapped into an Invoke() because i'm currently in the thread of the 
+		/// Wrapped into an Invoke() because i'm currently in the thread of the
 		/// <see cref="typeAssistantFilterCategories"> and i need  <see cref="ApplyCategoriesReducer"/> to be executed from the main thread to avoid concurrent access exception
-		this.Invoke(ApplyCategoriesReducer);
+		/// Check IsHandleCreated and !IsDisposed to avoid InvalidOperationException when the form is initializing or disposing
+		if (this.IsHandleCreated && !this.IsDisposed)
+			this.Invoke(ApplyCategoriesReducer);
 	}
 
 	private void TextBoxSearchTerm_TextChanged_Logic()
 	{
 		MakeSearchTermBoxItem();
 
-		/// Wrapped into an Invoke() because i'm currently in the thread of the 
+		/// Wrapped into an Invoke() because i'm currently in the thread of the
 		/// <see cref="typeAssistantSearchBox"> and i need  <see cref="Sync_SelectedFilters"/> to be executed from the main thread to avoid concurrent access exception
-		this.Invoke(Sync_SelectedFilters);
+		/// Check IsHandleCreated and !IsDisposed to avoid InvalidOperationException when the form is initializing or disposing
+		if (this.IsHandleCreated && !this.IsDisposed)
+			this.Invoke(Sync_SelectedFilters);
 	}
 
 	private BoxItem MakeSearchTermBoxItem(string searchTerm = null)
@@ -1245,7 +1310,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			var (isRegex, _, regex, regexIsValid) = StringHelper.IsTQVaultSearchRegEx(txt);
 
 			searchTermBoxItem.MatchingResults = (
-				from id in ItemDatabase
+				from id in Ctx.ItemDatabase
 				where isRegex && regexIsValid
 					? id.FriendlyNames.FulltextIsMatchRegex(regex)
 					: id.FriendlyNames.FulltextIsMatchIndexOf(txt)
@@ -1320,21 +1385,18 @@ public partial class SearchDialogAdvanced : VaultForm
 			}
 		).ToList();
 
-		// Retrieve CheckBoxes
-		flowLayoutPanelMain.ProcessAllControls(c =>
+		// Retrieve CheckBoxes - use cached list for performance
+		foreach (var lb in this.CachedCheckedListBoxes)
 		{
-			if (c is ScalingCheckedListBox lb)
-			{
-				var (_, tag) = lb.GetBoxTag();
+			var (_, tag) = lb.GetBoxTag();
 
-				(
-					// Align Saved & Live BoxItems
-					from ds in tag.DataSource
-					join m in matrix on new { ds.CategoryName, ds.CheckedListName, ds.DisplayValue } equals new { m.CategoryName, m.CheckedListName, m.DisplayValue }
-					select new { boxiLive = ds, matrix = m }
-				).ToList().ForEach(r => r.matrix.found.Add(r.boxiLive));// Bind
-			}
-		});
+			(
+				// Align Saved & Live BoxItems
+				from ds in tag.DataSource
+				join m in matrix on new { ds.CategoryName, ds.CheckedListName, ds.DisplayValue } equals new { m.CategoryName, m.CheckedListName, m.DisplayValue }
+				select new { boxiLive = ds, matrix = m }
+			).ToList().ForEach(r => r.matrix.found.Add(r.boxiLive));// Bind
+		}
 
 		// Make Search terms
 		(
@@ -1545,9 +1607,14 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void Make_SelectedFilters(SearchQuery searchQuery)
 	{
 		// Make _SelectedFilters from saved query
-		SelectedFilters.Clear();
+		this.SelectedFilters.Clear();
+		this.SelectedFiltersSet.Clear();
 
-		SelectedFilters.AddRange(searchQuery.CheckedItems);
+		this.SelectedFilters.AddRange(searchQuery.CheckedItems);
+
+		// Populate HashSet for O(1) lookups
+		foreach (var filter in this.SelectedFilters)
+			this.SelectedFiltersSet.Add(filter);
 
 		ResetCheckBoxesToFirstLoad();
 
