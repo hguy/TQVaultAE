@@ -363,8 +363,9 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				return itm;
 			}).ToList()
 		}).ToArray();
+	}
 
-		/*
+	/*
 
 #if DEBUG
 		// Generate RelicAndCharm Enum
@@ -415,9 +416,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 
 #endif
 
-		*/
-	}
-
+	*/
 
 	/// <summary>
 	/// Looks for the next begin_block or end_block.
@@ -425,16 +424,29 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// <param name="start">offset where we are starting our search</param>
 	/// <returns>Returns the index of the first char indicating the block delimiter or -1 if none is found.</returns>
 	public int FindNextBlockDelim(PlayerCollection pc, int start)
+		=> FindNextBlockDelim(pc.rawData.AsSpan(), start);
+
+	/// <summary>
+	/// Looks for the next begin_block or end_block using span-based search.
+	/// Optimized for bounds-check elimination.
+	/// </summary>
+	/// <param name="data">ReadOnlySpan of the raw binary data</param>
+	/// <param name="start">offset where we are starting our search</param>
+	/// <returns>Returns the index of the first char indicating the block delimiter or -1 if none is found.</returns>
+	public int FindNextBlockDelim(ReadOnlySpan<byte> data, int start)
 	{
+		ReadOnlySpan<byte> beginSpan = beginBlockPattern;
+		ReadOnlySpan<byte> endSpan = endBlockPattern;
+
 		int beginMatch = 0;
 		int endMatch = 0;
 
-		for (int i = start; i < pc.rawData.Length; ++i)
+		for (int i = start; i < data.Length; ++i)
 		{
-			if (pc.rawData[i] == beginBlockPattern[beginMatch])
+			if (data[i] == beginSpan[beginMatch])
 			{
 				++beginMatch;
-				if (beginMatch == beginBlockPattern.Length)
+				if (beginMatch == beginSpan.Length)
 					return i + 1 - beginMatch;
 			}
 			else if (beginMatch > 0)
@@ -442,14 +454,14 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				beginMatch = 0;
 
 				// Test again to see if we are starting a new match
-				if (pc.rawData[i] == beginBlockPattern[beginMatch])
+				if (data[i] == beginSpan[beginMatch])
 					++beginMatch;
 			}
 
-			if (pc.rawData[i] == endBlockPattern[endMatch])
+			if (data[i] == endSpan[endMatch])
 			{
 				++endMatch;
-				if (endMatch == endBlockPattern.Length)
+				if (endMatch == endSpan.Length)
 					return i + 1 - endMatch;
 			}
 			else if (endMatch > 0)
@@ -457,7 +469,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				endMatch = 0;
 
 				// Test again to see if we are starting a new match
-				if (pc.rawData[i] == endBlockPattern[endMatch])
+				if (data[i] == endSpan[endMatch])
 					++endMatch;
 			}
 		}

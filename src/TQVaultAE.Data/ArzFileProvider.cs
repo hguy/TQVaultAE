@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
@@ -111,7 +112,7 @@ public class ArzFileProvider : IArzFileProvider
 
 
 	/// <summary>
-	/// Reads the whole string table into memory from a stream.
+	/// Reads the whole string table into memory using ReadOnlySpan for zero-copy parsing.
 	/// </summary>
 	/// <remarks>
 	/// string Table Format
@@ -124,18 +125,18 @@ public class ArzFileProvider : IArzFileProvider
 	private void ReadStringTable(ArzFile file, int pos, int size, StreamWriter outStream)
 	{
 		var data = this.FileData.GetMemory(file.FileName, pos, size);
-		using var memStream = new MemoryStream(data.ToArray());
-		using var reader = new BinaryReader(memStream);
+		ReadOnlySpan<byte> span = data.Span;
 
-		int numstrings = reader.ReadInt32();
+		int numstrings = BinaryPrimitives.ReadInt32LittleEndian(span);
 		file.Strings = new string[numstrings];
 
 		if (outStream != null)
 			outStream.WriteLine("stringTable located at 0x{1:X} numstrings= {0:n0}", numstrings, pos);
 
+		int offset = sizeof(int);
 		for (int i = 0; i < numstrings; ++i)
 		{
-			file.Strings[i] = TQData.ReadCString(reader);
+			file.Strings[i] = TQData.ReadCString(span, ref offset);
 
 			if (outStream != null)
 				outStream.WriteLine("{0},{1}", i, file.Strings[i]);
@@ -143,7 +144,7 @@ public class ArzFileProvider : IArzFileProvider
 	}
 
 	/// <summary>
-	/// Reads the entire record table into memory from a stream.
+	/// Reads the entire record table into memory using ReadOnlySpan for zero-copy parsing.
 	/// </summary>
 	/// <param name="pos">position within the file.</param>
 	/// <param name="size">size of the record table in bytes</param>
@@ -152,17 +153,17 @@ public class ArzFileProvider : IArzFileProvider
 	private void ReadRecordTable(ArzFile file, int pos, int size, int numEntries, StreamWriter outStream)
 	{
 		var data = this.FileData.GetMemory(file.FileName, pos, size);
-		using var memStream = new MemoryStream(data.ToArray());
-		using var reader = new BinaryReader(memStream);
+		ReadOnlySpan<byte> span = data.Span;
 
 		if (outStream != null)
 			outStream.WriteLine("RecordTable located at 0x{0:X}", pos);
 
+		int offset = 0;
 		for (int i = 0; i < numEntries; ++i)
 		{
 			RecordInfo recordInfo = new RecordInfo();
 
-			infoProv.Decode(recordInfo, reader, 24, file);
+			infoProv.Decode(recordInfo, span, ref offset, 24, file);
 
 			file.RecordInfo.Add(recordInfo.ID, recordInfo);
 

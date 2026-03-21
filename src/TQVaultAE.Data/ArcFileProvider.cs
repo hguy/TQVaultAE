@@ -430,8 +430,7 @@ public class ArcFileProvider : IArcFileProvider
 
 					// Now read in the record names
 					arcFile.Seek(fileNamesOffset, SeekOrigin.Begin);
-					byte[] buffer = new byte[2048];
-					ASCIIEncoding ascii = new ASCIIEncoding();
+					Span<byte> buffer = stackalloc byte[2048];
 					for (i = 0; i < numEntries; ++i)
 					{
 						// only Active files have a filename entry
@@ -462,7 +461,7 @@ public class ArcFileProvider : IArcFileProvider
 									Log.LogDebug("ARCFile.ReadARCToC() Error - Buffer size of 2048 has been exceeded.");
 									if (USettings.ARCFileDebugLevel > 2)
 									{
-										var content = buffer.Select(b => string.Format(CultureInfo.InvariantCulture, "0x{0:X}", b)).ToArray();
+										var content = buffer.Slice(0, bufferSize).ToArray().Select(b => string.Format(CultureInfo.InvariantCulture, "0x{0:X}", b)).ToArray();
 										Log.LogDebug($"Buffer contents:{Environment.NewLine}{string.Join(string.Empty, content)}{Environment.NewLine}{string.Empty}");
 									}
 								}
@@ -476,10 +475,8 @@ public class ArcFileProvider : IArcFileProvider
 							string newfile;
 							if (bufferSize >= 1)
 							{
-								// Now convert the buffer to a string
-								char[] chars = new char[ascii.GetCharCount(buffer, 0, bufferSize - 1)];
-								ascii.GetChars(buffer, 0, bufferSize - 1, chars, 0);
-								newfile = new string(chars);
+								// Now convert the buffer to a string using stack-allocated span
+								newfile = Encoding.ASCII.GetString(buffer.Slice(0, bufferSize - 1));
 							}
 							else
 								newfile = string.Format(CultureInfo.InvariantCulture, "Null File {0}", i);

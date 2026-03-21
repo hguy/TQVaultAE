@@ -19,9 +19,26 @@ public static class StringHelper
 
 	public static bool Contains(this string input, string search, StringComparison comparison)
 		=> input.IndexOf(search, comparison) > -1;
-	
+
+	/// <summary>
+	/// Checks if a string contains a substring using ordinal ignore case comparison.
+	/// Optimized overload for high-frequency search operations.
+	/// </summary>
 	public static bool ContainsIgnoreCase(this string input, string search)
+		=> input.AsSpan().Contains(search.AsSpan(), noCase);
+
+	/// <summary>
+	/// Checks if a ReadOnlySpan contains a substring using ordinal ignore case comparison.
+	/// Uses MemoryExtensions for efficient span-based searching.
+	/// </summary>
+	public static bool ContainsIgnoreCase(this ReadOnlySpan<char> input, ReadOnlySpan<char> search)
 		=> input.Contains(search, noCase);
+
+	/// <summary>
+	/// Checks if a Span contains a substring using ordinal ignore case comparison.
+	/// </summary>
+	public static bool ContainsIgnoreCase(this Span<char> input, ReadOnlySpan<char> search)
+		=> ((ReadOnlySpan<char>)input).Contains(search, noCase);
 
 
 	#region Eval
@@ -83,6 +100,72 @@ public static class StringHelper
 	{
 		if (string.IsNullOrEmpty(text)) return text;
 		return string.Concat(char.ToUpperInvariant(text[0]), text.Substring(1));
+	}
+
+	/// <summary>
+	/// Converts the first character of a string to uppercase using ReadOnlySpan for efficiency.
+	/// </summary>
+	public static string ToFirstCharUpperCase(this ReadOnlySpan<char> text)
+	{
+		if (text.IsEmpty) return string.Empty;
+		if (text.Length == 1) return char.ToUpperInvariant(text[0]).ToString();
+
+		// Use stack allocation for small strings, heap for larger ones
+		if (text.Length <= 64)
+		{
+			Span<char> buffer = stackalloc char[text.Length];
+				text.CopyTo(buffer);
+				buffer[0] = char.ToUpperInvariant(buffer[0]);
+				return new string(buffer);
+		}
+
+		// For larger strings, allocate
+		var result = new char[text.Length];
+		text.CopyTo(result);
+		result[0] = char.ToUpperInvariant(result[0]);
+		return new string(result);
+	}
+
+	/// <summary>
+	/// Removes a suffix from the end of a string span and returns the result.
+	/// </summary>
+	public static string RemoveSuffix(this ReadOnlySpan<char> text, int suffixLength)
+	{
+		int resultLength = text.Length - suffixLength;
+		if (resultLength <= 0) return string.Empty;
+
+		var result = new char[resultLength];
+		text.Slice(0, resultLength).CopyTo(result);
+		return new string(result);
+	}
+
+	/// <summary>
+	/// Removes a suffix from the end of a string and returns the result.
+	/// </summary>
+	public static string RemoveSuffix(this string text, int suffixLength)
+		=> text.AsSpan().RemoveSuffix(suffixLength);
+
+	/// <summary>
+	/// Concatenates prefix with a sliced portion of the span.
+	/// </summary>
+	public static string ConcatSlice(ReadOnlySpan<char> prefix, ReadOnlySpan<char> span, int skipPrefixChars)
+	{
+		int suffixLength = span.Length - skipPrefixChars;
+		var result = new char[prefix.Length + suffixLength];
+		prefix.CopyTo(result);
+		span.Slice(skipPrefixChars).CopyTo(result.AsSpan(prefix.Length));
+		return new string(result);
+	}
+
+	/// <summary>
+	/// Concatenates prefix with a sliced portion of the span (with explicit length).
+	/// </summary>
+	public static string ConcatSlice(ReadOnlySpan<char> prefix, ReadOnlySpan<char> span, int skipPrefixChars, int suffixLength)
+	{
+		var result = new char[prefix.Length + suffixLength];
+		prefix.CopyTo(result);
+		span.Slice(skipPrefixChars, suffixLength).CopyTo(result.AsSpan(prefix.Length));
+		return new string(result);
 	}
 
 	/// <summary>

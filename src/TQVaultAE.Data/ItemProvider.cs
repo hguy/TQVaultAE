@@ -1082,7 +1082,7 @@ public class ItemProvider : IItemProvider
 			string key = variable.Name.Replace("Requirement", string.Empty);
 
 			// Upper-case the first char of key
-			key = string.Concat(key.Substring(0, 1).ToUpper(System.Globalization.CultureInfo.InvariantCulture), key.Substring(1));
+			key = key.AsSpan().ToFirstCharUpperCase();
 
 			// Level needs to be LevelRequirement bah
 			if (key.Equals("Level"))
@@ -2337,6 +2337,7 @@ VariableValue Raw : {valueRaw}
 		TQColor? color = null;
 		string formatSpec = null;
 
+		// Original: concatenating with substring (already optimized by compiler)
 		string tag = string.Concat("Damage", damageRatioData.FullAttribute.Substring(9, damageRatioData.FullAttribute.Length - 20), "Ratio");
 
 		if (!TranslationService.TryTranslateXTag(tag, out formatSpec))
@@ -2564,7 +2565,8 @@ VariableValue Raw : {valueRaw}
 						Log.LogDebug("missing racialBonusRace={0}", finalRace);
 				}
 
-				string formatTag = string.Concat(d.FullAttribute.Substring(0, 1).ToUpperInvariant(), d.FullAttribute.Substring(1));
+				// Optimized: use span-based ToFirstCharUpperCase
+				string formatTag = d.FullAttribute.AsSpan().ToFirstCharUpperCase();
 
 				if (!TranslationService.TryTranslateXTag(formatTag, out var formatSpec))
 					formatSpec = string.Concat(formatTag, " {0} {1}");
@@ -2646,7 +2648,8 @@ VariableValue Raw : {valueRaw}
 	/// <returns>formatted string with the + to mastery</returns>
 	private string GetAugmentMasteryLevel(DBRecordCollection record, Variable variable, ItemAttributesData attributeData, ref TQColor? font)
 	{
-		string augmentNumber = attributeData.FullAttribute.Substring(19, 1);
+		// Optimized: use span to get single char
+		string augmentNumber = attributeData.FullAttribute.AsSpan().Slice(19, 1).ToString();
 		string augmentMasteryName = string.Concat("augmentMasteryName", augmentNumber);
 		string augmentMasteryValue = record.GetString(augmentMasteryName, 0);
 
@@ -2702,7 +2705,8 @@ VariableValue Raw : {valueRaw}
 	/// <returns>formatted string containing + to skill</returns>
 	private string GetAugmentSkillLevel(DBRecordCollection record, Variable variable, ItemAttributesData attributeData, string line, ref TQColor? font)
 	{
-		string augmentSkillNumber = attributeData.FullAttribute.Substring(17, 1);
+		// Optimized: use span to get single char
+		string augmentSkillNumber = attributeData.FullAttribute.AsSpan().Slice(17, 1).ToString();
 		string skillRecordKey = string.Concat("augmentSkillName", augmentSkillNumber);
 		string skillRecordID = record.GetString(skillRecordKey, 0);
 
@@ -3559,9 +3563,9 @@ VariableValue Raw : {valueRaw}
 						displayDamageQualifierTitle = false;
 					}
 
-					// Show the damage type
-					string damageTag = attributeData.FullAttribute.Remove(attributeData.FullAttribute.Length - 15);
-					damageTag = string.Concat(damageTag.Substring(0, 1).ToUpperInvariant(), damageTag.Substring(1));
+					// Show the damage type - Optimized using span-based RemoveSuffix and ToFirstCharUpperCase
+					string damageTag = attributeData.FullAttribute.AsSpan().RemoveSuffix(15);
+					damageTag = damageTag.AsSpan().ToFirstCharUpperCase();
 					TranslationService.TryTranslateXTag(string.Concat("tagQualifyingDamage", damageTag), out var damageType);
 
 					if (!TranslationService.TryTranslateXTag("formatQualifyingDamage", out var formatSpec))

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using AwesomeAssertions;
 using TQVaultAE.Domain.Helpers;
+using Xunit;
 
 namespace TQVaultAE.Tests.Helpers;
 
@@ -99,4 +100,300 @@ public class StringHelperTests
 
 		return sBuilder.ToString();
 	}
+
+	#region ToFirstCharUpperCase Tests
+
+	[Fact]
+	public void ToFirstCharUpperCase_String_UppercasesFirstChar()
+	{
+		// Arrange
+		var input = "defensiveCold";
+
+		// Act
+		var result = input.ToFirstCharUpperCase();
+
+		// Assert
+		result.Should().Be("DefensiveCold");
+	}
+
+	[Fact]
+	public void ToFirstCharUpperCase_Span_UppercasesFirstChar()
+	{
+		// Arrange
+		var input = "offensivePhysical".AsSpan();
+
+		// Act
+		var result = input.ToFirstCharUpperCase();
+
+		// Assert
+		result.Should().Be("OffensivePhysical");
+	}
+
+	[Fact]
+	public void ToFirstCharUpperCase_Span_SingleChar_ReturnsUppercase()
+	{
+		// Arrange
+		var input = "a".AsSpan();
+
+		// Act
+		var result = input.ToFirstCharUpperCase();
+
+		// Assert
+		result.Should().Be("A");
+	}
+
+	[Fact]
+	public void ToFirstCharUpperCase_Span_Empty_ReturnsEmpty()
+	{
+		// Arrange
+		var input = ReadOnlySpan<char>.Empty;
+
+		// Act
+		var result = input.ToFirstCharUpperCase();
+
+		// Assert
+		result.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void ToFirstCharUpperCase_Span_AlreadyUppercase_StaysUppercase()
+	{
+		// Arrange
+		var input = "DEFENSIVEBLOCKRECOVERY".AsSpan();
+
+		// Act
+		var result = input.ToFirstCharUpperCase();
+
+		// Assert
+		result.Should().Be("DEFENSIVEBLOCKRECOVERY");
+	}
+
+	[Fact]
+	public void ToFirstCharUpperCase_Span_LongString_UsesStackalloc()
+	{
+		// Arrange - String longer than 64 chars triggers stackalloc path
+		var input = new string('x', 100).AsSpan();
+
+		// Act
+		var result = input.ToFirstCharUpperCase();
+
+		// Assert
+		result.Should().StartWith("X");
+		result.Should().HaveLength(100);
+	}
+
+	[Fact]
+	public void ToFirstCharUpperCase_StringAndSpan_ProduceSameResult()
+	{
+		// Arrange
+		var input = "blockRecoveryTime";
+
+		// Act
+		var stringResult = input.ToFirstCharUpperCase();
+		var spanResult = input.AsSpan().ToFirstCharUpperCase();
+
+		// Assert
+		spanResult.Should().Be(stringResult);
+	}
+
+	#endregion
+
+	#region RemoveSuffix Tests
+
+	[Fact]
+	public void RemoveSuffix_Span_RemovesSuffix()
+	{
+		// Arrange
+		var input = "defensiveColdRatio".AsSpan();
+
+		// Act
+		var result = input.RemoveSuffix(5); // Remove "Ratio"
+
+		// Assert
+		result.Should().Be("defensiveCold");
+	}
+
+	[Fact]
+	public void RemoveSuffix_Span_ExactLength_ReturnsEmpty()
+	{
+		// Arrange
+		var input = "cold".AsSpan();
+
+		// Act
+		var result = input.RemoveSuffix(4);
+
+		// Assert
+		result.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void RemoveSuffix_Span_TooLong_ReturnsEmpty()
+	{
+		// Arrange
+		var input = "abc".AsSpan();
+
+		// Act
+		var result = input.RemoveSuffix(10);
+
+		// Assert
+		result.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void RemoveSuffix_String_CallsSpanOverload()
+	{
+		// Arrange
+		var input = "offensivePhysical";
+
+		// Act
+		var result = input.RemoveSuffix(8); // Remove "Physical"
+
+		// Assert
+		result.Should().Be("offensive");
+	}
+
+	[Fact]
+	public void RemoveSuffix_StringAndSpan_ProduceSameResult()
+	{
+		// Arrange
+		var input = "retaliationSlowPhysical";
+
+		// Act
+		var stringResult = input.RemoveSuffix(8);
+		var spanResult = input.AsSpan().RemoveSuffix(8);
+
+		// Assert
+		spanResult.Should().Be(stringResult);
+	}
+
+	#endregion
+
+	#region ConcatSlice Tests
+
+	[Fact]
+	public void ConcatSlice_SkipPrefix_ConcatenatesCorrectly()
+	{
+		// Arrange
+		var prefix = "Defense".AsSpan();
+		var span = "defensiveCold".AsSpan();
+
+		// Act - Skip "defensive" (9 chars), keep "Cold"
+		var result = StringHelper.ConcatSlice(prefix, span, 9);
+
+		// Assert
+		result.Should().Be("DefenseCold");
+	}
+
+	[Fact]
+	public void ConcatSlice_SkipPrefix_WithExplicitLength_ConcatenatesCorrectly()
+	{
+		// Arrange
+		var prefix = "Damage".AsSpan();
+		var span = "offensiveChaosModifier".AsSpan();
+
+		// Act - Skip "offensive" (9 chars), take "Chaos" (5 chars)
+		var result = StringHelper.ConcatSlice(prefix, span, 9, 5);
+
+		// Assert
+		result.Should().Be("DamageChaos");
+	}
+
+	[Fact]
+	public void ConcatSlice_EmptyPrefix_ReturnsSlice()
+	{
+		// Arrange
+		var prefix = ReadOnlySpan<char>.Empty;
+		var span = "blockRecovery".AsSpan();
+
+		// Act
+		var result = StringHelper.ConcatSlice(prefix, span, 5); // Skip "block"
+
+		// Assert
+		result.Should().Be("Recovery");
+	}
+
+	[Fact]
+	public void ConcatSlice_EmptySuffix_ReturnsPrefix()
+	{
+		// Arrange
+		var prefix = "Defense".AsSpan();
+		var span = "defensive".AsSpan();
+
+		// Act - Skip entire span
+		var result = StringHelper.ConcatSlice(prefix, span, 9);
+
+		// Assert
+		result.Should().Be("Defense");
+	}
+
+	[Fact]
+	public void ConcatSlice_BothEmpty_ReturnsEmpty()
+	{
+		// Act
+		var result = StringHelper.ConcatSlice(
+			ReadOnlySpan<char>.Empty,
+			ReadOnlySpan<char>.Empty,
+			0);
+
+		// Assert
+		result.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void ConcatSlice_LongSuffix_ConcatenatesCorrectly()
+	{
+		// Arrange
+		var prefix = "Skill".AsSpan();
+		var span = "skillFireball".AsSpan();
+
+		// Act - Skip "skill" (5 chars)
+		var result = StringHelper.ConcatSlice(prefix, span, 5);
+
+		// Assert
+		result.Should().Be("SkillFireball");
+	}
+
+	#endregion
+
+	#region ContainsIgnoreCase Tests
+
+	[Fact]
+	public void ContainsIgnoreCase_Span_FindsSubstring()
+	{
+		// Arrange
+		var input = "defensiveCold".AsSpan();
+
+		// Act & Assert
+		input.ContainsIgnoreCase("cold".AsSpan()).Should().BeTrue();
+		input.ContainsIgnoreCase("COLD".AsSpan()).Should().BeTrue();
+		input.ContainsIgnoreCase("Cold".AsSpan()).Should().BeTrue();
+		input.ContainsIgnoreCase("fire".AsSpan()).Should().BeFalse();
+	}
+
+	[Fact]
+	public void ContainsIgnoreCase_String_FindsSubstring()
+	{
+		// Arrange
+		var input = "offensivePhysicalDamage";
+
+		// Act & Assert
+		input.ContainsIgnoreCase("physical").Should().BeTrue();
+		input.ContainsIgnoreCase("PHYSICAL").Should().BeTrue();
+		input.ContainsIgnoreCase("damage").Should().BeTrue();
+	}
+
+	[Fact]
+	public void ContainsIgnoreCase_String_NotFound_ReturnsFalse()
+	{
+		// Arrange
+		var input = "blockRecoveryTime";
+
+		// Act
+		var result = input.ContainsIgnoreCase("lightning");
+
+		// Assert
+		result.Should().BeFalse();
+	}
+
+	#endregion
 }

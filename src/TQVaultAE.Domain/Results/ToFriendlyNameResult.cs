@@ -62,9 +62,28 @@ public class ToFriendlyNameResult
 
 		FulltextBuild();
 
+		// Use span-based comparison for better performance
+		var searchSpan = search.AsSpan();
 		foreach (var str in _FullText)
 		{
-			if (str.ContainsIgnoreCase(search)) return true;
+			if (str.AsSpan().Contains(searchSpan, StringComparison.OrdinalIgnoreCase)) return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Optimized full-text search using ReadOnlySpan for bounds-check elimination.
+	/// </summary>
+	public bool FulltextIsMatchIndexOf(ReadOnlySpan<char> search)
+	{
+		if (search.IsEmpty) return false;
+
+		FulltextBuild();
+
+		foreach (var str in _FullText)
+		{
+			if (str.AsSpan().Contains(search, StringComparison.OrdinalIgnoreCase)) return true;
 		}
 
 		return false;

@@ -211,22 +211,24 @@ public class StashProvider : IStashProvider
 	/// <returns>raw file data with the updated file name extension</returns>
 	private byte[] EncodeBackupFile(byte[] data)
 	{
+		// Use ReadOnlySpan for bounds-check elimination
+		var dataSpan = data.AsSpan();
 		// Find the length of the filename string.
 		// It's an Int32 starting at offset 52 in the file.
-		int offset = data[52] + (256 * data[53]) + (65536 * data[54]) + (16777216 * data[55]);
+		int offset = dataSpan[52] + (256 * dataSpan[53]) + (65536 * dataSpan[54]) + (16777216 * dataSpan[55]);
 
 		// Adjust for the location of the filename string - 1
 		// which is at offset 56.  Subtract 1 to get the last letter of the filename.
 		offset += 55;
 
 		// look for the 'b' in .dxb
-		if (data[offset] == 98 || data[offset] == 66)
+		if (dataSpan[offset] == 98 || dataSpan[offset] == 66)
 			// and change it to 'g'
-			data[offset] = Convert.ToByte(103, CultureInfo.InvariantCulture);
+			data[offset] = 103;
 
 		// zero out the checksum
 		for (int i = 0; i < 4; i++)
-			data[i] = Convert.ToByte(0, CultureInfo.InvariantCulture);
+			data[i] = 0;
 
 		return data;
 	}
@@ -239,7 +241,7 @@ public class StashProvider : IStashProvider
 	public byte[] CalculateCRC(byte[] data)
 	{
 		// Use ReadOnlySpan for bounds-check elimination
-		var dataSpan = new ReadOnlySpan<byte>(data);
+		var dataSpan = data.AsSpan();
 		uint crc32Result = 0;
 		Span<byte> buffer = stackalloc byte[BUFFERSIZE];
 

@@ -42,12 +42,12 @@ public class TQDataService : ITQDataService
 	/// <summary>
 	/// Gets the CP1252 (Windows-1252) encoding used for TQ file parsing.
 	/// </summary>
-	internal static Encoding Encoding1252 => _encoding1252.Value;
+	public static Encoding Encoding1252 => _encoding1252.Value;
 
 	/// <summary>
 	/// Gets the Unicode UTF-16 encoding.
 	/// </summary>
-	internal static Encoding EncodingUnicode => Encoding.Unicode;
+	public static Encoding EncodingUnicode => Encoding.Unicode;
 
 	public TQDataService(ILogger<TQDataService> log)
 	{
@@ -86,6 +86,28 @@ public class TQDataService : ITQDataService
 			return false;
 
 		return true;
+	}
+
+	/// <summary>
+	/// Validates that the next string matches the expected value using span-based parsing.
+	/// Does not throw - returns true if match, false otherwise.
+	/// Advances offset by the string length on match.
+	/// Enables bounds-check elimination in high-frequency parsing paths.
+	/// </summary>
+	/// <param name="expectedValue">The expected string value</param>
+	/// <param name="data">ReadOnlySpan of binary data</param>
+	/// <param name="offset">Offset that will be advanced on match</param>
+	/// <returns>True if the next string matches expectedValue</returns>
+	public bool ValidateNextString(string expectedValue, ReadOnlySpan<byte> data, ref int offset)
+	{
+		var savedOffset = offset;
+		string label = ReadCString(data, ref offset);
+		if (label.Equals(expectedValue, StringComparison.OrdinalIgnoreCase))
+			return true;
+
+		// Restore offset if no match
+		offset = savedOffset;
+		return false;
 	}
 
 	/// <summary>
@@ -146,6 +168,39 @@ public class TQDataService : ITQDataService
 		return EncodingUnicode.GetString(rawData);
 	}
 
+	/// <summary>
+	/// Reads a length-prefixed string from a span using CP1252 encoding.
+	/// Enables bounds-check elimination in high-frequency parsing paths.
+	/// </summary>
+	/// <param name="data">ReadOnlySpan of binary data</param>
+	/// <param name="offset">Offset that will be advanced by the method</param>
+	/// <returns>The decoded string</returns>
+	public string ReadCString(ReadOnlySpan<byte> data, ref int offset)
+	{
+		int len = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(offset));
+		offset += sizeof(int);
+		var stringData = data.Slice(offset, len);
+		offset += len;
+		return Encoding1252.GetString(stringData);
+	}
+
+	/// <summary>
+	/// Reads a length-prefixed UTF-16 string from a span.
+	/// Enables bounds-check elimination in high-frequency parsing paths.
+	/// </summary>
+	/// <param name="data">ReadOnlySpan of binary data</param>
+	/// <param name="offset">Offset that will be advanced by the method</param>
+	/// <returns>The decoded string</returns>
+	public string ReadUTF16String(ReadOnlySpan<byte> data, ref int offset)
+	{
+		int charCount = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(offset));
+		offset += sizeof(int);
+		int byteCount = charCount * 2;
+		var stringData = data.Slice(offset, byteCount);
+		offset += byteCount;
+		return Encoding.Unicode.GetString(stringData);
+	}
+
 	public (int indexOf, int valueOffset, int nextOffset, byte[] valueAsByteArray, int valueAsInt) WriteIntAfter(byte[] playerFileContent, string keyToLookFor, int newValue, int offset = 0)
 	{
 		var found = ReadIntAfter(playerFileContent, keyToLookFor, offset);
@@ -168,7 +223,7 @@ public class TQDataService : ITQDataService
 		return found;
 	}
 
-	static byte[] Empty = new byte[0];
+	static byte[] Empty = [];
 
 	public (int indexOf, int valueOffset, int nextOffset, byte[] valueAsByteArray, float valueAsFloat) ReadFloatAfter(byte[] playerFileContent, string keyToLookFor, int offset = 0)
 	{
@@ -249,23 +304,23 @@ public class TQDataService : ITQDataService
 
 	private static (int indexOf, int nextOffset) BinaryFindKey(ReadOnlySpan<byte> dataSource, ReadOnlySpan<byte> key, int offset = 0)
 	{
+		// Use SIMD-optimized SequenceEqual for comparison when first byte matches
 		// adapted From https://www.codeproject.com/Questions/479424/C-23plusbinaryplusfilesplusfindingplusstrings
-		int i = offset, j = 0;
-		for (; i <= (dataSource.Length - key.Length); i++)
-		{
-			if (dataSource[i] == key[0])
-			{
-				j = 1;
-				for (; j < key.Length && dataSource[i + j] == key[j]; j++) ;
-				if (j == key.Length)
-					goto found;
+		int i = offset;
+		var keyLength = key.Length;
+		var firstByte = key[0];
 
+		for (; i <= (dataSource.Length - keyLength); i++)
+		{
+			if (dataSource[i] == firstByte)
+			{
+				// Use Span.SequenceEqual which is SIMD-optimized in .NET
+				if (dataSource.Slice(i, keyLength).SequenceEqual(key))
+					return (i, i + keyLength);
 			}
 		}
 		// Not found
 		return (-1, 0);
-		found:
-		return (i, i + key.Length);
 	}
 
 	/// <summary>

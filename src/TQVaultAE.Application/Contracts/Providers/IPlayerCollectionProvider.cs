@@ -16,6 +16,15 @@ public interface IPlayerCollectionProvider
 	/// <param name="start">offset where we are starting our search</param>
 	/// <returns>Returns the index of the first char indicating the block delimiter or -1 if none is found.</returns>
 	int FindNextBlockDelim(PlayerCollection pc, int start);
+
+	/// <summary>
+	/// Looks for the next begin_block or end_block using span-based search.
+	/// Optimized for bounds-check elimination.
+	/// </summary>
+	/// <param name="data">ReadOnlySpan of the raw binary data</param>
+	/// <param name="start">offset where we are starting our search</param>
+	/// <returns>Returns the index of the first char indicating the block delimiter or -1 if none is found.</returns>
+	int FindNextBlockDelim(ReadOnlySpan<byte> data, int start);
 	/// <summary>
 	/// Attempts to load a player file
 	/// </summary>

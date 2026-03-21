@@ -49,6 +49,34 @@ public class RecordInfoProvider : IRecordInfoProvider
 	}
 
 	/// <summary>
+	/// Decodes the ARZ file using ReadOnlySpan for zero-copy parsing.
+	/// Enables bounds-check elimination in high-frequency parsing paths.
+	/// </summary>
+	/// <param name="info">RecordInfo to populate</param>
+	/// <param name="data">ReadOnlySpan of binary data</param>
+	/// <param name="offset">Offset that will be advanced by the method</param>
+	/// <param name="baseOffset">Base offset to add to the record offset</param>
+	/// <param name="arzFile">ArzFile instance which we are operating.</param>
+	public void Decode(RecordInfo info, ReadOnlySpan<byte> data, ref int offset, int baseOffset, ArzFile arzFile)
+	{
+		info.IdStringIndex = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(offset));
+		offset += sizeof(int);
+
+		info.RecordType = TQData.ReadCString(data, ref offset);
+
+		info.Offset = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(offset)) + baseOffset;
+		offset += sizeof(int);
+
+		info.CompressedSize = BinaryPrimitives.ReadInt32LittleEndian(data.Slice(offset));
+		offset += sizeof(int);
+
+		// Skip 2 x int32 (total 8 bytes)
+		offset += sizeof(int) * 2;
+
+		info.ID = arzFile.Getstring(info.IdStringIndex);
+	}
+
+	/// <summary>
 	/// Decompresses an individual record.
 	/// </summary>
 	/// <param name="arzFile">ARZ file which we are decompressing.</param>
