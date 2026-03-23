@@ -5,14 +5,10 @@
 //-----------------------------------------------------------------------
 
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.ComponentModel;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Security.Permissions;
-using System.Windows.Forms;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Logs;
@@ -20,8 +16,6 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;

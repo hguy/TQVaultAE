@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
@@ -138,6 +139,10 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 		BackgroundImageLayout = ImageLayout.Stretch;
 		BackgroundImage = Resources.caravan_bg;
+
+		// Reduce slightly the designed component to fit better the UI.
+		List<PictureBox> pictureBoxList = [pictureBoxBaseItem, pictureBoxPrefix, pictureBoxRelic1, pictureBoxRelic2, pictureBoxSuffix];
+		foreach (var pictureBox in pictureBoxList) pictureBox.Size = new Size(Convert.ToInt32(pictureBox.Size.Width * 0.9), Convert.ToInt32(pictureBox.Size.Height * 0.9));
 
 		tableLayoutPanelForge.BackgroundImageLayout = ImageLayout.Stretch;
 		tableLayoutPanelForge.BackgroundImage = Resources.StashPanel;
