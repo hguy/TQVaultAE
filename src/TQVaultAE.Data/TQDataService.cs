@@ -6,11 +6,8 @@
 
 using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Buffers.Binary;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using TQVaultAE.Logs;
 

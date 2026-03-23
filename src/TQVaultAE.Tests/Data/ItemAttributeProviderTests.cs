@@ -1,9 +1,6 @@
-using System;
-using System.Linq;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Data;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;

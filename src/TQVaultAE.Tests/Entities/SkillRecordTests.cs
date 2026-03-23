@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using System.Text;
 using AwesomeAssertions;
 using TQVaultAE.Domain.Entities;

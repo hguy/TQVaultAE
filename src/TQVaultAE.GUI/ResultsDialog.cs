@@ -3,10 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
+
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;

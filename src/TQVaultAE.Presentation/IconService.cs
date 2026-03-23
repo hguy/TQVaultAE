@@ -1,7 +1,6 @@
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using System.Text.Json;
 using TQVaultAE.Presentation.Models;
 using System.Text.RegularExpressions;

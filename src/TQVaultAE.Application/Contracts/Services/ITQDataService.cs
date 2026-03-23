@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace TQVaultAE.Application.Contracts.Services;
+﻿namespace TQVaultAE.Application.Contracts.Services;
 
 public interface ITQDataService
 {

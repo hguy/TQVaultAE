@@ -3,15 +3,11 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-using System;
-using System.Drawing;
+
 using System.Globalization;
-using System.Linq;
-using System.Windows.Forms;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using EnumsNET;
-using TQVaultAE.Domain.Results;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Helpers;
 using System.Text.RegularExpressions;
@@ -20,7 +16,6 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI;
 

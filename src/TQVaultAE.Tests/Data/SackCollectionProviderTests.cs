@@ -1,11 +1,8 @@
 using System.Buffers.Binary;
-using System.IO;
-using System.Text;
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TQVaultAE.Application.Contracts.Providers;
-using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Data;
 using TQVaultAE.Domain.Entities;
 

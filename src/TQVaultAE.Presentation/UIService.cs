@@ -1,8 +1,6 @@
 using Microsoft.Extensions.Logging;
-using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Linq;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;

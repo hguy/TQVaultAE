@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 using System.Text;
 using AwesomeAssertions;
 using TQVaultAE.Domain.Helpers;
-using Xunit;
 
 namespace TQVaultAE.Tests.Helpers;
 

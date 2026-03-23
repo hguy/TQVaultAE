@@ -1,9 +1,7 @@
 using Microsoft.Extensions.Logging;
-using System.IO;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
 using Medallion.Shell;
-using System.Linq;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 

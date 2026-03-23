@@ -1,6 +1,4 @@
-﻿using TQVaultAE.Domain.Entities;
-
-namespace TQVaultAE.Application.Contracts.Services;
+﻿namespace TQVaultAE.Application.Contracts.Services;
 
 public interface IGameFileService
 {

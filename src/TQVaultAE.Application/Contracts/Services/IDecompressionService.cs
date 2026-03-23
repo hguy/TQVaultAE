@@ -1,5 +1,3 @@
-using System;
-
 namespace TQVaultAE.Application.Contracts.Services;
 
 public interface IDecompressionService

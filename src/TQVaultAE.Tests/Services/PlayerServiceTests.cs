@@ -1,13 +1,11 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.IO;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
-using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 
 namespace TQVaultAE.Tests.Services;

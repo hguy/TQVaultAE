@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;

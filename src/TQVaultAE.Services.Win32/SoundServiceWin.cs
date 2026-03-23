@@ -1,9 +1,5 @@
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using System.Media;
-using System.IO;
-using System;
-using System.Collections.Generic;
 using NAudio.Wave;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;

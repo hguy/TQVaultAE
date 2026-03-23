@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using TQVaultAE.Domain.Entities;
-
-namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
+﻿namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
 
 public class SearchQuery
 {

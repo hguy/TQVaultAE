@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------
 
 using TQVaultAE.Application.Contracts.Providers;
-using System.Collections.Generic;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Data;

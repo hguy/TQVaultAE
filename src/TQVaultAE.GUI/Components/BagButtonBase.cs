@@ -4,12 +4,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Drawing;
-using System.Windows.Forms;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.Domain.Entities;
-using System.Linq;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;

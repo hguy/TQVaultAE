@@ -4,15 +4,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.Globalization;
-using System.IO;
 using System.Reflection;
 using System.Resources;
 using System.Security.Permissions;
 using System.Text.Json;
-using System.Threading;
-using System.Windows.Forms;
 using TQVaultAE.Data;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Exceptions;

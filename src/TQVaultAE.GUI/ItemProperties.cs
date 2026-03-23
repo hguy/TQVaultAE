@@ -11,7 +11,6 @@ using System.Linq;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Results;
-using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Helpers;
 

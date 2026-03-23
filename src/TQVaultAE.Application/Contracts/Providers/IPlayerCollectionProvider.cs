@@ -1,6 +1,4 @@
-﻿using TQVaultAE.Domain.Entities;
-
-namespace TQVaultAE.Application.Contracts.Providers;
+﻿namespace TQVaultAE.Application.Contracts.Providers;
 
 public interface IPlayerCollectionProvider
 {

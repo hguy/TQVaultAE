@@ -1,18 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Drawing;
 using System.Globalization;
-using System.IO;
-using System.Windows.Forms;
-using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using TQVaultAE.Logs;
 using TQVaultAE.Services;
-using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts;
 
 namespace TQVaultAE.GUI;
 
