@@ -16,6 +16,7 @@ namespace TQVaultAE.Tests.Services;
 public class PlayerServiceTests
 {
 	private readonly Mock<ILogger<PlayerService>> _mockLogger;
+	private readonly Mock<IItemDatabaseService> _mockItemDatabaseService;
 	private readonly Mock<IPlayerCollectionProvider> _mockPlayerCollectionProvider;
 	private readonly Mock<IGameFileService> _mockGameFileService;
 	private readonly Mock<IGamePathService> _mockGamePathService;
@@ -51,6 +52,7 @@ public class PlayerServiceTests
 	public PlayerServiceTests()
 	{
 		_mockLogger = new Mock<ILogger<PlayerService>>();
+		_mockItemDatabaseService = new Mock<IItemDatabaseService>();
 		_mockPlayerCollectionProvider = new Mock<IPlayerCollectionProvider>();
 		_mockGameFileService = new Mock<IGameFileService>();
 		_mockGamePathService = new Mock<IGamePathService>();
@@ -62,11 +64,13 @@ public class PlayerServiceTests
 		_mockPathIO = new Mock<PathIO>();
 		_userSettings = new UserSettings();
 
-		_sessionContext = new SessionContext(null);
+		// Create SessionContext - parameterless data holder
+		_sessionContext = new SessionContext();
 
 		_playerService = new PlayerService(
 			_mockLogger.Object,
 			_sessionContext,
+			_mockItemDatabaseService.Object,
 			_mockPlayerCollectionProvider.Object,
 			_mockStashService.Object,
 			_mockGameFileService.Object,

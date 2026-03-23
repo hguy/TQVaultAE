@@ -17,10 +17,10 @@ public class VaultServiceTests
 {
 	private readonly Mock<ILogger<VaultService>> _mockLogger;
 	private readonly SessionContext _sessionContext;
+	private readonly Mock<IItemDatabaseService> _mockItemDatabaseService;
 	private readonly Mock<IPlayerCollectionProvider> _mockPlayerCollectionProvider;
 	private readonly Mock<IGameFileService> _mockGameFileService;
 	private readonly Mock<IGamePathService> _mockGamePathService;
-	private readonly Mock<IItemProvider> _mockItemProvider;
 	private readonly Mock<IFileIO> _mockFileIO;
 	private readonly Mock<IPathIO> _mockPathIO;
 	private readonly UserSettings _userSettings;
@@ -32,20 +32,21 @@ public class VaultServiceTests
 	public VaultServiceTests()
 	{
 		_mockLogger = new Mock<ILogger<VaultService>>();
+		_mockItemDatabaseService = new Mock<IItemDatabaseService>();
 		_mockPlayerCollectionProvider = new Mock<IPlayerCollectionProvider>();
 		_mockGameFileService = new Mock<IGameFileService>();
 		_mockGamePathService = new Mock<IGamePathService>();
-		_mockItemProvider = new Mock<IItemProvider>();
 		_mockFileIO = new Mock<IFileIO>();
 		_mockPathIO = new Mock<IPathIO>();
 		_userSettings = new UserSettings();
 
-		// Create real SessionContext with mocked dependencies
-		_sessionContext = new SessionContext(_mockItemProvider.Object);
+		// Create SessionContext - parameterless data holder
+		_sessionContext = new SessionContext();
 
 		_vaultService = new VaultService(
 			_mockLogger.Object,
 			_sessionContext,
+			_mockItemDatabaseService.Object,
 			_mockPlayerCollectionProvider.Object,
 			_mockGamePathService.Object,
 			_mockGameFileService.Object,

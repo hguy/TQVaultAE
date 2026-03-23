@@ -17,10 +17,10 @@ public class StashServiceTests
 {
 	private readonly Mock<ILogger<StashService>> _mockLogger;
 	private readonly SessionContext _sessionContext;
+	private readonly Mock<IItemDatabaseService> _mockItemDatabaseService;
 	private readonly Mock<IStashProvider> _mockStashProvider;
 	private readonly Mock<IGamePathService> _mockGamePathService;
 	private readonly Mock<IGameFileService> _mockGameFileService;
-	private readonly Mock<IItemProvider> _mockItemProvider;
 	private readonly UserSettings _userSettings;
 	private readonly StashService _stashService;
 
@@ -30,18 +30,19 @@ public class StashServiceTests
 	public StashServiceTests()
 	{
 		_mockLogger = new Mock<ILogger<StashService>>();
+		_mockItemDatabaseService = new Mock<IItemDatabaseService>();
 		_mockStashProvider = new Mock<IStashProvider>();
 		_mockGamePathService = new Mock<IGamePathService>();
 		_mockGameFileService = new Mock<IGameFileService>();
-		_mockItemProvider = new Mock<IItemProvider>();
 		_userSettings = new UserSettings();
 
-		// Create real SessionContext with mocked dependencies
-		_sessionContext = new SessionContext(_mockItemProvider.Object);
+		// Create SessionContext - parameterless data holder
+		_sessionContext = new SessionContext();
 
 		_stashService = new StashService(
 			_mockLogger.Object,
 			_sessionContext,
+			_mockItemDatabaseService.Object,
 			_mockStashProvider.Object,
 			_mockGamePathService.Object,
 			_mockGameFileService.Object,

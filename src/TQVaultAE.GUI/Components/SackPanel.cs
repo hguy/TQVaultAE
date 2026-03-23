@@ -38,6 +38,8 @@ public class SackPanel : Panel, IScalingControl
 	protected readonly IItemProvider ItemProvider;
 	protected readonly ITQDataService TQData;
 	protected readonly IServiceProvider ServiceProvider;
+	protected readonly IHighlightService HighlightService;
+	protected readonly IItemDatabaseService ItemDatabaseService;
 	private readonly Bitmap CustomContextMenuAffixUnknown;
 	private readonly Bitmap CustomContextMenuAffixUntranslated;
 	ItemStyle[] ItemStyleBackGroundColorEnable = new[] {
@@ -219,6 +221,8 @@ public class SackPanel : Panel, IScalingControl
 		this.TranslationService = this.ServiceProvider.GetService<ITranslationService>();
 		this.userContext = this.ServiceProvider.GetService<SessionContext>();
 		this.USettings = this.ServiceProvider.GetService<UserSettings>();
+		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
+		this.ItemDatabaseService = this.ServiceProvider.GetService<IItemDatabaseService>();
 
 		this.Log = this.ServiceProvider.GetService<ILogger<SackPanel>>();
 
@@ -242,7 +246,7 @@ public class SackPanel : Panel, IScalingControl
 		this.HighlightValidItemColor = Color.FromArgb(23, 149, 15);       // Green
 		this.HighlightInvalidItemColor = Color.FromArgb(153, 28, 28);     // Red
 
-		this.HighlightSearchItemBorder = new Pen(this.userContext.HighlightSearchItemBorderColor)
+		this.HighlightSearchItemBorder = new Pen(this.HighlightService.HighlightSearchItemBorderColor)
 		{
 			Width = 4,
 		};
@@ -736,7 +740,7 @@ public class SackPanel : Panel, IScalingControl
 			if (this.selectedItems != null)
 				this.ClearSelection();
 
-			foreach (Item item in this.userContext.HighlightedItems)
+			foreach (Item item in this.HighlightService.HighlightedItems)
 			{
 				if (this.Sack.Contains(item))
 					this.SelectItem(item);
@@ -1285,7 +1289,7 @@ public class SackPanel : Panel, IScalingControl
 				this.UpdateItemLocation(dragItem);
 
 				// Register new items in the database (existing items are already tracked)
-				this.userContext.TryAddItemToDatabase(dragItem);
+				this.ItemDatabaseService.TryAddItemToDatabase(dragItem);
 			}
 
 			// clear the "last drag" variables
@@ -2550,10 +2554,10 @@ public class SackPanel : Panel, IScalingControl
 
 			var highlight = false;
 			// Highlight search
-			if (this.userContext.HighlightedItems.Count > 0 && this.userContext.HighlightedItems.Contains(item))
+			if (this.HighlightService.HighlightedItems.Count > 0 && this.HighlightService.HighlightedItems.Contains(item))
 			{
 				highlight = true;
-				backgroundColor = this.userContext.HighlightSearchItemColor;
+				backgroundColor = this.HighlightService.HighlightSearchItemColor;
 				alpha = AdjustAlpha(alpha);
 			}
 			// If we are showing the cannot equip background then 
@@ -2819,7 +2823,7 @@ public class SackPanel : Panel, IScalingControl
 				// remove item
 				this.Sack.RemoveItem(focusedItem);
 				// Remove from search database
-				this.userContext.RemoveItemFromDatabase(focusedItem);
+				this.ItemDatabaseService.RemoveItemFromDatabase(focusedItem);
 				this.Refresh();
 				BagButtonTooltip.InvalidateCache(this.Sack);
 			}

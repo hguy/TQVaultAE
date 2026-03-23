@@ -1,4 +1,6 @@
-﻿namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
+using TQVaultAE.Application.DTOs;
+
+namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
 
 public class SearchQuery
 {

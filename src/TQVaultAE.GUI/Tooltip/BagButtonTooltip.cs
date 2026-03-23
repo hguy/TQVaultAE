@@ -42,12 +42,13 @@ public partial class BagButtonTooltip : BaseTooltip
 
 	// to avoid Mainform lost focus with this.TopMost = false
 	protected override bool ShowWithoutActivation => true;
-
+	
 	public static void InvalidateCache(params SackCollection[] sack)
 	{
 		sack = sack.Where(s => s != null).ToArray();
 		var cacheentrytoremove = ToImage.Where(c => sack.Contains(c.Key.Sack)).Select(c => c.Key).ToList();
-		cacheentrytoremove.ForEach(c => ToImage.Remove(c));
+		foreach (var c in cacheentrytoremove)
+			ToImage.Remove(c);
 	}
 
 	public static void InvalidateCache(params Item[] items)
@@ -57,7 +58,8 @@ public partial class BagButtonTooltip : BaseTooltip
 			.Where(c => c.Key.Sack.Intersect(items).Any())
 			.Select(c => c.Key)
 			.ToList();
-		cacheentrytoremove.ForEach(c => ToImage.Remove(c));
+		foreach (var c in cacheentrytoremove)
+			ToImage.Remove(c);
 	}
 
 	public static void HideTooltip()
@@ -65,8 +67,10 @@ public partial class BagButtonTooltip : BaseTooltip
 		lock (ToImage)
 		{
 			var lst = ItemTooltipOpened.Where(f => f.Value.Visible).ToList();
-			lst.Select(f => f.Value).ToList().ForEach(form => form.Close());
-			lst.Select(f => f.Key).ToList().ForEach(key => ItemTooltipOpened.Remove(key));
+			foreach (var form in lst.Select(f => f.Value))
+				form.Close();
+			foreach (var key in lst.Select(f => f.Key))
+				ItemTooltipOpened.Remove(key);
 		}
 	}
 

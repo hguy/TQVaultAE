@@ -106,7 +106,7 @@ public class MemoryMappedFileService : IFileDataService
 			_fileSizeCache.TryRemove(filePath, out _);
 			try
 			{
-				mmf.Value.Dispose();
+				mmf.Dispose();
 			}
 			catch (Exception ex)
 			{

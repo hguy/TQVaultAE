@@ -13,6 +13,7 @@ public class PlayerService : IPlayerService
 {
 	private readonly ILogger Log;
 	private readonly SessionContext userContext;
+	private readonly IItemDatabaseService ItemDatabaseService;
 	private readonly IPlayerCollectionProvider PlayerCollectionProvider;
 	private readonly IStashService StashService;
 	private readonly IGameFileService GameFileService;
@@ -27,6 +28,7 @@ public class PlayerService : IPlayerService
 	public PlayerService(
 		ILogger<PlayerService> log
 		, SessionContext userContext
+		, IItemDatabaseService itemDatabaseService
 		, IPlayerCollectionProvider playerCollectionProvider
 		, IStashService stashService
 		, IGameFileService iGameFileService
@@ -41,6 +43,7 @@ public class PlayerService : IPlayerService
 	{
 		this.Log = log;
 		this.userContext = userContext;
+		this.ItemDatabaseService = itemDatabaseService;
 		this.PlayerCollectionProvider = playerCollectionProvider;
 		this.StashService = stashService;
 		this.GameFileService = iGameFileService;
@@ -94,14 +97,14 @@ public class PlayerService : IPlayerService
 							continue;
 
 						foreach (var item in sack)
-							this.userContext.AddItemToDatabase(item, k, selectedSave.Name, sackNumber, SackType.Player);
+							this.ItemDatabaseService.AddItemToDatabase(item, k, selectedSave.Name, sackNumber, SackType.Player);
 					}
 
 					// Add equipment items
 					if (resultPC.EquipmentSack != null)
 					{
 						foreach (var item in resultPC.EquipmentSack)
-							this.userContext.AddItemToDatabase(item, k, selectedSave.Name, 0, SackType.Equipment);
+							this.ItemDatabaseService.AddItemToDatabase(item, k, selectedSave.Name, 0, SackType.Equipment);
 					}
 				}
 				catch (ArgumentException argumentException)

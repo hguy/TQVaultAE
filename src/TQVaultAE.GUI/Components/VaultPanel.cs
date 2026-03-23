@@ -31,6 +31,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	protected readonly IItemProvider ItemProvider;
 	protected readonly IServiceProvider ServiceProvider;
 	protected readonly UserSettings USettings;
+	protected readonly IHighlightService HighlightService;
 
 	/// <summary>
 	/// Gets the SackPanel instance
@@ -112,6 +113,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.userContext = this.ServiceProvider.GetService<SessionContext>();
 		this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
 		this.USettings = this.ServiceProvider.GetService<UserSettings>();
+		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
 
 		this.DragInfo = dragInfo;
 		this.AutoMoveLocation = autoMoveLocation;
@@ -371,7 +373,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		if (e.PropertyName == nameof(Player))
 		{
 			this.AssignSacks();
-			this.userContext.FindHighlight();
+			this.HighlightService.FindHighlight();
 		}
 	}
 

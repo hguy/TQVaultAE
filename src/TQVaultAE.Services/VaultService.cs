@@ -12,6 +12,7 @@ public class VaultService : IVaultService
 {
 	private readonly ILogger Log;
 	private readonly SessionContext userContext;
+	private readonly IItemDatabaseService ItemDatabaseService;
 	private readonly IGamePathService GamePathResolver;
 	private readonly IGameFileService GameFileService;
 	private readonly IPlayerCollectionProvider PlayerCollectionProvider;
@@ -20,10 +21,20 @@ public class VaultService : IVaultService
 	private readonly UserSettings UserSettings;
 	public const string MAINVAULT = "Main Vault";
 
-	public VaultService(ILogger<VaultService> log, SessionContext userContext, IPlayerCollectionProvider playerCollectionProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, IFileIO fileIO, IPathIO pathIO, UserSettings userSettings)
+	public VaultService(
+		ILogger<VaultService> log,
+		SessionContext userContext,
+		IItemDatabaseService itemDatabaseService,
+		IPlayerCollectionProvider playerCollectionProvider,
+		IGamePathService gamePathResolver,
+		IGameFileService iGameFileService,
+		IFileIO fileIO,
+		IPathIO pathIO,
+		UserSettings userSettings)
 	{
 		this.Log = log;
 		this.userContext = userContext;
+		this.ItemDatabaseService = itemDatabaseService;
 		this.GamePathResolver = gamePathResolver;
 		this.GameFileService = iGameFileService;
 		this.PlayerCollectionProvider = playerCollectionProvider;
@@ -148,7 +159,7 @@ public class VaultService : IVaultService
 						continue;
 
 					foreach (var item in sack)
-						this.userContext.AddItemToDatabase(item, k, vaultName, sackNumber, SackType.Vault);
+						this.ItemDatabaseService.AddItemToDatabase(item, k, vaultName, sackNumber, SackType.Vault);
 				}
 
 				return pc;

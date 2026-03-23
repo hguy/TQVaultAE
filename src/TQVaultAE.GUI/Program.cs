@@ -115,7 +115,8 @@ public static class Program
 
 			// Application Layer - Core Services
 			.AddSingleton<IItemMovementService, ItemMovementService>()
-			.AddSingleton<IApplicationStateService, ApplicationStateService>()
+			.AddSingleton<IHighlightService, HighlightService>()
+			.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
 
 				// Performance: Memory-Mapped File Services
 				// To revert to old logic, change to:

@@ -309,11 +309,11 @@ public class ItemProvider : IItemProvider
 	});
 	}
 
-	public bool InvalidateFriendlyNamesCache(params Item[] items)
+	public bool InvalidateFriendlyNamesCache(params IEnumerable<Item> items)
 	{
-		items = items.Where(i => i != null).ToArray();
+		items = items.Where(i => i != null).ToList();
 		var keylist = this.FriendlyNamesCache.Where(i => items.Contains(i.Key.Item)).Select(i => i.Key).ToList();
-		keylist.ForEach(k => this.FriendlyNamesCache.TryRemove(k, out var outVal));
+		foreach (var k in keylist) this.FriendlyNamesCache.TryRemove(k, out var outVal);
 		return keylist.Any();
 	}
 

@@ -28,6 +28,7 @@ public class BagButtonBase : Panel
 	protected readonly IFontService FontService;
 	protected readonly IUIService UIService;
 	protected readonly IBitmapService BitmapService;
+	protected readonly IHighlightService HighlightService;
 	private readonly SessionContext userContext;
 	private readonly UserSettings USettings;
 	internal SackCollection Sack;
@@ -133,11 +134,12 @@ public class BagButtonBase : Panel
 		this.userContext = this.ServiceProvider.GetService<SessionContext>();
 		this.USettings = this.ServiceProvider.GetService<UserSettings>();
 		this.BitmapService = this.ServiceProvider.GetService<IBitmapService>();
+		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
 
 		this.getToolTip = getToolTip;
 		this.ButtonNumber = bagNumber;
 
-		this.HighlightSearchItemBorder = new Pen(this.userContext.HighlightSearchItemBorderColor)
+		this.HighlightSearchItemBorder = new Pen(this.HighlightService.HighlightSearchItemBorderColor)
 		{
 			Width = 4,
 		};
@@ -284,7 +286,7 @@ public class BagButtonBase : Panel
 	protected virtual void PaintHighlightAreaUnderButton(PaintEventArgs e)
 	{
 		// Highlight search
-		using (SolidBrush brush = new SolidBrush(Color.FromArgb(127, this.userContext.HighlightSearchItemColor)))
+		using (SolidBrush brush = new SolidBrush(Color.FromArgb(127, this.HighlightService.HighlightSearchItemColor)))
 		{
 			e.Graphics.FillRectangle(brush, 0, 0, this.Width, this.Height);
 		}
@@ -317,8 +319,8 @@ public class BagButtonBase : Panel
 		bool highlight = false;
 		if (this is not AutoSortButton && this.Sack is not null)
 		{
-			highlight = this.userContext.HighlightedItems.Count > 0
-			            && this.userContext.HighlightedItems.Intersect(this.Sack.ToList()).Any();
+			highlight = this.HighlightService.HighlightedItems.Count > 0
+			            && this.HighlightService.HighlightedItems.Intersect(this.Sack.ToList()).Any();
 		}
 
 		if (highlight) PaintHighlightAreaUnderButton(e);

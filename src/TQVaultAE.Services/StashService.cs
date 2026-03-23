@@ -13,15 +13,24 @@ public class StashService : IStashService
 {
 	private readonly ILogger Log;
 	private readonly SessionContext userContext;
+	private readonly IItemDatabaseService ItemDatabaseService;
 	private readonly IStashProvider StashProvider;
 	private readonly IGamePathService GamePathResolver;
 	private readonly IGameFileService GameFileService;
 	private readonly UserSettings UserSettings;
 
-	public StashService(ILogger<StashService> log, SessionContext userContext, IStashProvider stashProvider, IGamePathService gamePathResolver, IGameFileService iGameFileService, UserSettings userSettings)
+	public StashService(
+		ILogger<StashService> log,
+		SessionContext userContext,
+		IItemDatabaseService itemDatabaseService,
+		IStashProvider stashProvider,
+		IGamePathService gamePathResolver,
+		IGameFileService iGameFileService,
+		UserSettings userSettings)
 	{
 		Log = log;
 		this.userContext = userContext;
+		this.ItemDatabaseService = itemDatabaseService;
 		StashProvider = stashProvider;
 		GamePathResolver = gamePathResolver;
 		GameFileService = iGameFileService;
@@ -56,7 +65,7 @@ public class StashService : IStashService
 				if (stash.Sack != null)
 				{
 					foreach (var item in stash.Sack)
-						userContext.AddItemToDatabase(item, k, selectedSave.Name, BagIdConstants.BAGID_PLAYERSTASH, SackType.Stash, StashType.PlayerStash);
+						this.ItemDatabaseService.AddItemToDatabase(item, k, selectedSave.Name, BagIdConstants.BAGID_PLAYERSTASH, SackType.Stash, StashType.PlayerStash);
 				}
 			}
 			catch (ArgumentException argumentException)
@@ -103,7 +112,7 @@ public class StashService : IStashService
 				if (stash.Sack != null)
 				{
 					foreach (var item in stash.Sack)
-						userContext.AddItemToDatabase(item, k, Resources.GlobalTransferStash, BagIdConstants.BAGID_TRANSFERSTASH, SackType.Stash, StashType.TransferStash);
+						this.ItemDatabaseService.AddItemToDatabase(item, k, Resources.GlobalTransferStash, BagIdConstants.BAGID_TRANSFERSTASH, SackType.Stash, StashType.TransferStash);
 				}
 			}
 			catch (ArgumentException argumentException)
@@ -153,7 +162,7 @@ public class StashService : IStashService
 				if (stash.Sack != null)
 				{
 					foreach (var item in stash.Sack)
-						userContext.AddItemToDatabase(item, k, Resources.GlobalRelicVaultStash, BagIdConstants.BAGID_RELICVAULTSTASH, SackType.Stash, StashType.RelicVaultStash);
+						this.ItemDatabaseService.AddItemToDatabase(item, k, Resources.GlobalRelicVaultStash, BagIdConstants.BAGID_RELICVAULTSTASH, SackType.Stash, StashType.RelicVaultStash);
 				}
 			}
 			catch (ArgumentException argumentException)

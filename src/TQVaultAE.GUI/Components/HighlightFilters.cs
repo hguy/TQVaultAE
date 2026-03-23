@@ -13,6 +13,7 @@ public partial class HighlightFilters : UserControl
 	public SessionContext UserContext { get; internal set; }
 	public ITranslationService TranslationService { get; internal set; }
 	public IFontService FontService { get; internal set; }
+	public IHighlightService HighlightService { get; internal set; }
 
 	public HighlightFilters()
 	{
@@ -322,10 +323,10 @@ public partial class HighlightFilters : UserControl
 	{
 		var frm = FindForm();
 		ResetAll();
-		UserContext.HighlightFilter = null;
+		HighlightService.HighlightFilter = null;
 		_link.LinkVisited = false;
 		Visible = false;
-		UserContext.FindHighlight();
+		HighlightService.FindHighlight();
 		frm.Refresh();
 	}
 
@@ -357,19 +358,19 @@ public partial class HighlightFilters : UserControl
 		if (filter.MaxRequierement || filter.MinRequierement || filter.HavingPrefix || filter.HavingSuffix || filter.HavingRelic || filter.HavingCharm || filter.IsSetItem
 			|| filter.ClassItem.Any() || filter.Rarity.Any() || filter.Origin.Any())
 		{
-			UserContext.HighlightFilter = filter;
+			HighlightService.HighlightFilter = filter;
 			_link.LinkVisited = true;
 			Visible = false;
-			UserContext.FindHighlight();
+			HighlightService.FindHighlight();
 			frm.Refresh();
 			return;
 		}
 
 		// No filters
-		UserContext.HighlightFilter = null;
+		HighlightService.HighlightFilter = null;
 		_link.LinkVisited = false;
 		Visible = false;
-		UserContext.FindHighlight();
+		HighlightService.FindHighlight();
 		frm.Refresh();
 	}
 

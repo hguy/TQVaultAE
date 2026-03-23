@@ -467,8 +467,8 @@ public class EquipmentPanel : SackPanel, IScalingControl
 					// Update item location properties to reflect new position
 					this.UpdateItemLocation(dragItem);
 
-					// Register new items in the database (existing items are already tracked)
-					this.userContext.TryAddItemToDatabase(dragItem);
+				// Register new items in the database (existing items are already tracked)
+				this.ItemDatabaseService.TryAddItemToDatabase(dragItem);
 				}
 			}
 
@@ -760,10 +760,10 @@ public class EquipmentPanel : SackPanel, IScalingControl
 
 			var highlight = false;
 			// Highlight search
-			if (this.userContext.HighlightedItems.Count > 0 && this.userContext.HighlightedItems.Contains(item))
+			if (this.HighlightService.HighlightedItems.Count > 0 && this.HighlightService.HighlightedItems.Contains(item))
 			{
 				highlight = true;
-				backgroundColor = this.userContext.HighlightSearchItemColor;
+				backgroundColor = this.HighlightService.HighlightSearchItemColor;
 				alpha = AdjustAlpha(alpha);
 			}
 			// If we are showing the cannot equip background then 

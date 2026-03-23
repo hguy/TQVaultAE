@@ -161,7 +161,6 @@ public interface IItemProvider
 	/// <summary>
 	/// Invalidate item data cache
 	/// </summary>
-	/// <param name="itm"></param>
 	/// <returns>true if cache have been changed</returns>
-	bool InvalidateFriendlyNamesCache(params Item[] items);
+	bool InvalidateFriendlyNamesCache(params IEnumerable<Item> items);
 }

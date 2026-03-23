@@ -90,6 +90,11 @@ public partial class MainForm : VaultForm
 	internal SessionContext userContext;
 
 	/// <summary>
+	/// Highlight search service
+	/// </summary>
+	private IHighlightService HighlightService;
+
+	/// <summary>
 	/// Instance of the vault panel control
 	/// </summary>
 	private VaultPanel vaultPanel;
@@ -164,6 +169,7 @@ public partial class MainForm : VaultForm
 		) : base(serviceProvider)
 	{
 		this.userContext = sessionContext;
+		this.HighlightService = serviceProvider.GetService<IHighlightService>();
 		this.playerService = playerService;
 		this.vaultService = vaultService;
 		this.stashService = stashService;
@@ -1172,8 +1178,8 @@ Item Debug Level: {USettings.ItemDebugLevel}
 	{
 		var value = (scalingTextBoxHighlight.Text ?? string.Empty).Trim();
 
-		this.userContext.HighlightSearch = value;
-		this.userContext.FindHighlight();
+		this.HighlightService.HighlightSearch = value;
+		this.HighlightService.FindHighlight();
 		this.Invoke(new System.Windows.Forms.MethodInvoker(this.Refresh));
 	}
 
@@ -1201,6 +1207,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			highlightFilters.UserContext = userContext;
 			highlightFilters.TranslationService = TranslationService;
 			highlightFilters.FontService = FontService;
+			highlightFilters.HighlightService = HighlightService;
 			highlightFilters.ResetAll();
 			highlightFilters.InitializeFilters();
 			highlightFilters.Link = link;

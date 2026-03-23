@@ -4,13 +4,16 @@ using TQVaultAE.GUI.Helpers;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Helpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
 using System.Text.RegularExpressions;
 using TQVaultAE.Application;
-using static TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery;
-using TQVaultAE.GUI.Models;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
+using TQVaultAE.GUI.Models;
+using VisibilityItem = TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery.VisibilityItem;
 
 namespace TQVaultAE.GUI;
 
@@ -19,7 +22,7 @@ namespace TQVaultAE.GUI;
 /// </summary>
 public partial class SearchDialogAdvanced : VaultForm
 {
-	private readonly SessionContext Ctx;
+	private readonly IItemDatabaseService ItemDatabaseService;
 	private readonly ILogger Log;
 	private readonly Bitmap ButtonImageUp;
 	private readonly Bitmap ButtonImageDown;
@@ -37,15 +40,15 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// </summary>
 	public SearchDialogAdvanced(
 		MainForm instance
-		, SessionContext sessionContext
 		, ILogger<SearchDialogAdvanced> log
 		, SearchQueries sQueries
+		, IItemDatabaseService itemDatabaseService
 	) : base(instance.ServiceProvider)
 	{
 		this.Owner = instance;
-		this.Ctx = sessionContext;
 		this.Log = log;
 		this.SQueries = sQueries;
+		this.ItemDatabaseService = itemDatabaseService;
 
 		this.InitializeComponent();
 
@@ -236,7 +239,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		if (!SelectedFilters.Any())
 		{
-			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, Ctx.ItemDatabase.Count())}";
+			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, this.ItemDatabaseService.ItemDatabase.Count())}";
 			return;
 		}
 		;
@@ -272,7 +275,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		scalingLabelProgress.Visible = true;
 
 		vaultProgressBar.Minimum = 0;
-		vaultProgressBar.Maximum = Ctx.ItemDatabase.Count();
+		vaultProgressBar.Maximum = this.ItemDatabaseService.ItemDatabase.Count();
 		vaultProgressBar.Visible = true;
 
 		this.backgroundWorkerBuildDB.RunWorkerAsync();
@@ -282,7 +285,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void SearchDialogAdvanced_Load(object sender, EventArgs e)
 	{
-		// Ctx.ItemDatabase is already populated during container loading via SessionContext
+		// this.ItemDatabaseService.ItemDatabase is already populated during container loading via SessionContext
 		// No need to rebuild it here - just lazy-load the friendly names
 	}
 
@@ -294,7 +297,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Must not change UI Controls. Just update backgroundWorker which handle this for you through his event pipeline.
 
 		// Parallel lazy loading for much faster database initialization
-		var items = Ctx.ItemDatabase.ToList();
+		var items = this.ItemDatabaseService.ItemDatabase.ToList();
 		var totalItems = items.Count;
 		var processedCount = 0;
 
@@ -308,11 +311,11 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
 		var validItems = items.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
 
-		Ctx.ClearItemDatabase();
+		this.ItemDatabaseService.ClearItemDatabase();
 
 		foreach (var item in validItems)
 		{
-			Ctx.ItemDatabase.Add(item);
+			this.ItemDatabaseService.ItemDatabase.Add(item);
 		}
 	}
 
@@ -336,7 +339,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void SearchEngineReady()
 	{
-		scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, Ctx.ItemDatabase.Count())}";
+		scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, this.ItemDatabaseService.ItemDatabase.Count())}";
 
 		PopulateCheckBoxes();
 
@@ -420,7 +423,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxSetItems;
 		var setitems =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			let set = id.FriendlyNames.ItemSet
 			where set is not null
@@ -466,7 +469,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		};
 
 		var originItems =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			from org in originList
 			where itm.GameDlc == org.Value
@@ -487,7 +490,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxWithRelic;
 		var WithRelic =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			where itm.HasRelicOrCharmSlot1 && !itm.IsRelic1Charm || itm.HasRelicOrCharmSlot2 && !itm.IsRelic2Charm
 			from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
@@ -518,7 +521,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxWithCharm;
 		var WithCharm =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let itm = id.FriendlyNames.Item
 			where itm.HasRelicOrCharmSlot1 && itm.IsRelic1Charm || itm.HasRelicOrCharmSlot2 && itm.IsRelic2Charm
 			from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
@@ -540,7 +543,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxVaults;
 		var Vaults =
-			from id in Ctx.ItemDatabase.Where(i => i.SackType == SackType.Vault)
+			from id in this.ItemDatabaseService.ItemDatabase.Where(i => i.SackType == SackType.Vault)
 			let att = id.ContainerName
 			orderby att
 			group id by att into grp
@@ -558,7 +561,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxQuality;
 		var Quality =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let att = id.FriendlyNames.BaseItemInfoQuality
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -578,7 +581,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxSuffixName;
 		var SuffixName =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let att = id.FriendlyNames.SuffixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -598,7 +601,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxSuffixAttributes;
 		var SuffixAttributes =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			from att in id.FriendlyNames.SuffixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -618,7 +621,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxStyle;
 		var Style =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let att = id.FriendlyNames.BaseItemInfoStyle
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -646,7 +649,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		};
 		var clb = scalingCheckedListBoxRarity;
 		var Rarity =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			where equipmentOnly.Contains(id.ItemStyle)
 			let att = id.FriendlyNames.BaseItemRarity
 			where !string.IsNullOrWhiteSpace(att)
@@ -667,7 +670,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxPrefixName;
 		var PrefixName =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let att = id.FriendlyNames.PrefixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.TQCleanup().Trim()
@@ -687,7 +690,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxPrefixAttributes;
 		var PrefixAttributes =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			from att in id.FriendlyNames.PrefixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -707,7 +710,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxCharacters;
 		var Players =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			where id.SackType == SackType.Player || id.SackType == SackType.Equipment
 			let att = id.ContainerName
 			orderby att
@@ -726,7 +729,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxItemType;
 		var ItemType =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			let att = id.FriendlyNames.BaseItemInfoClass ?? id.FriendlyNames.Item.ItemClass
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -746,7 +749,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxItemAttributes;
 		var ItemAttributes =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			from att in id.FriendlyNames.AttributesAll
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -766,7 +769,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		var clb = scalingCheckedListBoxBaseAttributes;
 		var BaseAttributes =
-			from id in Ctx.ItemDatabase
+			from id in this.ItemDatabaseService.ItemDatabase
 			from att in id.FriendlyNames.BaseAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
@@ -923,7 +926,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				foreach (var lb in this.CachedCheckedListBoxes)
 				{
 					lb.BeginUpdate();
-					lb.CheckedIndices.Cast<int>().ToList().ForEach(idx => lb.SetItemChecked(idx, false));
+					foreach (var idx in lb.CheckedIndices.Cast<int>().ToList()) lb.SetItemChecked(idx, false);
 					lb.EndUpdate();
 				}
 			}
@@ -940,7 +943,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				if (c is ScalingCheckedListBox lb)
 				{
 					lb.BeginUpdate();
-					lb.CheckedIndices.Cast<int>().ToList().ForEach(idx => lb.SetItemChecked(idx, false));
+					foreach (var idx in lb.CheckedIndices.Cast<int>().ToList()) lb.SetItemChecked(idx, false);
 					lb.EndUpdate();
 				}
 			});
@@ -975,91 +978,55 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag.ToString(), SelectedFilters.Count());
 
-		var query = Ctx.ItemDatabase.AsQueryable();
+		// Combine selected filter results based on operator
+		IReadOnlyList<SearchResult> initialResults;
 		if (this.scalingComboBoxOperator.SelectedIndex == (int)SearchOperator.And)
 		{
 			// AND operator => item must exist in every filter
-			foreach (var filter in SelectedFilters)
-				query = query.Intersect(filter.MatchingResults);// Reducing result at every step
+			var firstFilter = SelectedFilters.FirstOrDefault();
+			if (firstFilter == null)
+			{
+				initialResults = [];
+			}
+			else
+			{
+				var resultSet = new HashSet<SearchResult>(firstFilter.MatchingResults);
+				foreach (var filter in SelectedFilters.Skip(1))
+				{
+					resultSet.IntersectWith(filter.MatchingResults);
+				}
+				initialResults = resultSet.ToList();
+			}
 		}
 		else
 		{
 			// OR Operator => Accumulate & Distinct
-			query = SelectedFilters.AsQueryable().SelectMany(f => f.MatchingResults).Distinct();
+			initialResults = SelectedFilters
+				.SelectMany(f => f.MatchingResults)
+				.Distinct()
+				.ToList();
 		}
 
-		// Apply Quick Filters
-		if (this.scalingCheckBoxHavingPrefix.Checked)
-			query = query.Where(i => i.FriendlyNames.Item.HasPrefix);
-
-		if (this.scalingCheckBoxHavingSuffix.Checked)
-			query = query.Where(i => i.FriendlyNames.Item.HasSuffix);
-
-		if (this.scalingCheckBoxHavingRelic.Checked)
-			query = query.Where(i => i.FriendlyNames.Item.HasRelic);
-
-		if (this.scalingCheckBoxHavingCharm.Checked)
-			query = query.Where(i => i.FriendlyNames.Item.HasCharm);
-
-		if (this.scalingCheckBoxIsSetItem.Checked)
-			query = query.Where(i => i.FriendlyNames.ItemSet != null);
-
-		// Apply Requirements
-		if (MinRequierement)
-		{
-			if (MinLvl > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Lvl.HasValue // Item doesn't have requirement
-					|| x.FriendlyNames.RequirementInfo.Lvl >= MinLvl
-				);
-
-			if (MinStr > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Str.HasValue
-					|| x.FriendlyNames.RequirementInfo.Str >= MinStr
-				);
-
-			if (MinDex > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Dex.HasValue
-					|| x.FriendlyNames.RequirementInfo.Dex >= MinDex
-				);
-
-			if (MinInt > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Int.HasValue
-					|| x.FriendlyNames.RequirementInfo.Int >= MinInt
-				);
-		}
-
-		if (MaxRequierement)
-		{
-			if (MaxLvl > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Lvl.HasValue // Item doesn't have requirement
-					|| x.FriendlyNames.RequirementInfo.Lvl <= MaxLvl
-				);
-
-			if (MaxStr > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Str.HasValue
-					|| x.FriendlyNames.RequirementInfo.Str <= MaxStr
-				);
-
-			if (MaxDex > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Dex.HasValue
-					|| x.FriendlyNames.RequirementInfo.Dex <= MaxDex
-				);
-
-			if (MaxInt > 0)
-				query = query.Where(x =>
-					!x.FriendlyNames.RequirementInfo.Int.HasValue
-					|| x.FriendlyNames.RequirementInfo.Int <= MaxInt
-				);
-		}
-
-		this.QueryResults = query.ToArray();
+		// Apply quick filters and requirements via service
+		this.QueryResults = this.ItemDatabaseService.ExecuteAdvancedSearch(
+			new AdvancedSearchRequest
+			{
+				InitialResults = initialResults,
+				HasPrefix = this.scalingCheckBoxHavingPrefix.Checked,
+				HasSuffix = this.scalingCheckBoxHavingSuffix.Checked,
+				HasRelic = this.scalingCheckBoxHavingRelic.Checked,
+				HasCharm = this.scalingCheckBoxHavingCharm.Checked,
+				IsSetItem = this.scalingCheckBoxIsSetItem.Checked,
+				MinLevel = MinRequierement ? MinLvl : 0,
+				MaxLevel = MaxRequierement ? MaxLvl : 0,
+				MinStrength = MinRequierement ? MinStr : 0,
+				MaxStrength = MaxRequierement ? MaxStr : 0,
+				MinDexterity = MinRequierement ? MinDex : 0,
+				MaxDexterity = MaxRequierement ? MaxDex : 0,
+				MinIntelligence = MinRequierement ? MinInt : 0,
+				MaxIntelligence = MaxRequierement ? MaxInt : 0
+			}
+		).ToArray();
 
 		scalingLabelProgress.Text = $"{string.Format(Resources.SearchItemCountIs, QueryResults.Count())}";
 
@@ -1303,19 +1270,13 @@ public partial class SearchDialogAdvanced : VaultForm
 		searchTermBoxItem.DisplayValue = txt;
 
 		if (string.IsNullOrWhiteSpace(txt))
-			searchTermBoxItem.MatchingResults = Enumerable.Empty<SearchResult>();
+			searchTermBoxItem.MatchingResults = [];
 		else
 		{
-			// Item fulltext search
+			// Item fulltext search using service method
 			var (isRegex, _, regex, regexIsValid) = StringHelper.IsTQVaultSearchRegEx(txt);
 
-			searchTermBoxItem.MatchingResults = (
-				from id in Ctx.ItemDatabase
-				where isRegex && regexIsValid
-					? id.FriendlyNames.FulltextIsMatchRegex(regex)
-					: id.FriendlyNames.FulltextIsMatchIndexOf(txt)
-				select id
-			).ToArray();
+			searchTermBoxItem.MatchingResults = this.ItemDatabaseService.FullTextSearch(txt, isRegex && regexIsValid).ToList();
 		}
 
 		// When this method is used as a BoxItem factory, i don't want the textbox to keep the reference.
