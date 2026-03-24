@@ -238,7 +238,7 @@ public class PlayerServiceTests
 	public void GetPlayerSaveList_WithEmptyList_ReturnsEmptyArray()
 	{
 		// Arrange
-		var characterFolders = new string[0];
+		var characterFolders = Array.Empty<string>();
 
 		_mockGamePathService.Setup(x => x.GetCharacterList()).Returns(characterFolders);
 

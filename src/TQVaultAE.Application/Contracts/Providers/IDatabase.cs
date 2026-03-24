@@ -86,24 +86,26 @@ public interface IDatabase
 	/// <param name="itemId">Item Id which we are looking up</param>
 	/// <returns>Returns the DBRecord for the item Id</returns>
 	DBRecordCollection GetRecordFromFile(RecordId itemId);
+
 	/// <summary>
 	/// Gets a resource from the database using the resource Id.
 	/// Modified by VillageIdiot to support loading resources from a custom map folder.
 	/// </summary>
 	/// <param name="resourceId">Resource which we are fetching</param>
 	/// <returns>Retruns a byte array of the resource.</returns>
-	byte[] LoadResource(RecordId resourceId);
+	byte[]? LoadResource(RecordId resourceId);
 	/// <summary>
 	/// Gets the formatted string for the variable attribute.
 	/// </summary>
 	/// <param name="variable">variable for which we are making a nice string.</param>
 	/// <returns>Formatted string in the format of:  Attribute: value</returns>
 	string VariableToStringNice(Variable variable);
+
 	/// <summary>
 	/// Read ARC file
 	/// </summary>
 	/// <param name="arcFileName"></param>
 	/// <returns></returns>
-	ArcFile ReadARCFile(string arcFileName);
+	ArcFile? ReadARCFile(string arcFileName);
 
 }

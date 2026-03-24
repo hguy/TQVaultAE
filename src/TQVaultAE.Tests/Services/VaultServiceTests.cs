@@ -103,7 +103,7 @@ public class VaultServiceTests
 				// Simulate LoadFile creating sacks array
 				var vaultType = vault.GetType();
 				var sacksField = vaultType.GetField("Sacks", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-				sacksField?.SetValue(vault, new SackCollection[0]);
+				sacksField?.SetValue(vault, Array.Empty<SackCollection>());
 			});
 
 		// Act

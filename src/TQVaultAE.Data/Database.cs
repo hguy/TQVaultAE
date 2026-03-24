@@ -56,12 +56,12 @@ public class Database : IDatabase
 	/// <summary>
 	/// Dictionary of all associated arc files in the database.
 	/// </summary>
-	private LazyConcurrentDictionary<string, ArcFile> arcFiles = new();
+	private LazyConcurrentDictionary<string, ArcFile?> arcFiles = new();
 
 	/// <summary>
 	/// Dictionary of all records dataset loaded from the database.
 	/// </summary>
-	private LazyConcurrentDictionary<RecordId, byte[]> resourcesData = new();
+	private LazyConcurrentDictionary<RecordId, byte[]?> resourcesData = new();
 
 	/// <summary>
 	/// Dictionary of all record collections loaded from the database.
@@ -653,7 +653,7 @@ public class Database : IDatabase
 	/// </summary>
 	/// <param name="resourceId">Resource which we are fetching</param>
 	/// <returns>Retruns a byte array of the resource.</returns>
-	public byte[] LoadResource(RecordId resourceId)
+	public byte[]? LoadResource(RecordId resourceId)
 	{
 		if (RecordId.IsNullOrEmpty(resourceId))
 			return null;
@@ -664,7 +664,7 @@ public class Database : IDatabase
 		if (USettings.DatabaseDebugLevel > 1)
 			Log.LogDebug(" Normalized({0})", resourceId);
 
-		byte[] cachedArcFileData = this.resourcesData.GetOrAddAtomic(resourceId, key =>
+		byte[]? cachedArcFileData = this.resourcesData.GetOrAddAtomic(resourceId, key =>
 		{
 			var resourceIdSplited = key.Normalized.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);// hguy : easier to understand than substring everywhere
 
@@ -677,7 +677,7 @@ public class Database : IDatabase
 
 			string arcFile; bool isDLC = false;
 			string rootFolder;
-			byte[] arcFileData = null;
+			byte[]? arcFileData = null;
 			string arcFileBase = resourceIdSplited.First();
 
 			if (USettings.DatabaseDebugLevel > 1)
@@ -853,10 +853,10 @@ public class Database : IDatabase
 	/// </summary>
 	/// <param name="arcFileName"></param>
 	/// <returns></returns>
-	public ArcFile ReadARCFile(string arcFileName)
+	public ArcFile? ReadARCFile(string arcFileName)
 	{
 		// See if we have this arcfile already and if not create it.
-		ArcFile arcFile = this.arcFiles.GetOrAddAtomic(arcFileName, k =>
+		ArcFile? arcFile = this.arcFiles.GetOrAddAtomic(arcFileName, k =>
 		{
 			if (!this.FileIO.Exists(k))
 				return null;
