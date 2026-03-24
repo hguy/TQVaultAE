@@ -6,6 +6,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Helpers;
 using System.ComponentModel;
+using System.IO.Compression;
 using Medallion.Shell.Streams;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
@@ -250,7 +251,7 @@ public class GameFileService : IGameFileService
 					// new remote vault files will be deployed, localy updated will be overrided if needed, else leave in place
 					CopyVaultFilesFromRepoToVaultData(overrideFiles);
 
-	if (this.UserSettings.GitBackupPlayerSavesEnabled)
+					if (this.UserSettings.GitBackupPlayerSavesEnabled)
 					{
 						//		Do you want to replace your local TQ character save with git repository version ? Are you sure ?
 						if (RepoTQPathExists || RepoTQITPathExists)
@@ -377,7 +378,7 @@ public class GameFileService : IGameFileService
 
 	public bool GitPull()
 	{
-		if (!GamePathService.LocalGitRepositoryGitDirExist) 
+		if (!GamePathService.LocalGitRepositoryGitDirExist)
 			return false;
 
 		var repoUrl = this.UserSettings.GitBackupRepository;
@@ -536,11 +537,14 @@ public class GameFileService : IGameFileService
 	{
 		string playerFolder = this.PathIO.GetDirectoryName(playerFile);
 		string backupFolder = this.PathIO.Combine(playerFolder, "Backup");
-		if (DirectoryIO.Exists(backupFolder))
+		string newFolder = this.PathIO.Combine(playerFolder, "Backup-moved by TQVault");
+		var existsbackupFolder = DirectoryIO.Exists(backupFolder);
+		var existsnewFolder = DirectoryIO.Exists(newFolder);
+
+		if (existsbackupFolder)
 		{
 			// we need to move it.
-			string newFolder = this.PathIO.Combine(playerFolder, "Backup-moved by TQVault");
-			if (DirectoryIO.Exists(newFolder))
+			if (existsnewFolder)
 			{
 				try
 				{
@@ -550,15 +554,51 @@ public class GameFileService : IGameFileService
 				catch (Exception)
 				{
 					int fn = 1;
-					while (DirectoryIO.Exists(String.Format("{0}({1})", newFolder, fn)))
+					while (DirectoryIO.Exists(string.Format("{0}({1})", newFolder, fn)))
 					{
 						fn++;
 					}
-					newFolder = String.Format("{0}({1})", newFolder, fn);
+					newFolder = string.Format("{0}({1})", newFolder, fn);
 				}
 			}
 
 			DirectoryIO.Move(backupFolder, newFolder);
+		}
+
+		// Change TQVault moved backup to zip to avoid game reading it's content : https://github.com/EtienneLamoureux/TQVaultAE/issues/535
+		existsnewFolder = DirectoryIO.Exists(newFolder);
+		if (existsnewFolder)
+		{
+			var zipFile = $"{newFolder}.zip";
+			var zipAlreadyExists= FileIO.Exists(zipFile);
+
+			// Delete old zip file
+			if (zipAlreadyExists)
+			{
+				try
+				{
+					FileIO.Delete(zipFile);
+					zipAlreadyExists = false;
+				}
+				catch (Exception e)
+				{
+					this.Log.LogWarning(e, "Unable to delete {zipFile}", zipFile);
+				}
+			}
+			
+			// Create new one
+			if (!zipAlreadyExists)
+			{
+				try
+				{
+					ZipFile.CreateFromDirectory(newFolder, zipFile, CompressionLevel.Fastest, false);
+					DirectoryIO.Delete(newFolder, true);
+				}
+				catch (Exception e)
+				{
+					this.Log.LogWarning(e, "Unable to zip new {zipFile}", zipFile);
+				}
+			}
 		}
 	}
 
