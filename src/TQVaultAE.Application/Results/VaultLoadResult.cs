@@ -1,4 +1,4 @@
-namespace TQVaultAE.Application.Contracts;
+namespace TQVaultAE.Application.Results;
 
 public class VaultLoadResult
 {

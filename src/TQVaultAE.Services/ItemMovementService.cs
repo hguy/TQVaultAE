@@ -2,8 +2,8 @@ using Microsoft.Extensions.Logging;
 using System.Drawing;
 using TQVaultAE.Application;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.Results;
+using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.Services;
 

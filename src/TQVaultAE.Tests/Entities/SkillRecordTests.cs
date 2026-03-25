@@ -6,10 +6,17 @@ namespace TQVaultAE.Tests.Entities;
 
 public class SkillRecordTests
 {
+	private readonly ITestOutputHelper _output;
+
 	static SkillRecordTests()
 	{
 		// Register encoding provider for .NET 10+ - must be done before GetEncoding
 		Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+	}
+
+	public SkillRecordTests(ITestOutputHelper output)
+	{
+		_output = output;
 	}
 
 	private static Encoding Encoding1252 => Encoding.GetEncoding(1252);
@@ -38,7 +45,7 @@ public class SkillRecordTests
 		byte[] newResult = record.ToBinary(beginBlockValue, endBlockValue);
 
 		// Debug output
-		Console.WriteLine($"Old length: {oldResult.Length}, New length: {newResult.Length}");
+		_output.WriteLine($"Old length: {oldResult.Length}, New length: {newResult.Length}");
 
 		// Assert: Both should produce identical results
 		newResult.Length.Should().Be(oldResult.Length);

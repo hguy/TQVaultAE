@@ -19,8 +19,8 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI;
 

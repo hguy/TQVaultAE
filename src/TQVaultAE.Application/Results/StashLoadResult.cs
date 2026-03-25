@@ -1,6 +1,6 @@
 using TQVaultAE.Domain.Entities;
 
-namespace TQVaultAE.Application.Contracts;
+namespace TQVaultAE.Application.Results;
 
 public class StashLoadResult
 {

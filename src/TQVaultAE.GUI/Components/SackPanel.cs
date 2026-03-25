@@ -1546,9 +1546,13 @@ public class SackPanel : Panel, IScalingControl
 								_ => 0,
 							};
 
-							var label = (this.SackType == SackType.Player && i == 0)
-								? Resources.SackPanelMenuPlayer
-								: string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, i + bagOffest);
+							string label;
+							if (this.SackType == SackType.Player && i == 0)
+								label = Resources.SackPanelMenuPlayer;
+							else if (this.SackType == SackType.Player && i >= this.PlayerCollection.NumberOfSacks)
+								continue;
+							else
+								label = string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, i + bagOffest);
 
 							if (i != focusedItem.Place.SackNumber)
 							{

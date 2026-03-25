@@ -338,15 +338,16 @@ public partial class MainForm
 	private void AutoMoveItemToPanel(SackPanel sourcePanel)
 	{
 		var (destinationPanel, destinationSackPanel, destSackNumber) = this.GetAutoMoveDestination(sourcePanel);
+		var destinationSack = destinationPanel.Player.GetSack(destSackNumber);
 
-		if (destinationPanel?.Player == null)
+		if (destinationPanel?.Player == null || destinationSack == null)
 		{
 			this.DragInfo.Cancel();
 			return;
 		}
 
 		SackCollection oldSack = destinationSackPanel.Sack;
-		destinationSackPanel.Sack = destinationPanel.Player.GetSack(destSackNumber);
+		destinationSackPanel.Sack = destinationSack;
 
 		Point location = destinationSackPanel.FindOpenCells(this.DragInfo.Item.Width, this.DragInfo.Item.Height);
 		int destination = this.GetDestinationIndex(destinationSackPanel, destinationPanel.CurrentBag, destSackNumber);

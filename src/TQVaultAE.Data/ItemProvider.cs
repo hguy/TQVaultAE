@@ -20,7 +20,7 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Class for holding item information
 /// </summary>
-public class ItemProvider : IItemProvider
+public partial class ItemProvider : IItemProvider
 {
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
@@ -2152,7 +2152,8 @@ VariableValue Raw : {valueRaw}
 		return color.HasValue ? $"{color?.ColorTag()}{amount}" : amount;
 	}
 
-	static Regex GetAmountSingleRegEx = new Regex(@"(?<Prefix>\{(\d):)(?<Sign>[+-])(?<Suffix>#([\d\.]+)})", RegexOptions.Compiled);
+	[GeneratedRegex(@"(?<Prefix>\{(\d):)(?<Sign>[+-])(?<Suffix>#([\d\.]+)})")]
+	private static partial Regex GetAmountSingleRegEx();
 	/// <summary>
 	/// Gets a formatted single amount
 	/// </summary>
@@ -2230,7 +2231,7 @@ VariableValue Raw : {valueRaw}
 
 				// Fix#246, double signed result on negative value Ex : string.Format("{0:+#0} d'intelligence", -10) by removing format sign.
 				// Fix "Dotted decimal mask" matching Ex : {0:#0.0} Health Regeneration per second
-				formatSpec = GetAmountSingleRegEx.Replace(formatSpec
+				formatSpec = GetAmountSingleRegEx().Replace(formatSpec
 					, (Match m) =>
 					{
 						var Prefix = m.Groups["Prefix"].Value;

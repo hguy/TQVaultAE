@@ -16,7 +16,7 @@ namespace TQVaultAE.Services;
 /// <summary>
 /// IGameFileService implementation
 /// </summary>
-public class GameFileService : IGameFileService
+public partial class GameFileService : IGameFileService
 {
 	protected readonly ILogger Log;
 	protected readonly IGamePathService GamePathService;
@@ -173,7 +173,7 @@ public class GameFileService : IGameFileService
 		if (e.ListChangedType == ListChangedType.ItemAdded)
 		{
 			var line = lst[e.NewIndex];
-			if (line is not null && PercentProgressRegEx.Match(line) is { Success: true } m)
+			if (line is not null && PercentProgressRegEx().Match(line) is { Success: true } m)
 			{
 				var num = m.Groups["Num"].Value;
 				Debug.WriteLine("Num : " + num);
@@ -197,7 +197,7 @@ public class GameFileService : IGameFileService
 			Writing objects: 100% (2172/2172), 38.08 MiB | 2.23 MiB/s, done.
 			remote: Resolving deltas: 100% (1886/1886), done.
 			*/
-			if (line is not null && PercentProgressRegEx.Match(line) is { Success: true } m)
+			if (line is not null && PercentProgressRegEx().Match(line) is { Success: true } m)
 			{
 				var percent = int.Parse(m.Groups["Num"].Value);
 				//UIService.ProgressBarReport("Git Push", percent);
@@ -205,7 +205,8 @@ public class GameFileService : IGameFileService
 		}
 	}
 
-	static Regex PercentProgressRegEx = new Regex(@"(?<Num>\d{1,3})%", RegexOptions.Compiled);
+	[GeneratedRegex(@"(?<Num>\d{1,3})%")]
+	private static partial Regex PercentProgressRegEx();
 
 	#endregion
 

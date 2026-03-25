@@ -24,7 +24,7 @@ public class FileIO : IFileIO
 		return File.ReadAllLines(path);
 	}
 
-	public virtual void WriteAllLines(string path, string[] contents)
+	public virtual void WriteAllLines(string path, IEnumerable<string> contents)
 	{
 		File.WriteAllLines(path, contents);
 	}

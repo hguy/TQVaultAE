@@ -18,7 +18,6 @@ using TQVaultAE.Services;
 using TQVaultAE.Services.Win32;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
@@ -161,6 +160,10 @@ public static class Program
 					else goto exit;
 				}
 			}
+
+			// Initialize the Database AFTER game paths are configured
+			var database = ServiceProvider.GetService<IDatabase>();
+			database.LoadDBFile();
 
 			var mainform = Program.ServiceProvider.GetService<MainForm>();
 			var filterMouseWheel = new FormFilterMouseWheelGlobally(mainform);

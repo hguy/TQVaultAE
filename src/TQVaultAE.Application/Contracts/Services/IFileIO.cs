@@ -6,7 +6,7 @@ public interface IFileIO
 	void WriteAllBytes(string path, byte[] bytes);
 	bool Exists(string path);
 	string[] ReadAllLines(string path);
-	void WriteAllLines(string path, string[] contents);
+	void WriteAllLines(string path, IEnumerable<string> contents);
 	string ReadAllText(string path);
 	void WriteAllText(string path, string contents);
 	void Delete(string path);

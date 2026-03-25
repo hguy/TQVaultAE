@@ -43,9 +43,6 @@
 		<PackageReference Include="Enums.NET" Version="5.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" Version="8.0.0" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.5" />
-		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
-		<PackageReference Include="System.Resources.Extensions" Version="10.0.5" />
 	</ItemGroup>
 
 	<ItemGroup>

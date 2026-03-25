@@ -4,7 +4,7 @@ using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Domain.Results;
 
-public class ToFriendlyNameResult
+public partial class ToFriendlyNameResult
 {
 
 	IEnumerable<string> _FullText = null;
@@ -155,12 +155,13 @@ public class ToFriendlyNameResult
 	public RecordId BaseItemId;
 	public string BaseItemRarity;
 
-	static Regex BaseItemInfoClassRegEx = new Regex(@"[^\w\s']", RegexOptions.Compiled);
+	[GeneratedRegex(@"[^\w\s']")]
+	private static partial Regex BaseItemInfoClassRegEx();
 	string _BaseItemInfoClass;
 	public string BaseItemInfoClass
 	{
 		get => _BaseItemInfoClass;
-		set => _BaseItemInfoClass = BaseItemInfoClassRegEx.Replace((value ?? string.Empty), string.Empty);// Clean everything except few things;
+		set => _BaseItemInfoClass = BaseItemInfoClassRegEx().Replace((value ?? string.Empty), string.Empty);// Clean everything except few things;
 	}
 
 	public string BaseItemInfoStyle;

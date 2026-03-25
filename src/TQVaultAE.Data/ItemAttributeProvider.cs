@@ -16,7 +16,7 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Used to hold the Item Attributes
 /// </summary>
-public class ItemAttributeProvider : IItemAttributeProvider
+public partial class ItemAttributeProvider : IItemAttributeProvider
 {
 	private readonly ILogger Log;
 
@@ -559,7 +559,8 @@ public class ItemAttributeProvider : IItemAttributeProvider
 		return attributeDictionary.TryGetValue(attribute.ToUpperInvariant(), out var value) ? value : null;
 	}
 
-	static Regex ConvertFormatRegEx = new Regex(@"%(?<precis>(?<sign>[+-])?\.(?<numDecimal>\d)?)?(?<alpha>[sdft])(?<formatNumber>\d)", RegexOptions.Compiled);
+	[GeneratedRegex(@"%(?<precis>(?<sign>[+-])?\.(?<numDecimal>\d)?)?(?<alpha>[sdft])(?<formatNumber>\d)")]
+	private static partial Regex ConvertFormatRegEx();
 	/// <summary>
 	/// Converts format string from TQ format to string.format
 	/// </summary>
@@ -607,12 +608,12 @@ public class ItemAttributeProvider : IItemAttributeProvider
 		}
 
 		// Escape TQMarking changing "{^.}" to "[^.]"
-		formatValue = TQColorHelper.RegExTQTagInstance.Replace(formatValue
+		formatValue = TQColorHelper.RegExTQTagInstance().Replace(formatValue
 			, @"[^${ColorId}]"
 		);
 
 		// Takes a TQ Format string and converts it to a .NET Format string using regex.
-		var newformat = ConvertFormatRegEx.Replace(formatValue, replaceMatch);
+		var newformat = ConvertFormatRegEx().Replace(formatValue, replaceMatch);
 
 		// Remove residual irrelevant {} on some format
 		newformat = newformat.Split('{', '}').JoinString("");
@@ -621,7 +622,7 @@ public class ItemAttributeProvider : IItemAttributeProvider
 		newformat = newformat.Replace("[", "{").Replace("]", "}");
 
 		// Escape TQTags by doubling {}
-		newformat = TQColorHelper.RegExTQTagInstance.Replace(newformat
+		newformat = TQColorHelper.RegExTQTagInstance().Replace(newformat
 			, @"{${ColorTag}}"
 		);
 

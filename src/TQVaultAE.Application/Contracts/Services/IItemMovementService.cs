@@ -2,7 +2,7 @@ using System.Drawing;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Application.Results;
 
-namespace TQVaultAE.Application.Contracts;
+namespace TQVaultAE.Application.Contracts.Services;
 
 public interface IItemMovementService
 {

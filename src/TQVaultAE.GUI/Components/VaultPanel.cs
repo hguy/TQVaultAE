@@ -950,8 +950,25 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		if (selectedItem == Resources.PlayerPanelCopyIcon)
 		{
 			var button = this.BagButtons[this.CurrentBag];
+			var sourceInfo = button.Sack?.BagButtonIconInfo;
 
-			this.userContext.IconInfoCopy = button.Sack?.BagButtonIconInfo;
+			// Create a new instance (deep copy) to avoid shared reference issues
+			if (sourceInfo is not null)
+			{
+				this.userContext.IconInfoCopy = new BagButtonIconInfo
+				{
+					DisplayMode = sourceInfo.DisplayMode,
+					Label = sourceInfo.Label,
+					OnStr = sourceInfo.OnStr,
+					OffStr = sourceInfo.OffStr,
+					OverStr = sourceInfo.OverStr
+				};
+			}
+			else
+			{
+				this.userContext.IconInfoCopy = null;
+			}
+
 			MainForm frm = this.FindForm() as MainForm;
 			frm.NotificationText.Text = Resources.GlobalCopied;
 		}
@@ -959,12 +976,30 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		if (selectedItem == Resources.PlayerPanelPasteIcon)
 		{
 			var button = this.BagButtons[this.CurrentBag];
-			button.Sack.BagButtonIconInfo = this.userContext.IconInfoCopy;
+
+			// Create a new instance to avoid shared reference issues
+			var sourceInfo = this.userContext.IconInfoCopy;
+			if (sourceInfo is not null)
+			{
+				button.Sack.BagButtonIconInfo = new BagButtonIconInfo
+				{
+					DisplayMode = sourceInfo.DisplayMode,
+					Label = sourceInfo.Label,
+					OnStr = sourceInfo.OnStr,
+					OffStr = sourceInfo.OffStr,
+					OverStr = sourceInfo.OverStr
+				};
+			}
+			else
+			{
+				button.Sack.BagButtonIconInfo = null;
+			}
+
 			button.Sack.IsModified = true;
 			MainForm frm = this.FindForm() as MainForm;
 			frm.NotificationText.Text = Resources.GlobalPasted;
 			button.ApplyIconInfo(button.Sack);
-			Refresh();
+			button.Refresh();
 		}
 
 	}

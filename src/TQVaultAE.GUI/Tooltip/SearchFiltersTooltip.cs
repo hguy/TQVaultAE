@@ -93,7 +93,8 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 	#endregion
 
-	static Regex FillToolTipRegEx = new Regex(@"[^\w]", RegexOptions.Compiled);
+	[GeneratedRegex(@"[^\w]")]
+	private static partial Regex FillToolTipRegEx();
 	/// <summary>
 	/// Init the tooltip content.
 	/// </summary>
@@ -117,7 +118,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 		var searchTermsGroup = // TODO Maybe multiple in the future using old notation
 			from f in this.Filters
 			where f.CheckedList is null && f.Category is not null
-			let cleanName = FillToolTipRegEx.Replace(f.Category.Text, string.Empty)
+			let cleanName = FillToolTipRegEx().Replace(f.Category.Text, string.Empty)
 			group f by cleanName into grp
 			orderby grp.Key
 			select grp;

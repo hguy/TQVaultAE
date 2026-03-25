@@ -6,7 +6,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Logs;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts;
+using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI;
 

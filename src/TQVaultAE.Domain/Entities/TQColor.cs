@@ -97,18 +97,20 @@ public enum TQColor
 
 #region Related logic
 
-public static class TQColorHelper
+public static partial class TQColorHelper
 {
 	/// <summary>
 	/// Regex Match color tag 4 chars & 2 chars
 	/// </summary>
 	public const string RegExTQTag = @"(?<ColorTag>\{\^(?<ColorId>\w)}|\^(?<ColorId>\w))";
-	public static readonly Regex RegExTQTagInstance = new Regex(RegExTQTag, RegexOptions.Compiled);
+	[GeneratedRegex(RegExTQTag)]
+	public static partial Regex RegExTQTagInstance();
 	/// <summary>
 	/// Regex Match starting color tag 4 chars & 2 chars or empty
 	/// </summary>
 	public const string RegExStartingColorTagOrEmpty = @"^" + RegExTQTag + @"?";
-	public static readonly Regex RegExStartingColorTagOrEmptyInstance = new Regex(RegExStartingColorTagOrEmpty, RegexOptions.Compiled);
+	[GeneratedRegex(RegExStartingColorTagOrEmpty)]
+	public static partial Regex RegExStartingColorTagOrEmptyInstance();
 
 	private record ColorMapItem(TQColor ColorEnum, char ColorChar, Color ColorSys);
 
@@ -188,7 +190,7 @@ public static class TQColorHelper
 	public static string RemoveLeadingColorTag(this string TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return TQText ?? string.Empty;
-		return RegExStartingColorTagOrEmptyInstance.Replace(TQText, string.Empty);
+		return RegExStartingColorTagOrEmptyInstance().Replace(TQText, string.Empty);
 	}
 
 

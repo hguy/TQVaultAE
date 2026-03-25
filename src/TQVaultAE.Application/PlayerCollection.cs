@@ -210,8 +210,8 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	/// <param name="sackNumber">Number of the sack we are retrieving</param>
 	/// <returns>Sack instace for the corresponding sack number</returns>
-	public SackCollection GetSack(int sackNumber)
-		=> (this.Sacks == null || this.Sacks.Length <= sackNumber) ? null : this.Sacks[sackNumber];
+	public SackCollection? GetSack(int sackNumber)
+		=> (this.Sacks == null || sackNumber < 0 || this.Sacks.Length <= sackNumber) ? null : this.Sacks[sackNumber];
 
 	/// <summary>
 	/// Moves a sack within the instance.  Used for renumbering the sacks.

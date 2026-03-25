@@ -7,7 +7,7 @@ using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Domain.Helpers;
 
-public static class StringHelper
+public static partial class StringHelper
 {
 	const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
@@ -171,7 +171,8 @@ public static class StringHelper
 	/// <returns></returns>
 	public static bool IsColorTagOnly(this string TQText) => IsColorTagOnlyExtended(TQText).Value;
 
-	static readonly Regex IsColorTagOnlyExtendedRegEx = new Regex(@"^" + TQColorHelper.RegExTQTag + @"$", RegexOptions.Compiled);
+	[GeneratedRegex(@"^" + TQColorHelper.RegExTQTag + @"$")]
+	private static partial Regex IsColorTagOnlyExtendedRegEx();
 	/// <summary>
 	/// Indicate if <paramref name="TQText"/> contain a ColorTag only
 	/// </summary>
@@ -180,14 +181,14 @@ public static class StringHelper
 	public static (bool Value, int Length) IsColorTagOnlyExtended(this string TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return (false, 0);
-		return (IsColorTagOnlyExtendedRegEx.IsMatch(TQText), TQText.Length);
+		return (IsColorTagOnlyExtendedRegEx().IsMatch(TQText), TQText.Length);
 	}
 
 
 	public static string RemoveAllTQTags(this string TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return TQText;
-		return TQColorHelper.RegExTQTagInstance.Replace(TQText, string.Empty);
+		return TQColorHelper.RegExTQTagInstance().Replace(TQText, string.Empty);
 	}
 
 	static readonly Regex TQCleanupRegEx = new Regex(@"(?<Legit>[^/]*)(?<Comment>//.*)", RegexOptions.Compiled);
@@ -224,8 +225,10 @@ public static class StringHelper
 	}
 
 	static char[] _Delim = new char[] { ' ' };
-	static readonly Regex PrettyFileNameRegExNumber = new Regex(@"(?<number>\d+)", RegexOptions.Compiled);
-	static readonly Regex PrettyFileNameRegExTitleCaseStart = new Regex(@"(?<TitleCaseStart>BOW|DA|OA|XP|Mastery[A-Ha-h]|[A-Z][a-z]*)", RegexOptions.Compiled);
+	[GeneratedRegex(@"(?<number>\d+)")]
+	private static partial Regex PrettyFileNameRegExNumber();
+	[GeneratedRegex(@"(?<TitleCaseStart>BOW|DA|OA|XP|Mastery[A-Ha-h]|[A-Z][a-z]*)")]
+	private static partial Regex PrettyFileNameRegExTitleCaseStart();
 	// Orderered by word length
 	// language=regex, IgnorePatternWhitespace
 	static string PrettyFileNameRegExLowerCaseStartPattern = @"
@@ -250,9 +253,9 @@ public static class StringHelper
 	{
 		if (TQPath is null) return null;
 		var filename = Path.GetFileNameWithoutExtension(TQPath).Replace('_', ' ');
-		filename = PrettyFileNameRegExNumber.Replace(filename, "(${number})");// Enclose Numbers
+		filename = PrettyFileNameRegExNumber().Replace(filename, "(${number})");// Enclose Numbers
 
-		var filenameSplit1 = PrettyFileNameRegExTitleCaseStart
+		var filenameSplit1 = PrettyFileNameRegExTitleCaseStart()
 			.Replace(filename, ' ' + "${TitleCaseStart}")// Add space on Title Case
 				.Split(_Delim, StringSplitOptions.RemoveEmptyEntries);// Split on spaces
 
@@ -332,13 +335,14 @@ public static class StringHelper
 	}
 
 	// language=regex, IgnorePatternWhitespace
-	static readonly Regex _ExplodePrettyFileName = new Regex(@"
+	[GeneratedRegex(@"
 [^\(]+\((?<Num1>\d+)\)(?<Effect>[^\(]+)\((?<Num>\d+)\) # match 'trash (0) effect (0)'
 |
 \((?<Num>\d+)\)(?<Effect>.+)  # match '(0) effect'
 |
 (?<Effect>[^\(]+)\((?<Num>\d+)\) # match 'effect (0)'
-", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace);
+", RegexOptions.IgnorePatternWhitespace)]
+	private static partial Regex _ExplodePrettyFileName();
 
 	/// <summary>
 	/// Explode an already prettyfied file name
@@ -347,7 +351,7 @@ public static class StringHelper
 	/// <returns></returns>
 	public static (string PrettyFileName, string Effect, string Number, bool IsMatch) ExplodePrettyFileName(this string prettyFileName)
 	{
-		var m = _ExplodePrettyFileName.Match(prettyFileName);
+		var m = _ExplodePrettyFileName().Match(prettyFileName);
 
 		if (!m.Success)
 			return (prettyFileName, prettyFileName, string.Empty, false);
@@ -355,7 +359,8 @@ public static class StringHelper
 		return (prettyFileName, m.Groups["Effect"].Value.Trim(), m.Groups["Num"].Value, true);
 	}
 
-	static readonly Regex AllContiguousSpaceRegEx = new Regex(@"\s+", RegexOptions.Compiled);
+	[GeneratedRegex(@"\s+")]
+	private static partial Regex AllContiguousSpaceRegEx();
 
 	static readonly Regex InsertAfterColorPrefixRegEx = new Regex(TQColorHelper.RegExStartingColorTagOrEmpty + @"(?<Content>.+)", RegexOptions.Compiled);
 	/// <summary>
@@ -414,8 +419,9 @@ public static class StringHelper
 		return string.Join(delim, res.ToArray());
 	}
 
-	static readonly Regex SplitOnTQNewLineRegEx = new Regex(@"(?i)\{\^N}", RegexOptions.Compiled);
-	public static IEnumerable<string> SplitOnTQNewLine(this string TQText) => SplitOnTQNewLineRegEx.Split(TQText);
+	[GeneratedRegex(@"(?i)\{\^N}", RegexOptions.Compiled)]
+	private static partial Regex SplitOnTQNewLineRegEx();
+	public static IEnumerable<string> SplitOnTQNewLine(this string TQText) => SplitOnTQNewLineRegEx().Split(TQText);
 
 	/// <summary>
 	/// Wraps the words in a text description.
@@ -425,6 +431,7 @@ public static class StringHelper
 	/// <returns>List of wrapped text</returns>
 	public static Collection<string> WrapWords(string TQText, int Columns)
 	{
+		if (TQText is null) return new Collection<string>();
 		List<string> choppedLines = new List<string>();
 		// First split on NL tag
 		choppedLines.AddRange(SplitOnTQNewLine(TQText));
@@ -436,7 +443,7 @@ public static class StringHelper
 			if (t.Length > Columns)
 			{
 				// split on spaces
-				var batch = AllContiguousSpaceRegEx.Split(t);
+				var batch = AllContiguousSpaceRegEx().Split(t);
 				string line = string.Empty;
 				string currentColor = string.Empty;
 				List<string> res = new List<string>();

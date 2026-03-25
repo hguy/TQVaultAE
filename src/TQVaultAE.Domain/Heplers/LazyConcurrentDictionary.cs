@@ -17,11 +17,12 @@ public class LazyConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey,
 
 	public TValue GetOrAddAtomic(TKey key, Func<TKey, TValue> valueFactory)
 	{
+		var keyExisted = this.ContainsKey(key);
 		var lazyResult = this.GetOrAdd(key
 			, k => new Lazy<TValue>(() => valueFactory(k), LazyThreadSafetyMode.ExecutionAndPublication)
 		);
-		// Check if a new item was added (not just retrieved)
-		if (lazyResult.IsValueCreated)
+		// Only increment version when a new key was added (not when retrieving existing)
+		if (!keyExisted)
 			IncrementVersion();
 		return lazyResult.Value;
 	}

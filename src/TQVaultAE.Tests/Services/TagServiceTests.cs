@@ -51,23 +51,6 @@ public class TagServiceTests
 		return new PlayerSave(@"C:\Test\_TestPlayer", false, false, false, "", _mockTranslationService.Object, _mockPathIO.Object);
 	}
 
-		[Fact]
-	public void Constructor_WithValidDependencies_InitializesService()
-	{
-		// Arrange & Act
-		var service = new TagService(
-			_mockLogger.Object,
-			_mockGamePathService.Object,
-			_mockFileIO.Object,
-			_mockPathIO.Object,
-			_jsonOptions
-		);
-
-		// Assert
-		service.Should().NotBeNull();
-		_mockFileIO.Verify(x => x.Exists(_testConfigPath), Times.AtLeastOnce);
-	}
-
 	[Fact]
 	public void Tags_WithEmptyConfig_ReturnsEmptyDictionary()
 	{

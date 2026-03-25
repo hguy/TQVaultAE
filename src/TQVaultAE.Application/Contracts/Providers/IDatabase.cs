@@ -108,4 +108,10 @@ public interface IDatabase
 	/// <returns></returns>
 	ArcFile? ReadARCFile(string arcFileName);
 
+	/// <summary>
+	/// Load the database files (Text DB, ARZ file, etc.)
+	/// Must be called AFTER game paths are configured.
+	/// </summary>
+	void LoadDBFile();
+
 }

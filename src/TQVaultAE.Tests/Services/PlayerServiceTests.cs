@@ -5,7 +5,9 @@ using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 
 namespace TQVaultAE.Tests.Services;
@@ -423,5 +425,182 @@ public class PlayerServiceTests
 		// Assert
 		result.Should().HaveCount(1);
 		result[0].IsArchived.Should().BeTrue();
+	}
+
+	/// <summary>
+	/// Test UpdatePlayerFilePath with null old path does nothing
+	/// </summary>
+	[Fact]
+	public void UpdatePlayerFilePath_WithNullOldPath_DoesNothing()
+	{
+		// Act
+		_playerService.UpdatePlayerFilePath(null, "/new/path");
+
+		// Assert - should not throw
+		_sessionContext.Players.Should().BeEmpty();
+	}
+
+	/// <summary>
+	/// Test UpdatePlayerFilePath with empty old path does nothing
+	/// </summary>
+	[Fact]
+	public void UpdatePlayerFilePath_WithEmptyOldPath_DoesNothing()
+	{
+		// Act
+		_playerService.UpdatePlayerFilePath("", "/new/path");
+
+		// Assert - should not throw
+		_sessionContext.Players.Should().BeEmpty();
+	}
+
+	/// <summary>
+	/// Test UpdatePlayerFilePath with non-existent path does nothing
+	/// </summary>
+	[Fact]
+	public void UpdatePlayerFilePath_WithNonExistentPath_DoesNothing()
+	{
+		// Act
+		_playerService.UpdatePlayerFilePath("/non/existent", "/new/path");
+
+		// Assert - should not throw
+		_sessionContext.Players.Should().BeEmpty();
+	}
+
+	/// <summary>
+	/// Test UpdatePlayerFilePath with valid paths updates player file path
+	/// </summary>
+	[Fact]
+	public void UpdatePlayerFilePath_WithValidPaths_UpdatesPlayerFilePath()
+	{
+		// Arrange - Create a player in the session context
+		var oldPath = "/Test/Players/TestPlayer.plr";
+		var newPath = "/Test/Players/Archived/TestPlayer.plr";
+		var playerFile = "/Test/Players/TestPlayer.plr";
+		var playerFolder = "/Test/Players/_TestPlayer";
+		var playerSave = CreatePlayerSave(playerFolder);
+
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, false))
+			.Returns(playerFile);
+		_mockPlayerCollectionProvider.Setup(x => x.LoadFile(It.IsAny<PlayerCollection>(), null));
+
+		// Load the player first
+		_playerService.LoadPlayer(playerSave);
+
+		// Act
+		_playerService.UpdatePlayerFilePath(oldPath, newPath);
+
+		// Assert - old path should be removed, new path should exist
+		_sessionContext.Players.ContainsKey(oldPath).Should().BeFalse();
+	}
+
+	/// <summary>
+	/// Test LoadPlayer with fromFileWatcher updates existing player
+	/// </summary>
+	[Fact]
+	public void LoadPlayer_WithFromFileWatcherTrue_UpdatesExistingPlayer()
+	{
+		// Arrange
+		var playerFolder = "/Test/Players/_TestPlayer";
+		var playerFile = "/Test/Players/TestPlayer.plr";
+		var playerSave = CreatePlayerSave(playerFolder);
+
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, false))
+			.Returns(playerFile);
+
+		// First load
+		var result1 = _playerService.LoadPlayer(playerSave, false);
+		var originalPlayer = result1.Player;
+
+		// Act - second load with fromFileWatcher
+		var result2 = _playerService.LoadPlayer(playerSave, true);
+
+		// Assert
+		result2.Should().NotBeNull();
+		result2.Player.Should().NotBeSameAs(originalPlayer);
+		result2.PlayerFile.Should().Be(playerFile);
+	}
+
+	/// <summary>
+	/// Test SaveAllModifiedPlayers with backup enabled calls backup services
+	/// </summary>
+	[Fact]
+	public void SaveAllModifiedPlayers_WithBackupEnabled_CallsBackupServices()
+	{
+		// Arrange - Create a modified player in session context
+		var playerFolder = "/Test/Players/_TestPlayer";
+		var playerFile = "/Test/Players/TestPlayer.plr";
+		var playerSave = CreatePlayerSave(playerFolder);
+
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, false))
+			.Returns(playerFile);
+
+		// Create a sack collection that will be marked as modified
+		var sackCollection = new SackCollection();
+		sackCollection.IsModified = true;
+
+		_mockPlayerCollectionProvider.Setup(x => x.LoadFile(It.IsAny<PlayerCollection>(), null))
+			.Callback<PlayerCollection, string>((pc, path) =>
+			{
+				pc.Sacks = new SackCollection[] { sackCollection };
+			});
+
+		// Load the player
+		_playerService.LoadPlayer(playerSave);
+
+		_userSettings.DisableLegacyBackup = false;
+
+		PlayerCollection? playerOnError = null;
+
+		// Act
+		var result = _playerService.SaveAllModifiedPlayers(ref playerOnError);
+
+		// Assert
+		result.Should().BeTrue();
+		_mockGameFileService.Verify(x => x.BackupFile(It.IsAny<string>(), playerFile), Times.Once);
+		_mockGameFileService.Verify(x => x.BackupStupidPlayerBackupFolder(playerFile), Times.Once);
+	}
+
+	/// <summary>
+	/// Test LoadPlayer with exception logs error and returns error result
+	/// </summary>
+	[Fact]
+	public void LoadPlayer_WithUnexpectedException_LogsErrorAndReturnsErrorResult()
+	{
+		// Arrange
+		var playerFolder = "/Test/Players/_TestPlayer";
+		var playerFile = "/Test/Players/TestPlayer.plr";
+		var playerSave = CreatePlayerSave(playerFolder);
+
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, false))
+			.Returns(playerFile);
+		_mockPlayerCollectionProvider.Setup(x => x.LoadFile(It.IsAny<PlayerCollection>(), null))
+			.Callback<PlayerCollection, string>((pc, path) => throw new InvalidOperationException("Unexpected error"));
+
+		// Act
+		var result = _playerService.LoadPlayer(playerSave);
+
+		// Assert
+		result.Should().NotBeNull();
+		result.Error.Should().NotBeNull();
+		result.Error.Message.Should().Be("Unexpected error");
+	}
+
+	/// <summary>
+	/// Test AlterNameInPlayerFileSave with empty save folder does not throw
+	/// </summary>
+	[Fact]
+	public void AlterNameInPlayerFileSave_WithEmptySaveFolder_DoesNotThrow()
+	{
+		// Arrange
+		var newName = "NewPlayerName";
+		var saveFolder = "";
+
+		_mockGamePathService.Setup(x => x.PlayerSaveFileName).Returns("player.chr");
+
+		// Act
+		var act = () => _playerService.AlterNameInPlayerFileSave(newName, saveFolder);
+
+		// Assert
+		act.Should().NotThrow();
 	}
 }

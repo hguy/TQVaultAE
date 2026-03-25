@@ -1,3 +1,5 @@
+using TQVaultAE.Application.Results;
+
 namespace TQVaultAE.Application.Contracts.Services;
 
 public interface IVaultService
