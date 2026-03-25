@@ -11,6 +11,7 @@ internal class NodeTag
 
 	internal int TokIdx;
 	internal RecordId Key;
+	internal string DictionaryKey;
 	internal TreeNode thisNode;
 	internal TQFileInfo File;
 	internal byte[] RawData;

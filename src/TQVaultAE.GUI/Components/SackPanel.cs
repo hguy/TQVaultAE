@@ -1543,6 +1543,7 @@ public class SackPanel : Panel, IScalingControl
 							{
 								SackType.Player => 0,
 								SackType.Vault => 1,
+								_ => 0,
 							};
 
 							var label = (this.SackType == SackType.Player && i == 0)

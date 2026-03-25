@@ -26,6 +26,11 @@ namespace ArzExplorer
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
 
         /// <summary>
+        /// Generated Load All Files menu item
+        /// </summary>
+        private System.Windows.Forms.ToolStripMenuItem loadAllFilesToolStripMenuItem;
+
+        /// <summary>
         /// Generated Exit menu item
         /// </summary>
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
@@ -100,6 +105,7 @@ namespace ArzExplorer
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.loadAllFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.navigationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.previousToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -188,6 +194,7 @@ namespace ArzExplorer
             this.fileToolStripMenuItem.BackColor = System.Drawing.SystemColors.Control;
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
+            this.loadAllFilesToolStripMenuItem,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.fileToolStripMenuItem.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -203,6 +210,14 @@ namespace ArzExplorer
             this.openToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
             this.openToolStripMenuItem.Text = "&Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
+            // 
+            // loadAllFilesToolStripMenuItem
+            // 
+            this.loadAllFilesToolStripMenuItem.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.loadAllFilesToolStripMenuItem.Name = "loadAllFilesToolStripMenuItem";
+            this.loadAllFilesToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.loadAllFilesToolStripMenuItem.Text = "Load All Files";
+            this.loadAllFilesToolStripMenuItem.Click += new System.EventHandler(this.LoadAllFilesToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
