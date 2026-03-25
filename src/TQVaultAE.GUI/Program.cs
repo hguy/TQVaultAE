@@ -119,8 +119,6 @@ public static class Program
 			.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
 
 				// Performance: Memory-Mapped File Services
-				// To revert to old logic, change to:
-				//.AddTransient<IFileDataService, LegacyFileDataService>()
 				.AddSingleton<IFileDataService, MemoryMappedFileService>()
 
 				// Forms
