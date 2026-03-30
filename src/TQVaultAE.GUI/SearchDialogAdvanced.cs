@@ -311,12 +311,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
 		var validItems = items.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
 
-		this.ItemDatabaseService.ClearItemDatabase();
-
-		foreach (var item in validItems)
-		{
-			this.ItemDatabaseService.ItemDatabase.Add(item);
-		}
+		this.ItemDatabaseService.ResetAllItemDatabase(validItems);
 	}
 
 	#endregion

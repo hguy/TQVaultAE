@@ -58,4 +58,6 @@ public interface IItemDatabaseService
     IReadOnlyList<SearchResult> FullTextSearch(string searchText, bool isRegex = false);
 
     #endregion
+
+    void ResetAllItemDatabase(List<SearchResult> validItems);
 }

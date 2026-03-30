@@ -185,8 +185,13 @@ public class ItemDatabaseService : IItemDatabaseService
         return this.ApplyTextSearch(itemDatabase, searchText, isRegex).ToList();
     }
 
-    /// <inheritdoc/>
-    public IReadOnlyList<SearchResult> ExecuteAdvancedSearch(AdvancedSearchRequest request)
+    public void ResetAllItemDatabase(List<SearchResult> validItems)
+    {
+	    this.ItemDatabase = new(validItems);
+	}
+
+	/// <inheritdoc/>
+	public IReadOnlyList<SearchResult> ExecuteAdvancedSearch(AdvancedSearchRequest request)
     {
         if (request.InitialResults == null)
             return Array.Empty<SearchResult>();
