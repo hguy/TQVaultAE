@@ -150,6 +150,7 @@ namespace ArzExplorer
             this.toolStripButtonCaps = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripButtonLoadDataBase = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButtonLoadAllFiles = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabelSearch = new System.Windows.Forms.ToolStripLabel();
             this.toolStripTextBox = new System.Windows.Forms.ToolStripTextBox();
@@ -614,6 +615,7 @@ namespace ArzExplorer
             this.toolStripButtonCaps,
             this.toolStripSeparator5,
             this.toolStripButtonLoadDataBase,
+            this.toolStripButtonLoadAllFiles,
             this.toolStripSeparator2,
             this.toolStripLabelSearch,
             this.toolStripTextBox,
@@ -691,6 +693,16 @@ namespace ArzExplorer
             this.toolStripButtonLoadDataBase.Size = new System.Drawing.Size(23, 20);
             this.toolStripButtonLoadDataBase.Text = "Load Database";
             this.toolStripButtonLoadDataBase.Click += new System.EventHandler(this.toolStripButtonLoadDataBase_Click);
+            // 
+            // toolStripButtonLoadAllFiles
+            // 
+            this.toolStripButtonLoadAllFiles.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripButtonLoadAllFiles.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButtonLoadDataBase.Image")));
+            this.toolStripButtonLoadAllFiles.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripButtonLoadAllFiles.Name = "toolStripButtonLoadAllFiles";
+            this.toolStripButtonLoadAllFiles.Size = new System.Drawing.Size(23, 20);
+            this.toolStripButtonLoadAllFiles.Text = "Load All Files";
+            this.toolStripButtonLoadAllFiles.Click += new System.EventHandler(this.toolStripButtonLoadAllFiles_Click);
             // 
             // toolStripSeparator2
             // 
@@ -814,6 +826,7 @@ namespace ArzExplorer
         private System.Windows.Forms.ToolStripButton toolStripButtonClearHistory;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton toolStripButtonLoadDataBase;
+        private System.Windows.Forms.ToolStripButton toolStripButtonLoadAllFiles;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
 		private System.Windows.Forms.ToolStripMenuItem navigationToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem previousToolStripMenuItem;

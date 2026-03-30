@@ -214,6 +214,11 @@ public partial class MainForm : Form
 		}
 	}
 
+	private void toolStripButtonLoadAllFiles_Click(object sender, EventArgs e)
+	{
+		LoadAllFilesToolStripMenuItem_Click(sender, e);
+	}
+
 	/// <summary>
 	/// Opens a file and updates the tree view.
 	/// </summary>
