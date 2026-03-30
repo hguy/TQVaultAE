@@ -9,7 +9,7 @@ using TQVaultAE.Domain.Entities;
 namespace TQVaultAE.Tests.Data;
 
 /// <summary>
-/// Comprehensive validation tests for ArcFileProvider ReadARCToC_V3 method.
+/// Comprehensive validation tests for ArcFileProvider ReadARCToC_NEW method.
 /// Uses local test data files for reproducible tests.
 /// </summary>
 public class ArcFileProviderAllFilesTest : IDisposable
@@ -91,7 +91,7 @@ public class ArcFileProviderAllFilesTest : IDisposable
 		var file = new ArcFile(LocalParticlesArcPath);
 
 		// Act
-		var validationResult = _provider.ValidateV3AgainstOriginal(file);
+		var validationResult = _provider.ValidateNEWAgainstOriginal(file);
 
 		// Assert
 		validationResult.CountsMatch.Should().BeTrue(
@@ -106,7 +106,7 @@ public class ArcFileProviderAllFilesTest : IDisposable
 	}
 
 	[Fact]
-	public void ReadARCToC_V3_ParticlesArc_ProducesValidResult()
+	public void ReadARCToC_NEW_ParticlesArc_ProducesValidResult()
 	{
 		// Skip if local test file doesn't exist
 		if (!File.Exists(LocalParticlesArcPath))
@@ -118,7 +118,7 @@ public class ArcFileProviderAllFilesTest : IDisposable
 		var file = new ArcFile(LocalParticlesArcPath);
 
 		// Act
-		var result = _provider.ReadARCToC_V3(file);
+		var result = _provider.ReadARCToC_NEW(file);
 
 		// Assert
 		result.Should().BeTrue("V3 should successfully read Particles.arc");
@@ -161,7 +161,7 @@ public class ArcFileProviderAllFilesTest : IDisposable
 
 		// Act
 		_provider.ReadARCToC_OLD(fileOLD);
-		_provider.ReadARCToC_V3(fileV3);
+		_provider.ReadARCToC_NEW(fileV3);
 
 		// Assert
 		fileOLD.DirectoryEntries.Count.Should().Be(
@@ -186,7 +186,7 @@ public class ArcFileProviderAllFilesTest : IDisposable
 			var relativePath = arcFile.Substring(gamePath!.Length + 1);
 
 			var file = new ArcFile(arcFile);
-			var validationResult = _provider.ValidateV3AgainstOriginal(file);
+			var validationResult = _provider.ValidateNEWAgainstOriginal(file);
 
 			if (validationResult.IsValid && validationResult.CountsMatch)
 			{
@@ -209,14 +209,14 @@ public class ArcFileProviderAllFilesTest : IDisposable
 	/// Extended validation test - requires Titan Quest game installation.
 	/// </summary>
 	[Fact(Skip = "Requires Titan Quest game installation", SkipType = typeof(TestingConditions), SkipUnless = nameof(TestingConditions.IsGameInstalled))]
-	public void ReadARCToC_V3_AllArcFiles_ProducesValidResult()
+	public void ReadARCToC_NEW_AllArcFiles_ProducesValidResult()
 	{
 		int passed = 0, failed = 0;
 
 		foreach (var arcFile in GetArcFiles())
 		{
 			var file = new ArcFile(arcFile);
-			var result = _provider.ReadARCToC_V3(file);
+			var result = _provider.ReadARCToC_NEW(file);
 
 			if (result && file.FileHasBeenRead)
 			{
@@ -274,7 +274,7 @@ public class ArcFileProviderAllFilesTest : IDisposable
 			var fileV3 = new ArcFile(arcFile);
 
 			_provider.ReadARCToC_OLD(fileOLD);
-			_provider.ReadARCToC_V3(fileV3);
+			_provider.ReadARCToC_NEW(fileV3);
 
 			if (fileOLD.DirectoryEntries.Count == fileV3.DirectoryEntries.Count)
 			{

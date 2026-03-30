@@ -9,7 +9,7 @@ using TQVaultAE.Domain.Entities;
 namespace TQVaultAE.Tests.Data;
 
 /// <summary>
-/// Integration tests for ArcFileProvider ReadARCToC_V3 method comparing against original algorithm.
+/// Integration tests for ArcFileProvider ReadARCToC_NEW method comparing against original algorithm.
 /// Uses real ARC files from the Titan Quest installation for validation.
 /// </summary>
 public class ArcFileProviderV3IntegrationTests : IDisposable
@@ -72,7 +72,7 @@ public class ArcFileProviderV3IntegrationTests : IDisposable
 		var file = new ArcFile(arcPath);
 
 		// Act
-		var validationResult = _provider.ValidateV3AgainstOriginal(file);
+		var validationResult = _provider.ValidateNEWAgainstOriginal(file);
 
 		// Assert
 		validationResult.IsValid.Should().BeTrue(because: $"Failed for {relativePath}: {validationResult.ErrorMessage}");
@@ -81,7 +81,7 @@ public class ArcFileProviderV3IntegrationTests : IDisposable
 	}
 
 	[Fact(Skip = "Requires Titan Quest game installation with Text_EN.arc", SkipType = typeof(TestingConditions), SkipUnless = nameof(TestingConditions.HasTextEnArc))]
-	public void ReadARCToC_V3_TextEN_ProducesNonEmptyResult()
+	public void ReadARCToC_NEW_TextEN_ProducesNonEmptyResult()
 	{
 		// This test specifically checks that V3 produces non-empty results for Text_EN.arc
 		// which is essential for the "Could not load Text DB" fix to work
@@ -92,7 +92,7 @@ public class ArcFileProviderV3IntegrationTests : IDisposable
 		var file = new ArcFile(textArcPath);
 
 		// Act
-		var result = _provider.ReadARCToC_V3(file);
+		var result = _provider.ReadARCToC_NEW(file);
 
 		// Assert
 		result.Should().BeTrue("V3 should successfully read Text_EN.arc");

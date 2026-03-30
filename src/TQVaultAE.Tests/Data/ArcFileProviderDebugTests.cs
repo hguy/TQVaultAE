@@ -89,7 +89,7 @@ public class ArcFileProviderDebugTests : IDisposable
 		debugOutput.AppendLine($"\nOLD algorithm result: {fileOLD.DirectoryEntries.Count} entries");
 
 		// Act - Read with V3 algorithm
-		_provider.ReadARCToC_V3(fileV3);
+		_provider.ReadARCToC_NEW(fileV3);
 		debugOutput.AppendLine($"V3 algorithm result: {fileV3.DirectoryEntries.Count} entries");
 
 		// Detailed comparison
@@ -232,7 +232,7 @@ public class ArcFileProviderDebugTests : IDisposable
 		var fileV3 = new ArcFile(textEnArcPath);
 
 		_provider.ReadARCToC_OLD(fileOLD);
-		_provider.ReadARCToC_V3(fileV3);
+		_provider.ReadARCToC_NEW(fileV3);
 
 		_output.WriteLine($"OLD entries: {fileOLD.DirectoryEntries.Count}");
 		_output.WriteLine($"V3 entries: {fileV3.DirectoryEntries.Count}");
