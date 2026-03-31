@@ -14,7 +14,7 @@ dotnet build src/TQVaultAE.GUI/TQVaultAE.GUI.csproj
 dotnet restore
 ```
 
-**Solution Files:** `TQVaultAE.slnx` (modern) | `TQVaultAE.sln` (classic, x64/x86)
+**Solution File:** `TQVaultAE.slnx` (modern .NET 10.0 SDK-style format)
 
 ## Test Commands
 

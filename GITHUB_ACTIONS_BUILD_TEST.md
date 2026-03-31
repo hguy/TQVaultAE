@@ -59,13 +59,28 @@ The workflow requires a Personal Access Token to push commits and create tags on
 
 ## Projects to Build
 
+### Executables
+
 | Project | Target Framework | Output Type | Path |
 |---------|-----------------|-------------|------|
 | TQVaultAE.GUI | .NET 10.0 Windows | WinExe | src/TQVaultAE.GUI/TQVaultAE.GUI.csproj |
 | ARZExplorer | .NET 10.0 Windows | WinExe | src/ARZExplorer/ArzExplorer.csproj |
 | TQ.SaveFilesExplorer | .NET Framework 4.8 | WinExe | src/TQSaveFilesExplorer/TQ.SaveFilesExplorer.csproj |
 
-## Test Projects
+### Libraries
+
+| Project | Target Framework | Path |
+|---------|-----------------|------|
+| TQVaultAE.Domain | .NET 10.0 | src/TQVaultAE.Domain/TQVaultAE.Domain.csproj |
+| TQVaultAE.Application | .NET 10.0 | src/TQVaultAE.Application/TQVaultAE.Application.csproj |
+| TQVaultAE.Services | .NET 10.0 | src/TQVaultAE.Services/TQVaultAE.Services.csproj |
+| TQVaultAE.Presentation | .NET 10.0 | src/TQVaultAE.Presentation/TQVaultAE.Presentation.csproj |
+| TQVaultAE.Data | .NET 10.0 | src/TQVaultAE.Data/TQVaultAE.Data.csproj |
+| TQVaultAE.Config | .NET 10.0 | src/TQVaultAE.Config/TQVaultAE.Config.csproj |
+| TQVaultAE.Logs | .NET 10.0 | src/TQVaultAE.Logs/TQVaultAE.Logs.csproj |
+| TQVaultAE.Services.Win32 | .NET 10.0 Windows | src/TQVaultAE.Services.Win32/TQVaultAE.Services.Win32.csproj |
+
+### Test Projects
 
 | Project | Path |
 |---------|------|
@@ -106,9 +121,8 @@ This repository already includes the necessary GitHub Actions workflow files:
 - **auto-version.yml**: Triggers when `version-info.json` is pushed to `master`. Syncs version, builds, creates tags, and publishes releases with ZIP archives.
 - **build-and-test.yml**: Triggers on `master` pushes (with `src/**` changes) and PRs to `master`. Builds and tests for verification with 3-day artifact retention.
 
-**Important**: Both workflows use two solution files:
-- `TQVaultAE.slnx` - Modern .NET 10.0 SDK-style projects
-- `TQVaultAE.sln` - Classic .NET Framework 4.8 projects (built with MSBuild)
+**Important**: Both workflows use a single solution file:
+- `TQVaultAE.slnx` - Modern .NET 10.0 SDK-style projects (all projects including .NET Framework 4.8 via TQ.SaveFilesExplorer)
 
 The Magick.NET-Q8-AnyCPU NuGet package includes all required native ImageMagick binaries, so no separate installation is needed.
 
