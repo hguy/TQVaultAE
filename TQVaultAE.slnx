@@ -9,13 +9,8 @@
     - Easier Git merges (no GUID conflicts)
     - Auto-discovers project dependencies
     
-    Limitations:
-    - Requires Visual Studio 2022 17.10+ or .NET 9 SDK+
-    - Limited platform configuration support in current dotnet CLI
-    
     Usage:
-    - For Any CPU builds: dotnet build TQVaultAE.slnx
-    - For x64/x86 builds: Use TQVaultAE.sln (classic format)
+    - Build: dotnet build TQVaultAE.slnx
   -->
   
   <!-- Executables -->
