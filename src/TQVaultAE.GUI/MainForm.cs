@@ -306,6 +306,8 @@ Item Debug Level: {USettings.ItemDebugLevel}
 
 		this.CreatePanels();
 
+		SetupVaultExportButton();
+
 		this.UIService.NotifyUserEvent += UIService_NotifyUserEvent;
 		this.UIService.ShowMessageUserEvent += UIService_ShowMessageUserEvent;
 	}
@@ -571,8 +573,22 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 				try
 				{
 					var json = this.itemExchangeService.DecodeFromClipboardPayload(line.Trim());
-					var result = this.itemExchangeService.ImportFromJson(json);
-					if (result.Success)
+					var scope = this.itemExchangeService.DetectScope(json);
+
+					if (scope == "vault")
+					{
+						var result = this.itemExchangeService.ImportFromJson(json);
+						if (result.Success)
+						{
+							HandleVaultImportFromJson(json, result);
+							return;
+						}
+						skipped++;
+						continue;
+					}
+
+					var importResult = this.itemExchangeService.ImportFromJson(json);
+					if (importResult.Success)
 						imported++;
 					else
 						skipped++;
@@ -1323,4 +1339,175 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 
 	#endregion
 
+
+	#region Vault Export/Import
+
+	private ScalingButton vaultExportButton;
+	private ContextMenuStrip vaultExportContextMenu;
+
+	private void SetupVaultExportButton()
+	{
+		vaultExportButton = new ScalingButton
+		{
+			Text = "...",
+			Size = new Size(28, 28),
+			FlatStyle = FlatStyle.Flat,
+			Font = FontService.GetFontLight(10F, UIService.Scale),
+			Margin = new Padding(3, 0, 0, 0)
+		};
+		vaultExportButton.FlatAppearance.BorderSize = 0;
+
+		vaultExportContextMenu = new ContextMenuStrip
+		{
+			BackColor = Color.FromArgb(46, 41, 31),
+			ForeColor = Color.FromArgb(200, 200, 200),
+			ShowImageMargin = false
+		};
+
+		vaultExportContextMenu.Items.Add("Export Vault to File", null, ExportVaultToFileClicked);
+		vaultExportContextMenu.Items.Add("Export Vault to Clipboard", null, ExportVaultToClipboardClicked);
+
+		vaultExportButton.Click += (s, e) =>
+		{
+			vaultExportContextMenu.Show(vaultExportButton, new Point(0, vaultExportButton.Height));
+		};
+
+		this.toolTip.SetToolTip(vaultExportButton, "Export Vault");
+
+		this.flowLayoutPanelVaultSelector.Controls.Add(vaultExportButton);
+
+		ScaleControl(this.UIService, vaultExportButton);
+	}
+
+	private void ExportVaultToFileClicked(object sender, EventArgs e)
+	{
+		var vault = this.vaultPanel?.Player;
+		if (vault == null)
+		{
+			this.UIService.ShowWarning("No vault is loaded.");
+			return;
+		}
+
+		using var saveDialog = new SaveFileDialog
+		{
+			Filter = "JSON files (*.json)|*.json",
+			FileName = $"{vault.PlayerName}.json",
+			DefaultExt = "json"
+		};
+
+		if (saveDialog.ShowDialog() == DialogResult.OK)
+		{
+			try
+			{
+				var json = this.itemExchangeService.SerializePlayerCollection(vault);
+				System.IO.File.WriteAllText(saveDialog.FileName, json);
+				this.UIService.NotifyUser($"Vault exported to {saveDialog.FileName}");
+			}
+			catch (Exception ex)
+			{
+				Log.LogError(ex, "Failed to export vault to file");
+				this.UIService.ShowError("Failed to export vault to file.");
+			}
+		}
+	}
+
+	private void ExportVaultToClipboardClicked(object sender, EventArgs e)
+	{
+		var vault = this.vaultPanel?.Player;
+		if (vault == null)
+		{
+			this.UIService.ShowWarning("No vault is loaded.");
+			return;
+		}
+
+		try
+		{
+			var json = this.itemExchangeService.SerializePlayerCollection(vault);
+			var payload = this.itemExchangeService.EncodeToClipboardPayload(json);
+			Clipboard.SetText(payload);
+			this.UIService.NotifyUser("Vault exported to clipboard.");
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Failed to export vault to clipboard");
+			this.UIService.ShowError("Failed to export vault to clipboard.");
+		}
+	}
+
+	private void HandleVaultImportFromJson(string json, ImportResult importResult)
+	{
+		var targetVault = this.vaultPanel?.Player;
+		if (targetVault == null)
+		{
+			this.UIService.ShowError("No vault is loaded to import into.");
+			return;
+		}
+
+		var dialogResult = MessageBox.Show(
+			$"Import vault \"{importResult.VaultName}\"?\n\n" +
+			"Replace — Clear all tabs and import.\n" +
+			"Create New Vault — Create a new vault file with this data.\n" +
+			"Cancel — Abort the import.",
+			"Import Vault",
+			MessageBoxButtons.YesNoCancel,
+			MessageBoxIcon.Question);
+
+		if (dialogResult == DialogResult.Cancel)
+			return;
+
+		if (dialogResult == DialogResult.No)
+		{
+			var baseName = importResult.VaultName;
+			var newName = baseName;
+			int suffix = 1;
+
+			var existingVaults = this.vaultService.GetVaultList();
+			while (existingVaults.Contains(newName, StringComparer.OrdinalIgnoreCase))
+			{
+				newName = $"{baseName} ({++suffix})";
+			}
+
+			var newVault = this.vaultService.CreateVault(newName);
+			this.itemExchangeService.ImportVaultInto(newVault, importResult);
+			foreach (var sack in newVault)
+				sack.IsModified = true;
+
+			this.GetVaultList(false);
+			this.vaultListComboBox.SelectedItem = newName;
+			this.LoadVault(newName, false);
+
+			this.UIService.NotifyUser($"Created new vault \"{newName}\" with imported data.");
+			return;
+		}
+
+		var nonEmpty = false;
+		for (int i = 0; i < targetVault.NumberOfSacks; i++)
+		{
+			var sack = targetVault.GetSack(i);
+			if (sack != null && !sack.IsEmpty)
+			{
+				nonEmpty = true;
+				break;
+			}
+		}
+
+		if (nonEmpty)
+		{
+			var warning = this.UIService.ShowWarning(
+				"WARNING: This will erase all items in the current vault. Continue?",
+				null,
+				ShowMessageButtons.OKCancel);
+
+			if (!warning.IsOK)
+				return;
+		}
+
+		this.itemExchangeService.ImportVaultInto(targetVault, importResult);
+		this.vaultPanel.Refresh();
+
+		var totalItems = importResult.SackItems?.Sum(kvp => kvp.Value.Count) ?? 0;
+		this.UIService.NotifyUser($"Imported {totalItems} items into vault.");
+	}
+
+	#endregion
 }

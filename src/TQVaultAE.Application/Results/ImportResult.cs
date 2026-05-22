@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application.Results;
@@ -7,6 +8,13 @@ public class ImportResult
 	public bool Success { get; set; }
 	public string Scope { get; set; }
 	public Item Item { get; set; }
+	public IReadOnlyList<Item> Items { get; set; }
+	public int SackNumber { get; set; }
+	public string SackType { get; set; }
+	public string VaultName { get; set; }
+	public Dictionary<int, List<Item>> SackItems { get; set; }
+	public int ImportedCount { get; set; }
+	public int TotalCount { get; set; }
 	public string ErrorMessage { get; set; }
 
 	public static ImportResult Succeeded(Item item)
@@ -14,8 +22,39 @@ public class ImportResult
 		{
 			Success = true,
 			Scope = "item",
-			Item = item
+			Item = item,
+			ImportedCount = 1,
+			TotalCount = 1
 		};
+
+	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, string sackType)
+		=> new()
+		{
+			Success = true,
+			Scope = "tab",
+			Items = items,
+			SackNumber = sackNumber,
+			SackType = sackType,
+			ImportedCount = items.Count,
+			TotalCount = items.Count
+		};
+
+	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems)
+	{
+		var total = 0;
+		foreach (var kv in sackItems)
+			total += kv.Value.Count;
+
+		return new()
+		{
+			Success = true,
+			Scope = "vault",
+			VaultName = vaultName,
+			SackItems = sackItems,
+			ImportedCount = total,
+			TotalCount = total
+		};
+	}
 
 	public static ImportResult Failed(string errorMessage)
 		=> new()

@@ -1,8 +1,10 @@
 using AwesomeAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Collections.Generic;
 using System.Text.Json;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 
@@ -117,5 +119,136 @@ public class ItemExchangeServiceTests
 
 		result.Should().NotBeNull();
 		result.Success.Should().BeFalse();
+	}
+
+	[Fact]
+	public void SerializeSackCollection_ShouldProduceValidTabScopeExportFormat()
+	{
+		var sack = new SackCollection();
+		sack.SackType = SackType.Vault;
+		sack.AddItem(new Item
+		{
+			BaseItemId = "records/gear/armor/helm.dbr",
+			Seed = 42,
+			PositionX = 3,
+			PositionY = 7,
+			Width = 2,
+			Height = 2
+		});
+		sack.AddItem(new Item
+		{
+			BaseItemId = "records/gear/weapon/sword.dbr",
+			Seed = 99,
+			PositionX = 10,
+			PositionY = 15,
+			Width = 1,
+			Height = 3
+		});
+
+		var json = _service.SerializeSackCollection(sack, 2);
+
+		json.Should().NotBeNullOrEmpty();
+
+		var doc = JsonDocument.Parse(json);
+		doc.RootElement.GetProperty("formatVersion").GetInt32().Should().Be(1);
+		doc.RootElement.GetProperty("scope").GetString().Should().Be("tab");
+
+		var data = doc.RootElement.GetProperty("data");
+		data.GetProperty("sackNumber").GetInt32().Should().Be(2);
+		data.GetProperty("sackType").GetString().Should().Be("Vault");
+
+		var items = data.GetProperty("items");
+		items.GetArrayLength().Should().Be(2);
+		items[0].GetProperty("baseItemId").GetString().Should().Be("records/gear/armor/helm.dbr");
+		items[1].GetProperty("baseItemId").GetString().Should().Be("records/gear/weapon/sword.dbr");
+	}
+
+	[Fact]
+	public void ImportFromJson_WithValidTabJson_ShouldReturnMultipleItems()
+	{
+		var sack = new SackCollection();
+		sack.SackType = SackType.Vault;
+		sack.AddItem(new Item
+		{
+			BaseItemId = "records/gear/armor/helm.dbr",
+			Seed = 42,
+			PositionX = 3,
+			PositionY = 7,
+			Width = 2,
+			Height = 2
+		});
+		sack.AddItem(new Item
+		{
+			BaseItemId = "records/gear/weapon/sword.dbr",
+			Seed = 99,
+			PositionX = 10,
+			PositionY = 15,
+			Width = 1,
+			Height = 3
+		});
+
+		var json = _service.SerializeSackCollection(sack, 2);
+		var result = _service.ImportFromJson(json);
+
+		result.Should().NotBeNull();
+		result.Success.Should().BeTrue();
+		result.Scope.Should().Be("tab");
+		result.Items.Should().NotBeNull();
+		result.Items.Should().HaveCount(2);
+		result.ImportedCount.Should().Be(2);
+		result.TotalCount.Should().Be(2);
+		result.Items[0].BaseItemId.Should().Be("records/gear/armor/helm.dbr");
+		result.Items[0].PositionX.Should().Be(3);
+		result.Items[0].PositionY.Should().Be(7);
+		result.Items[1].BaseItemId.Should().Be("records/gear/weapon/sword.dbr");
+		result.Items[1].PositionX.Should().Be(10);
+		result.Items[1].PositionY.Should().Be(15);
+	}
+
+[Fact]
+	public void ImportResult_TabScope_ShouldHaveCorrectCounts()
+	{
+		var items = new List<Item>
+		{
+			new Item { BaseItemId = "a.dbr" },
+			new Item { BaseItemId = "b.dbr" },
+			new Item { BaseItemId = "c.dbr" }
+		};
+
+		var result = ImportResult.SucceededTab(items, 0, "Vault");
+
+		result.Success.Should().BeTrue();
+		result.Scope.Should().Be("tab");
+		result.Items.Should().HaveCount(3);
+		result.ImportedCount.Should().Be(3);
+		result.TotalCount.Should().Be(3);
+	}
+
+	[Fact]
+	public void ImportFromJson_WithEmptyTab_ShouldReturnNoItems()
+	{
+		var sack = new SackCollection();
+		sack.SackType = SackType.Vault;
+
+		var json = _service.SerializeSackCollection(sack, 0);
+		var result = _service.ImportFromJson(json);
+
+		result.Should().NotBeNull();
+		result.Success.Should().BeTrue();
+		result.Scope.Should().Be("tab");
+		result.Items.Should().NotBeNull();
+		result.Items.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void ImportFromJson_WithUnsupportedScope_ShouldReturnFailure()
+	{
+		var json = "{\"formatVersion\":1,\"scope\":\"unknown\",\"data\":{}}";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Should().NotBeNull();
+		result.Success.Should().BeFalse();
+		result.ErrorMessage.Should().Contain("Unsupported scope");
 	}
 }

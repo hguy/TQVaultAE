@@ -1536,11 +1536,34 @@ public class SackPanel : Panel, IScalingControl
 					}
 				}
 
-				if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused))
+if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused))
+			{
+				this.CustomContextMenu.Items.Add("-");
+
+				var exportClipboardItem = new ToolStripMenuItem(Resources.SackPanelMenuExportClipboard, null)
 				{
-					this.CustomContextMenu.Items.Add("-");
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuExportClipboard);
-				}
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+				};
+
+				var exportFileItem = new ToolStripMenuItem(Resources.SackPanelMenuExportItemFile, null)
+				{
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+				};
+
+				var exportItemMenu = new ToolStripMenuItem(Resources.SackPanelMenuExportItem, null, exportClipboardItem, exportFileItem)
+				{
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+					DisplayStyle = ToolStripItemDisplayStyle.Text,
+				};
+
+				this.CustomContextMenu.Items.Add(exportItemMenu);
+			}
 
 				if ((focusedItem != null || this.selectedItems != null) && !isEquipmentReadOnly)
 				{
@@ -3051,6 +3074,57 @@ public class SackPanel : Panel, IScalingControl
 		}
 	}
 
+	private void ExportItemToClipboardClicked(object sender, EventArgs e)
+	{
+		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		if (focusedItem == null)
+			return;
+
+		try
+		{
+			var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+			if (exchangeService != null)
+			{
+				var json = exchangeService.SerializeItem(focusedItem);
+				var payload = exchangeService.EncodeToClipboardPayload(json);
+				Clipboard.SetText(payload);
+			}
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Failed to export item to clipboard");
+		}
+	}
+
+	private void ExportItemToFileClicked(object sender, EventArgs e)
+	{
+		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		if (focusedItem == null)
+			return;
+
+		try
+		{
+			var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+			if (exchangeService != null)
+			{
+				var json = exchangeService.SerializeItem(focusedItem);
+				using var dialog = new SaveFileDialog
+				{
+					Filter = "JSON files (*.json)|*.json",
+					DefaultExt = "json",
+					FileName = "item_export.json"
+				};
+
+				if (dialog.ShowDialog() == DialogResult.OK)
+					File.WriteAllText(dialog.FileName, json);
+			}
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Failed to export item to file");
+		}
+	}
+
 	/// <summary>
 	/// Handler for selecting New Set Item from the context menu
 	/// Creates the selected item from the set and sets it as the drag item.
@@ -3329,23 +3403,6 @@ public class SackPanel : Panel, IScalingControl
 				// now drag it
 				this.DragInfo.MarkModified(newItem);
 				Refresh();
-			}
-			else if (selectedMenuItem == Resources.SackPanelMenuExportClipboard)
-			{
-				try
-				{
-					var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
-					if (exchangeService != null)
-					{
-						var json = exchangeService.SerializeItem(focusedItem);
-						var payload = exchangeService.EncodeToClipboardPayload(json);
-						Clipboard.SetText(payload);
-					}
-				}
-				catch (Exception ex)
-				{
-					this.Log.LogError(ex, "Failed to export item to clipboard");
-				}
 			}
 			else if (selectedMenuItem == Resources.SackPanelMenuProperties)
 			{
