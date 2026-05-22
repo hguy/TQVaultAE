@@ -585,6 +585,10 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 						this.contextMenu.Items.Add("-");
 						this.AddMenuItem(Resources.ExportBagCSVToClipboard, this.ExportBagCSVToClipboard);
 						this.AddMenuItem(Resources.ExportVaultCSVToClipboard, this.ExportVaultCSVToClipboard);
+
+						// Export Tab (JSON)
+						this.contextMenu.Items.Add("-");
+						this.AddExportTabSubMenu();
 					}
 
 				}
@@ -687,6 +691,68 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			{
 				this.Vault.DisabledTooltipBagId.Add(this.CurrentBag);
 			}
+		}
+	}
+
+	private void AddExportTabSubMenu()
+	{
+		var clipboardItem = new ToolStripMenuItem(
+			Resources.PlayerPanelMenuExportTabClipboard, null,
+			this.ExportTabToClipboardClicked)
+		{
+			BackColor = this.contextMenu.BackColor,
+			Font = this.contextMenu.Font,
+			ForeColor = this.contextMenu.ForeColor,
+		};
+
+		var fileItem = new ToolStripMenuItem(
+			Resources.PlayerPanelMenuExportTabFile, null,
+			this.ExportTabToFileClicked)
+		{
+			BackColor = this.contextMenu.BackColor,
+			Font = this.contextMenu.Font,
+			ForeColor = this.contextMenu.ForeColor,
+		};
+
+		var exportTabMenu = new ToolStripMenuItem(
+			Resources.PlayerPanelMenuExportTab, null,
+			clipboardItem, fileItem)
+		{
+			BackColor = this.contextMenu.BackColor,
+			Font = this.contextMenu.Font,
+			ForeColor = this.contextMenu.ForeColor,
+			DisplayStyle = ToolStripItemDisplayStyle.Text,
+		};
+
+		this.contextMenu.Items.Add(exportTabMenu);
+	}
+
+	private void ExportTabToClipboardClicked(object sender, EventArgs e)
+	{
+		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		if (exchangeService != null && this.BagSackPanel?.Sack != null)
+		{
+			var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
+			var payload = exchangeService.EncodeToClipboardPayload(json);
+			Clipboard.SetText(payload);
+		}
+	}
+
+	private void ExportTabToFileClicked(object sender, EventArgs e)
+	{
+		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		if (exchangeService != null && this.BagSackPanel?.Sack != null)
+		{
+			var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
+			using var dialog = new SaveFileDialog
+			{
+				Filter = "JSON files (*.json)|*.json",
+				DefaultExt = "json",
+				FileName = "tab_export.json"
+			};
+
+			if (dialog.ShowDialog() == DialogResult.OK)
+				File.WriteAllText(dialog.FileName, json);
 		}
 	}
 

@@ -2084,4 +2084,19 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SackPanelMenuExportClipboard" xml:space="preserve">
     <value>Export Item to Clipboard</value>
   </data>
+	<data name="SackPanelMenuExportItemFile" xml:space="preserve">
+    <value>Save to File...</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabClipboard" xml:space="preserve">
+    <value>Copy to Clipboard</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabFile" xml:space="preserve">
+    <value>Save to File...</value>
+  </data>
+	<data name="PlayerPanelMenuExportTab" xml:space="preserve">
+    <value>Export Tab</value>
+  </data>
+	<data name="SackPanelMenuExportItem" xml:space="preserve">
+    <value>Export Item</value>
+  </data>
 </root>
