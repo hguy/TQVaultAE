@@ -36,9 +36,10 @@ public partial class MainForm : VaultForm
 	/// <summary>
 	/// Application layer services
 	/// </summary>
-	private readonly IPlayerService playerService;
+private readonly IPlayerService playerService;
 	private readonly IVaultService vaultService;
 	private readonly IStashService stashService;
+	private readonly IItemExchangeService itemExchangeService;
 
 	#region	Fields
 
@@ -158,7 +159,7 @@ public partial class MainForm : VaultForm
 	/// Initializes a new instance of the MainForm class.
 	/// </summary>
 	[PermissionSet(SecurityAction.LinkDemand, Unrestricted = true)]
-	public MainForm(
+public MainForm(
 			IServiceProvider serviceProvider
 			, ILogger<MainForm> log
 			, SessionContext sessionContext
@@ -166,14 +167,16 @@ public partial class MainForm : VaultForm
 			, IVaultService vaultService
 			, IStashService stashService
 			, ITagService tagService
+			, IItemExchangeService itemExchangeService
 		) : base(serviceProvider)
 	{
 		this.userContext = sessionContext;
 		this.HighlightService = serviceProvider.GetService<IHighlightService>();
-		this.playerService = playerService;
+this.playerService = playerService;
 		this.vaultService = vaultService;
 		this.stashService = stashService;
 		this.TagService = tagService;
+		this.itemExchangeService = itemExchangeService;
 
 		Log = log;
 		Log.LogInformation("TQVaultAE Initialization !");
@@ -488,8 +491,20 @@ Item Debug Level: {USettings.ItemDebugLevel}
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyEventArgs data</param>
-	private void MainFormKeyDown(object sender, KeyEventArgs e)
+private void MainFormKeyDown(object sender, KeyEventArgs e)
 	{
+		if (e.KeyData == (Keys.Control | Keys.C))
+		{
+			HandleClipboardExport();
+			return;
+		}
+
+		if (e.KeyData == (Keys.Control | Keys.V))
+		{
+			HandleClipboardImport();
+			return;
+		}
+
 		if (e.KeyData == (Keys.Control | Keys.F))
 			this.ActivateSearchCallback(this, new SackPanelEventArgs(null, null));
 
@@ -499,8 +514,98 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		if (e.KeyData == (Keys.Control | Keys.Subtract) || e.KeyData == (Keys.Control | Keys.OemMinus))
 			this.ResizeFormCallback(this, new ResizeEventArgs(-0.1F));
 
-		if (e.KeyData == (Keys.Control | Keys.Home))
+if (e.KeyData == (Keys.Control | Keys.Home))
 			this.ResizeFormCallback(this, new ResizeEventArgs(1.0F));
+	}
+
+	private void HandleClipboardExport()
+	{
+		var selectedItems = GetActivePanelSelectedItems();
+		if (selectedItems == null || selectedItems.Count == 0)
+			return;
+
+		try
+		{
+			if (selectedItems.Count == 1)
+			{
+				var json = this.itemExchangeService.SerializeItem(selectedItems[0]);
+				var payload = this.itemExchangeService.EncodeToClipboardPayload(json);
+				Clipboard.SetText(payload);
+			}
+			else
+			{
+				// Multi-select: serialize each item and put all on clipboard as line-separated base64
+				var payloads = selectedItems
+					.Select(item =>
+					{
+						var json = this.itemExchangeService.SerializeItem(item);
+						return this.itemExchangeService.EncodeToClipboardPayload(json);
+					});
+				Clipboard.SetText(string.Join(Environment.NewLine, payloads));
+			}
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Failed to export items to clipboard");
+		}
+	}
+
+	private void HandleClipboardImport()
+	{
+		try
+		{
+			if (!Clipboard.ContainsText())
+				return;
+
+			var text = Clipboard.GetText();
+			if (string.IsNullOrWhiteSpace(text))
+				return;
+
+			// Try each line as a base64 payload (support multi-item imports)
+			var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+			var imported = 0;
+			var skipped = 0;
+
+			foreach (var line in lines)
+			{
+				try
+				{
+					var json = this.itemExchangeService.DecodeFromClipboardPayload(line.Trim());
+					var result = this.itemExchangeService.ImportFromJson(json);
+					if (result.Success)
+						imported++;
+					else
+						skipped++;
+				}
+				catch
+				{
+					skipped++;
+				}
+			}
+
+			if (imported > 0 || skipped > 0)
+				this.UIService.NotifyUser($"Imported {imported} of {imported + skipped} items.");
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Failed to import items from clipboard");
+			this.UIService.ShowError("Invalid clipboard data.");
+		}
+	}
+
+	private IReadOnlyList<Item> GetActivePanelSelectedItems()
+	{
+		if (this.vaultPanel?.SackPanel?.SelectionActive == true)
+			return this.vaultPanel.SackPanel.GetSelectedItems();
+		if (this.secondaryVaultPanel?.SackPanel?.SelectionActive == true)
+			return this.secondaryVaultPanel.SackPanel.GetSelectedItems();
+		if (this.playerPanel?.SackPanel?.SelectionActive == true)
+			return this.playerPanel.SackPanel.GetSelectedItems();
+		if (this.playerPanel?.BagSackPanel?.SelectionActive == true)
+			return this.playerPanel.BagSackPanel.GetSelectedItems();
+		if (this.stashPanel?.SackPanel?.SelectionActive == true)
+			return this.stashPanel.SackPanel.GetSelectedItems();
+		return null;
 	}
 
 	/// <summary>
@@ -1190,8 +1295,6 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		this.typeAssistant.TextChanged();
 	}
 
-	#endregion
-
 	private void scalingLabelHighlight_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 	{
 		var link = sender as LinkLabel;
@@ -1217,4 +1320,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		highlightFilters.Visible = true;
 		highlightFilters.BringToFront();
 	}
+
+	#endregion
+
 }

@@ -112,10 +112,11 @@ public static class Program
 			.AddSingleton<ITagService, TagService>()
 			.AddTransient<IDecompressionService, DeflateDecompressionService>()
 
-			// Application Layer - Core Services
-			.AddSingleton<IItemMovementService, ItemMovementService>()
-			.AddSingleton<IHighlightService, HighlightService>()
-			.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
+		// Application Layer - Core Services
+		.AddSingleton<IItemMovementService, ItemMovementService>()
+		.AddSingleton<IHighlightService, HighlightService>()
+		.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
+		.AddSingleton<IItemExchangeService, ItemExchangeService>()
 
 				// Performance: Memory-Mapped File Services
 				.AddSingleton<IFileDataService, MemoryMappedFileService>()

@@ -391,6 +391,12 @@ public class SackPanel : Panel, IScalingControl
 	public bool SelectionActive => this.selectedItems != null && this.selectedItems.Count > 0;
 
 	/// <summary>
+	/// Gets the list of selected items.
+	/// </summary>
+	public IReadOnlyList<Item> GetSelectedItems()
+		=> this.selectedItems?.AsReadOnly() ?? Array.Empty<Item>().AsReadOnly();
+
+	/// <summary>
 	/// Gets or sets the sack instance
 	/// </summary>
 	public SackCollection Sack
@@ -1528,6 +1534,12 @@ public class SackPanel : Panel, IScalingControl
 						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuCopy);
 						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuDuplicate);
 					}
+				}
+
+				if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused))
+				{
+					this.CustomContextMenu.Items.Add("-");
+					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuExportClipboard);
 				}
 
 				if ((focusedItem != null || this.selectedItems != null) && !isEquipmentReadOnly)
@@ -3317,6 +3329,23 @@ public class SackPanel : Panel, IScalingControl
 				// now drag it
 				this.DragInfo.MarkModified(newItem);
 				Refresh();
+			}
+			else if (selectedMenuItem == Resources.SackPanelMenuExportClipboard)
+			{
+				try
+				{
+					var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+					if (exchangeService != null)
+					{
+						var json = exchangeService.SerializeItem(focusedItem);
+						var payload = exchangeService.EncodeToClipboardPayload(json);
+						Clipboard.SetText(payload);
+					}
+				}
+				catch (Exception ex)
+				{
+					this.Log.LogError(ex, "Failed to export item to clipboard");
+				}
 			}
 			else if (selectedMenuItem == Resources.SackPanelMenuProperties)
 			{

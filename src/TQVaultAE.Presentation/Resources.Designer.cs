@@ -4134,6 +4134,15 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Export Item to Clipboard.
+        /// </summary>
+        public static string SackPanelMenuExportClipboard {
+            get {
+                return ResourceManager.GetString("SackPanelMenuExportClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Create Set Items.
         /// </summary>
         public static string SackPanelMenuSet {
