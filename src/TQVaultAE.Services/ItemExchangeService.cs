@@ -4,6 +4,7 @@ using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
+using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Services;
@@ -13,12 +14,21 @@ public class ItemExchangeService : IItemExchangeService
 	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly IVaultService _vaultService;
 	private readonly IUIService _uiService;
+	private readonly IPasteBinService _pasteBinService;
+	private readonly UserSettings _userSettings;
 
-	public ItemExchangeService(JsonSerializerOptions jsonOptions, IVaultService vaultService = null, IUIService uiService = null)
+	public ItemExchangeService(
+		JsonSerializerOptions jsonOptions,
+		IVaultService vaultService = null,
+		IUIService uiService = null,
+		IPasteBinService pasteBinService = null,
+		UserSettings userSettings = null)
 	{
 		_jsonOptions = jsonOptions;
 		_vaultService = vaultService;
 		_uiService = uiService;
+		_pasteBinService = pasteBinService;
+		_userSettings = userSettings;
 	}
 
 	public string SerializeItem(Item item)
@@ -211,5 +221,26 @@ public class ItemExchangeService : IItemExchangeService
 			return false;
 
 		return text.StartsWith("https://pastebin.com/", StringComparison.OrdinalIgnoreCase);
+	}
+
+	public bool HasPasteBinApiKey
+		=> !string.IsNullOrWhiteSpace(_userSettings?.PasteBinApiKey);
+
+	public async Task<string> ExportToPasteBinAsync(string json)
+	{
+		if (_pasteBinService == null)
+			throw new InvalidOperationException("PasteBin service is not configured.");
+
+		var payload = EncodeToClipboardPayload(json);
+		return await _pasteBinService.UploadAsync(payload);
+	}
+
+	public async Task<string> ImportFromPasteBinAsync(string pasteUrl)
+	{
+		if (_pasteBinService == null)
+			throw new InvalidOperationException("PasteBin service is not configured.");
+
+		var payload = await _pasteBinService.FetchPasteAsync(pasteUrl);
+		return DecodeFromClipboardPayload(payload);
 	}
 }

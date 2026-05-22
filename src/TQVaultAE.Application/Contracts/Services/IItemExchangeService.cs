@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 
@@ -14,4 +15,7 @@ public interface IItemExchangeService
 	string DetectScope(string json);
 	void ImportVaultInto(PlayerCollection vault, ImportResult importData);
 	bool IsPasteBinUrl(string text);
+	bool HasPasteBinApiKey { get; }
+	Task<string> ExportToPasteBinAsync(string json);
+	Task<string> ImportFromPasteBinAsync(string pasteUrl);
 }

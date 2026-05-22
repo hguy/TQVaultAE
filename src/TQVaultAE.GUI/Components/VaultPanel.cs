@@ -696,6 +696,9 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 	private void AddExportTabSubMenu()
 	{
+		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		var hasApiKey = exchangeService?.HasPasteBinApiKey == true;
+
 		var clipboardItem = new ToolStripMenuItem(
 			Resources.PlayerPanelMenuExportTabClipboard, null,
 			this.ExportTabToClipboardClicked)
@@ -714,9 +717,19 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			ForeColor = this.contextMenu.ForeColor,
 		};
 
+		var pasteBinItem = new ToolStripMenuItem(
+			Resources.PlayerPanelMenuExportTabPasteBin, null,
+			this.ExportTabToPasteBinClicked)
+		{
+			BackColor = this.contextMenu.BackColor,
+			Font = this.contextMenu.Font,
+			ForeColor = this.contextMenu.ForeColor,
+			Enabled = hasApiKey
+		};
+
 		var exportTabMenu = new ToolStripMenuItem(
 			Resources.PlayerPanelMenuExportTab, null,
-			clipboardItem, fileItem)
+			clipboardItem, fileItem, pasteBinItem)
 		{
 			BackColor = this.contextMenu.BackColor,
 			Font = this.contextMenu.Font,
@@ -753,6 +766,25 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 			if (dialog.ShowDialog() == DialogResult.OK)
 				File.WriteAllText(dialog.FileName, json);
+		}
+	}
+
+	private async void ExportTabToPasteBinClicked(object sender, EventArgs e)
+	{
+		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		if (exchangeService != null && this.BagSackPanel?.Sack != null)
+		{
+			try
+			{
+				var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
+				var url = await exchangeService.ExportToPasteBinAsync(json);
+				Clipboard.SetText(url);
+				this.UIService.NotifyUser($"Tab exported to PasteBin: {url}");
+			}
+			catch (Exception ex)
+			{
+				this.UIService.ShowError($"Failed to export to PasteBin: {ex.Message}");
+			}
 		}
 	}
 

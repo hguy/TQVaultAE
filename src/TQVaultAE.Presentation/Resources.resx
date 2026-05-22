@@ -2099,4 +2099,13 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SackPanelMenuExportItem" xml:space="preserve">
     <value>Export Item</value>
   </data>
+	<data name="SackPanelMenuExportItemPasteBin" xml:space="preserve">
+    <value>Export to PasteBin</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabPasteBin" xml:space="preserve">
+    <value>Export to PasteBin</value>
+  </data>
+	<data name="ExportVaultPasteBin" xml:space="preserve">
+    <value>Export Vault to PasteBin</value>
+  </data>
 </root>

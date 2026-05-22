@@ -503,7 +503,7 @@ private void MainFormKeyDown(object sender, KeyEventArgs e)
 
 		if (e.KeyData == (Keys.Control | Keys.V))
 		{
-			HandleClipboardImport();
+			_ = HandleClipboardImportAsync();
 			return;
 		}
 
@@ -552,7 +552,7 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		}
 	}
 
-	private void HandleClipboardImport()
+	private async Task HandleClipboardImportAsync()
 	{
 		try
 		{
@@ -562,6 +562,40 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			var text = Clipboard.GetText();
 			if (string.IsNullOrWhiteSpace(text))
 				return;
+
+			// Check for PasteBin URL first
+			if (this.itemExchangeService.IsPasteBinUrl(text.Trim()))
+			{
+				try
+				{
+					var url = text.Trim();
+					var json = await this.itemExchangeService.ImportFromPasteBinAsync(url);
+					var scope = this.itemExchangeService.DetectScope(json);
+
+					if (scope == "vault")
+					{
+						var result = this.itemExchangeService.ImportFromJson(json);
+						if (result.Success)
+						{
+							HandleVaultImportFromJson(json, result);
+							return;
+						}
+					}
+
+					var importResult = this.itemExchangeService.ImportFromJson(json);
+					if (importResult.Success)
+						this.UIService.NotifyUser("Imported 1 of 1 items from PasteBin.");
+					else
+						this.UIService.ShowError($"Import from PasteBin failed: {importResult.ErrorMessage}");
+					return;
+				}
+				catch (Exception ex)
+				{
+					Log.LogError(ex, "Failed to import from PasteBin URL");
+					this.UIService.ShowError($"Failed to import from PasteBin: {ex.Message}");
+					return;
+				}
+			}
 
 			// Try each line as a base64 payload (support multi-item imports)
 			var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
@@ -1367,6 +1401,10 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		vaultExportContextMenu.Items.Add("Export Vault to File", null, ExportVaultToFileClicked);
 		vaultExportContextMenu.Items.Add("Export Vault to Clipboard", null, ExportVaultToClipboardClicked);
 
+		var pasteBinEnabled = this.itemExchangeService?.HasPasteBinApiKey == true;
+		var pasteBinItem = vaultExportContextMenu.Items.Add("Export Vault to PasteBin", null, ExportVaultToPasteBinClicked);
+		pasteBinItem.Enabled = pasteBinEnabled;
+
 		vaultExportButton.Click += (s, e) =>
 		{
 			vaultExportContextMenu.Show(vaultExportButton, new Point(0, vaultExportButton.Height));
@@ -1431,6 +1469,29 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		{
 			Log.LogError(ex, "Failed to export vault to clipboard");
 			this.UIService.ShowError("Failed to export vault to clipboard.");
+		}
+	}
+
+	private async void ExportVaultToPasteBinClicked(object sender, EventArgs e)
+	{
+		var vault = this.vaultPanel?.Player;
+		if (vault == null)
+		{
+			this.UIService.ShowWarning("No vault is loaded.");
+			return;
+		}
+
+		try
+		{
+			var json = this.itemExchangeService.SerializePlayerCollection(vault);
+			var url = await this.itemExchangeService.ExportToPasteBinAsync(json);
+			Clipboard.SetText(url);
+			this.UIService.NotifyUser($"Vault exported to PasteBin: {url}");
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Failed to export vault to PasteBin");
+			this.UIService.ShowError($"Failed to export vault to PasteBin: {ex.Message}");
 		}
 	}
 

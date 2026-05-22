@@ -3764,6 +3764,12 @@ namespace TQVaultAE.Presentation {
                 return ResourceManager.GetString("PlayerPanelMenuExportTabFile", resourceCulture);
             }
         }
+                
+        public static string PlayerPanelMenuExportTabPasteBin {
+            get {
+                return ResourceManager.GetString("PlayerPanelMenuExportTabPasteBin", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Time Played.
@@ -4169,6 +4175,12 @@ namespace TQVaultAE.Presentation {
         public static string SackPanelMenuExportItemFile {
             get {
                 return ResourceManager.GetString("SackPanelMenuExportItemFile", resourceCulture);
+            }
+        }
+                
+        public static string SackPanelMenuExportItemPasteBin {
+            get {
+                return ResourceManager.GetString("SackPanelMenuExportItemPasteBin", resourceCulture);
             }
         }
         

@@ -1540,6 +1540,9 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 			{
 				this.CustomContextMenu.Items.Add("-");
 
+				var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+				var hasApiKey = exchangeService?.HasPasteBinApiKey == true;
+
 				var exportClipboardItem = new ToolStripMenuItem(Resources.SackPanelMenuExportClipboard, null)
 				{
 					BackColor = this.CustomContextMenu.BackColor,
@@ -1554,7 +1557,16 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 					ForeColor = this.CustomContextMenu.ForeColor,
 				};
 
-				var exportItemMenu = new ToolStripMenuItem(Resources.SackPanelMenuExportItem, null, exportClipboardItem, exportFileItem)
+				var exportPasteBinItem = new ToolStripMenuItem(Resources.SackPanelMenuExportItemPasteBin, null)
+				{
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+					Enabled = hasApiKey
+				};
+				exportPasteBinItem.Click += ExportItemToPasteBinClicked;
+
+				var exportItemMenu = new ToolStripMenuItem(Resources.SackPanelMenuExportItem, null, exportClipboardItem, exportFileItem, exportPasteBinItem)
 				{
 					BackColor = this.CustomContextMenu.BackColor,
 					Font = this.CustomContextMenu.Font,
@@ -3122,6 +3134,30 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 		catch (Exception ex)
 		{
 			this.Log.LogError(ex, "Failed to export item to file");
+		}
+	}
+
+	private async void ExportItemToPasteBinClicked(object sender, EventArgs e)
+	{
+		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		if (focusedItem == null)
+			return;
+
+		try
+		{
+			var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+			if (exchangeService != null)
+			{
+				var json = exchangeService.SerializeItem(focusedItem);
+				var url = await exchangeService.ExportToPasteBinAsync(json);
+				Clipboard.SetText(url);
+				this.UIService.NotifyUser($"Item exported to PasteBin: {url}");
+			}
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Failed to export item to PasteBin");
+			this.UIService.ShowError($"Failed to export to PasteBin: {ex.Message}");
 		}
 	}
 

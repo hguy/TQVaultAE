@@ -117,6 +117,8 @@ public static class Program
 		.AddSingleton<IHighlightService, HighlightService>()
 		.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
 		.AddSingleton<IItemExchangeService, ItemExchangeService>()
+		.AddSingleton<IPasteBinService, PasteBinService>()
+		.AddSingleton<HttpClient>()
 
 				// Performance: Memory-Mapped File Services
 				.AddSingleton<IFileDataService, MemoryMappedFileService>()

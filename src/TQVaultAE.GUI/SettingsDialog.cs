@@ -275,6 +275,39 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	public bool EnableOriginalTQSupportChanged { get; private set; }
 
+	/// <summary>
+	/// PasteBin API Key
+	/// </summary>
+	private string pasteBinApiKey;
+
+	/// <summary>
+	/// PasteBin paste expiration
+	/// </summary>
+	private string pasteBinExpiration;
+
+	/// <summary>
+	/// Indicates that the PasteBin settings have been changed
+	/// </summary>
+	public bool PasteBinSettingsChanged { get; private set; }
+
+	private ScalingLabel pasteBinApiKeyLabel;
+	private ScalingTextBox pasteBinApiKeyTextBox;
+	private ScalingLabel pasteBinExpirationLabel;
+	private ScalingComboBox pasteBinExpirationComboBox;
+
+	private static readonly Dictionary<string, string> PasteBinExpirationOptions = new()
+	{
+		["10 Minutes"] = "10M",
+		["1 Hour"] = "1H",
+		["1 Day"] = "1D",
+		["1 Week"] = "1W",
+		["2 Weeks"] = "2W",
+		["1 Month"] = "1M",
+		["6 Months"] = "6M",
+		["1 Year"] = "1Y",
+		["Never"] = "N"
+	};
+
 	private readonly ILogger<SettingsDialog> Log;
 
 	#endregion
@@ -345,6 +378,112 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.scalingComboBoxCSVDelim.Font =
 		this.scalingCheckBoxEnableEpicLegendaryAffixes.Font =
 		this.scalingCheckBoxDisableAutoStacking.Font = font1125;
+
+		this.scalingCheckBoxDisableAutoStacking.Font = font1125;
+
+		// PasteBin controls
+		this.pasteBinApiKeyLabel = new ScalingLabel
+		{
+			Text = "PasteBin API Key:",
+			AutoSize = true,
+			ForeColor = Color.White,
+			Font = font1125
+		};
+		this.pasteBinApiKeyTextBox = new ScalingTextBox
+		{
+			Size = new Size(250, 24),
+			Font = font1125
+		};
+
+		this.pasteBinExpirationLabel = new ScalingLabel
+		{
+			Text = "Paste Expiration:",
+			AutoSize = true,
+			ForeColor = Color.White,
+			Font = font1125
+		};
+		this.pasteBinExpirationComboBox = new ScalingComboBox
+		{
+			Size = new Size(150, 24),
+			Font = font1125,
+			DropDownStyle = ComboBoxStyle.DropDownList
+		};
+		foreach (var kvp in PasteBinExpirationOptions)
+			this.pasteBinExpirationComboBox.Items.Add(kvp.Key);
+
+		this.scalingCheckBoxDisableAutoStacking.Font = font1125;
+
+		// PasteBin controls
+		this.pasteBinApiKeyLabel = new ScalingLabel
+		{
+			Text = "PasteBin API Key:",
+			AutoSize = true,
+			ForeColor = Color.White,
+			Font = font1125
+		};
+		this.pasteBinApiKeyTextBox = new ScalingTextBox
+		{
+			Size = new Size(250, 24),
+			Font = font1125
+		};
+
+		this.pasteBinExpirationLabel = new ScalingLabel
+		{
+			Text = "Paste Expiration:",
+			AutoSize = true,
+			ForeColor = Color.White,
+			Font = font1125
+		};
+		this.pasteBinExpirationComboBox = new ScalingComboBox
+		{
+			Size = new Size(150, 24),
+			Font = font1125,
+			DropDownStyle = ComboBoxStyle.DropDownList
+		};
+		foreach (var kvp in PasteBinExpirationOptions)
+			this.pasteBinExpirationComboBox.Items.Add(kvp.Key);
+
+		this.pasteBinApiKeyTextBox.TextChanged += (s, e) =>
+		{
+			string newValue = this.pasteBinApiKeyTextBox.Text ?? string.Empty;
+			if (newValue != this.pasteBinApiKey)
+			{
+				this.pasteBinApiKey = newValue;
+				this.ConfigurationChanged = this.PasteBinSettingsChanged = true;
+			}
+		};
+
+		this.pasteBinExpirationComboBox.SelectedIndexChanged += (s, e) =>
+		{
+			var selectedLabel = this.pasteBinExpirationComboBox.SelectedItem as string;
+			if (selectedLabel != null && PasteBinExpirationOptions.TryGetValue(selectedLabel, out var apiValue) && apiValue != this.pasteBinExpiration)
+			{
+				this.pasteBinExpiration = apiValue;
+				this.ConfigurationChanged = this.PasteBinSettingsChanged = true;
+			}
+		};
+
+		var pasteBinFlowPanel = new BufferedFlowLayoutPanel
+		{
+			AutoSize = true,
+			FlowDirection = FlowDirection.TopDown,
+			Dock = DockStyle.Fill
+		};
+		pasteBinFlowPanel.Controls.Add(this.pasteBinApiKeyLabel);
+		pasteBinFlowPanel.Controls.Add(this.pasteBinApiKeyTextBox);
+		pasteBinFlowPanel.Controls.Add(this.pasteBinExpirationLabel);
+		pasteBinFlowPanel.Controls.Add(this.pasteBinExpirationComboBox);
+
+		var pasteBinGroupBox = new GroupBox
+		{
+			Text = "PasteBin Integration",
+			Size = new Size(470, 140),
+			ForeColor = Color.Gold,
+			Font = font1125
+		};
+		pasteBinGroupBox.Controls.Add(pasteBinFlowPanel);
+
+		this.bufferedFlowLayoutPanelSkeletonRight.Controls.Add(pasteBinGroupBox);
 
 		this.checkGroupBoxGitBackup.ProcessAllControls((ctr) => ctr.Font = font1125);
 		this.checkGroupBoxOriginalTQSupport.ProcessAllControls((ctr) => ctr.Font = font1125);
@@ -540,6 +679,8 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.gitBackupRepository = USettings.GitBackupRepository;
 		this.enableBackupPlayerSaves = USettings.GitBackupPlayerSavesEnabled;
 		this.enableOriginalTQSupport = USettings.EnableOriginalTQSupport;
+		this.pasteBinApiKey = USettings.PasteBinApiKey ?? string.Empty;
+		this.pasteBinExpiration = USettings.PasteBinExpiration ?? "1M";
 
 		// Force English since there was some issue with getting the proper language setting.
 		var gl = Database.GameLanguage;
@@ -620,6 +761,12 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.scalingTextBoxGitRepository.Text = this.gitBackupRepository;
 		this.scalingCheckBoxBackupPlayerSaves.Checked = this.enableBackupPlayerSaves;
 		this.checkGroupBoxOriginalTQSupport.Checked = this.enableOriginalTQSupport;
+
+		this.pasteBinApiKeyTextBox.Text = this.pasteBinApiKey;
+
+		var expLabel = PasteBinExpirationOptions
+			.FirstOrDefault(kvp => kvp.Value == this.pasteBinExpiration).Key;
+		this.pasteBinExpirationComboBox.SelectedItem = expLabel ?? "1 Month";
 
 
 		this.enableCustomMapsCheckBox.Checked = this.enableMods;
@@ -721,6 +868,9 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			USettings.GitBackupRepository = this.gitBackupRepository;
 			USettings.GitBackupPlayerSavesEnabled = this.enableBackupPlayerSaves;
 			USettings.EnableOriginalTQSupport = this.enableOriginalTQSupport;
+
+			USettings.PasteBinApiKey = this.pasteBinApiKey;
+			USettings.PasteBinExpiration = this.pasteBinExpiration;
 
 			USettings.EnableEpicLegendaryAffixes =
 				this.scalingCheckBoxEnableEpicLegendaryAffixes.Enabled && this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked;
