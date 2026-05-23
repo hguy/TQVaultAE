@@ -56,10 +56,10 @@ public class ItemExchangeServiceTests
 		doc.RootElement.GetProperty("scope").GetString().Should().Be("Item");
 
 		var data = doc.RootElement.GetProperty("data");
-		data.GetProperty("baseItemId").GetString().Should().Be("records/gear/armor/test.dbr");
+		data.GetProperty("baseName").GetString().Should().Be("records/gear/armor/test.dbr");
 		data.GetProperty("seed").GetInt32().Should().Be(12345);
-		data.GetProperty("positionX").GetInt32().Should().Be(5);
-		data.GetProperty("positionY").GetInt32().Should().Be(10);
+		data.GetProperty("pointX").GetInt32().Should().Be(5);
+		data.GetProperty("pointY").GetInt32().Should().Be(10);
 	}
 
 	[Fact]
@@ -160,8 +160,8 @@ public class ItemExchangeServiceTests
 
 		var items = data.GetProperty("items");
 		items.GetArrayLength().Should().Be(2);
-		items[0].GetProperty("baseItemId").GetString().Should().Be("records/gear/armor/helm.dbr");
-		items[1].GetProperty("baseItemId").GetString().Should().Be("records/gear/weapon/sword.dbr");
+		items[0].GetProperty("baseName").GetString().Should().Be("records/gear/armor/helm.dbr");
+		items[1].GetProperty("baseName").GetString().Should().Be("records/gear/weapon/sword.dbr");
 	}
 
 	[Fact]

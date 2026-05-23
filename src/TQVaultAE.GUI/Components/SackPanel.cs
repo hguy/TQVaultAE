@@ -1543,14 +1543,14 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 				var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
 				var hasApiKey = exchangeService?.HasPasteBinApiKey == true;
 
-				var exportClipboardItem = new ToolStripMenuItem(Resources.SackPanelMenuExportClipboard, null)
+				var exportClipboardItem = new ToolStripMenuItem(Resources.SackPanelMenuExportClipboard, null, ExportItemToClipboardClicked)
 				{
 					BackColor = this.CustomContextMenu.BackColor,
 					Font = this.CustomContextMenu.Font,
 					ForeColor = this.CustomContextMenu.ForeColor,
 				};
 
-				var exportFileItem = new ToolStripMenuItem(Resources.SackPanelMenuExportItemFile, null)
+				var exportFileItem = new ToolStripMenuItem(Resources.SackPanelMenuExportItemFile, null, ExportItemToFileClicked)
 				{
 					BackColor = this.CustomContextMenu.BackColor,
 					Font = this.CustomContextMenu.Font,

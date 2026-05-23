@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using TQVaultAE.Data.Dto;
 using TQVaultAE.Domain.Entities;
 
-namespace TQVaultAE.Application.DTOs;
+namespace TQVaultAE.Services;
 
 public class TabExportDTO
 {
@@ -15,13 +17,13 @@ public class TabExportDTO
 	public BagButtonIconInfo IconInfo { get; set; }
 
 	[JsonPropertyName("items")]
-	public IReadOnlyList<ItemExportDTO> Items { get; set; }
+	public List<ItemDto> Items { get; set; }
 
 	public static TabExportDTO FromSackCollection(SackCollection sack, int sackNumber)
 	{
-		var items = new List<ItemExportDTO>();
+		var items = new List<ItemDto>();
 		foreach (var item in sack)
-			items.Add(ItemExportDTO.FromItem(item));
+			items.Add(ItemDtoExtensions.FromItem(item));
 
 		return new TabExportDTO
 		{

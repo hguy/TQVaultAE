@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using TQVaultAE.Application;
+using TQVaultAE.Data.Dto;
 
-namespace TQVaultAE.Application.DTOs;
+namespace TQVaultAE.Services;
 
 public class VaultExportDTO
 {
@@ -20,9 +22,9 @@ public class VaultExportDTO
 			if (sack == null || sack.IsEmpty)
 				continue;
 
-			var items = new List<ItemExportDTO>();
+			var items = new List<ItemDto>();
 			foreach (var item in sack)
-				items.Add(ItemExportDTO.FromItem(item));
+				items.Add(ItemDtoExtensions.FromItem(item));
 
 			sacks.Add(new SackExportDTO
 			{
@@ -45,5 +47,5 @@ public class SackExportDTO
 	public int SackNumber { get; set; }
 
 	[JsonPropertyName("items")]
-	public IReadOnlyList<ItemExportDTO> Items { get; set; }
+	public IReadOnlyList<ItemDto> Items { get; set; }
 }

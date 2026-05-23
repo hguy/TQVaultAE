@@ -6,6 +6,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
+using TQVaultAE.Data.Dto;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Services;
@@ -32,7 +33,7 @@ public class ItemExchangeService : IItemExchangeService
 
 	public string SerializeItem(Item item)
 	{
-		var dto = ItemExportDTO.FromItem(item);
+		var dto = ItemDtoExtensions.FromItem(item);
 		var envelope = new ExportFormat
 		{
 			Scope = ExportScope.Item,
@@ -100,56 +101,56 @@ public class ItemExchangeService : IItemExchangeService
 
 			switch (scope)
 			{
-case ExportScope.Item:
-				{
-					var dto = JsonSerializer.Deserialize<ItemExportDTO>(dataElement.GetRawText(), _jsonOptions);
-
-					if (dto == null)
-						return ImportResult.Failed("Failed to deserialize item data.");
-
-					var item = dto.ToItem();
-					_itemProvider?.GetDBData(item);
-					return ImportResult.Succeeded(item);
-				}
-
-case ExportScope.Tab:
-				{
-					var dto = JsonSerializer.Deserialize<TabExportDTO>(dataElement.GetRawText(), _jsonOptions);
-
-					if (dto == null)
-						return ImportResult.Failed("Failed to deserialize tab data.");
-
-					var items = new List<Item>();
-					foreach (var itemDto in dto.Items)
+				case ExportScope.Item:
 					{
-						var item = itemDto.ToItem();
+						var dto = JsonSerializer.Deserialize<ItemDto>(dataElement.GetRawText(), _jsonOptions);
+
+						if (dto == null)
+							return ImportResult.Failed("Failed to deserialize item data.");
+
+						var item = dto.ToItem();
 						_itemProvider?.GetDBData(item);
-						items.Add(item);
+						return ImportResult.Succeeded(item);
 					}
 
-					return ImportResult.SucceededTab(items, dto.SackNumber, dto.SackType);
-				}
-
-				case ExportScope.Vault:
-				{
-					var dto = JsonSerializer.Deserialize<VaultExportDTO>(dataElement.GetRawText(), _jsonOptions);
-
-					if (dto == null)
-						return ImportResult.Failed("Failed to deserialize vault data.");
-
-					var sackItems = new Dictionary<int, List<Item>>();
-					foreach (var sackDto in dto.Sacks)
+				case ExportScope.Tab:
 					{
-						var itemList = new List<Item>();
-						foreach (var itemDto in sackDto.Items)
+						var dto = JsonSerializer.Deserialize<TabExportDTO>(dataElement.GetRawText(), _jsonOptions);
+
+						if (dto == null)
+							return ImportResult.Failed("Failed to deserialize tab data.");
+
+						var items = new List<Item>();
+						foreach (var itemDto in dto.Items)
 						{
 							var item = itemDto.ToItem();
 							_itemProvider?.GetDBData(item);
-							itemList.Add(item);
+							items.Add(item);
 						}
 
-						sackItems[sackDto.SackNumber] = itemList;
+						return ImportResult.SucceededTab(items, dto.SackNumber, dto.SackType);
 					}
+
+				case ExportScope.Vault:
+					{
+						var dto = JsonSerializer.Deserialize<VaultExportDTO>(dataElement.GetRawText(), _jsonOptions);
+
+						if (dto == null)
+							return ImportResult.Failed("Failed to deserialize vault data.");
+
+						var sackItems = new Dictionary<int, List<Item>>();
+						foreach (var sackDto in dto.Sacks)
+						{
+							var itemList = new List<Item>();
+							foreach (var itemDto in sackDto.Items)
+							{
+								var item = itemDto.ToItem();
+								_itemProvider?.GetDBData(item);
+								itemList.Add(item);
+							}
+
+							sackItems[sackDto.SackNumber] = itemList;
+						}
 
 						return ImportResult.SucceededVault(dto.Name, sackItems);
 					}
