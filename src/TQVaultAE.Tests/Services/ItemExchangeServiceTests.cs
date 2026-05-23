@@ -156,7 +156,6 @@ public class ItemExchangeServiceTests
 
 		var data = doc.RootElement.GetProperty("data");
 		data.GetProperty("sackNumber").GetInt32().Should().Be(2);
-		data.GetProperty("sackType").GetString().Should().Be("Vault");
 
 		var items = data.GetProperty("items");
 		items.GetArrayLength().Should().Be(2);
@@ -216,7 +215,7 @@ public class ItemExchangeServiceTests
 			new Item { BaseItemId = "c.dbr" }
 		};
 
-		var result = ImportResult.SucceededTab(items, 0, "Vault");
+		var result = ImportResult.SucceededTab(items, 0);
 
 		result.Success.Should().BeTrue();
 		result.Scope.Should().Be(ExportScope.Tab);

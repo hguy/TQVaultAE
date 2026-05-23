@@ -10,9 +10,6 @@ public class TabExportDTO
 	[JsonPropertyName("sackNumber")]
 	public int SackNumber { get; set; }
 
-	[JsonPropertyName("sackType")]
-	public string SackType { get; set; }
-
 	[JsonPropertyName("iconInfo")]
 	public BagButtonIconInfo IconInfo { get; set; }
 
@@ -28,7 +25,6 @@ public class TabExportDTO
 		return new TabExportDTO
 		{
 			SackNumber = sackNumber,
-			SackType = sack.SackType.ToString(),
 			IconInfo = sack.BagButtonIconInfo,
 			Items = items
 		};

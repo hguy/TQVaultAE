@@ -11,7 +11,6 @@ public class ImportResult
 	public Item Item { get; set; }
 	public IReadOnlyList<Item> Items { get; set; }
 	public int SackNumber { get; set; }
-	public string SackType { get; set; }
 	public string VaultName { get; set; }
 	public Dictionary<int, List<Item>> SackItems { get; set; }
 	public int ImportedCount { get; set; }
@@ -28,14 +27,13 @@ public class ImportResult
 			TotalCount = 1
 		};
 
-	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, string sackType)
+	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber)
 		=> new()
 		{
 			Success = true,
 			Scope = ExportScope.Tab,
 			Items = items,
 			SackNumber = sackNumber,
-			SackType = sackType,
 			ImportedCount = items.Count,
 			TotalCount = items.Count
 		};

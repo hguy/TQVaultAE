@@ -3149,7 +3149,9 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 			if (exchangeService != null)
 			{
 				var json = exchangeService.SerializeItem(focusedItem);
-				var url = await exchangeService.ExportToPasteBinAsync(json);
+				var friendlyName = this.ItemProvider.GetFriendlyNames(focusedItem).FullNameClean;
+				var pasteName = string.IsNullOrWhiteSpace(friendlyName) ? null : friendlyName;
+				var url = await exchangeService.ExportToPasteBinAsync(json, pasteName);
 				Clipboard.SetText(url);
 				this.UIService.NotifyUser($"Item exported to PasteBin: {url}");
 			}

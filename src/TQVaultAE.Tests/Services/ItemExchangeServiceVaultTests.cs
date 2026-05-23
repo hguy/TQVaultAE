@@ -92,7 +92,6 @@ public class ItemExchangeServiceVaultTests
 
 		var data = doc.RootElement.GetProperty("data");
 		data.GetProperty("sackNumber").GetInt32().Should().Be(3);
-		data.GetProperty("sackType").GetString().Should().Be("Vault");
 		data.GetProperty("items").GetArrayLength().Should().Be(1);
 	}
 

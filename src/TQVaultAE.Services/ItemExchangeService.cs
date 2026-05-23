@@ -128,7 +128,7 @@ public class ItemExchangeService : IItemExchangeService
 							items.Add(item);
 						}
 
-						return ImportResult.SucceededTab(items, dto.SackNumber, dto.SackType);
+						return ImportResult.SucceededTab(items, dto.SackNumber);
 					}
 
 				case ExportScope.Vault:
@@ -208,13 +208,13 @@ public class ItemExchangeService : IItemExchangeService
 	public bool HasPasteBinApiKey
 		=> !string.IsNullOrWhiteSpace(_userSettings?.PasteBinApiKey);
 
-	public async Task<string> ExportToPasteBinAsync(string json)
+	public async Task<string> ExportToPasteBinAsync(string json, string pasteName = null)
 	{
 		if (_pasteBinService == null)
 			throw new InvalidOperationException("PasteBin service is not configured.");
 
 		var payload = EncodeToClipboardPayload(json);
-		return await _pasteBinService.UploadAsync(payload);
+		return await _pasteBinService.UploadAsync(payload, pasteName);
 	}
 
 	public async Task<string> ImportFromPasteBinAsync(string pasteUrl)

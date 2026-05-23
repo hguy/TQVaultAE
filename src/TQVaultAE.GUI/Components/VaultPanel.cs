@@ -795,7 +795,11 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			try
 			{
 				var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
-				var url = await exchangeService.ExportToPasteBinAsync(json);
+				var tabName = this.BagSackPanel.Sack.BagButtonIconInfo?.Label;
+				var pasteName = string.IsNullOrWhiteSpace(tabName)
+					? $"{this.Vault.PlayerName}/Tab {this.CurrentBag + 1}"
+					: $"{this.Vault.PlayerName}/{tabName}";
+				var url = await exchangeService.ExportToPasteBinAsync(json, pasteName);
 				Clipboard.SetText(url);
 				this.UIService.NotifyUser($"Tab exported to PasteBin: {url}");
 			}

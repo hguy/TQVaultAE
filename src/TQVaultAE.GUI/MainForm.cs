@@ -1377,15 +1377,45 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 
 	private void SetupVaultExportButton()
 	{
+		var up = default(Bitmap);
+		var over = default(Bitmap);
+		var down = default(Bitmap);
+		if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+		{
+			try
+			{
+				up = this.UIService.LoadBitmap(@"INGAMEUI\HUDMENUSKILLBUTTONUP01.TEX");
+				over = this.UIService.LoadBitmap(@"INGAMEUI\HUDMENUSKILLBUTTONOVER01.TEX");
+				down = this.UIService.LoadBitmap(@"INGAMEUI\HUDMENUSKILLBUTTONDOWN01.TEX");
+			}
+			catch
+			{
+				// fall through to default if game bitmaps unavailable
+			}
+		}
+
+		var buttonSize = up?.Size ?? new Size(28, 28);
 		vaultExportButton = new ScalingButton
 		{
-			Text = "...",
-			Size = new Size(28, 28),
-			FlatStyle = FlatStyle.Flat,
-			Font = FontService.GetFontLight(10F, UIService.Scale),
+			Size = buttonSize,
 			Margin = new Padding(3, 0, 0, 0)
 		};
-		vaultExportButton.FlatAppearance.BorderSize = 0;
+
+		if (up != null)
+		{
+			vaultExportButton.UpBitmap = up;
+			vaultExportButton.OverBitmap = over;
+			vaultExportButton.DownBitmap = down;
+			vaultExportButton.UseCustomGraphic = true;
+			vaultExportButton.Text = string.Empty;
+		}
+		else
+		{
+			vaultExportButton.Text = "...";
+			vaultExportButton.FlatStyle = FlatStyle.Flat;
+			vaultExportButton.Font = FontService.GetFontLight(10F, UIService.Scale);
+			vaultExportButton.FlatAppearance.BorderSize = 0;
+		}
 
 		vaultExportContextMenu = new ContextMenuStrip
 		{
@@ -1394,11 +1424,11 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			ShowImageMargin = false
 		};
 
-		vaultExportContextMenu.Items.Add("Share to File", null, ExportVaultToFileClicked);
-		vaultExportContextMenu.Items.Add("Share to Clipboard", null, ExportVaultToClipboardClicked);
+		vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuExportTabFile, null, ExportVaultToFileClicked);
+		vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuExportTabClipboard, null, ExportVaultToClipboardClicked);
 
 		var pasteBinEnabled = this.itemExchangeService?.HasPasteBinApiKey == true;
-		var pasteBinItem = vaultExportContextMenu.Items.Add("Share to PasteBin", null, ExportVaultToPasteBinClicked);
+		var pasteBinItem = vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuExportTabPasteBin, null, ExportVaultToPasteBinClicked);
 		pasteBinItem.Enabled = pasteBinEnabled;
 
 		vaultExportButton.Click += (s, e) =>
@@ -1480,7 +1510,7 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		try
 		{
 			var json = this.itemExchangeService.SerializePlayerCollection(vault);
-			var url = await this.itemExchangeService.ExportToPasteBinAsync(json);
+			var url = await this.itemExchangeService.ExportToPasteBinAsync(json, vault.PlayerName);
 			Clipboard.SetText(url);
 			this.UIService.NotifyUser($"Vault exported to PasteBin: {url}");
 		}

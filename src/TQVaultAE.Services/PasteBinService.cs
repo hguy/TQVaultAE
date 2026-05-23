@@ -19,16 +19,21 @@ public class PasteBinService : IPasteBinService
 		_userSettings = userSettings;
 	}
 
-	public async Task<string> UploadAsync(string text)
+	public async Task<string> UploadAsync(string text, string pasteName = null)
 	{
-		var content = new FormUrlEncodedContent(new Dictionary<string, string>
+		var formData = new Dictionary<string, string>
 		{
 			["api_dev_key"] = _userSettings.PasteBinApiKey ?? string.Empty,
 			["api_option"] = "paste",
 			["api_paste_code"] = text,
 			["api_paste_private"] = "1",
 			["api_paste_expire_date"] = _userSettings.PasteBinExpiration ?? "1M"
-		});
+		};
+
+		if (!string.IsNullOrWhiteSpace(pasteName))
+			formData["api_paste_name"] = pasteName;
+
+		var content = new FormUrlEncodedContent(formData);
 
 		var response = await _httpClient.PostAsync(PasteBinApiUrl, content);
 		response.EnsureSuccessStatusCode();
