@@ -583,13 +583,24 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 						}
 						// Export to CSV
 						this.contextMenu.Items.Add("-");
-						var csvMenu = new ToolStripMenuItem(Resources.ExportToCSV, null,
-							new ToolStripMenuItem(Resources.ExportBagCSVToClipboard, null, this.ExportBagCSVToClipboard),
-							new ToolStripMenuItem(Resources.ExportVaultCSVToClipboard, null, this.ExportVaultCSVToClipboard))
+						var csvBagItem = new ToolStripMenuItem(Resources.ExportBagCSVToClipboard, null, this.ExportBagCSVToClipboard)
 						{
 							BackColor = this.contextMenu.BackColor,
 							Font = this.contextMenu.Font,
-							ForeColor = this.contextMenu.ForeColor
+							ForeColor = this.contextMenu.ForeColor,
+						};
+						var csvVaultItem = new ToolStripMenuItem(Resources.ExportVaultCSVToClipboard, null, this.ExportVaultCSVToClipboard)
+						{
+							BackColor = this.contextMenu.BackColor,
+							Font = this.contextMenu.Font,
+							ForeColor = this.contextMenu.ForeColor,
+						};
+						var csvMenu = new ToolStripMenuItem(Resources.ExportToCSV, null, csvBagItem, csvVaultItem)
+						{
+							BackColor = this.contextMenu.BackColor,
+							Font = this.contextMenu.Font,
+							ForeColor = this.contextMenu.ForeColor,
+							DisplayStyle = ToolStripItemDisplayStyle.Text,
 						};
 						this.contextMenu.Items.Add(csvMenu);
 
