@@ -583,8 +583,15 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 						}
 						// Export to CSV
 						this.contextMenu.Items.Add("-");
-						this.AddMenuItem(Resources.ExportBagCSVToClipboard, this.ExportBagCSVToClipboard);
-						this.AddMenuItem(Resources.ExportVaultCSVToClipboard, this.ExportVaultCSVToClipboard);
+						var csvMenu = new ToolStripMenuItem(Resources.ExportToCSV, null,
+							new ToolStripMenuItem(Resources.ExportBagCSVToClipboard, null, this.ExportBagCSVToClipboard),
+							new ToolStripMenuItem(Resources.ExportVaultCSVToClipboard, null, this.ExportVaultCSVToClipboard))
+						{
+							BackColor = this.contextMenu.BackColor,
+							Font = this.contextMenu.Font,
+							ForeColor = this.contextMenu.ForeColor
+						};
+						this.contextMenu.Items.Add(csvMenu);
 
 						// Export Tab (JSON)
 						this.contextMenu.Items.Add("-");

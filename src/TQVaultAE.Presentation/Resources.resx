@@ -1939,6 +1939,9 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="ForgeHardcoreTT" xml:space="preserve">
     <value>Materials are destroyed in the process</value>
   </data>
+	<data name="ExportToCSV" xml:space="preserve">
+    <value>Export to CSV</value>
+  </data>
 	<data name="ExportBagCSVToClipboard" xml:space="preserve">
     <value>Export bag to clipboard</value>
   </data>

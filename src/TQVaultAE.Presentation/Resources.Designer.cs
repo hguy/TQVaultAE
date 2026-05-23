@@ -1089,10 +1089,19 @@ namespace TQVaultAE.Presentation {
             }
         }
         
-        /// <summary>
-        ///   Looks up a localized string similar to Export bag to clipboard.
-        /// </summary>
-        public static string ExportBagCSVToClipboard {
+/// <summary>
+		///   Looks up a localized string similar to Export to CSV.
+		/// </summary>
+		public static string ExportToCSV {
+			get {
+				return ResourceManager.GetString("ExportToCSV", resourceCulture);
+			}
+		}
+
+		/// <summary>
+		///   Looks up a localized string similar to Export bag to clipboard.
+		/// </summary>
+		public static string ExportBagCSVToClipboard {
             get {
                 return ResourceManager.GetString("ExportBagCSVToClipboard", resourceCulture);
             }
