@@ -12,7 +12,7 @@ public enum ExportScope
 public class ExportFormat
 {
 	[JsonPropertyName("formatVersion")]
-	public int FormatVersion { get; set; }
+	public int FormatVersion { get; set; } = 1;
 
 	[JsonPropertyName("scope")]
 	[JsonConverter(typeof(JsonStringEnumConverter))]
