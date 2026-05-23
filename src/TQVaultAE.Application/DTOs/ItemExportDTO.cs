@@ -4,7 +4,8 @@ using TQVaultAE.Domain.Entities;
 namespace TQVaultAE.Application.DTOs;
 
 /// <summary>
-/// Minimal dataset for item interchange. Matches scope of <see cref="Data.Dto.ItemDto"/> plus grid dimensions.
+/// Minimal dataset for item interchange. Matches scope of <see cref="Data.Dto.ItemDto"/>.
+/// Hydration (width/height, info objects) deferred to <see cref="Contracts.Providers.IItemProvider.GetDBData"/>.
 /// </summary>
 public class ItemExportDTO
 {
@@ -47,12 +48,6 @@ public class ItemExportDTO
 	[JsonPropertyName("positionY")]
 	public int PositionY { get; set; }
 
-	[JsonPropertyName("width")]
-	public int Width { get; set; }
-
-	[JsonPropertyName("height")]
-	public int Height { get; set; }
-
 	public static ItemExportDTO FromItem(Item item)
 		=> new()
 		{
@@ -68,13 +63,12 @@ public class ItemExportDTO
 			RelicBonus2Id = item.RelicBonus2Id?.Raw,
 			Var2 = item.Var2,
 			PositionX = item.PositionX,
-			PositionY = item.PositionY,
-			Width = item.Width,
-			Height = item.Height
+			PositionY = item.PositionY
 		};
 
 	public Item ToItem()
-		=> new()
+	{
+		var item = new Item
 		{
 			StackSize = this.StackSize,
 			Seed = this.Seed,
@@ -84,12 +78,26 @@ public class ItemExportDTO
 			relicID = this.RelicId,
 			RelicBonusId = this.RelicBonusId,
 			Var1 = this.Var1,
-			relic2ID = this.Relic2Id,
-			RelicBonus2Id = this.RelicBonus2Id,
-			Var2 = this.Var2,
 			PositionX = this.PositionX,
 			PositionY = this.PositionY,
-			Width = this.Width,
-			Height = this.Height
+			endBlockCrap2 = 0,
+			endBlockCrap1 = 0
 		};
+
+		if (!string.IsNullOrWhiteSpace(this.Relic2Id))
+		{
+			item.atlantis = true;
+			item.relic2ID = this.Relic2Id;
+			item.RelicBonus2Id = this.RelicBonus2Id;
+			item.Var2 = this.Var2;
+		}
+		else
+		{
+			item.relic2ID = RecordId.Empty;
+			item.RelicBonus2Id = RecordId.Empty;
+			item.Var2 = Item.var2Default;
+		}
+
+		return item;
+	}
 }
