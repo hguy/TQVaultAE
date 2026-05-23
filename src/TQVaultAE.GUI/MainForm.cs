@@ -1394,11 +1394,11 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			ShowImageMargin = false
 		};
 
-		vaultExportContextMenu.Items.Add("Export Vault to File", null, ExportVaultToFileClicked);
-		vaultExportContextMenu.Items.Add("Export Vault to Clipboard", null, ExportVaultToClipboardClicked);
+		vaultExportContextMenu.Items.Add("Share to File", null, ExportVaultToFileClicked);
+		vaultExportContextMenu.Items.Add("Share to Clipboard", null, ExportVaultToClipboardClicked);
 
 		var pasteBinEnabled = this.itemExchangeService?.HasPasteBinApiKey == true;
-		var pasteBinItem = vaultExportContextMenu.Items.Add("Export Vault to PasteBin", null, ExportVaultToPasteBinClicked);
+		var pasteBinItem = vaultExportContextMenu.Items.Add("Share to PasteBin", null, ExportVaultToPasteBinClicked);
 		pasteBinItem.Enabled = pasteBinEnabled;
 
 		vaultExportButton.Click += (s, e) =>
@@ -1406,7 +1406,7 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			vaultExportContextMenu.Show(vaultExportButton, new Point(0, vaultExportButton.Height));
 		};
 
-		this.toolTip.SetToolTip(vaultExportButton, "Export Vault");
+		this.toolTip.SetToolTip(vaultExportButton, "🔗 Share Vault");
 
 		this.flowLayoutPanelVaultSelector.Controls.Add(vaultExportButton);
 

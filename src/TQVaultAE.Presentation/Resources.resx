@@ -2085,30 +2085,30 @@ You still have to close TQVaultAE to apply your changes.
     <value>Change Item Seed (Force)</value>
   </data>
 	<data name="SackPanelMenuExportClipboard" xml:space="preserve">
-    <value>Export Item to Clipboard</value>
+    <value>Share to Clipboard</value>
   </data>
 	<data name="SackPanelMenuExportItemFile" xml:space="preserve">
-    <value>Save to File...</value>
+    <value>Share to File...</value>
   </data>
 	<data name="PlayerPanelMenuExportTabClipboard" xml:space="preserve">
-    <value>Copy to Clipboard</value>
+    <value>Share to Clipboard</value>
   </data>
 	<data name="PlayerPanelMenuExportTabFile" xml:space="preserve">
-    <value>Save to File...</value>
+    <value>Share to File...</value>
   </data>
 	<data name="PlayerPanelMenuExportTab" xml:space="preserve">
-    <value>Export Tab</value>
+    <value>🔗 Share Tab</value>
   </data>
 	<data name="SackPanelMenuExportItem" xml:space="preserve">
-    <value>Export Item</value>
+    <value>🔗 Share Item</value>
   </data>
 	<data name="SackPanelMenuExportItemPasteBin" xml:space="preserve">
-    <value>Export to PasteBin</value>
+    <value>Share to PasteBin</value>
   </data>
 	<data name="PlayerPanelMenuExportTabPasteBin" xml:space="preserve">
-    <value>Export to PasteBin</value>
+    <value>Share to PasteBin</value>
   </data>
 	<data name="ExportVaultPasteBin" xml:space="preserve">
-    <value>Export Vault to PasteBin</value>
+    <value>Share Vault to PasteBin</value>
   </data>
 </root>
