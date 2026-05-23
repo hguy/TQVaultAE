@@ -4,6 +4,7 @@ using Moq;
 using System.Collections.Generic;
 using System.Text.Json;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
@@ -52,7 +53,7 @@ public class ItemExchangeServiceTests
 
 		var doc = JsonDocument.Parse(json);
 		doc.RootElement.GetProperty("formatVersion").GetInt32().Should().Be(1);
-		doc.RootElement.GetProperty("scope").GetString().Should().Be("item");
+		doc.RootElement.GetProperty("scope").GetString().Should().Be("Item");
 
 		var data = doc.RootElement.GetProperty("data");
 		data.GetProperty("baseItemId").GetString().Should().Be("records/gear/armor/test.dbr");
@@ -91,7 +92,7 @@ public class ItemExchangeServiceTests
 		var result = _service.ImportFromJson(json);
 
 		result.Should().NotBeNull();
-		result.Scope.Should().Be("item");
+		result.Scope.Should().Be(ExportScope.Item);
 		result.Item.Should().NotBeNull();
 		result.Item.BaseItemId.Should().Be(item.BaseItemId);
 		result.Item.Seed.Should().Be(item.Seed);
@@ -151,7 +152,7 @@ public class ItemExchangeServiceTests
 
 		var doc = JsonDocument.Parse(json);
 		doc.RootElement.GetProperty("formatVersion").GetInt32().Should().Be(1);
-		doc.RootElement.GetProperty("scope").GetString().Should().Be("tab");
+		doc.RootElement.GetProperty("scope").GetString().Should().Be("Tab");
 
 		var data = doc.RootElement.GetProperty("data");
 		data.GetProperty("sackNumber").GetInt32().Should().Be(2);
@@ -192,7 +193,7 @@ public class ItemExchangeServiceTests
 
 		result.Should().NotBeNull();
 		result.Success.Should().BeTrue();
-		result.Scope.Should().Be("tab");
+		result.Scope.Should().Be(ExportScope.Tab);
 		result.Items.Should().NotBeNull();
 		result.Items.Should().HaveCount(2);
 		result.ImportedCount.Should().Be(2);
@@ -218,7 +219,7 @@ public class ItemExchangeServiceTests
 		var result = ImportResult.SucceededTab(items, 0, "Vault");
 
 		result.Success.Should().BeTrue();
-		result.Scope.Should().Be("tab");
+		result.Scope.Should().Be(ExportScope.Tab);
 		result.Items.Should().HaveCount(3);
 		result.ImportedCount.Should().Be(3);
 		result.TotalCount.Should().Be(3);
@@ -235,7 +236,7 @@ public class ItemExchangeServiceTests
 
 		result.Should().NotBeNull();
 		result.Success.Should().BeTrue();
-		result.Scope.Should().Be("tab");
+		result.Scope.Should().Be(ExportScope.Tab);
 		result.Items.Should().NotBeNull();
 		result.Items.Should().BeEmpty();
 	}

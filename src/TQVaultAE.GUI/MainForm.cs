@@ -20,6 +20,7 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI;
@@ -570,23 +571,20 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 				{
 					var url = text.Trim();
 					var json = await this.itemExchangeService.ImportFromPasteBinAsync(url);
-					var scope = this.itemExchangeService.DetectScope(json);
+					var result = this.itemExchangeService.ImportFromJson(json);
 
-					if (scope == "vault")
+					if (result.Scope == ExportScope.Vault)
 					{
-						var result = this.itemExchangeService.ImportFromJson(json);
 						if (result.Success)
 						{
-							HandleVaultImportFromJson(json, result);
+							HandleVaultImportFromJson(result);
 							return;
 						}
 					}
-
-					var importResult = this.itemExchangeService.ImportFromJson(json);
-					if (importResult.Success)
+					else if (result.Success)
 						this.UIService.NotifyUser("Imported 1 of 1 items from PasteBin.");
 					else
-						this.UIService.ShowError($"Import from PasteBin failed: {importResult.ErrorMessage}");
+						this.UIService.ShowError($"Import from PasteBin failed: {result.ErrorMessage}");
 					return;
 				}
 				catch (Exception ex)
@@ -607,22 +605,20 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 				try
 				{
 					var json = this.itemExchangeService.DecodeFromClipboardPayload(line.Trim());
-					var scope = this.itemExchangeService.DetectScope(json);
+					var result = this.itemExchangeService.ImportFromJson(json);
 
-					if (scope == "vault")
+					if (result.Scope == ExportScope.Vault)
 					{
-						var result = this.itemExchangeService.ImportFromJson(json);
 						if (result.Success)
 						{
-							HandleVaultImportFromJson(json, result);
+							HandleVaultImportFromJson(result);
 							return;
 						}
 						skipped++;
 						continue;
 					}
 
-					var importResult = this.itemExchangeService.ImportFromJson(json);
-					if (importResult.Success)
+					if (result.Success)
 						imported++;
 					else
 						skipped++;
@@ -1495,7 +1491,7 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		}
 	}
 
-	private void HandleVaultImportFromJson(string json, ImportResult importResult)
+	private void HandleVaultImportFromJson(ImportResult importResult)
 	{
 		var targetVault = this.vaultPanel?.Player;
 		if (targetVault == null)

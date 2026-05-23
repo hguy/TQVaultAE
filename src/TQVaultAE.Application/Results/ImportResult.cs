@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application.Results;
@@ -6,7 +7,7 @@ namespace TQVaultAE.Application.Results;
 public class ImportResult
 {
 	public bool Success { get; set; }
-	public string Scope { get; set; }
+	public ExportScope Scope { get; set; }
 	public Item Item { get; set; }
 	public IReadOnlyList<Item> Items { get; set; }
 	public int SackNumber { get; set; }
@@ -21,7 +22,7 @@ public class ImportResult
 		=> new()
 		{
 			Success = true,
-			Scope = "item",
+			Scope = ExportScope.Item,
 			Item = item,
 			ImportedCount = 1,
 			TotalCount = 1
@@ -31,7 +32,7 @@ public class ImportResult
 		=> new()
 		{
 			Success = true,
-			Scope = "tab",
+			Scope = ExportScope.Tab,
 			Items = items,
 			SackNumber = sackNumber,
 			SackType = sackType,
@@ -48,7 +49,7 @@ public class ImportResult
 		return new()
 		{
 			Success = true,
-			Scope = "vault",
+			Scope = ExportScope.Vault,
 			VaultName = vaultName,
 			SackItems = sackItems,
 			ImportedCount = total,

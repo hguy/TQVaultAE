@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
@@ -55,7 +56,7 @@ public class ItemExchangeServiceVaultTests
 
 		var doc = JsonDocument.Parse(json);
 		doc.RootElement.GetProperty("formatVersion").GetInt32().Should().Be(1);
-		doc.RootElement.GetProperty("scope").GetString().Should().Be("vault");
+		doc.RootElement.GetProperty("scope").GetString().Should().Be("Vault");
 
 		var data = doc.RootElement.GetProperty("data");
 		data.GetProperty("name").GetString().Should().Be("TestVault");
@@ -87,7 +88,7 @@ public class ItemExchangeServiceVaultTests
 
 		var doc = JsonDocument.Parse(json);
 		doc.RootElement.GetProperty("formatVersion").GetInt32().Should().Be(1);
-		doc.RootElement.GetProperty("scope").GetString().Should().Be("tab");
+		doc.RootElement.GetProperty("scope").GetString().Should().Be("Tab");
 
 		var data = doc.RootElement.GetProperty("data");
 		data.GetProperty("sackNumber").GetInt32().Should().Be(3);
@@ -116,7 +117,7 @@ public class ItemExchangeServiceVaultTests
 		var result = _service.ImportFromJson(json);
 
 		result.Success.Should().BeTrue();
-		result.Scope.Should().Be("vault");
+		result.Scope.Should().Be(ExportScope.Vault);
 		result.VaultName.Should().Be("ImportedVault");
 		result.SackItems.Should().NotBeNull();
 		result.SackItems.Should().ContainKey(0);
@@ -143,46 +144,10 @@ public class ItemExchangeServiceVaultTests
 		var result = _service.ImportFromJson(json);
 
 		result.Success.Should().BeTrue();
-		result.Scope.Should().Be("tab");
+		result.Scope.Should().Be(ExportScope.Tab);
 		result.SackNumber.Should().Be(3);
 		result.Items.Should().HaveCount(1);
 		result.Items[0].BaseItemId.Should().Be(item.BaseItemId);
-	}
-
-	[Fact]
-	public void DetectScope_WithItemJson_ShouldReturnItem()
-	{
-		var item = new Item { BaseItemId = "records/gear/armor/test.dbr" };
-		var json = _service.SerializeItem(item);
-		var scope = _service.DetectScope(json);
-		scope.Should().Be("item");
-	}
-
-	[Fact]
-	public void DetectScope_WithVaultJson_ShouldReturnVault()
-	{
-		var vault = new PlayerCollection("TestVault", "test.vault") { IsVault = true };
-		vault.CreateEmptySacks(12);
-		var json = _service.SerializePlayerCollection(vault);
-		var scope = _service.DetectScope(json);
-		scope.Should().Be("vault");
-	}
-
-	[Fact]
-	public void DetectScope_WithTabJson_ShouldReturnTab()
-	{
-		var sack = new SackCollection { SackType = SackType.Vault };
-		sack.AddItem(new Item { BaseItemId = "records/gear/armor/test.dbr" });
-		var json = _service.SerializeSackCollection(sack, 0);
-		var scope = _service.DetectScope(json);
-		scope.Should().Be("tab");
-	}
-
-	[Fact]
-	public void DetectScope_WithInvalidJson_ShouldReturnNull()
-	{
-		var scope = _service.DetectScope("not valid json");
-		scope.Should().BeNull();
 	}
 
 	[Fact]

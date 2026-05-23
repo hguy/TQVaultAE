@@ -37,7 +37,7 @@ public class ItemExchangeService : IItemExchangeService
 		var envelope = new ExportFormat
 		{
 			FormatVersion = 1,
-			Scope = "item",
+			Scope = ExportScope.Item,
 			Data = dto
 		};
 
@@ -50,7 +50,7 @@ public class ItemExchangeService : IItemExchangeService
 		var envelope = new ExportFormat
 		{
 			FormatVersion = 1,
-			Scope = "tab",
+			Scope = ExportScope.Tab,
 			Data = dto
 		};
 
@@ -63,7 +63,7 @@ public class ItemExchangeService : IItemExchangeService
 		var envelope = new ExportFormat
 		{
 			FormatVersion = 1,
-			Scope = "vault",
+			Scope = ExportScope.Vault,
 			Data = dto
 		};
 
@@ -82,7 +82,7 @@ public class ItemExchangeService : IItemExchangeService
 		return Encoding.UTF8.GetString(bytes);
 	}
 
-	public ImportResult ImportFromJson(string json)
+public ImportResult ImportFromJson(string json)
 	{
 		try
 		{
@@ -92,94 +92,69 @@ public class ItemExchangeService : IItemExchangeService
 			if (!root.TryGetProperty("formatVersion", out var fv) || fv.GetInt32() != 1)
 				return ImportResult.Failed("Invalid or unsupported export format.");
 
-			if (!root.TryGetProperty("scope", out var scope))
+			if (!root.TryGetProperty("scope", out var scopeElem))
 				return ImportResult.Failed("Missing scope in export format.");
 
-			var scopeValue = scope.GetString();
+			var scopeText = scopeElem.GetString();
+			if (!Enum.TryParse<ExportScope>(scopeText, ignoreCase: true, out var scope))
+				return ImportResult.Failed($"Unsupported scope: {scopeText}");
 
-			if (scopeValue == "item")
+			if (!root.TryGetProperty("data", out var dataElement))
+				return ImportResult.Failed("Missing data in export format.");
+
+			switch (scope)
 			{
-				if (!root.TryGetProperty("data", out var dataElement))
-					return ImportResult.Failed("Missing data in export format.");
-
-				var dto = JsonSerializer.Deserialize<ItemExportDTO>(
-					dataElement.GetRawText(),
-					new JsonSerializerOptions { PropertyNameCaseInsensitive = true, IncludeFields = true });
-
-				if (dto == null)
-					return ImportResult.Failed("Failed to deserialize item data.");
-
-				return ImportResult.Succeeded(dto.ToItem());
-			}
-
-			if (scopeValue == "tab")
-			{
-				if (!root.TryGetProperty("data", out var dataElement))
-					return ImportResult.Failed("Missing data in export format.");
-
-				var dto = JsonSerializer.Deserialize<TabExportDTO>(
-					dataElement.GetRawText(),
-					new JsonSerializerOptions { PropertyNameCaseInsensitive = true, IncludeFields = true });
-
-				if (dto == null)
-					return ImportResult.Failed("Failed to deserialize tab data.");
-
-				var items = new List<Item>();
-				foreach (var itemDto in dto.Items)
-					items.Add(itemDto.ToItem());
-
-				return ImportResult.SucceededTab(items, dto.SackNumber, dto.SackType);
-			}
-
-			if (scopeValue == "vault")
-			{
-				if (!root.TryGetProperty("data", out var dataElement))
-					return ImportResult.Failed("Missing data in export format.");
-
-				var dto = JsonSerializer.Deserialize<VaultExportDTO>(
-					dataElement.GetRawText(),
-					new JsonSerializerOptions { PropertyNameCaseInsensitive = true, IncludeFields = true });
-
-				if (dto == null)
-					return ImportResult.Failed("Failed to deserialize vault data.");
-
-				var sackItems = new Dictionary<int, List<Item>>();
-				foreach (var sackDto in dto.Sacks)
+				case ExportScope.Item:
 				{
-					var itemList = new List<Item>();
-					foreach (var itemDto in sackDto.Items)
-						itemList.Add(itemDto.ToItem());
+					var dto = JsonSerializer.Deserialize<ItemExportDTO>(dataElement.GetRawText(), _jsonOptions);
 
-					sackItems[sackDto.SackNumber] = itemList;
+					if (dto == null)
+						return ImportResult.Failed("Failed to deserialize item data.");
+
+					return ImportResult.Succeeded(dto.ToItem());
 				}
 
-				return ImportResult.SucceededVault(dto.Name, sackItems);
-			}
+				case ExportScope.Tab:
+				{
+					var dto = JsonSerializer.Deserialize<TabExportDTO>(dataElement.GetRawText(), _jsonOptions);
 
-			return ImportResult.Failed($"Unsupported scope: {scopeValue}");
+					if (dto == null)
+						return ImportResult.Failed("Failed to deserialize tab data.");
+
+					var items = new List<Item>();
+					foreach (var itemDto in dto.Items)
+						items.Add(itemDto.ToItem());
+
+					return ImportResult.SucceededTab(items, dto.SackNumber, dto.SackType);
+				}
+
+				case ExportScope.Vault:
+				{
+					var dto = JsonSerializer.Deserialize<VaultExportDTO>(dataElement.GetRawText(), _jsonOptions);
+
+					if (dto == null)
+						return ImportResult.Failed("Failed to deserialize vault data.");
+
+					var sackItems = new Dictionary<int, List<Item>>();
+					foreach (var sackDto in dto.Sacks)
+					{
+						var itemList = new List<Item>();
+						foreach (var itemDto in sackDto.Items)
+							itemList.Add(itemDto.ToItem());
+
+						sackItems[sackDto.SackNumber] = itemList;
+					}
+
+					return ImportResult.SucceededVault(dto.Name, sackItems);
+				}
+
+				default:
+					return ImportResult.Failed($"Unsupported scope: {scope}");
+			}
 		}
 		catch (JsonException ex)
 		{
 			return ImportResult.Failed($"Invalid JSON format: {ex.Message}");
-		}
-	}
-
-	public string DetectScope(string json)
-	{
-		if (string.IsNullOrWhiteSpace(json))
-			return null;
-
-		try
-		{
-			using var doc = JsonDocument.Parse(json);
-			var root = doc.RootElement;
-			if (root.TryGetProperty("scope", out var scope))
-				return scope.GetString();
-			return null;
-		}
-		catch (JsonException)
-		{
-			return null;
 		}
 	}
 
