@@ -1095,6 +1095,36 @@ Used to track changes in the translation file.</comment>
     <value>Предмет Eternal Embers</value>
   </data>
 	<data name="SackPanelMenuSeedForce" xml:space="preserve">
-    <value>Изменить семя элемента (принудительно)</value>
+    <value>Изменить сид предмета (Принудительно)</value>
+  </data>
+	<data name="SackPanelMenuExportItem" xml:space="preserve">
+    <value>🔗 Поделиться предметом</value>
+  </data>
+	<data name="SackPanelMenuExportClipboard" xml:space="preserve">
+    <value>Поделиться в буфер обмена</value>
+  </data>
+	<data name="SackPanelMenuExportItemFile" xml:space="preserve">
+    <value>Поделиться в файл...</value>
+  </data>
+	<data name="SackPanelMenuExportItemPasteBin" xml:space="preserve">
+    <value>Поделиться на PasteBin</value>
+  </data>
+	<data name="PlayerPanelMenuExportTab" xml:space="preserve">
+    <value>🔗 Поделиться вкладкой</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabClipboard" xml:space="preserve">
+    <value>Поделиться в буфер обмена</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabFile" xml:space="preserve">
+    <value>Поделиться в файл...</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabPasteBin" xml:space="preserve">
+    <value>Поделиться на PasteBin</value>
+  </data>
+	<data name="PlayerPanelMenuImportTabFile" xml:space="preserve">
+    <value>Импортировать из файла...</value>
+  </data>
+	<data name="ExportVaultPasteBin" xml:space="preserve">
+    <value>Поделиться хранилищем на PasteBin</value>
   </data>
 </root>

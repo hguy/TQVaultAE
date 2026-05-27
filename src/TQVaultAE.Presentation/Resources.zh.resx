@@ -1703,6 +1703,36 @@ Change this value to match program version when new keys are added.  Will trigge
     <value>tagMasteryBrief01-x4tagNeidan</value>
   </data>
 	<data name="SackPanelMenuSeedForce" xml:space="preserve">
-    <value>更改项目种子（力）</value>
+    <value>更改物品种子(强制)</value>
+  </data>
+	<data name="SackPanelMenuExportItem" xml:space="preserve">
+    <value>🔗 分享物品</value>
+  </data>
+	<data name="SackPanelMenuExportClipboard" xml:space="preserve">
+    <value>分享到剪贴板</value>
+  </data>
+	<data name="SackPanelMenuExportItemFile" xml:space="preserve">
+    <value>分享到文件...</value>
+  </data>
+	<data name="SackPanelMenuExportItemPasteBin" xml:space="preserve">
+    <value>分享到PasteBin</value>
+  </data>
+	<data name="PlayerPanelMenuExportTab" xml:space="preserve">
+    <value>🔗 分享标签页</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabClipboard" xml:space="preserve">
+    <value>分享到剪贴板</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabFile" xml:space="preserve">
+    <value>分享到文件...</value>
+  </data>
+	<data name="PlayerPanelMenuExportTabPasteBin" xml:space="preserve">
+    <value>分享到PasteBin</value>
+  </data>
+	<data name="PlayerPanelMenuImportTabFile" xml:space="preserve">
+    <value>从文件导入...</value>
+  </data>
+	<data name="ExportVaultPasteBin" xml:space="preserve">
+    <value>分享仓库到PasteBin</value>
   </data>
 </root>
