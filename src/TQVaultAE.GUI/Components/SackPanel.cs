@@ -40,6 +40,7 @@ public class SackPanel : Panel, IScalingControl
 	protected readonly IServiceProvider ServiceProvider;
 	protected readonly IHighlightService HighlightService;
 	protected readonly IItemDatabaseService ItemDatabaseService;
+	protected readonly IItemExchangeService ExchangeService;
 	private readonly Bitmap CustomContextMenuAffixUnknown;
 	private readonly Bitmap CustomContextMenuAffixUntranslated;
 	ItemStyle[] ItemStyleBackGroundColorEnable = new[] {
@@ -161,7 +162,7 @@ public class SackPanel : Panel, IScalingControl
 	/// </summary>
 	private Point originalLocation;
 
-	#endregion SackPanel Fields
+	#endregion
 
 	public SackPanel()
 	{
@@ -223,6 +224,7 @@ public class SackPanel : Panel, IScalingControl
 		this.USettings = this.ServiceProvider.GetService<UserSettings>();
 		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
 		this.ItemDatabaseService = this.ServiceProvider.GetService<IItemDatabaseService>();
+		this.ExchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
 
 		this.Log = this.ServiceProvider.GetService<ILogger<SackPanel>>();
 
@@ -680,7 +682,6 @@ public class SackPanel : Panel, IScalingControl
 				if ((foundItems == null || foundItems.Count == 0) && width + j <= this.SackSize.Width)
 				{
 					if (k + height <= this.SackSize.Height)
-						// The slot is free.
 						return new Point(j, k);
 				}
 				else
@@ -688,8 +689,19 @@ public class SackPanel : Panel, IScalingControl
 			}
 		}
 
-		// We could not find a place for the item.
 		return new Point(-1, -1);
+	}
+
+	public bool IsCellAvailable(int x, int y, int width, int height)
+	{
+		if (x < 0 || y < 0 || width < 1 || height < 1)
+			return false;
+
+		if (x + width > this.SackSize.Width || y + height > this.SackSize.Height)
+			return false;
+
+		var items = this.FindAllItems(new Rectangle(x, y, width, height));
+		return items == null || items.Count == 0;
 	}
 
 	/// <summary>
@@ -1540,8 +1552,7 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 			{
 				this.CustomContextMenu.Items.Add("-");
 
-				var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
-				var hasApiKey = exchangeService?.HasPasteBinApiKey == true;
+				var hasApiKey = this.ExchangeService?.HasPasteBinApiKey == true;
 
 				var exportClipboardItem = new ToolStripMenuItem(Resources.SackPanelMenuExportClipboard, null, ExportItemToClipboardClicked)
 				{
@@ -1573,6 +1584,48 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 					ForeColor = this.CustomContextMenu.ForeColor,
 					DisplayStyle = ToolStripItemDisplayStyle.Text,
 				};
+
+				this.CustomContextMenu.Items.Add(exportItemMenu);
+			}
+
+			if (this.selectedItems != null && !singleSelectionFocused)
+			{
+				//this.CustomContextMenu.Items.Add("-");
+
+				var exportItemMenu = new ToolStripMenuItem(Resources.SackPanelMenuExportItem)
+				{
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+					DisplayStyle = ToolStripItemDisplayStyle.Text,
+				};
+
+				var exportClipboardItem = new ToolStripMenuItem(Resources.SackPanelMenuExportClipboard, null, ExportItemToClipboardClicked)
+				{
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+				};
+				exportItemMenu.DropDownItems.Add(exportClipboardItem);
+
+				var exportFileItem = new ToolStripMenuItem(Resources.SackPanelMenuExportItemFile, null, ExportItemToFileClicked)
+				{
+					BackColor = this.CustomContextMenu.BackColor,
+					Font = this.CustomContextMenu.Font,
+					ForeColor = this.CustomContextMenu.ForeColor,
+				};
+				exportItemMenu.DropDownItems.Add(exportFileItem);
+
+				if (this.ExchangeService?.HasPasteBinApiKey == true)
+				{
+					var exportPasteBinItem = new ToolStripMenuItem(Resources.SackPanelMenuExportItemPasteBin, null, ExportItemToPasteBinClicked)
+					{
+						BackColor = this.CustomContextMenu.BackColor,
+						Font = this.CustomContextMenu.Font,
+						ForeColor = this.CustomContextMenu.ForeColor,
+					};
+					exportItemMenu.DropDownItems.Add(exportPasteBinItem);
+				}
 
 				this.CustomContextMenu.Items.Add(exportItemMenu);
 			}
@@ -3088,19 +3141,24 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 
 	private void ExportItemToClipboardClicked(object sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-		if (focusedItem == null)
-			return;
-
 		try
 		{
-			var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
-			if (exchangeService != null)
+			if (this.ExchangeService == null)
+				return;
+
+			if (this.selectedItems != null)
 			{
-				var json = exchangeService.SerializeItem(focusedItem);
-				var payload = exchangeService.EncodeToClipboardPayload(json);
-				Clipboard.SetText(payload);
+				var json = this.ExchangeService.SerializeItems(this.selectedItems);
+				Clipboard.SetText(json);
+				return;
 			}
+
+			Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+			if (focusedItem == null)
+				return;
+
+			var jsonItem = this.ExchangeService.SerializeItem(focusedItem);
+			Clipboard.SetText(jsonItem);
 		}
 		catch (Exception ex)
 		{
@@ -3110,26 +3168,41 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 
 	private void ExportItemToFileClicked(object sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-		if (focusedItem == null)
-			return;
-
 		try
 		{
-			var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
-			if (exchangeService != null)
+			if (this.ExchangeService == null)
+				return;
+
+			if (this.selectedItems != null)
 			{
-				var json = exchangeService.SerializeItem(focusedItem);
+				var json = this.ExchangeService.SerializeItems(this.selectedItems);
 				using var dialog = new SaveFileDialog
 				{
 					Filter = "JSON files (*.json)|*.json",
 					DefaultExt = "json",
-					FileName = "item_export.json"
+					FileName = "items_export.json"
 				};
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 					File.WriteAllText(dialog.FileName, json);
+
+				return;
 			}
+
+			Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+			if (focusedItem == null)
+				return;
+
+			var jsonItem = this.ExchangeService.SerializeItem(focusedItem);
+			using var singleDialog = new SaveFileDialog
+			{
+				Filter = "JSON files (*.json)|*.json",
+				DefaultExt = "json",
+				FileName = "item_export.json"
+			};
+
+			if (singleDialog.ShowDialog() == DialogResult.OK)
+				File.WriteAllText(singleDialog.FileName, jsonItem);
 		}
 		catch (Exception ex)
 		{
@@ -3139,22 +3212,30 @@ if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused
 
 	private async void ExportItemToPasteBinClicked(object sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-		if (focusedItem == null)
-			return;
-
 		try
 		{
-			var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
-			if (exchangeService != null)
+			if (this.ExchangeService == null)
+				return;
+
+			if (this.selectedItems != null)
 			{
-				var json = exchangeService.SerializeItem(focusedItem);
-				var friendlyName = this.ItemProvider.GetFriendlyNames(focusedItem).FullNameClean;
-				var pasteName = string.IsNullOrWhiteSpace(friendlyName) ? null : friendlyName;
-				var url = await exchangeService.ExportToPasteBinAsync(json, pasteName);
+				var json = this.ExchangeService.SerializeItems(this.selectedItems);
+				var url = await this.ExchangeService.ExportToPasteBinAsync(json, "Multi-item export");
 				Clipboard.SetText(url);
-				this.UIService.NotifyUser($"Item exported to PasteBin: {url}");
+				this.UIService.NotifyUser($"Items exported to PasteBin: {url}");
+				return;
 			}
+
+			Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+			if (focusedItem == null)
+				return;
+
+			var jsonItem = this.ExchangeService.SerializeItem(focusedItem);
+			var friendlyName = this.ItemProvider.GetFriendlyNames(focusedItem).FullNameClean;
+			var pasteName = string.IsNullOrWhiteSpace(friendlyName) ? null : friendlyName;
+			var urlItem = await this.ExchangeService.ExportToPasteBinAsync(jsonItem, pasteName);
+			Clipboard.SetText(urlItem);
+			this.UIService.NotifyUser($"Item exported to PasteBin: {urlItem}");
 		}
 		catch (Exception ex)
 		{

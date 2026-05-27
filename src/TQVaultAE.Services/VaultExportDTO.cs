@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using TQVaultAE.Application;
 using TQVaultAE.Data.Dto;
+using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Services;
 
@@ -19,7 +20,10 @@ public class VaultExportDTO
 		for (int i = 0; i < vault.NumberOfSacks; i++)
 		{
 			var sack = vault.GetSack(i);
-			if (sack == null || sack.IsEmpty)
+			if (sack == null)
+				continue;
+
+			if (sack.IsEmpty && (sack.BagButtonIconInfo == null || sack.BagButtonIconInfo.DisplayMode == BagButtonDisplayMode.Default))
 				continue;
 
 			var items = new List<ItemDto>();
@@ -29,7 +33,8 @@ public class VaultExportDTO
 			sacks.Add(new SackExportDTO
 			{
 				SackNumber = i,
-				Items = items
+				Items = items,
+				IconInfo = sack.BagButtonIconInfo
 			});
 		}
 
@@ -48,4 +53,7 @@ public class SackExportDTO
 
 	[JsonPropertyName("items")]
 	public IReadOnlyList<ItemDto> Items { get; set; }
+
+	[JsonPropertyName("iconInfo")]
+	public BagButtonIconInfo IconInfo { get; set; }
 }

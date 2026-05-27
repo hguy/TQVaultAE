@@ -37,7 +37,7 @@ public partial class MainForm : VaultForm
 	/// <summary>
 	/// Application layer services
 	/// </summary>
-private readonly IPlayerService playerService;
+	private readonly IPlayerService playerService;
 	private readonly IVaultService vaultService;
 	private readonly IStashService stashService;
 	private readonly IItemExchangeService itemExchangeService;
@@ -160,7 +160,7 @@ private readonly IPlayerService playerService;
 	/// Initializes a new instance of the MainForm class.
 	/// </summary>
 	[PermissionSet(SecurityAction.LinkDemand, Unrestricted = true)]
-public MainForm(
+	public MainForm(
 			IServiceProvider serviceProvider
 			, ILogger<MainForm> log
 			, SessionContext sessionContext
@@ -173,7 +173,7 @@ public MainForm(
 	{
 		this.userContext = sessionContext;
 		this.HighlightService = serviceProvider.GetService<IHighlightService>();
-this.playerService = playerService;
+		this.playerService = playerService;
 		this.vaultService = vaultService;
 		this.stashService = stashService;
 		this.TagService = tagService;
@@ -494,7 +494,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyEventArgs data</param>
-private void MainFormKeyDown(object sender, KeyEventArgs e)
+	private void MainFormKeyDown(object sender, KeyEventArgs e)
 	{
 		if (e.KeyData == (Keys.Control | Keys.C))
 		{
@@ -517,7 +517,7 @@ private void MainFormKeyDown(object sender, KeyEventArgs e)
 		if (e.KeyData == (Keys.Control | Keys.Subtract) || e.KeyData == (Keys.Control | Keys.OemMinus))
 			this.ResizeFormCallback(this, new ResizeEventArgs(-0.1F));
 
-if (e.KeyData == (Keys.Control | Keys.Home))
+		if (e.KeyData == (Keys.Control | Keys.Home))
 			this.ResizeFormCallback(this, new ResizeEventArgs(1.0F));
 	}
 
@@ -532,19 +532,12 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			if (selectedItems.Count == 1)
 			{
 				var json = this.itemExchangeService.SerializeItem(selectedItems[0]);
-				var payload = this.itemExchangeService.EncodeToClipboardPayload(json);
-				Clipboard.SetText(payload);
+				Clipboard.SetText(json);
 			}
 			else
 			{
-				// Multi-select: serialize each item and put all on clipboard as line-separated base64
-				var payloads = selectedItems
-					.Select(item =>
-					{
-						var json = this.itemExchangeService.SerializeItem(item);
-						return this.itemExchangeService.EncodeToClipboardPayload(json);
-					});
-				Clipboard.SetText(string.Join(Environment.NewLine, payloads));
+				var json = this.itemExchangeService.SerializeItems(selectedItems);
+				Clipboard.SetText(json);
 			}
 		}
 		catch (Exception ex)
@@ -564,6 +557,8 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			if (string.IsNullOrWhiteSpace(text))
 				return;
 
+			ImportResult result;
+
 			// Check for PasteBin URL first
 			if (this.itemExchangeService.IsPasteBinUrl(text.Trim()))
 			{
@@ -571,20 +566,18 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 				{
 					var url = text.Trim();
 					var json = await this.itemExchangeService.ImportFromPasteBinAsync(url);
-					var result = this.itemExchangeService.ImportFromJson(json);
+					result = this.itemExchangeService.ImportFromJson(json);
 
-					if (result.Scope == ExportScope.Vault)
+					if (result.Success)
 					{
-						if (result.Success)
-						{
+						if (result.Scope == ExportScope.Vault)
 							HandleVaultImportFromJson(result);
-							return;
-						}
+						else
+							HandleNonVaultImport(result);
 					}
-					else if (result.Success)
-						this.UIService.NotifyUser("Imported 1 of 1 items from PasteBin.");
 					else
-						this.UIService.ShowError($"Import from PasteBin failed: {result.ErrorMessage}");
+						this.UIService.NotifyUser(result.ErrorMessage);
+
 					return;
 				}
 				catch (Exception ex)
@@ -595,47 +588,22 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 				}
 			}
 
-			// Try each line as a base64 payload (support multi-item imports)
-			var lines = text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-			var imported = 0;
-			var skipped = 0;
-
-			foreach (var line in lines)
+			result = this.itemExchangeService.ImportFromJson(text);
+			if (!result.Success)
 			{
-				try
-				{
-					var json = this.itemExchangeService.DecodeFromClipboardPayload(line.Trim());
-					var result = this.itemExchangeService.ImportFromJson(json);
-
-					if (result.Scope == ExportScope.Vault)
-					{
-						if (result.Success)
-						{
-							HandleVaultImportFromJson(result);
-							return;
-						}
-						skipped++;
-						continue;
-					}
-
-					if (result.Success)
-						imported++;
-					else
-						skipped++;
-				}
-				catch
-				{
-					skipped++;
-				}
+				this.UIService.NotifyUser(result.ErrorMessage);
+				return;
 			}
 
-			if (imported > 0 || skipped > 0)
-				this.UIService.NotifyUser($"Imported {imported} of {imported + skipped} items.");
+			if (result.Scope == ExportScope.Vault)
+				HandleVaultImportFromJson(result);
+			else
+				HandleNonVaultImport(result);
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Failed to import items from clipboard");
-			this.UIService.ShowError("Invalid clipboard data.");
+			this.UIService.NotifyUser("Invalid clipboard data.");
 		}
 	}
 
@@ -1431,6 +1399,9 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		var pasteBinItem = vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuExportTabPasteBin, null, ExportVaultToPasteBinClicked);
 		pasteBinItem.Enabled = pasteBinEnabled;
 
+		vaultExportContextMenu.Items.Add("-");
+		vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuImportTabFile, null, ImportFromFileClicked);
+
 		vaultExportButton.Click += (s, e) =>
 		{
 			vaultExportContextMenu.Show(vaultExportButton, new Point(0, vaultExportButton.Height));
@@ -1487,8 +1458,7 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 		try
 		{
 			var json = this.itemExchangeService.SerializePlayerCollection(vault);
-			var payload = this.itemExchangeService.EncodeToClipboardPayload(json);
-			Clipboard.SetText(payload);
+			Clipboard.SetText(json);
 			this.UIService.NotifyUser("Vault exported to clipboard.");
 		}
 		catch (Exception ex)
@@ -1519,6 +1489,106 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 			Log.LogError(ex, "Failed to export vault to PasteBin");
 			this.UIService.ShowError($"Failed to export vault to PasteBin: {ex.Message}");
 		}
+	}
+
+	private void ImportFromFileClicked(object sender, EventArgs e)
+	{
+		ImportFromFile();
+	}
+
+	internal void ImportFromFile()
+	{
+		using var dialog = new OpenFileDialog
+		{
+			Filter = "JSON files (*.json)|*.json",
+			DefaultExt = "json",
+			FileName = "*.json"
+		};
+
+		if (dialog.ShowDialog() != DialogResult.OK)
+			return;
+
+		try
+		{
+			var json = File.ReadAllText(dialog.FileName);
+			var result = this.itemExchangeService.ImportFromJson(json);
+
+			if (!result.Success)
+			{
+				this.UIService.NotifyUser(result.ErrorMessage);
+				return;
+			}
+
+			if (result.Scope == ExportScope.Vault)
+				HandleVaultImportFromJson(result);
+			else
+				HandleNonVaultImport(result);
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Failed to import from file");
+			this.UIService.NotifyUser("Failed to import from file.");
+		}
+	}
+
+	private void HandleNonVaultImport(ImportResult importResult)
+	{
+		if (this.vaultPanel?.Player == null)
+		{
+			this.UIService.ShowError("No vault is loaded to import into.");
+			return;
+		}
+
+		var sackPanel = this.vaultPanel.SackPanel;
+		var sack = sackPanel.Sack;
+		if (sack == null)
+		{
+			this.UIService.ShowError("No active tab to import into.");
+			return;
+		}
+
+		var items = importResult.Scope == ExportScope.Item
+			? new[] { importResult.Item }
+			: importResult.Items ?? [];
+
+		var imported = 0;
+
+		foreach (var item in items)
+		{
+			var x = Math.Max(0, item.PositionX);
+			var y = Math.Max(0, item.PositionY);
+			var w = item.Width;
+			var h = item.Height;
+
+			if (sackPanel.IsCellAvailable(x, y, w, h))
+			{
+				item.PositionX = x;
+				item.PositionY = y;
+			}
+			else
+			{
+				var pos = sackPanel.FindOpenCells(w, h);
+				if (pos.X < 0)
+					continue;
+
+				item.PositionX = pos.X;
+				item.PositionY = pos.Y;
+			}
+
+			sack.AddItem(item);
+			imported++;
+		}
+
+		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo != null)
+		{
+			sack.BagButtonIconInfo = importResult.TabIconInfo;
+			var button = this.vaultPanel.BagButtons[this.vaultPanel.CurrentBag];
+			button.ApplyIconInfo(sack);
+		}
+
+		sack.IsModified = true;
+		this.vaultPanel.Refresh();
+		this.UIService.NotifyUser($"Imported {imported} of {importResult.TotalCount} items.");
 	}
 
 	private void HandleVaultImportFromJson(ImportResult importResult)
@@ -1591,6 +1661,19 @@ if (e.KeyData == (Keys.Control | Keys.Home))
 
 		this.itemExchangeService.ImportVaultInto(targetVault, importResult);
 		this.vaultPanel.Refresh();
+
+		if (importResult.SackIconInfo != null)
+		{
+			for (int i = 0; i < targetVault.NumberOfSacks && i < this.vaultPanel.BagButtons.Count; i++)
+			{
+				if (importResult.SackIconInfo.ContainsKey(i))
+				{
+					var sack = targetVault.GetSack(i);
+					if (sack != null)
+						this.vaultPanel.BagButtons[i].ApplyIconInfo(sack);
+				}
+			}
+		}
 
 		var totalItems = importResult.SackItems?.Sum(kvp => kvp.Value.Count) ?? 0;
 		this.UIService.NotifyUser($"Imported {totalItems} items into vault.");

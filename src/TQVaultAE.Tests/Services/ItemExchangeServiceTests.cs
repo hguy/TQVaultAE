@@ -63,18 +63,6 @@ public class ItemExchangeServiceTests
 	}
 
 	[Fact]
-	public void EncodeToClipboard_ShouldProduceBase64String()
-	{
-		var json = "{\"test\":\"value\"}";
-
-		var encoded = _service.EncodeToClipboardPayload(json);
-
-		encoded.Should().NotBeNullOrEmpty();
-		var decoded = _service.DecodeFromClipboardPayload(encoded);
-		decoded.Should().Be(json);
-	}
-
-	[Fact]
 	public void ImportFromJson_WithValidItemJson_ShouldReturnImportResult()
 	{
 		var item = new Item

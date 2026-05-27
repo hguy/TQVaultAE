@@ -2108,7 +2108,10 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="PlayerPanelMenuExportTabPasteBin" xml:space="preserve">
     <value>Share to PasteBin</value>
   </data>
-	<data name="ExportVaultPasteBin" xml:space="preserve">
+  <data name="ExportVaultPasteBin" xml:space="preserve">
     <value>Share Vault to PasteBin</value>
+  </data>
+  <data name="PlayerPanelMenuImportTabFile" xml:space="preserve">
+    <value>Import from File...</value>
   </data>
 </root>

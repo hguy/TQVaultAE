@@ -16,7 +16,9 @@ Share items, vault tabs, and entire vaults between players — via clipboard, `.
     + [File Import (.json)](#file-import)
     + [PasteBin Import](#pastebin-import)
 * [Full Vault Import Strategy](#vault-import)
+* [Non-Vault Import (Items / Tabs / Multi-Select)](#non-vault-import)
 * [Item Placement Logic](#placement)
+* [Export Format](#export-format)
 * [Settings](#settings)
     + [Obtaining a PasteBin API Key](#api-key)
 
@@ -24,13 +26,14 @@ Share items, vault tabs, and entire vaults between players — via clipboard, `.
 
 ### <a id="export-scopes"></a>Export Scopes
 
-You can export items at three levels:
+You can export items at four levels:
 
 | Scope | How to trigger | Behavior |
 |-------|---------------|----------|
-| **Single item** | Right-click an item → `Export Item` | Exports the selected item with all its properties (seed, affixes, relic sockets, stack size, position, etc.). Use **Ctrl+LeftClick** to multi-select items; exporting a selection exports all selected items as a tab-level payload. |
-| **Vault tab** | Click the **tab button** (BagButton) → `Export Tab` | Exports all items within that tab, preserving their positions and grid layout. |
-| **Full vault** | Click the **export button** next to the vault combo box → `Export Vault` | Exports all 12 tabs and all their contents, including the vault name. |
+| **Single item** | Right-click an item → `Share to` → `Export Item` | Exports the selected item with all its properties (seed, affixes, relic sockets, stack size, position, etc.). |
+| **Multi-select** | **Ctrl+LeftClick** to select multiple items → Right-click → `Share to` | Exports all selected items as a single `MultiSelect`-scoped JSON payload. |
+| **Vault tab** | Right-click a **tab button** (BagButton) → `Share Tab` | Exports all items within that tab, preserving their positions, grid layout, and bag icon info. |
+| **Full vault** | Click the **export button** (`...`) next to the vault combo box → `Share Vault` | Exports all tabs and all their contents, including the vault name. |
 
 ---
 
@@ -41,26 +44,26 @@ Every scope supports three transport channels.
 #### <a id="clipboard"></a>Clipboard Export
 
 - **Single / multi-select items:** Select items in the grid and press **Ctrl+C**.
-- **Tab:** Open the tab menu → `Export Tab` → `Copy to Clipboard`.
-- **Vault:** Click the vault export button → `Export Vault to Clipboard`.
+- **Tab:** Right-click a tab button → `Share Tab` → `Copy to Clipboard`.
+- **Vault:** Click the vault export button → `Share Vault to Clipboard`.
 
-The export data is serialized as JSON, base64-encoded, and placed on your clipboard. You can paste this directly into a text editor, chat, or another TQVaultAE instance.
+The export data is serialized as JSON and placed on your clipboard. You can paste this directly into a text editor, chat, or another TQVaultAE instance.
 
 #### <a id="file-export"></a>File Export (.json)
 
-- **Single item:** Right-click an item → `Export Item` → `Save to File...`.
-- **Tab:** Tab menu → `Export Tab` → `Save to File...`.
-- **Vault:** Vault export button → `Export Vault to File`.
+- **Single / multi-select items:** Right-click an item → `Share to` → `Save to File...`.
+- **Tab:** Right-click a tab button → `Share Tab` → `Save to File...`.
+- **Vault:** Vault export button → `Share Vault to File`.
 
-A Save File dialog opens. The file is saved as **raw JSON** (not base64-encoded), so you can inspect or edit it in any text editor before importing.
+A Save File dialog opens. The file is saved as **raw JSON**, so you can inspect or edit it in any text editor before importing.
 
 #### <a id="pastebin-export"></a>PasteBin Export
 
-- **Single item:** Right-click an item → `Export Item` → `Export to PasteBin`.
-- **Tab:** Tab menu → `Export Tab` → `Export to PasteBin`.
-- **Vault:** Vault export button → `Export Vault to PasteBin`.
+- **Single / multi-select items:** Right-click an item → `Share to` → `Share to PasteBin`.
+- **Tab:** Right-click a tab button → `Share Tab` → `Share to PasteBin`.
+- **Vault:** Vault export button → `Share Vault to PasteBin`.
 
-The data is base64-encoded and uploaded to PasteBin as an **Unlisted** paste (accessible via direct URL but not published on the public feed). The resulting PasteBin URL is automatically copied to your clipboard.
+The data is uploaded to PasteBin as an **Unlisted** paste (accessible via direct URL but not published on the public feed). The resulting PasteBin URL is automatically copied to your clipboard.
 
 **Note:** PasteBin export menu items are **disabled (greyed out)** until you configure a PasteBin API key in Settings (see [below](#api-key)).
 
@@ -70,34 +73,47 @@ The data is base64-encoded and uploaded to PasteBin as an **Unlisted** paste (ac
 
 #### <a id="clipboard-import"></a>Clipboard Import (Ctrl+V)
 
-Press **Ctrl+V** from the vault panel. TQVaultAE automatically detects what's on your clipboard:
+Press **Ctrl+V** from the vault panel. TQVaultAE detects what's on your clipboard:
 
-- If the clipboard contains a **PasteBin URL** (starting with `https://pastebin.com/`), it fetches the paste data from PasteBin.
-- Otherwise, it attempts to **base64-decode** and parse the clipboard contents as export data.
+1. If it's a **PasteBin URL** (`https://pastebin.com/...`), the paste is fetched from PasteBin.
+2. Otherwise the clipboard content is parsed directly as JSON.
 
-On success, items are imported into the currently loaded vault. On failure, a clear error message is shown.
+On success, items are placed into the currently active vault tab. On failure, a status-bar notification is shown instead of a blocking dialog.
 
 #### <a id="file-import"></a>File Import (.json)
 
-Use this dialog accessible from the vault panel's import button. A file picker dialog lets you select a `.json` export file. The file is parsed and imported into the current vault.
+Two entry points:
+
+- **Tab button:** Right-click any tab button (even empty tabs) → `Import from File...`
+- **Vault combo box:** Click the `...` button next to the vault selector → `Import from File...`
+
+A file picker opens for `.json` files. The content is parsed identically to clipboard import, and items are placed into the currently active vault tab.
 
 #### <a id="pastebin-import"></a>PasteBin Import
 
-**No API key is required** to import from a PasteBin link. Simply paste a PasteBin URL into your clipboard and press **Ctrl+V**, or use the file import dialog. TQVaultAE fetches the raw paste content, decodes it, and imports the items.
+**No API key is required** to import from a PasteBin link. Simply paste a PasteBin URL into your clipboard and press **Ctrl+V**. TQVaultAE fetches the raw paste content, parses the JSON, and imports the items.
 
 ---
 
 ### <a id="vault-import"></a>Full Vault Import Strategy
 
-When importing a **full vault**, a dialog presents three options:
+When importing a **full vault** (`scope: "Vault"`), a dialog presents three options:
 
 | Option | Behavior |
 |--------|----------|
-| **Replace** (Yes) | Clears all 12 tabs in the current vault and imports the source data. If the target vault is **not empty**, you are shown a second confirmation warning: *"WARNING: This will erase all items in the current vault. Continue?"* |
-| **Create New Vault** (No) | Creates a new vault file with the imported vault's name. If a vault with that name already exists, a numeric suffix is appended (e.g., `MyVault (2)`). The new vault is automatically loaded. |
+| **Replace** (Yes) | Clears all tabs in the current vault and imports the source data. If the target vault is **not empty**, a second confirmation warns: *"WARNING: This will erase all items in the current vault. Continue?"* |
+| **Create New Vault** (No) | Creates a new vault file with the imported vault's name. A numeric suffix is appended if the name already exists (e.g., `MyVault (2)`). The new vault is automatically loaded. |
 | **Cancel** | Aborts the import. Nothing is changed. |
 
-There is no partial merge of tabs into an existing vault — it's all-or-nothing.
+Partial tab merge into an existing vault is not supported — it's all-or-nothing.
+
+---
+
+### <a id="non-vault-import"></a>Non-Vault Import (Items / Tabs / Multi-Select)
+
+When importing a scope other than `Vault` (i.e. `Item`, `Tab`, or `MultiSelect`), items are placed directly into the **currently active vault tab** using the placement logic below.
+
+For **Tab** exports, the original bag button icon (`BagButtonIconInfo` — label, icon set, display mode) is restored on the active tab's bag button after import.
 
 ---
 
@@ -106,10 +122,32 @@ There is no partial merge of tabs into an existing vault — it's all-or-nothing
 When importing items into a target vault tab, TQVaultAE attempts placement in this order:
 
 1. Try the item's **original position** (PositionX, PositionY from the export).
-2. If the original cell is occupied or out of bounds, search for the **first available open cell** in the 18×20 grid.
+2. If the original cell is occupied or out of bounds, search for the **first available open cell** in the tab's grid.
 3. If no open cell exists in that tab, the item is **skipped**.
 
-After all items are processed, a result message is shown: *"Imported N of M items. X items could not be placed (no space)."*
+After all items are processed, a notification shows: *"Imported N of M items."*
+
+---
+
+### <a id="export-format"></a>Export Format
+
+All exports use a JSON envelope with the following structure:
+
+```json
+{
+  "formatVersion": 1,
+  "scope": "Item | Tab | Vault | MultiSelect",
+  "data": { ... }
+}
+```
+
+- **`formatVersion`** — Always `1`.
+- **`scope`** — Identifies the export type.
+- **`data`** — Scope-specific payload:
+  - `Item`: Single `ItemDto` object (includes `positionX`, `positionY`, `width`, `height`, `seed`, `baseName`, `prefixName`, `suffixName`, `relicName`, `relicBonus`, `completionBonus`, `stackSize`, `isSeedRequired`, `isPrefixRequired`, `isSuffixRequired`).
+  - `MultiSelect`: Array of `ItemDto` objects.
+  - `Tab`: Array of `ItemDto` objects plus `sackNumber` and optional `iconInfo` (bag button label, display mode, icon RecordIds).
+  - `Vault`: Array of sack arrays plus vault `name`.
 
 ---
 
@@ -133,4 +171,4 @@ That's it — PasteBin export menu items will now be enabled.
 
 ---
 
-**Version:** 1.0 — Feature implemented as per [Issue #29](https://github.com/hguy/TQVaultAE/issues/29), Slice 5.
+**Version:** 2.0

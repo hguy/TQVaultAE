@@ -20,7 +20,9 @@ public static class ItemDtoExtensions
 			relicBonus2 = item.RelicBonus2Id?.Raw,
 			var2 = item.Var2,
 			pointX = item.PositionX,
-			pointY = item.PositionY
+			pointY = item.PositionY,
+			width = item.Width,
+			height = item.Height
 		};
 
 	public static Item ToItem(this ItemDto dto)
@@ -37,6 +39,8 @@ public static class ItemDtoExtensions
 			Var1 = dto.var1,
 			PositionX = dto.pointX,
 			PositionY = dto.pointY,
+			Width = dto.width,
+			Height = dto.height,
 			endBlockCrap2 = 0,
 			endBlockCrap1 = 0
 		};

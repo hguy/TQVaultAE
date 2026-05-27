@@ -20,6 +20,7 @@
 		<AssemblyCopyright>Copyright © 2006-2012 by Brandon Wallace</AssemblyCopyright>
 		<ComVisible>false</ComVisible>
 		<NeutralLanguage>en-US</NeutralLanguage>
+		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
 	</PropertyGroup>
 
 

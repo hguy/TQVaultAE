@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 
@@ -16,6 +15,8 @@ public class ImportResult
 	public int ImportedCount { get; set; }
 	public int TotalCount { get; set; }
 	public string ErrorMessage { get; set; }
+	public BagButtonIconInfo TabIconInfo { get; set; }
+	public Dictionary<int, BagButtonIconInfo> SackIconInfo { get; set; }
 
 	public static ImportResult Succeeded(Item item)
 		=> new()
@@ -27,18 +28,19 @@ public class ImportResult
 			TotalCount = 1
 		};
 
-	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber)
+	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, BagButtonIconInfo iconInfo = null)
 		=> new()
 		{
 			Success = true,
 			Scope = ExportScope.Tab,
 			Items = items,
 			SackNumber = sackNumber,
+			TabIconInfo = iconInfo,
 			ImportedCount = items.Count,
 			TotalCount = items.Count
 		};
 
-	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems)
+	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems, Dictionary<int, BagButtonIconInfo> sackIconInfo = null)
 	{
 		var total = 0;
 		foreach (var kv in sackItems)
@@ -50,10 +52,21 @@ public class ImportResult
 			Scope = ExportScope.Vault,
 			VaultName = vaultName,
 			SackItems = sackItems,
+			SackIconInfo = sackIconInfo,
 			ImportedCount = total,
 			TotalCount = total
 		};
 	}
+
+	public static ImportResult SucceededMultiSelect(IReadOnlyList<Item> items)
+		=> new()
+		{
+			Success = true,
+			Scope = ExportScope.MultiSelect,
+			Items = items,
+			ImportedCount = items.Count,
+			TotalCount = items.Count
+		};
 
 	public static ImportResult Failed(string errorMessage)
 		=> new()

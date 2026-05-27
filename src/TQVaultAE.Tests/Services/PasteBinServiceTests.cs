@@ -94,7 +94,7 @@ public class PasteBinServiceTests
 	}
 
 	[Fact]
-	public async Task FetchPasteAsync_WithHttpError_ShouldThrowHttpRequestException()
+	public async Task FetchPasteAsync_WithHttpError_ShouldThrowInvalidOperationException()
 	{
 		var handler = new Mock<HttpMessageHandler>();
 		handler.Protected()
@@ -111,6 +111,7 @@ public class PasteBinServiceTests
 		var service = CreateService(handler.Object);
 		var act = () => service.FetchPasteAsync("https://pastebin.com/invalid");
 
-		await act.Should().ThrowAsync<HttpRequestException>();
+		await act.Should().ThrowAsync<InvalidOperationException>()
+			.WithMessage("*404*");
 	}
 }

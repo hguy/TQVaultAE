@@ -36,9 +36,10 @@ public class PasteBinService : IPasteBinService
 		var content = new FormUrlEncodedContent(formData);
 
 		var response = await _httpClient.PostAsync(PasteBinApiUrl, content);
-		response.EnsureSuccessStatusCode();
-
 		var result = await response.Content.ReadAsStringAsync();
+
+		if (!response.IsSuccessStatusCode)
+			throw new InvalidOperationException($"PasteBin API returned {(int)response.StatusCode}: {result.Trim()}");
 
 		if (result.StartsWith("https://pastebin.com/", System.StringComparison.OrdinalIgnoreCase))
 			return result.Trim();
@@ -52,9 +53,12 @@ public class PasteBinService : IPasteBinService
 		var rawUrl = string.Format(PasteBinRawUrl, pasteId);
 
 		var response = await _httpClient.GetAsync(rawUrl);
-		response.EnsureSuccessStatusCode();
+		var result = await response.Content.ReadAsStringAsync();
 
-		return await response.Content.ReadAsStringAsync();
+		if (!response.IsSuccessStatusCode)
+			throw new InvalidOperationException($"PasteBin API returned {(int)response.StatusCode}: {result.Trim()}");
+
+		return result;
 	}
 
 	private static string GetPasteIdFromUrl(string url)

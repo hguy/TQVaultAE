@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 
@@ -7,10 +6,9 @@ namespace TQVaultAE.Application.Contracts.Services;
 public interface IItemExchangeService
 {
 	string SerializeItem(Item item);
+	string SerializeItems(IEnumerable<Item> items);
 	string SerializeSackCollection(SackCollection sack, int sackNumber);
 	string SerializePlayerCollection(PlayerCollection vault);
-	string EncodeToClipboardPayload(string json);
-	string DecodeFromClipboardPayload(string base64);
 	ImportResult ImportFromJson(string json);
 	void ImportVaultInto(PlayerCollection vault, ImportResult importData);
 	bool IsPasteBinUrl(string text);

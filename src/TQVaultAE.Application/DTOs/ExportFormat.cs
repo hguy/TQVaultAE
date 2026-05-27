@@ -6,7 +6,8 @@ public enum ExportScope
 {
 	Item,
 	Tab,
-	Vault
+	Vault,
+	MultiSelect
 }
 
 public class ExportFormat

@@ -32,6 +32,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	protected readonly IServiceProvider ServiceProvider;
 	protected readonly UserSettings USettings;
 	protected readonly IHighlightService HighlightService;
+	protected readonly IItemExchangeService ExchangeService;
 
 	/// <summary>
 	/// Gets the SackPanel instance
@@ -114,6 +115,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
 		this.USettings = this.ServiceProvider.GetService<UserSettings>();
 		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
+		this.ExchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
 
 		this.DragInfo = dragInfo;
 		this.AutoMoveLocation = autoMoveLocation;
@@ -619,6 +621,18 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 					if (this.userContext.IconInfoCopied)
 						this.contextMenu.Items.Add(Resources.PlayerPanelPasteIcon);
+
+					// Import from file
+					this.contextMenu.Items.Add("-");
+					var importFileItem = new ToolStripMenuItem(
+						Resources.PlayerPanelMenuImportTabFile, null,
+						this.ImportFromFileClicked)
+					{
+						BackColor = this.contextMenu.BackColor,
+						Font = this.contextMenu.Font,
+						ForeColor = this.contextMenu.ForeColor,
+					};
+					this.contextMenu.Items.Add(importFileItem);
 				}
 
 				this.contextMenu.Show(this.BagButtons[this.CurrentBag], new Point(e.X, e.Y));
@@ -714,8 +728,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 	private void AddExportTabSubMenu()
 	{
-		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
-		var hasApiKey = exchangeService?.HasPasteBinApiKey == true;
+		var hasApiKey = this.ExchangeService?.HasPasteBinApiKey == true;
 
 		var clipboardItem = new ToolStripMenuItem(
 			Resources.PlayerPanelMenuExportTabClipboard, null,
@@ -760,18 +773,23 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 	private void ExportTabToClipboardClicked(object sender, EventArgs e)
 	{
-		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		var exchangeService = this.ExchangeService;
 		if (exchangeService != null && this.BagSackPanel?.Sack != null)
 		{
 			var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
-			var payload = exchangeService.EncodeToClipboardPayload(json);
-			Clipboard.SetText(payload);
+			Clipboard.SetText(json);
 		}
+	}
+
+	private void ImportFromFileClicked(object sender, EventArgs e)
+	{
+		var mainForm = this.FindForm() as MainForm;
+		mainForm?.ImportFromFile();
 	}
 
 	private void ExportTabToFileClicked(object sender, EventArgs e)
 	{
-		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		var exchangeService = this.ExchangeService;
 		if (exchangeService != null && this.BagSackPanel?.Sack != null)
 		{
 			var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
@@ -789,7 +807,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 	private async void ExportTabToPasteBinClicked(object sender, EventArgs e)
 	{
-		var exchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		var exchangeService = this.ExchangeService;
 		if (exchangeService != null && this.BagSackPanel?.Sack != null)
 		{
 			try

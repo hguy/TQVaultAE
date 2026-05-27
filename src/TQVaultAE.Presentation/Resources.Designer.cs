@@ -3779,6 +3779,12 @@ namespace TQVaultAE.Presentation {
                 return ResourceManager.GetString("PlayerPanelMenuExportTabPasteBin", resourceCulture);
             }
         }
+                
+        public static string PlayerPanelMenuImportTabFile {
+            get {
+                return ResourceManager.GetString("PlayerPanelMenuImportTabFile", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Time Played.

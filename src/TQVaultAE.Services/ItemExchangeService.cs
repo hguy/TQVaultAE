@@ -43,6 +43,18 @@ public class ItemExchangeService : IItemExchangeService
 		return JsonSerializer.Serialize(envelope, _jsonOptions);
 	}
 
+	public string SerializeItems(IEnumerable<Item> items)
+	{
+		var dtos = items.Select(ItemDtoExtensions.FromItem).ToList();
+		var envelope = new ExportFormat
+		{
+			Scope = ExportScope.MultiSelect,
+			Data = dtos
+		};
+
+		return JsonSerializer.Serialize(envelope, _jsonOptions);
+	}
+
 	public string SerializeSackCollection(SackCollection sack, int sackNumber)
 	{
 		var dto = TabExportDTO.FromSackCollection(sack, sackNumber);
@@ -67,17 +79,6 @@ public class ItemExchangeService : IItemExchangeService
 		return JsonSerializer.Serialize(envelope, _jsonOptions);
 	}
 
-	public string EncodeToClipboardPayload(string json)
-	{
-		var bytes = Encoding.UTF8.GetBytes(json);
-		return Convert.ToBase64String(bytes);
-	}
-
-	public string DecodeFromClipboardPayload(string base64)
-	{
-		var bytes = Convert.FromBase64String(base64);
-		return Encoding.UTF8.GetString(bytes);
-	}
 
 	public ImportResult ImportFromJson(string json)
 	{
@@ -128,10 +129,29 @@ public class ItemExchangeService : IItemExchangeService
 							items.Add(item);
 						}
 
-						return ImportResult.SucceededTab(items, dto.SackNumber);
+						return ImportResult.SucceededTab(items, dto.SackNumber, dto.IconInfo);
 					}
 
-				case ExportScope.Vault:
+				case ExportScope.MultiSelect:
+				{
+					var dtos = JsonSerializer.Deserialize<List<ItemDto>>(dataElement.GetRawText(), _jsonOptions);
+
+					if (dtos == null || dtos.Count == 0)
+						return ImportResult.Failed("Failed to deserialize multi-select item data.");
+
+					var items = dtos
+						.Select(dto =>
+						{
+							var item = dto.ToItem();
+							_itemProvider?.GetDBData(item);
+							return item;
+						})
+						.ToList();
+
+					return ImportResult.SucceededMultiSelect(items);
+				}
+
+			case ExportScope.Vault:
 					{
 						var dto = JsonSerializer.Deserialize<VaultExportDTO>(dataElement.GetRawText(), _jsonOptions);
 
@@ -139,6 +159,7 @@ public class ItemExchangeService : IItemExchangeService
 							return ImportResult.Failed("Failed to deserialize vault data.");
 
 						var sackItems = new Dictionary<int, List<Item>>();
+						var sackIconInfo = new Dictionary<int, BagButtonIconInfo>();
 						foreach (var sackDto in dto.Sacks)
 						{
 							var itemList = new List<Item>();
@@ -150,9 +171,11 @@ public class ItemExchangeService : IItemExchangeService
 							}
 
 							sackItems[sackDto.SackNumber] = itemList;
+							if (sackDto.IconInfo != null)
+								sackIconInfo[sackDto.SackNumber] = sackDto.IconInfo;
 						}
 
-						return ImportResult.SucceededVault(dto.Name, sackItems);
+						return ImportResult.SucceededVault(dto.Name, sackItems, sackIconInfo);
 					}
 
 				default:
@@ -195,6 +218,22 @@ public class ItemExchangeService : IItemExchangeService
 				sack.AddItem(item);
 			}
 		}
+
+		if (importData.SackIconInfo != null)
+		{
+			foreach (var kvp in importData.SackIconInfo)
+			{
+				int sackNumber = kvp.Key;
+				if (sackNumber < 0 || sackNumber >= vault.NumberOfSacks)
+					continue;
+
+				var sack = vault.GetSack(sackNumber);
+				if (sack == null)
+					continue;
+
+				sack.BagButtonIconInfo = kvp.Value;
+			}
+		}
 	}
 
 	public bool IsPasteBinUrl(string text)
@@ -213,8 +252,7 @@ public class ItemExchangeService : IItemExchangeService
 		if (_pasteBinService == null)
 			throw new InvalidOperationException("PasteBin service is not configured.");
 
-		var payload = EncodeToClipboardPayload(json);
-		return await _pasteBinService.UploadAsync(payload, pasteName);
+		return await _pasteBinService.UploadAsync(json, pasteName);
 	}
 
 	public async Task<string> ImportFromPasteBinAsync(string pasteUrl)
@@ -223,6 +261,6 @@ public class ItemExchangeService : IItemExchangeService
 			throw new InvalidOperationException("PasteBin service is not configured.");
 
 		var payload = await _pasteBinService.FetchPasteAsync(pasteUrl);
-		return DecodeFromClipboardPayload(payload);
+		return payload;
 	}
 }
