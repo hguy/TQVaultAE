@@ -59,15 +59,15 @@ public partial class SackPanel
 		if (this.userContext.CurrentPlayer is not null && !this.userContext.CurrentPlayer.IsImmortalThrone)
 		{
 			autoMoveChoices = autoMoveChoices.Where(loc =>
-					loc != AutoMoveLocation.Stash // There is no Stash on TQ original save
-					&& loc != AutoMoveLocation.Trash // TODO What is that ?
+					loc != Models.AutoMoveLocation.Stash // There is no Stash on TQ original save
+					&& loc != Models.AutoMoveLocation.Trash // TODO What is that ?
 			);
 
 			// You can't move TQIT+ items in Equipement, Sack and inventory
 			if (focusedItem.GameDlc != GameDlc.TitanQuest)
 			{
 				autoMoveChoices = autoMoveChoices.Where(loc =>
-					loc != AutoMoveLocation.Player
+					loc != Models.AutoMoveLocation.Player
 				);
 			}
 		}

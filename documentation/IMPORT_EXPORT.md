@@ -2,6 +2,53 @@
 
 Share items, vault tabs, and entire vaults between players — via clipboard, `.json` files, or PasteBin URL links.
 
+```mermaid
+flowchart TB
+    subgraph Export["Export Flow"]
+        direction TB
+        E1["Right-click Item / Tab Button / Vault Button"] --> E2{"Choose Scope"}
+        E2 -->|Single Item| E3_1["Serialize ItemDto"]
+        E2 -->|Multi-Select| E3_2["Serialize ItemDto[]"]
+        E2 -->|Vault Tab| E3_3["Serialize Tab Items + BagIconInfo"]
+        E2 -->|Full Vault| E3_4["Serialize All Tabs + Vault Name"]
+        E3_1 --> E4{"Choose Channel"}
+        E3_2 --> E4
+        E3_3 --> E4
+        E3_4 --> E4
+        E4 -->|Clipboard| E5_1["Ctrl+C / Copy to Clipboard → JSON on clipboard"]
+        E4 -->|File| E5_2["Save File Dialog → .json on disk"]
+        E4 -->|PasteBin| E5_3["Upload to PasteBin (API key) → URL copied to clipboard"]
+    end
+
+    subgraph Import["Import Flow"]
+        direction TB
+        I1{"Source?"}
+        I1 -->|Clipboard| I2_1["Detect PasteBin URL or raw JSON"]
+        I1 -->|File| I2_2["Open .json file"]
+        I1 -->|PasteBin URL| I2_3["Fetch paste from PasteBin (no API key needed)"]
+        I2_1 --> I3["Parse JSON envelope {formatVersion, scope, data}"]
+        I2_2 --> I3
+        I2_3 --> I3
+        I3 --> I4{"Scope?"}
+        I4 -->|Vault| I5["Show Import Dialog"]
+        I5 --> I6{"Choice?"}
+        I6 -->|Replace| I7["Clear current vault → Place all items"]
+        I6 -->|Create New| I8["Create new vault file → Load and place items"]
+        I6 -->|Cancel| I9["Abort - No changes"]
+        I4 -->|Item / Tab / MultiSelect| I10["Place into active tab"]
+        I10 --> I11{"Original position available?"}
+        I11 -->|Yes| I12["Place at original (X,Y)"]
+        I11 -->|No| I13["Find first open cell"]
+        I13 --> I14{"Found?"}
+        I14 -->|Yes| I12
+        I14 -->|No| I15["Skip item"]
+        I12 --> I16["Show notification: Imported N of M items"]
+        I15 --> I16
+    end
+
+    Export -->|JSON Payload| Import
+```
+
 ---
 
 ## Table of contents
