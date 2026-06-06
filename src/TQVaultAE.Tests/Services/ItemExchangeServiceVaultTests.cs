@@ -186,4 +186,101 @@ public class ItemExchangeServiceVaultTests
 		for (int i = 2; i < 12; i++)
 			vault.Sacks[i].IsEmpty.Should().BeTrue();
 	}
+
+	[Fact]
+	public void ImportVaultInto_WithNullVault_ShouldDoNothing()
+	{
+		var importData = ImportResult.SucceededVault("Test", new Dictionary<int, List<Item>>());
+		var act = () => _service.ImportVaultInto(null, importData);
+		act.Should().NotThrow();
+	}
+
+	[Fact]
+	public void ImportVaultInto_WithNullImportData_ShouldDoNothing()
+	{
+		var vault = new PlayerCollection("Target", "target.vault") { IsVault = true };
+		var act = () => _service.ImportVaultInto(vault, null);
+		act.Should().NotThrow();
+	}
+
+	[Fact]
+	public void ImportVaultInto_WithNullSackItems_ShouldDoNothing()
+	{
+		var vault = new PlayerCollection("Target", "target.vault") { IsVault = true };
+		vault.CreateEmptySacks(3);
+		var importResult = new ImportResult
+		{
+			Success = true,
+			Scope = ExportScope.Vault,
+			SackItems = null,
+			SackIconInfo = null
+		};
+		_service.ImportVaultInto(vault, importResult);
+		vault.Sacks[0].IsEmpty.Should().BeTrue();
+	}
+
+	[Fact]
+	public void ImportVaultInto_WithOutOfRangeSackNumber_ShouldSkip()
+	{
+		var vault = new PlayerCollection("Target", "target.vault") { IsVault = true };
+		vault.CreateEmptySacks(2);
+		var importedItems = new Dictionary<int, List<Item>>
+		{
+			[-1] = new() { new Item { BaseItemId = "neg.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 } },
+			[99] = new() { new Item { BaseItemId = "oor.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 } }
+		};
+		var importResult = ImportResult.SucceededVault("Test", importedItems);
+
+		_service.ImportVaultInto(vault, importResult);
+
+		vault.Sacks[0].IsEmpty.Should().BeTrue();
+		vault.Sacks[1].IsEmpty.Should().BeTrue();
+	}
+
+	[Fact]
+	public void ImportVaultInto_WithBagButtonIconInfo_ShouldPreserveIconInfo()
+	{
+		var vault = new PlayerCollection("Target", "target.vault") { IsVault = true };
+		vault.CreateEmptySacks(3);
+		var iconInfo = new BagButtonIconInfo
+		{
+			Label = "MyTab",
+			DisplayMode = BagButtonDisplayMode.Label
+		};
+		var importedItems = new Dictionary<int, List<Item>>();
+		var sackIconInfo = new Dictionary<int, BagButtonIconInfo> { [0] = iconInfo };
+		var importResult = ImportResult.SucceededVault("Test", importedItems, sackIconInfo);
+
+		_service.ImportVaultInto(vault, importResult);
+
+		vault.Sacks[0].BagButtonIconInfo.Should().NotBeNull();
+		vault.Sacks[0].BagButtonIconInfo.Label.Should().Be("MyTab");
+		vault.Sacks[0].BagButtonIconInfo.DisplayMode.Should().Be(BagButtonDisplayMode.Label);
+	}
+
+	[Fact]
+	public void SerializePlayerCollection_EmptyVault_ShouldSkipEmptySacks()
+	{
+		var vault = new PlayerCollection("EmptyVault", "empty.vault") { IsVault = true };
+		vault.CreateEmptySacks(12);
+
+		var json = _service.SerializePlayerCollection(vault);
+
+		var doc = JsonDocument.Parse(json);
+		var sacks = doc.RootElement.GetProperty("data").GetProperty("sacks");
+		sacks.GetArrayLength().Should().Be(0);
+	}
+
+	[Fact]
+	public void ImportFromJson_WithVaultScope_NoSacks_ShouldSucceed()
+	{
+		var json = """{"formatVersion":1,"scope":"Vault","data":{"name":"Empty","sacks":[]}}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeTrue();
+		result.Scope.Should().Be(ExportScope.Vault);
+		result.VaultName.Should().Be("Empty");
+		result.SackItems.Should().BeEmpty();
+	}
 }

@@ -231,12 +231,187 @@ public class ItemExchangeServiceTests
 	[Fact]
 	public void ImportFromJson_WithUnsupportedScope_ShouldReturnFailure()
 	{
-		var json = "{\"formatVersion\":1,\"scope\":\"unknown\",\"data\":{}}";
+		var json = """{"formatVersion":1,"scope":"unknown","data":{}}""";
 
 		var result = _service.ImportFromJson(json);
 
 		result.Should().NotBeNull();
 		result.Success.Should().BeFalse();
 		result.ErrorMessage.Should().Contain("Unsupported scope");
+	}
+
+	[Fact]
+	public void SerializeItems_MultiSelectScope_ShouldProduceValidExportFormat()
+	{
+		var items = new List<Item>
+		{
+			new Item
+			{
+				BaseItemId = "records/gear/armor/helm.dbr",
+				Seed = 1,
+				PositionX = 0,
+				PositionY = 0,
+				Width = 2,
+				Height = 2
+			},
+			new Item
+			{
+				BaseItemId = "records/gear/weapon/sword.dbr",
+				Seed = 2,
+				PositionX = 5,
+				PositionY = 5,
+				Width = 1,
+				Height = 3
+			}
+		};
+
+		var json = _service.SerializeItems(items);
+
+		json.Should().NotBeNullOrEmpty();
+
+		var doc = JsonDocument.Parse(json);
+		doc.RootElement.GetProperty("formatVersion").GetInt32().Should().Be(1);
+		doc.RootElement.GetProperty("scope").GetString().Should().Be("MultiSelect");
+
+		var data = doc.RootElement.GetProperty("data");
+		data.GetArrayLength().Should().Be(2);
+		data[0].GetProperty("baseName").GetString().Should().Be("records/gear/armor/helm.dbr");
+		data[1].GetProperty("baseName").GetString().Should().Be("records/gear/weapon/sword.dbr");
+	}
+
+	[Fact]
+	public void ImportFromJson_WithMultiSelectScope_ShouldReturnMultipleItems()
+	{
+		var items = new List<Item>
+		{
+			new Item { BaseItemId = "a.dbr", Seed = 1, PositionX = 0, PositionY = 0, Width = 1, Height = 1 },
+			new Item { BaseItemId = "b.dbr", Seed = 2, PositionX = 1, PositionY = 0, Width = 1, Height = 1 }
+		};
+
+		var json = _service.SerializeItems(items);
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeTrue();
+		result.Scope.Should().Be(ExportScope.MultiSelect);
+		result.Items.Should().HaveCount(2);
+		result.Items[0].BaseItemId.Should().Be("a.dbr");
+		result.Items[1].BaseItemId.Should().Be("b.dbr");
+		result.ImportedCount.Should().Be(2);
+		result.TotalCount.Should().Be(2);
+	}
+
+	[Fact]
+	public void ImportFromJson_WithEmptyMultiSelect_ShouldReturnFailure()
+	{
+		var json = """{"formatVersion":1,"scope":"MultiSelect","data":[]}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeFalse();
+		result.ErrorMessage.Should().Contain("Failed to deserialize multi-select");
+	}
+
+	[Fact]
+	public void SerializeItem_WithDualRelic_ShouldPreserveRelicFields()
+	{
+		var item = new Item
+		{
+			BaseItemId = "records/gear/armor/test.dbr",
+			Seed = 42,
+			PositionX = 0,
+			PositionY = 0,
+			Width = 2,
+			Height = 2,
+			StackSize = 1,
+			relicID = "records/relics/relic1.dbr",
+			RelicBonusId = "records/relics/bonus1.dbr",
+			Var1 = 0,
+			atlantis = true,
+			relic2ID = "records/relics/relic2.dbr",
+			RelicBonus2Id = "records/relics/bonus2.dbr",
+			Var2 = 2035248
+		};
+
+		var json = _service.SerializeItem(item);
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeTrue();
+		result.Scope.Should().Be(ExportScope.Item);
+		result.Item.Should().NotBeNull();
+		result.Item.relicID.Should().Be("records/relics/relic1.dbr");
+		result.Item.RelicBonusId.Should().Be("records/relics/bonus1.dbr");
+		result.Item.relic2ID.Should().Be("records/relics/relic2.dbr");
+		result.Item.RelicBonus2Id.Should().Be("records/relics/bonus2.dbr");
+		result.Item.Var2.Should().Be(2035248);
+	}
+
+	[Fact]
+	public void ImportFromJson_WithMissingFormatVersion_ShouldReturnFailure()
+	{
+		var json = """{"scope":"Item","data":{}}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeFalse();
+		result.ErrorMessage.Should().Contain("Invalid or unsupported export format");
+	}
+
+	[Fact]
+	public void ImportFromJson_WithWrongFormatVersion_ShouldReturnFailure()
+	{
+		var json = """{"formatVersion":99,"scope":"Item","data":{}}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeFalse();
+		result.ErrorMessage.Should().Contain("Invalid or unsupported export format");
+	}
+
+	[Fact]
+	public void ImportFromJson_WithMissingScope_ShouldReturnFailure()
+	{
+		var json = """{"formatVersion":1,"data":{}}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeFalse();
+		result.ErrorMessage.Should().Contain("Missing scope");
+	}
+
+	[Fact]
+	public void ImportFromJson_WithMissingData_ShouldReturnFailure()
+	{
+		var json = """{"formatVersion":1,"scope":"Item"}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeFalse();
+		result.ErrorMessage.Should().Contain("Missing data");
+	}
+
+	[Fact]
+	public void ImportFromJson_WithEmptyString_ShouldReturnFailure()
+	{
+		var result = _service.ImportFromJson(string.Empty);
+
+		result.Success.Should().BeFalse();
+	}
+
+	[Fact]
+	public void ImportFromJson_WithNull_ShouldThrowArgumentNullException()
+	{
+		var act = () => _service.ImportFromJson(null);
+
+		act.Should().Throw<ArgumentNullException>();
+	}
+
+	[Fact]
+	public void ImportFromJson_WithInvalidItemData_ShouldReturnFailure()
+	{
+		var json = """{"formatVersion":1,"scope":"Item","data":{"baseName":123}}""";
+
+		var result = _service.ImportFromJson(json);
+
+		result.Success.Should().BeFalse();
 	}
 }
