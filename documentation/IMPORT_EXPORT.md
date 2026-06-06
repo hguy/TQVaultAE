@@ -33,7 +33,7 @@ You can export items at four levels:
 | **Single item** | Right-click an item → `Share to` → `Export Item` | Exports the selected item with all its properties (seed, affixes, relic sockets, stack size, position, etc.). |
 | **Multi-select** | **Ctrl+LeftClick** to select multiple items → Right-click → `Share to` | Exports all selected items as a single `MultiSelect`-scoped JSON payload. |
 | **Vault tab** | Right-click a **tab button** (BagButton) → `Share Tab` | Exports all items within that tab, preserving their positions, grid layout, and bag icon info. |
-| **Full vault** | Click the **export button** (`...`) next to the vault combo box → `Share Vault` | Exports all tabs and all their contents, including the vault name. |
+| **Full vault** | Click the **button** next to the vault combo box → `Share Vault` | Exports all tabs and all their contents, including the vault name. |
 
 ---
 
@@ -47,7 +47,8 @@ Every scope supports three transport channels.
 - **Tab:** Right-click a tab button → `Share Tab` → `Copy to Clipboard`.
 - **Vault:** Click the vault export button → `Share Vault to Clipboard`.
 
-The export data is serialized as JSON and placed on your clipboard. You can paste this directly into a text editor, chat, or another TQVaultAE instance.
+The export data is serialized as JSON and placed on your clipboard. 
+You can paste this directly into a text editor, chat, another bag, or another TQVaultAE instance.
 
 #### <a id="file-export"></a>File Export (.json)
 
@@ -84,8 +85,8 @@ On success, items are placed into the currently active vault tab. On failure, a 
 
 Two entry points:
 
-- **Tab button:** Right-click any tab button (even empty tabs) → `Import from File...`
-- **Vault combo box:** Click the `...` button next to the vault selector → `Import from File...`
+- **Tab button:** Right-click any tab button → `Import from File...`
+- **Vault combo box:** Click the button next to the vault selector → `Import from File...`
 
 A file picker opens for `.json` files. The content is parsed identically to clipboard import, and items are placed into the currently active vault tab.
 
@@ -97,12 +98,12 @@ A file picker opens for `.json` files. The content is parsed identically to clip
 
 ### <a id="vault-import"></a>Full Vault Import Strategy
 
-When importing a **full vault** (`scope: "Vault"`), a dialog presents three options:
+When importing a **full vault**, a dialog presents three options:
 
 | Option | Behavior |
 |--------|----------|
 | **Replace** (Yes) | Clears all tabs in the current vault and imports the source data. If the target vault is **not empty**, a second confirmation warns: *"WARNING: This will erase all items in the current vault. Continue?"* |
-| **Create New Vault** (No) | Creates a new vault file with the imported vault's name. A numeric suffix is appended if the name already exists (e.g., `MyVault (2)`). The new vault is automatically loaded. |
+| **Create New Vault** (No) | Creates a new vault file with the imported vault's name. A timestamp suffix is appended (e.g., `MyVault_20260714_153022`) to avoid collisions. The new vault is automatically loaded. |
 | **Cancel** | Aborts the import. Nothing is changed. |
 
 Partial tab merge into an existing vault is not supported — it's all-or-nothing.
@@ -113,7 +114,7 @@ Partial tab merge into an existing vault is not supported — it's all-or-nothin
 
 When importing a scope other than `Vault` (i.e. `Item`, `Tab`, or `MultiSelect`), items are placed directly into the **currently active vault tab** using the placement logic below.
 
-For **Tab** exports, the original bag button icon (`BagButtonIconInfo` — label, icon set, display mode) is restored on the active tab's bag button after import.
+For **Tab** exports, the original bag button icon (label, icon set, display mode) is restored on the active tab's bag button after import.
 
 ---
 
@@ -144,7 +145,7 @@ All exports use a JSON envelope with the following structure:
 - **`formatVersion`** — Always `1`.
 - **`scope`** — Identifies the export type.
 - **`data`** — Scope-specific payload:
-  - `Item`: Single `ItemDto` object (includes `positionX`, `positionY`, `width`, `height`, `seed`, `baseName`, `prefixName`, `suffixName`, `relicName`, `relicBonus`, `completionBonus`, `stackSize`, `isSeedRequired`, `isPrefixRequired`, `isSuffixRequired`).
+  - `Item`: Single `ItemDto` object (includes `stackSize`, `seed`, `baseName`, `prefixName`, `suffixName`, `relicName`, `relicBonus`, `var1`, `relicName2`, `relicBonus2`, `var2`, `pointX`, `pointY`, `width`, `height`).
   - `MultiSelect`: Array of `ItemDto` objects.
   - `Tab`: Array of `ItemDto` objects plus `sackNumber` and optional `iconInfo` (bag button label, display mode, icon RecordIds).
   - `Vault`: Array of sack arrays plus vault `name`.
