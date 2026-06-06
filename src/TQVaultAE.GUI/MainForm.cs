@@ -835,29 +835,20 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		bagPlayer.Where(p => p.Player.ArgumentException != null).ToList()
 			.ForEach(result =>
 			{
-				if (result.Player.ArgumentException != null)
-				{
-					string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.PlayerFile, result.Player.ArgumentException.Message);
-					MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-				}
+				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.PlayerFile, result.Player.ArgumentException.Message);
+				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 			});
 		bagPlayerStashes.Where(p => p.Stash.ArgumentException != null).ToList()
 			.ForEach(result =>
 			{
-				if (result.Stash.ArgumentException != null)
-				{
-					string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
-					MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-				}
+				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
+				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 			});
 		bagVault.Where(p => p.ArgumentException != null).ToList()
 			.ForEach(result =>
 			{
-				if (result.ArgumentException != null)
-				{
-					string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.Filename, result.ArgumentException.Message);
-					MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-				}
+				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.Filename, result.ArgumentException.Message);
+				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 			});
 
 		this.comboBoxCharacter.RefreshItems();
@@ -1392,6 +1383,9 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			ShowImageMargin = false
 		};
 
+		vaultExportContextMenu.Items.Add(Resources.MainFormMaintainVault, null, (s, e) => this.MaintainVaultFilesDialog());
+
+		vaultExportContextMenu.Items.Add("-");
 		vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuExportTabFile, null, ExportVaultToFileClicked);
 		vaultExportContextMenu.Items.Add(Resources.PlayerPanelMenuExportTabClipboard, null, ExportVaultToClipboardClicked);
 
@@ -1407,8 +1401,6 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			vaultExportContextMenu.Show(vaultExportButton, new Point(0, vaultExportButton.Height));
 		};
 
-		this.toolTip.SetToolTip(vaultExportButton, "🔗 Share Vault");
-
 		this.flowLayoutPanelVaultSelector.Controls.Add(vaultExportButton);
 
 		ScaleControl(this.UIService, vaultExportButton);
@@ -1419,13 +1411,13 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		var vault = this.vaultPanel?.Player;
 		if (vault == null)
 		{
-			this.UIService.ShowWarning("No vault is loaded.");
+			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
 			return;
 		}
 
 		using var saveDialog = new SaveFileDialog
 		{
-			Filter = "JSON files (*.json)|*.json",
+			Filter = Resources.GlobalJsonFileFilter,
 			FileName = $"{vault.PlayerName}.json",
 			DefaultExt = "json"
 		};
@@ -1436,12 +1428,12 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			{
 				var json = this.itemExchangeService.SerializePlayerCollection(vault);
 				System.IO.File.WriteAllText(saveDialog.FileName, json);
-				this.UIService.NotifyUser($"Vault exported to {saveDialog.FileName}");
+				this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ExportVaultSuccessFile, saveDialog.FileName));
 			}
 			catch (Exception ex)
 			{
 				Log.LogError(ex, "Failed to export vault to file");
-				this.UIService.ShowError("Failed to export vault to file.");
+				this.UIService.ShowError(Resources.ExportVaultFailFile);
 			}
 		}
 	}
@@ -1451,7 +1443,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		var vault = this.vaultPanel?.Player;
 		if (vault == null)
 		{
-			this.UIService.ShowWarning("No vault is loaded.");
+			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
 			return;
 		}
 
@@ -1459,12 +1451,12 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		{
 			var json = this.itemExchangeService.SerializePlayerCollection(vault);
 			Clipboard.SetText(json);
-			this.UIService.NotifyUser("Vault exported to clipboard.");
+			this.UIService.NotifyUser(Resources.ExportVaultSuccessClipboard);
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Failed to export vault to clipboard");
-			this.UIService.ShowError("Failed to export vault to clipboard.");
+			this.UIService.ShowError(Resources.ExportVaultFailClipboard);
 		}
 	}
 
@@ -1473,7 +1465,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		var vault = this.vaultPanel?.Player;
 		if (vault == null)
 		{
-			this.UIService.ShowWarning("No vault is loaded.");
+			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
 			return;
 		}
 
@@ -1482,12 +1474,12 @@ Item Debug Level: {USettings.ItemDebugLevel}
 			var json = this.itemExchangeService.SerializePlayerCollection(vault);
 			var url = await this.itemExchangeService.ExportToPasteBinAsync(json, vault.PlayerName);
 			Clipboard.SetText(url);
-			this.UIService.NotifyUser($"Vault exported to PasteBin: {url}");
+			this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ExportVaultSuccessPasteBin, url));
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Failed to export vault to PasteBin");
-			this.UIService.ShowError($"Failed to export vault to PasteBin: {ex.Message}");
+			this.UIService.ShowError(string.Format(CultureInfo.InvariantCulture, Resources.ExportVaultFailPasteBin, ex.Message));
 		}
 	}
 
@@ -1500,7 +1492,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 	{
 		using var dialog = new OpenFileDialog
 		{
-			Filter = "JSON files (*.json)|*.json",
+			Filter = Resources.GlobalJsonFileFilter,
 			DefaultExt = "json",
 			FileName = "*.json"
 		};
@@ -1527,7 +1519,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Failed to import from file");
-			this.UIService.NotifyUser("Failed to import from file.");
+			this.UIService.NotifyUser(Resources.ImportFailFile);
 		}
 	}
 
@@ -1535,7 +1527,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 	{
 		if (this.vaultPanel?.Player == null)
 		{
-			this.UIService.ShowError("No vault is loaded to import into.");
+			this.UIService.ShowError(Resources.GlobalNoVaultImportTarget);
 			return;
 		}
 
@@ -1543,7 +1535,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		var sack = sackPanel.Sack;
 		if (sack == null)
 		{
-			this.UIService.ShowError("No active tab to import into.");
+			this.UIService.ShowError(Resources.GlobalNoActiveTabImport);
 			return;
 		}
 
@@ -1588,7 +1580,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 
 		sack.IsModified = true;
 		this.vaultPanel.Refresh();
-		this.UIService.NotifyUser($"Imported {imported} of {importResult.TotalCount} items.");
+		this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ImportSuccessCount, imported, importResult.TotalCount));
 	}
 
 	private void HandleVaultImportFromJson(ImportResult importResult)
@@ -1596,44 +1588,44 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		var targetVault = this.vaultPanel?.Player;
 		if (targetVault == null)
 		{
-			this.UIService.ShowError("No vault is loaded to import into.");
+			this.UIService.ShowError(Resources.GlobalNoVaultImportTarget);
 			return;
 		}
 
-		var dialogResult = MessageBox.Show(
-			$"Import vault \"{importResult.VaultName}\"?\n\n" +
-			"Replace — Clear all tabs and import.\n" +
-			"Create New Vault — Create a new vault file with this data.\n" +
-			"Cancel — Abort the import.",
-			"Import Vault",
-			MessageBoxButtons.YesNoCancel,
-			MessageBoxIcon.Question);
+		var replaceButton = new TaskDialogButton(Resources.ImportVaultReplaceButton);
+		var createButton = new TaskDialogButton(Resources.ImportVaultCreateNewButton);
 
-		if (dialogResult == DialogResult.Cancel)
+		var page = new TaskDialogPage
+		{
+			Text = string.Format(CultureInfo.InvariantCulture, Resources.ImportVaultDialogText, importResult.VaultName),
+			Heading = Resources.ImportVaultHeading,
+			Icon = TaskDialogIcon.Information,
+			Buttons = { replaceButton, createButton, TaskDialogButton.Cancel }
+		};
+
+		var result = TaskDialog.ShowDialog(page);
+
+		if (result == TaskDialogButton.Cancel)
 			return;
 
-		if (dialogResult == DialogResult.No)
+		if (result == createButton)
 		{
 			var baseName = importResult.VaultName;
-			var newName = baseName;
-			int suffix = 1;
-
-			var existingVaults = this.vaultService.GetVaultList();
-			while (existingVaults.Contains(newName, StringComparer.OrdinalIgnoreCase))
-			{
-				newName = $"{baseName} ({++suffix})";
-			}
+			var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
+			var newName = $"{baseName}_{timestamp}";
 
 			var newVault = this.vaultService.CreateVault(newName);
 			this.itemExchangeService.ImportVaultInto(newVault, importResult);
 			foreach (var sack in newVault)
 				sack.IsModified = true;
 
+			this.vaultService.SaveVault(newVault, newName);
+
 			this.GetVaultList(false);
 			this.vaultListComboBox.SelectedItem = newName;
 			this.LoadVault(newName, false);
 
-			this.UIService.NotifyUser($"Created new vault \"{newName}\" with imported data.");
+			this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ImportVaultSuccessCreate, newName));
 			return;
 		}
 
@@ -1651,7 +1643,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		if (nonEmpty)
 		{
 			var warning = this.UIService.ShowWarning(
-				"WARNING: This will erase all items in the current vault. Continue?",
+				Resources.ImportVaultWarning,
 				null,
 				ShowMessageButtons.OKCancel);
 
@@ -1676,7 +1668,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		}
 
 		var totalItems = importResult.SackItems?.Sum(kvp => kvp.Value.Count) ?? 0;
-		this.UIService.NotifyUser($"Imported {totalItems} items into vault.");
+		this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ImportVaultSuccess, totalItems));
 	}
 
 	#endregion

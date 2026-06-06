@@ -5723,5 +5723,186 @@ namespace TQVaultAE.Presentation {
                 return ResourceManager.GetString("VaultProgressText", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No vault is loaded..
+        /// </summary>
+        public static string GlobalNoVaultLoaded {
+            get {
+                return ResourceManager.GetString("GlobalNoVaultLoaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No vault is loaded to import into..
+        /// </summary>
+        public static string GlobalNoVaultImportTarget {
+            get {
+                return ResourceManager.GetString("GlobalNoVaultImportTarget", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to No active tab to import into..
+        /// </summary>
+        public static string GlobalNoActiveTabImport {
+            get {
+                return ResourceManager.GetString("GlobalNoActiveTabImport", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to JSON files (*.json)|*.json.
+        /// </summary>
+        public static string GlobalJsonFileFilter {
+            get {
+                return ResourceManager.GetString("GlobalJsonFileFilter", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Replace.
+        /// </summary>
+        public static string ImportVaultReplaceButton {
+            get {
+                return ResourceManager.GetString("ImportVaultReplaceButton", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Create New Vault.
+        /// </summary>
+        public static string ImportVaultCreateNewButton {
+            get {
+                return ResourceManager.GetString("ImportVaultCreateNewButton", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Import Vault.
+        /// </summary>
+        public static string ImportVaultHeading {
+            get {
+                return ResourceManager.GetString("ImportVaultHeading", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to WARNING: This will erase all items in the current vault. Continue?.
+        /// </summary>
+        public static string ImportVaultWarning {
+            get {
+                return ResourceManager.GetString("ImportVaultWarning", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to export vault to file..
+        /// </summary>
+        public static string ExportVaultFailFile {
+            get {
+                return ResourceManager.GetString("ExportVaultFailFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to export vault to clipboard..
+        /// </summary>
+        public static string ExportVaultFailClipboard {
+            get {
+                return ResourceManager.GetString("ExportVaultFailClipboard", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to export vault to PasteBin: {0}.
+        /// </summary>
+        public static string ExportVaultFailPasteBin {
+            get {
+                return ResourceManager.GetString("ExportVaultFailPasteBin", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to import from file..
+        /// </summary>
+        public static string ImportFailFile {
+            get {
+                return ResourceManager.GetString("ImportFailFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Vault exported to {0}.
+        /// </summary>
+        public static string ExportVaultSuccessFile {
+            get {
+                return ResourceManager.GetString("ExportVaultSuccessFile", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Vault exported to clipboard..
+        /// </summary>
+        public static string ExportVaultSuccessClipboard {
+            get {
+                return ResourceManager.GetString("ExportVaultSuccessClipboard", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Vault exported to PasteBin: {0}.
+        /// </summary>
+        public static string ExportVaultSuccessPasteBin {
+            get {
+                return ResourceManager.GetString("ExportVaultSuccessPasteBin", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Import vault &quot;{0}&quot;?.
+        /// </summary>
+        public static string ImportVaultDialogText {
+            get {
+                return ResourceManager.GetString("ImportVaultDialogText", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Created new vault &quot;{0}&quot; with imported data..
+        /// </summary>
+        public static string ImportVaultSuccessCreate {
+            get {
+                return ResourceManager.GetString("ImportVaultSuccessCreate", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Imported {0} of {1} items..
+        /// </summary>
+        public static string ImportSuccessCount {
+            get {
+                return ResourceManager.GetString("ImportSuccessCount", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Imported {0} items into vault..
+        /// </summary>
+        public static string ImportVaultSuccess {
+            get {
+                return ResourceManager.GetString("ImportVaultSuccess", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to 🔗 Share Vault.
+        /// </summary>
+        public static string ShareVaultTooltip {
+            get {
+                return ResourceManager.GetString("ShareVaultTooltip", resourceCulture);
+            }
+        }
+
     }
 }
