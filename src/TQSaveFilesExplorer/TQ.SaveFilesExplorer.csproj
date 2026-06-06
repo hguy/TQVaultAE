@@ -15,6 +15,7 @@
 		<AssemblyProduct>Titan Quest Save Files Explorer</AssemblyProduct>
 		<AssemblyCopyright>Copyright © 2019 by hguy</AssemblyCopyright>
 		<ComVisible>false</ComVisible>
+		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
 	</PropertyGroup>
 
 	<ItemGroup>
