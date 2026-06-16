@@ -45,7 +45,7 @@ if (Test-Path $buildPropsFile) {
     $originalContent = $content
     
     if ($content -match '<Version[^>]*>.*</Version>') {
-        $content = $content -replace '<Version[^>]*>.*</Version>', "<Version Condition=\"'`$(IsPackable)' != 'false'\">$newVersion</Version>"
+        $content = $content -replace '<Version[^>]*>.*</Version>', ('<Version Condition="''$(IsPackable)'' != ''false''">' + $newVersion + '</Version>')
         
         if ($content -ne $originalContent) {
             Set-Content -Path $buildPropsFile -Value $content -Encoding UTF8 -NoNewline
