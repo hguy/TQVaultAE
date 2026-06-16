@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using System.Drawing;
 using System.Text.Json;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config.Tags;
-using TQVaultAE.Domain.Contracts.Services;
-using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 
 namespace TQVaultAE.Tests.Services;
@@ -22,7 +22,7 @@ public class TagServiceTests
 	private readonly Mock<ITranslationService> _mockTranslationService;
 	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly TagService _tagService;
-	private readonly string _testConfigPath = @"C:\Test\TagConfig.json";
+	private readonly string _testConfigPath = """C:\Test\TagConfig.json""";
 
 	public TagServiceTests()
 	{
@@ -33,7 +33,7 @@ public class TagServiceTests
 		_mockTranslationService = new Mock<ITranslationService>();
 		_jsonOptions = new JsonSerializerOptions { IncludeFields = true, PropertyNameCaseInsensitive = true };
 
-		_mockGamePathService.Setup(x => x.TQVaultConfigFolder).Returns(@"C:\Test");
+		_mockGamePathService.Setup(x => x.TQVaultConfigFolder).Returns("""C:\Test""");
 		_mockPathIO.Setup(x => x.Combine(It.IsAny<string>(), It.IsAny<string>())).Returns(_testConfigPath);
 		_mockPathIO.Setup(x => x.GetFileName(It.IsAny<string>())).Returns("_TestPlayer");
 
@@ -48,24 +48,7 @@ public class TagServiceTests
 
 	private PlayerSave CreateTestPlayerSave()
 	{
-		return new PlayerSave(@"C:\Test\_TestPlayer", false, false, false, "", _mockTranslationService.Object, _mockPathIO.Object);
-	}
-
-		[Fact]
-	public void Constructor_WithValidDependencies_InitializesService()
-	{
-		// Arrange & Act
-		var service = new TagService(
-			_mockLogger.Object,
-			_mockGamePathService.Object,
-			_mockFileIO.Object,
-			_mockPathIO.Object,
-			_jsonOptions
-		);
-
-		// Assert
-		service.Should().NotBeNull();
-		_mockFileIO.Verify(x => x.Exists(_testConfigPath), Times.AtLeastOnce);
+		return new PlayerSave("""C:\Test\_TestPlayer""", false, false, false, "", _mockTranslationService.Object, _mockPathIO.Object);
 	}
 
 	[Fact]

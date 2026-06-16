@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.Json.Serialization;
-using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Domain.Entities;
 
@@ -12,6 +8,7 @@ public class BagButtonIconInfo
 	/// BagButton display mode
 	/// </summary>
 	[JsonPropertyName("mode")]
+	[JsonConverter(typeof(JsonStringEnumConverter))]
 	public BagButtonDisplayMode DisplayMode;
 	/// <summary>
 	/// BagButton Custom label 

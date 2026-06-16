@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Xml.Serialization;
 
 namespace TQVaultAE.Config;
@@ -134,6 +133,12 @@ public class UserSettings
 
 	[XmlElement(ElementName = nameof(EnableOriginalTQSupport))]
 	public bool EnableOriginalTQSupport { get; set; } = false;
+
+	[XmlElement(ElementName = nameof(PasteBinApiKey))]
+	public string PasteBinApiKey { get; set; } = string.Empty;
+
+	[XmlElement(ElementName = nameof(PasteBinExpiration))]
+	public string PasteBinExpiration { get; set; } = "1M";
 
 	#endregion
 
