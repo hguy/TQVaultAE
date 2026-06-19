@@ -1,35 +1,4 @@
 <Solution>
-  <!-- 
-    Slim Solution File (Modern Format)
-    
-    This is the modern XML-based solution format introduced in Visual Studio 2022.
-    Benefits:
-    - Human-readable XML instead of custom format
-    - ~80% smaller file size
-    - Easier Git merges (no GUID conflicts)
-    - Auto-discovers project dependencies
-    
-    Usage:
-    - Build: dotnet build TQVaultAE.slnx
-  -->
-  
-  <!-- Executables -->
-  <Project Path="src\ARZExplorer\ArzExplorer.csproj" />
-  <Project Path="src\TQVaultAE.GUI\TQVaultAE.GUI.csproj" />
-  <Project Path="src\TQSaveFilesExplorer\TQ.SaveFilesExplorer.csproj" />
-  <Project Path="src\TQVaultAE.Services.Win32\TQVaultAE.Services.Win32.csproj" />
-  
-  <!-- Libraries -->
-  <Project Path="src\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
-  <Project Path="src\TQVaultAE.Services\TQVaultAE.Services.csproj" />
-  <Project Path="src\TQVaultAE.Application\TQVaultAE.Application.csproj" />
-  <Project Path="src\TQVaultAE.Data\TQVaultAE.Data.csproj" />
-  <Project Path="src\TQVaultAE.Presentation\TQVaultAE.Presentation.csproj" />
-  <Project Path="src\TQVaultAE.Config\TQVaultAE.Config.csproj" />
-  <Project Path="src\TQVaultAE.Logs\TQVaultAE.Logs.csproj" />
-  
-  <!-- Tests -->
-  <Project Path="src\TQVaultAE.Tests\TQVaultAE.Tests.csproj" />
   
   <!-- Folders -->
   <Folder Name="/Solution Items/" Id="solution-items">
@@ -57,4 +26,21 @@
     <File Path=".github\scripts\Update-Version.ps1" />
     <File Path="version-info.json" />
   </Folder>
+  <Project Path="src/TQVaultAE.GUI.Next/TQVaultAE.GUI.Next.Android/TQVaultAE.GUI.Next.Android.csproj" Id="2fb11634-3560-4bd3-aae8-8577a851bcc7" />
+  <Project Path="src/TQVaultAE.GUI.Next/TQVaultAE.GUI.Next.Browser/TQVaultAE.GUI.Next.Browser.csproj" Id="e105a740-5ec3-4e21-8bf6-4cafd0804315" />
+  <Project Path="src/TQVaultAE.GUI.Next/TQVaultAE.GUI.Next.Desktop/TQVaultAE.GUI.Next.Desktop.csproj" Id="f06f49ac-5608-4f0a-82e4-6d94ac071037" />
+  <Project Path="src/TQVaultAE.GUI.Next/TQVaultAE.GUI.Next.iOS/TQVaultAE.GUI.Next.iOS.csproj" Id="352769b4-b232-4e95-bd6b-75b7bb4a15f4" />
+  <Project Path="src/TQVaultAE.GUI.Next/TQVaultAE.GUI.Next/TQVaultAE.GUI.Next.csproj" Id="d646aaa1-b0ec-41e5-bf81-e5150ad139ff" />
+  <Project Path="src\ARZExplorer\ArzExplorer.csproj" />
+  <Project Path="src\TQSaveFilesExplorer\TQ.SaveFilesExplorer.csproj" />
+  <Project Path="src\TQVaultAE.Application\TQVaultAE.Application.csproj" />
+  <Project Path="src\TQVaultAE.Config\TQVaultAE.Config.csproj" />
+  <Project Path="src\TQVaultAE.Data\TQVaultAE.Data.csproj" />
+  <Project Path="src\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
+  <Project Path="src\TQVaultAE.GUI\TQVaultAE.GUI.csproj" />
+  <Project Path="src\TQVaultAE.Logs\TQVaultAE.Logs.csproj" />
+  <Project Path="src\TQVaultAE.Presentation\TQVaultAE.Presentation.csproj" />
+  <Project Path="src\TQVaultAE.Services.Win32\TQVaultAE.Services.Win32.csproj" />
+  <Project Path="src\TQVaultAE.Services\TQVaultAE.Services.csproj" />
+  <Project Path="src\TQVaultAE.Tests\TQVaultAE.Tests.csproj" />
 </Solution>

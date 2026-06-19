@@ -1,0 +1,11 @@
+﻿<Solution>
+  <Project Path="TQVaultAE.GUI.Next.Android/TQVaultAE.GUI.Next.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="TQVaultAE.GUI.Next.Browser/TQVaultAE.GUI.Next.Browser.csproj" />
+  <Project Path="TQVaultAE.GUI.Next.Desktop/TQVaultAE.GUI.Next.Desktop.csproj" />
+  <Project Path="TQVaultAE.GUI.Next.iOS/TQVaultAE.GUI.Next.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="TQVaultAE.GUI.Next/TQVaultAE.GUI.Next.csproj" />
+</Solution>
