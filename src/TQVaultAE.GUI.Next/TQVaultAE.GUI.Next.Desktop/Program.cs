@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Diagnostics;
+using AvaloniaMcp.Diagnostics;
 using System;
 using Avalonia.Themes.Fluent;
 using TQVaultAE.GUI.Next.Views;
@@ -27,6 +29,7 @@ namespace TQVaultAE.GUI.Next.Desktop
 				.UsePlatformDetect()
 #if DEBUG
 				.WithDeveloperTools()
+				.UseMcpDiagnostics()
 #endif
 				.WithInterFont()
 				.LogToTrace();

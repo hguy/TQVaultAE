@@ -1,0 +1,23 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "mcp": {
+        "avalonia-ui-mcp": {
+            "type": "local",
+            "enabled": true,
+            "description": "Project scaffolding, XAML validation, WPF migration, security patterns, performance analysis for AvaloniaUI (15+ tools)",
+            "command": ["docker", "run", "--rm", "-i", "ghcr.io/decriptor/avaloniaui.mcp:latest"]
+        },
+        "avalonia-mcp": {
+            "type": "local",
+            "enabled": true,
+            "description": "Runtime debugger for Avalonia apps: inspect visual/logical tree, debug bindings, interact with controls, screenshot (15 tools). Requires .UseMcpDiagnostics() in app",
+            "command": ["dotnet", "tool", "run", "--global", "avalonia-mcp"]
+        },
+        "codebase-memory-mcp": {
+            "type": "local",
+            "enabled": true,
+            "description": "High-performance code intelligence MCP server. Indexes codebase into a persistent knowledge graph — 158 languages, sub-ms queries, 14 tools (search, trace, architecture, dead code, Cypher queries). Single static binary, zero dependencies.",
+            "command": ["C:/Users/hguya/AppData/Local/Programs/codebase-memory-mcp/codebase-memory-mcp.exe"]
+        }
+    }
+}

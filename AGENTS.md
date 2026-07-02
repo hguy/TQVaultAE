@@ -138,6 +138,76 @@ Application (DTOs, Results, Search)
 3. Follow Arrange-Act-Assert pattern
 4. Verify actual behavior, not property assignments
 
+## Avalonia Development Tools
+
+### Skill
+- **`avalonia` skill** — loaded via `.agents/skills/avalonia/SKILL.md` with `skill({ name: "avalonia" })`. Covers MVVM, XAML, data binding, styling, theming, custom controls, platform-specific. Resources for deep dives: mvvm-databinding, controls-reference, styling-guide, reactive-animations, custom-controls-advanced, platform-specific.
+
+### MCP Servers (configured in opencode.jsonc)
+
+#### `codebase-memory-mcp` — Code Intelligence (Always Use First)
+Indexed project: **D-GitRepo-TQVaultAE** (10,675 nodes, 31,087 edges).
+
+**Before** writing any code or searching with grep/glob, use these tools:
+- `search_graph(query="...", project="D-GitRepo-TQVaultAE")` — natural language search for functions, classes, routes. Beats grep for discovery.
+- `trace_path(function_name="...", project="D-GitRepo-TQVaultAE")` — follow callers/callees, data flow, cross-service calls. Use for impact analysis before modifying code.
+- `get_architecture(project="D-GitRepo-TQVaultAE")` — overview of packages, services, dependencies, and Leiden clusters (de-facto modules).
+- `query_graph(query="...", project="D-GitRepo-TQVaultAE")` — arbitrary Cypher queries for complex patterns (e.g. high cyclomatic complexity, deep nesting, dead code).
+- `search_code(pattern="...", project="D-GitRepo-TQVaultAE")` — grep enriched with graph context, deduplicated by function.
+- `get_code_snippet(qualified_name="...", project="D-GitRepo-TQVaultAE")` — read source by qualified name from search_graph results.
+
+**Workflow**: search_graph → get_code_snippet → trace_path (modify) → verify.
+
+#### `avalonia-ui-mcp` — XAML & Project Tooling (Docker required)
+Use for:
+- `ValidateXaml(xamlContent)` — validate XAML syntax before committing
+- `GenerateTheme(...)` / `GenerateAnimation(...)` — scaffolding
+- `ConvertWpfXamlToAvalonia(...)` — migration from WPF
+- `GenerateResponsiveDesign(...)` / `GenerateCustomControl(...)` — code generation
+
+#### `avalonia-mcp` — Runtime Debugger (App must be running)
+`AvaloniaMcp.Diagnostics` NuGet package + `.UseMcpDiagnostics()` already wired in `Program.cs` under `#if DEBUG`.
+
+Global tool installed: `avalonia-mcp` v0.4.0.
+
+Use after launching the app:
+```
+avalonia-mcp cli list_windows
+avalonia-mcp cli get_visual_tree --maxDepth 5
+avalonia-mcp cli get_binding_errors
+avalonia-mcp cli get_data_context --controlId "#MyControl"
+avalonia-mcp cli take_screenshot
+```
+
+## Available Subagents
+
+These specialist agents are available as primary (Tab key) or subagent (`task()`) and are defined in `.opencode/agents/`. Use for complex, focused work:
+
+### `dotnet-contribution-dotnet-architect`
+Expert .NET backend architect for C#, ASP.NET Core, EF Core, Dapper, DI, and performance. Use when:
+- Designing new services or refactoring existing ones
+- Complex DI registration decisions
+- Performance optimization of .NET code
+- API design and data access patterns
+
+### `code-documentation-code-reviewer`
+Elite code review for security, performance, architecture, testing, and accessibility. Use when:
+- Reviewing PRs or large changes before commit
+- Auditing code quality across the project
+- Need structured finding reports with severity tiers
+
+### `error-debugging-debugger`
+Systematic debugger for errors, test failures, and unexpected behavior. Use when:
+- A test is failing and root cause isn't obvious
+- Investigating runtime exceptions or logic bugs
+- Need step-by-step reproduction and fix
+
+### `backend-development-test-automator`
+Creates comprehensive test suites (unit, integration, E2E). Use when:
+- Adding tests for new features
+- Improving coverage in existing code
+- Need test fixtures, mocks, or builders
+
 ## Resources
 - GitHub: https://github.com/EtienneLamoureux/TQVaultAE
 - Issues: https://github.com/EtienneLamoureux/TQVaultAE/issues
