@@ -31,6 +31,7 @@
   </Folder>
   <Project Path="src\ARZExplorer\ArzExplorer.csproj" />
   <Project Path="src\TQSaveFilesExplorer\TQ.SaveFilesExplorer.csproj" />
+  <Project Path="src\TQVaultAE.DbCli\TQVaultAE.DbCli.csproj" />
   <Project Path="src\TQVaultAE.Application\TQVaultAE.Application.csproj" />
   <Project Path="src\TQVaultAE.Config\TQVaultAE.Config.csproj" />
   <Project Path="src\TQVaultAE.Data\TQVaultAE.Data.csproj" />
