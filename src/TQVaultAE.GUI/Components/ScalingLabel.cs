@@ -38,6 +38,49 @@ public class ScalingLabel : Label, IScalingControl
 	}
 
 	/// <summary>
+	/// Draws disabled light text dimmed instead of the system dark gray, which is not readable on the dark UI.
+	/// </summary>
+	protected override void OnPaint(PaintEventArgs e)
+	{
+		if (this.Enabled || this.Image is not null || !DisabledTextPainter.Applies(this.ForeColor)) {
+			base.OnPaint(e);
+			return;
+		}
+
+		var flags = TextFormatFlags.PreserveGraphicsClipping | AlignmentFlags(this.TextAlign);
+		if (!this.UseMnemonic)
+			flags |= TextFormatFlags.NoPrefix;
+		if (!this.AutoSize)
+			flags |= TextFormatFlags.WordBreak;
+		if (this.AutoEllipsis)
+			flags |= TextFormatFlags.EndEllipsis;
+
+		var client = this.ClientRectangle;
+		var bounds = new Rectangle(
+			client.X + this.Padding.Left,
+			client.Y + this.Padding.Top,
+			client.Width - this.Padding.Horizontal,
+			client.Height - this.Padding.Vertical);
+
+		TextRenderer.DrawText(e.Graphics, this.Text, this.Font, bounds, DisabledTextPainter.ColorFor(this.ForeColor), flags);
+	}
+
+	private static TextFormatFlags AlignmentFlags(ContentAlignment alignment)
+	{
+		var horizontal = alignment switch {
+			ContentAlignment.TopCenter or ContentAlignment.MiddleCenter or ContentAlignment.BottomCenter => TextFormatFlags.HorizontalCenter,
+			ContentAlignment.TopRight or ContentAlignment.MiddleRight or ContentAlignment.BottomRight => TextFormatFlags.Right,
+			_ => TextFormatFlags.Left,
+		};
+		var vertical = alignment switch {
+			ContentAlignment.MiddleLeft or ContentAlignment.MiddleCenter or ContentAlignment.MiddleRight => TextFormatFlags.VerticalCenter,
+			ContentAlignment.BottomLeft or ContentAlignment.BottomCenter or ContentAlignment.BottomRight => TextFormatFlags.Bottom,
+			_ => TextFormatFlags.Top,
+		};
+		return horizontal | vertical;
+	}
+
+	/// <summary>
 	/// Override of ScaleControl which supports font scaling.
 	/// </summary>
 	/// <param name="factor">SizeF for the scale factor</param>
