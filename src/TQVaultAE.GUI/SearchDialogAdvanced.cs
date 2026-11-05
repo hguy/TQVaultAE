@@ -204,6 +204,8 @@ public partial class SearchDialogAdvanced : VaultForm
 		{
 			if (c is NumericUpDown num && num != numericUpDownMaxElement) num.Value = 0;
 		});
+
+		this.VisibleChanged += this.SearchDialogVisibleChanged;
 	}
 
 	private void CleanAllCheckBoxes()
@@ -260,25 +262,116 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	#endregion
 
+	#region Show & rebuild
+
+	/// <summary>Item database the categories were built from, and its size at that time.</summary>
+	private object? _builtDatabase;
+	private int _builtCount = -1;
+
+	/// <summary>Measures the time from opening the dialog to the categories being ready.</summary>
+	private readonly System.Diagnostics.Stopwatch _openWatch = new();
+
+	/// <summary>Steps run on the UI thread after the item data is built, each one a progress bar step.</summary>
+	private Action[] UiBuildSteps => [
+		this.PopulateCharacters,
+		this.PopulateItemType,
+		this.PopulateRarity,
+		this.PopulateStyle,
+		this.PopulateQuality,
+		this.PopulateVaults,
+		this.PopulateWithCharm,
+		this.PopulateWithRelic,
+		this.PopulateOrigin,
+		this.PopulateSetItems,
+		this.PopulateItemAttributes,
+		this.PopulateBaseAttributes,
+		this.PopulatePrefixName,
+		this.PopulatePrefixAttributes,
+		this.PopulateSuffixName,
+		this.PopulateSuffixAttributes,
+		this.AdjustCheckBoxesWidth,
+		this.AdjustCheckBoxesHeight,
+		() => { this.SetSearchBoxVisibility(true); this.SyncNaveButton(); },
+		this.LoadPersonnalQueries,
+	];
+
 	/// <summary>
-	/// Handler for showing the search dialog.
+	/// The dialog is kept between openings (see <c>MainForm.OpenSearchDialog</c>), and <see cref="Form.Shown"/> is only
+	/// raised the first time, so each opening is detected here.
 	/// </summary>
-	/// <param name="sender">sender object</param>
-	/// <param name="e">EventArgs data</param>
-	private void SearchDialogShown(object sender, EventArgs e)
+	private void SearchDialogVisibleChanged(object sender, EventArgs e)
+	{
+		if (!this.Visible)
+			return;
+
+		this._openWatch.Restart();
+		this.BeginInvoke(this.PrepareForSearch);
+	}
+
+	/// <summary>
+	/// Builds the categories on the first opening, and again only when the item database changed since then;
+	/// otherwise the dialog is shown as it was left.
+	/// </summary>
+	private void PrepareForSearch()
 	{
 		System.Windows.Forms.Application.DoEvents();// Force control rendering (VaultForm stuff like custom borders etc...)
 
-		// Init Data Base
+		var database = this.ItemDatabaseService.ItemDatabase;
+		if (ReferenceEquals(database, this._builtDatabase) && database.Count == this._builtCount)
+		{
+			this.Log.LogInformation("Search dialog reopened in {Elapsed} ms (items unchanged)", this._openWatch.ElapsedMilliseconds);
+			this.scalingTextBoxSearchTerm.Focus();
+			return;
+		}
+
+		if (this.backgroundWorkerBuildDB.IsBusy)
+			return;
+
+		if (this._builtDatabase is not null)
+			this.ClearForRebuild();
+
 		scalingLabelProgress.Text = Resources.SearchBuildingData;
 		scalingLabelProgress.Visible = true;
 
 		vaultProgressBar.Minimum = 0;
-		vaultProgressBar.Maximum = this.ItemDatabaseService.ItemDatabase.Count();
+		vaultProgressBar.Value = 0;
+		vaultProgressBar.Maximum = database.Count + this.UiBuildSteps.Length;
 		vaultProgressBar.Visible = true;
 
 		this.backgroundWorkerBuildDB.RunWorkerAsync();
 	}
+
+	/// <summary>Empties the categories and the current selection, which refer to the previous items.</summary>
+	private void ClearForRebuild()
+	{
+		this._Apply_SelectedFiltersDisabled = true;
+		try
+		{
+			this.SetSearchBoxVisibility(false);
+			this.CleanAllCheckBoxes();
+			this.SelectedFilters.Clear();
+			this.SelectedFiltersSet.Clear();
+			this.QueryResults = [];
+			this.scalingComboBoxQueryList.ResetText();
+			this.ResetQuickFilters();
+			this.ResetRequirements();
+			this.TextBoxSearchTerm_UpdateText_Notrigger(string.Empty);
+			this.scalingLabelFiltersSelected.Text = string.Empty;
+		}
+		finally
+		{
+			this._Apply_SelectedFiltersDisabled = false;
+		}
+	}
+
+	/// <summary>Advances the progress bar and paints it now: the UI build steps keep the message loop busy.</summary>
+	private void ProgressStep()
+	{
+		this.vaultProgressBar.Increment(1);
+		this.vaultProgressBar.Update();
+	}
+
+	#endregion
 
 	#region Load & Init
 
@@ -297,15 +390,18 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		// Parallel lazy loading for much faster database initialization
 		var items = this.ItemDatabaseService.ItemDatabase.ToList();
-		var totalItems = items.Count;
 		var processedCount = 0;
 
+		// Report in batches: one UI message per item floods the message loop on large vaults.
+		int batch = Math.Max(1, items.Count / 200);
 		Parallel.ForEach(items, item =>
 		{
 			item.LazyLoad();
-			Interlocked.Increment(ref processedCount);
-			this.backgroundWorkerBuildDB.ReportProgress(1);
+			if (Interlocked.Increment(ref processedCount) % batch == 0)
+				this.backgroundWorkerBuildDB.ReportProgress(batch);
 		});
+		if (processedCount % batch != 0)
+			this.backgroundWorkerBuildDB.ReportProgress(processedCount % batch);
 
 		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
 		var validItems = items.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
@@ -320,33 +416,46 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void backgroundWorkerBuildDB_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
 		=> InitItemDatabase();
 
+	/// <summary>Items loaded by the worker; <see cref="ProgressChangedEventArgs.ProgressPercentage"/> carries the batch size.</summary>
 	private void backgroundWorkerBuildDB_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
-		=> vaultProgressBar.Increment(1);
+		=> vaultProgressBar.Increment(e.ProgressPercentage);
 
 	private void backgroundWorkerBuildDB_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 	{
+		if (e.Error is not null)
+		{
+			this.Log.LogError(e.Error, "Building the search data failed");
+			scalingLabelProgress.Text = e.Error.Message;
+			return;
+		}
+
 		SearchEngineReady();
-		LoadPersonnalQueries();
 	}
 
 	#endregion
 
 	private void SearchEngineReady()
 	{
-		scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, this.ItemDatabaseService.ItemDatabase.Count())}";
-
-		PopulateCheckBoxes();
-
-		// Defer expensive operations to after form is shown
-		this.BeginInvoke(new Action(() =>
+		// Fill and size the categories, one progress step each, so the bar covers everything until the dialog is usable.
+		this.flowLayoutPanelMain.SuspendLayout();
+		try
 		{
-			AdjustCheckBoxesWidth();
-			AdjustCheckBoxesHeight();
-		}));
+			foreach (var step in this.UiBuildSteps)
+			{
+				step();
+				this.ProgressStep();
+			}
+		}
+		finally
+		{
+			this.flowLayoutPanelMain.ResumeLayout(true);
+		}
 
-		SetSearchBoxVisibility(true);
+		this._builtDatabase = this.ItemDatabaseService.ItemDatabase;
+		this._builtCount = this.ItemDatabaseService.ItemDatabase.Count;
 
-		SyncNaveButton();
+		scalingLabelProgress.Text = $"{Resources.SearchEngineReady} - {string.Format(Resources.SearchItemCountIs, this._builtCount)}";
+		this.Log.LogInformation("Search dialog ready in {Elapsed} ms ({Count} items)", this._openWatch.ElapsedMilliseconds, this._builtCount);
 
 		// Start
 		this.scalingTextBoxSearchTerm.Focus();
@@ -381,37 +490,6 @@ public partial class SearchDialogAdvanced : VaultForm
 	}
 
 	#region Populate
-
-	private void PopulateCheckBoxes()
-	{
-		this.flowLayoutPanelMain.SuspendLayout();
-		try
-		{
-			PopulateCharacters();
-			PopulateItemType();
-			PopulateRarity();
-			PopulateStyle();
-			PopulateQuality();
-			PopulateVaults();
-			PopulateWithCharm();
-			PopulateWithRelic();
-			PopulateOrigin();
-			PopulateSetItems();
-
-			PopulateItemAttributes();
-			PopulateBaseAttributes();
-
-			PopulatePrefixName();
-			PopulatePrefixAttributes();
-
-			PopulateSuffixName();
-			PopulateSuffixAttributes();
-		}
-		finally
-		{
-			this.flowLayoutPanelMain.ResumeLayout(true);
-		}
-	}
 
 	private void PopulateSetItems()
 	{

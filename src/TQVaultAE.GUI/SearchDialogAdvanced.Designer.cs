@@ -2279,7 +2279,6 @@ namespace TQVaultAE.GUI
 			TitleTextColor = Color.FromArgb(51, 44, 28);
 			TopMost = true;
 			Load += SearchDialogAdvanced_Load;
-			Shown += SearchDialogShown;
 			Controls.SetChildIndex(tableLayoutPanelContent, 0);
 			tableLayoutPanelBottom.ResumeLayout(false);
 			scalingLabelProgressPanelAlignText.ResumeLayout(false);

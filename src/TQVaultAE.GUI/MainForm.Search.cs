@@ -19,12 +19,23 @@ public partial class MainForm
 	}
 
 	/// <summary>
-	/// Opens a scaled SearchDialog box and calls Search().
+	/// Search dialog kept between openings: building its thousands of category entries is the slow part,
+	/// so it is created once and only rebuilt when the items change. Disposed with the main form.
+	/// </summary>
+	private SearchDialogAdvanced? _searchDialog;
+
+	/// <summary>
+	/// Opens the search dialog and shows its results.
 	/// </summary>
 	private void OpenSearchDialog()
 	{
-		var searchDialog = this.Services.Forms.Create<SearchDialogAdvanced>();
-		//searchDialog.Scale(new SizeF(UIService.Scale, UIService.Scale));
+		if (this._searchDialog is null || this._searchDialog.IsDisposed)
+		{
+			this._searchDialog = this.Services.Forms.Create<SearchDialogAdvanced>();
+			this.FormClosed += (_, _) => this._searchDialog?.Dispose();
+		}
+
+		var searchDialog = this._searchDialog;
 		var result = searchDialog.ShowDialog();
 
 		if (result == DialogResult.OK && searchDialog.QueryResults.Any())
