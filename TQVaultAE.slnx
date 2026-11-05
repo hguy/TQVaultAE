@@ -9,12 +9,14 @@
     <File Path="documentation/ADVANCEDSEARCH.md" />
     <File Path="documentation/AFFIXES.md" />
     <File Path="documentation/ARZEXPLORER.md" />
+    <File Path="documentation/DBCLI.md" />
     <File Path="documentation/CHARMANAGE.md" />
     <File Path="documentation/FORGE.md" />
     <File Path="documentation/IMPORT_EXPORT.md" />
     <File Path="documentation/SAVEFILEEXPLORER.md" />
     <File Path="documentation/SHORTCUTS.md" />
     <File Path="documentation/TQORIGINAL.md" />
+    <File Path="documentation/tq-file-formats.md" />
     <File Path="documentation/TQVault common issues.md" />
     <File Path="documentation/TroubleshootingAndFAQ.md" />
     <File Path="GITHUB_ACTIONS_BUILD_TEST.md" />

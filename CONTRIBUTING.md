@@ -1,6 +1,7 @@
 # Contributing in TQVaultAE
 - [Contributing in TQVaultAE](#contributing-in-tqvaultae)
   * [Prerequisite](#prerequisite)
+  * [Game file formats](#game-file-formats)
   * [Style and format](#style-and-format)
   * [Contributions](#contributions)
     + [What to work on](#what-to-work-on)
@@ -10,6 +11,9 @@
 ## Prerequisite
 This project use DDS to PNG conversion from nuget [Magick.NET-Q8-AnyCPU](https://github.com/dlemstra/Magick.NET) so you need to install [ImageMagick](https://imagemagick.org/script/download.php#gsc.tab=0) to resolve DLL during build.<br/>
 The simple way to do that is to use command `winget install ImageMagick.Q8` before opening the solution.
+
+## Game file formats
+Working on the game file readers (`src/TQVaultAE.Data`, `src/TQVaultAE.DbCli/Core`)? The `.arc`, `.arz`, text and `.tex` formats, the known pitfalls and the item stat randomization are documented in [Titan Quest Game File Formats](documentation/tq-file-formats.md).
 
 ## Style and format
 TQVaultAE follows the standard C# format and import order. Refrain from submitting white-space changes mixed-in with your functional changes. 
