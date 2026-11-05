@@ -47,7 +47,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the VaultMaintenanceDialog class.
 	/// </summary>
-	public VaultMaintenanceDialog(MainForm instance) : base(instance.ServiceProvider)
+	public VaultMaintenanceDialog(MainForm instance) : base(instance.Services)
 	{
 		this.Owner = instance;
 

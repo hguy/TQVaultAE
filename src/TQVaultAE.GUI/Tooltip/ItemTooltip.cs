@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
@@ -76,7 +75,7 @@ public partial class ItemTooltip : BaseTooltip
 	#region Factory
 
 	public static ItemTooltip ShowTooltip(
-		IServiceProvider serviceProvider
+		GuiServices services
 		, Item focusedItem
 		, SackPanel sackPanel
 		, bool? enableDetailedTooltipView = null
@@ -87,14 +86,14 @@ public partial class ItemTooltip : BaseTooltip
 		{
 			HideTooltip();
 				
-			var userSettings = serviceProvider.GetService<UserSettings>();
+			var userSettings = services.Settings;
 
 			_Current = new ItemTooltip(
-				serviceProvider.GetService<MainForm>()
-				, serviceProvider.GetService<IItemProvider>()
-				, serviceProvider.GetService<IFontService>()
-				, serviceProvider.GetService<IUIService>()
-				, serviceProvider.GetService<ITranslationService>())
+				services.Forms.MainForm
+				, services.ItemProvider
+				, services.FontService
+				, services.UIService
+				, services.TranslationService)
 			{
 				FocusedItem = focusedItem,
 				SackPanel = sackPanel,
@@ -108,7 +107,7 @@ public partial class ItemTooltip : BaseTooltip
 	}
 
 	public static ItemTooltip ShowTooltip(
-		IServiceProvider serviceProvider
+		GuiServices services
 		, Item focusedItem
 		, ResultsDialog resultsDialog
 		, bool? enableDetailedTooltipView = null
@@ -119,14 +118,14 @@ public partial class ItemTooltip : BaseTooltip
 		{
 			HideTooltip();
 
-			var userSettings = serviceProvider.GetService<UserSettings>();
+			var userSettings = services.Settings;
 
 			_Current = new ItemTooltip(
-				serviceProvider.GetService<MainForm>()
-				, serviceProvider.GetService<IItemProvider>()
-				, serviceProvider.GetService<IFontService>()
-				, serviceProvider.GetService<IUIService>()
-				, serviceProvider.GetService<ITranslationService>())
+				services.Forms.MainForm
+				, services.ItemProvider
+				, services.FontService
+				, services.UIService
+				, services.TranslationService)
 			{
 				FocusedItem = focusedItem,
 				ResultsDialog = resultsDialog,
@@ -140,7 +139,7 @@ public partial class ItemTooltip : BaseTooltip
 	}
 
 	public static ItemTooltip ShowTooltip(
-		IServiceProvider serviceProvider
+		GuiServices services
 		, Item focusedItem
 		, PictureBox picBox
 		, bool? enableDetailedTooltipView = null
@@ -151,14 +150,14 @@ public partial class ItemTooltip : BaseTooltip
 		{
 			HideTooltip();
 
-			var userSettings = serviceProvider.GetService<UserSettings>();
+			var userSettings = services.Settings;
 
 			_Current = new ItemTooltip(
-				serviceProvider.GetService<MainForm>()
-				, serviceProvider.GetService<IItemProvider>()
-				, serviceProvider.GetService<IFontService>()
-				, serviceProvider.GetService<IUIService>()
-				, serviceProvider.GetService<ITranslationService>())
+				services.Forms.MainForm
+				, services.ItemProvider
+				, services.FontService
+				, services.UIService
+				, services.TranslationService)
 			{
 				FocusedItem = focusedItem,
 				PictureBox = picBox,

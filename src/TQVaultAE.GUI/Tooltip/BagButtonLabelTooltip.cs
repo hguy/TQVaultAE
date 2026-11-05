@@ -101,7 +101,7 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 
 	#region Factory
 
-	public static BagButtonLabelTooltip ShowTooltip(IServiceProvider serviceProvider, BagButtonBase anchorControl)
+	public static BagButtonLabelTooltip ShowTooltip(GuiServices services, BagButtonBase anchorControl)
 	{
 		var label = anchorControl.Sack?.BagButtonIconInfo?.Label;
 		if (anchorControl is null) return null;
@@ -112,11 +112,11 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 			HideTooltip();
 			if (_Current is null)
 				_Current = new BagButtonLabelTooltip(
-					serviceProvider.GetService<MainForm>()
-					, serviceProvider.GetService<IItemProvider>()
-					, serviceProvider.GetService<IFontService>()
-					, serviceProvider.GetService<IUIService>()
-					, serviceProvider.GetService<ITranslationService>()
+					services.Forms.MainForm
+					, services.ItemProvider
+					, services.FontService
+					, services.UIService
+					, services.TranslationService
 				);
 
 			_Current.ClientSize = new Size(187, 40);// Reset Size before computation

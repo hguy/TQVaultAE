@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------
 
 using System.Collections.ObjectModel;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
@@ -598,13 +597,13 @@ public partial class SackPanel
 			}
 			else if (selectedMenuItem == Resources.SackPanelMenuProperties)
 			{
-				var dlg = this.ServiceProvider.GetService<ItemProperties>();
+				var dlg = this.Services.Forms.Create<ItemProperties>();
 				dlg.Item = focusedItem;
 				dlg.ShowDialog();
 			}
 			else if (selectedMenuItem == Resources.SackPanelMenuSeed)
 			{
-				var dlg = this.ServiceProvider.GetService<ItemSeedDialog>();
+				var dlg = this.Services.Forms.Create<ItemSeedDialog>();
 				dlg.SelectedItem = focusedItem;
 				int origSeed = focusedItem.Seed;
 				dlg.ShowDialog();

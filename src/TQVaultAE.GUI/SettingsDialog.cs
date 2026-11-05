@@ -11,7 +11,6 @@ using EnumsNET;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Helpers;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using TQVaultAE.Application.Results;
@@ -316,10 +315,10 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// Initializes a new instance of the SettingsDialog class.
 	/// </summary>
-	public SettingsDialog(MainForm instance) : base(instance.ServiceProvider)
+	public SettingsDialog(MainForm instance) : base(instance.Services)
 	{
 		this.Owner = instance;
-		this.Log = instance.ServiceProvider.GetService<ILogger<SettingsDialog>>();
+		this.Log = instance.Services.Logger<SettingsDialog>();
 
 		this.InitializeComponent();
 

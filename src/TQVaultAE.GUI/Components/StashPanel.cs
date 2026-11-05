@@ -10,7 +10,6 @@ using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.GUI.Components;
 
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -122,17 +121,17 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <param name="dragInfo">ItemDragInfo instance</param>
 	/// <param name="panelSize">Size of the panel in cells</param>
 	/// <param name="tooltip">ToolTip instance</param>
-	public StashPanel(ItemDragInfo dragInfo, Size panelSize, IServiceProvider serviceProvider)
-		: base(dragInfo, 4, panelSize, 0, AutoMoveLocation.Stash, serviceProvider)
+	public StashPanel(ItemDragInfo dragInfo, Size panelSize, GuiServices services)
+		: base(dragInfo, 4, panelSize, 0, AutoMoveLocation.Stash, services)
 	{
 		InitializeComponent();
 
-		this.TranslationService = this.ServiceProvider.GetService<ITranslationService>();
-		this.Database = this.ServiceProvider.GetService<IDatabase>();
+		this.TranslationService = this.Services.TranslationService;
+		this.Database = this.Services.Database;
 
 		SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
 
-		this.equipmentPanel = new EquipmentPanel(16, 14, dragInfo, AutoMoveLocation.Stash, serviceProvider);
+		this.equipmentPanel = new EquipmentPanel(16, 14, dragInfo, AutoMoveLocation.Stash, services);
 		this.Controls.Add(this.equipmentPanel);
 		this.equipmentPanel.OnNewItemHighlighted += new EventHandler<SackPanelEventArgs>(this.NewItemHighlightedCallback);
 		this.equipmentPanel.OnAutoMoveItem += new EventHandler<SackPanelEventArgs>(this.AutoMoveItemCallback);
@@ -411,7 +410,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 	private void EditButton_Click(object sender, EventArgs e)
 	{
-		var dlg = this.ServiceProvider.GetService<CharacterEditDialog>();
+		var dlg = this.Services.Forms.Create<CharacterEditDialog>();
 		dlg.PlayerCollection = this.Player;
 		dlg.ShowDialog();
 		this.GetSkillStatBonus();
@@ -650,7 +649,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <returns>The new StashButton that is created.</returns>
 	protected StashButton CreateBagButton(int bagNumber, int numberOfBags)
 	{
-		StashButton button = new StashButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.ServiceProvider);
+		StashButton button = new StashButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.Services);
 
 		float buttonWidth = (float)Resources.StashTabUp.Width;
 		float buttonHeight = (float)Resources.StashTabUp.Height;

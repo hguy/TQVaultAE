@@ -20,7 +20,7 @@ internal partial class AboutBox : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the AboutBox class.
 	/// </summary>
-	public AboutBox(IServiceProvider serviceProvider) : base(serviceProvider)
+	public AboutBox(GuiServices services) : base(services)
 	{
 
 		this.InitializeComponent();

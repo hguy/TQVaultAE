@@ -4,7 +4,6 @@ using TQVaultAE.GUI.Helpers;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Helpers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.GUI.Tooltip;
 using System.Text.RegularExpressions;
@@ -43,7 +42,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		, ILogger<SearchDialogAdvanced> log
 		, SearchQueries sQueries
 		, IItemDatabaseService itemDatabaseService
-	) : base(instance.ServiceProvider)
+	) : base(instance.Services)
 	{
 		this.Owner = instance;
 		this.Log = log;
@@ -948,7 +947,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void scalingLabelFiltersSelected_MouseEnter(object sender, EventArgs e)
 	{
 		var ctrl = sender as Control;
-		SearchFiltersTooltip.ShowTooltip(this.ServiceProvider, ctrl, this.SelectedFilters, (SearchOperator)scalingComboBoxOperator.SelectedIndex);
+		SearchFiltersTooltip.ShowTooltip(this.Services, ctrl, this.SelectedFilters, (SearchOperator)scalingComboBoxOperator.SelectedIndex);
 	}
 
 	private void scalingLabelFiltersSelected_MouseLeave(object sender, EventArgs e)
@@ -1284,7 +1283,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void scalingLabelProgress_MouseEnter(object sender, EventArgs e)
 	{
 		var ctrl = sender as Control;
-		FoundResultsTooltip.ShowTooltip(this.ServiceProvider, ctrl, this.QueryResults);
+		FoundResultsTooltip.ShowTooltip(this.Services, ctrl, this.QueryResults);
 	}
 
 	private void scalingLabelProgress_MouseLeave(object sender, EventArgs e)

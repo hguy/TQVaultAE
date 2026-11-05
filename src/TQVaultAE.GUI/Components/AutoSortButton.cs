@@ -37,7 +37,7 @@ public class AutoSortButton : BagButtonBase
 	/// </summary>
 	/// <param name="buttonNumber">Number for this button</param>
 	/// <param name="rotateGraphic">bool to signal the button is using a rotated background graphic</param>
-	public AutoSortButton(int buttonNumber, bool rotateGraphic, IServiceProvider serviceProvider) : base(buttonNumber, null, serviceProvider)
+	public AutoSortButton(int buttonNumber, bool rotateGraphic, GuiServices services) : base(buttonNumber, null, services)
 	{
 		InitializeComponent();
 

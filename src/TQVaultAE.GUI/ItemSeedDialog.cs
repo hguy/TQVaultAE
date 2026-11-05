@@ -29,7 +29,7 @@ internal partial class ItemSeedDialog : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the ItemSeedDialog class.
 	/// </summary>
-	public ItemSeedDialog(MainForm instance) : base(instance.ServiceProvider)
+	public ItemSeedDialog(MainForm instance) : base(instance.Services)
 	{
 		this.Owner = instance;
 

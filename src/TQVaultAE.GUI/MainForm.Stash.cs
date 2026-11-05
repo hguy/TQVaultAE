@@ -19,7 +19,7 @@ public partial class MainForm
 		// size params are width, height
 		Size panelSize = new Size(17, 16);
 
-		this.stashPanel = new StashPanel(this.DragInfo, panelSize, this.ServiceProvider);
+		this.stashPanel = new StashPanel(this.DragInfo, panelSize, this.Services);
 
 		// New location in bottom right of the Main Form.
 		// Align to playerPanel

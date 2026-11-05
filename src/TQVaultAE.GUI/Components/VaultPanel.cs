@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -29,7 +28,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	protected readonly IUIService UIService;
 	protected readonly SessionContext userContext;
 	protected readonly IItemProvider ItemProvider;
-	protected readonly IServiceProvider ServiceProvider;
+	protected readonly GuiServices Services;
 	protected readonly UserSettings USettings;
 	protected readonly IHighlightService HighlightService;
 	protected readonly IItemExchangeService ExchangeService;
@@ -104,18 +103,18 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <param name="panelSize">Main panel size</param>
 	/// <param name="numberOfAutosortButtons">The number of AutoSort buttons associated with this panel.,</param>
 	/// <param name="autoMoveLocation">The automovelocation for this panel.</param>
-	public VaultPanel(ItemDragInfo dragInfo, int numberOfBags, Size panelSize, int numberOfAutosortButtons, AutoMoveLocation autoMoveLocation, IServiceProvider serviceProvider)
+	public VaultPanel(ItemDragInfo dragInfo, int numberOfBags, Size panelSize, int numberOfAutosortButtons, AutoMoveLocation autoMoveLocation, GuiServices services)
 	{
 		InitializeComponent();
 
-		this.ServiceProvider = serviceProvider;
-		this.FontService = this.ServiceProvider.GetService<IFontService>();
-		this.UIService = this.ServiceProvider.GetService<IUIService>();
-		this.userContext = this.ServiceProvider.GetService<SessionContext>();
-		this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
-		this.USettings = this.ServiceProvider.GetService<UserSettings>();
-		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
-		this.ExchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		this.Services = services;
+		this.FontService = this.Services.FontService;
+		this.UIService = this.Services.UIService;
+		this.userContext = this.Services.Session;
+		this.ItemProvider = this.Services.ItemProvider;
+		this.USettings = this.Services.Settings;
+		this.HighlightService = this.Services.HighlightService;
+		this.ExchangeService = this.Services.ItemExchangeService;
 
 		this.DragInfo = dragInfo;
 		this.AutoMoveLocation = autoMoveLocation;
@@ -137,7 +136,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.Scale, this.Font.Style);
 
 		this.BagPanelOffset = 0; // bag panel starts with bag #0
-		this.BagSackPanel = new SackPanel(panelSize.Width, panelSize.Height, this.DragInfo, autoMoveLocation, this.ServiceProvider);
+		this.BagSackPanel = new SackPanel(panelSize.Width, panelSize.Height, this.DragInfo, autoMoveLocation, this.Services);
 		this.BagSackPanel.SetLocation(new Point(autosortOffset + BorderPad, this.Size.Height - (this.BagSackPanel.Size.Height + BorderPad)));
 		this.BagSackPanel.OnNewItemHighlighted += new EventHandler<SackPanelEventArgs>(this.NewItemHighlightedCallback);
 		this.BagSackPanel.OnAutoMoveItem += new EventHandler<SackPanelEventArgs>(this.AutoMoveItemCallback);
@@ -939,7 +938,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <returns>A new AutoSortButton instance</returns>
 	protected virtual AutoSortButton CreateAutoSortButton(int buttonNumber)
 	{
-		AutoSortButton button = new AutoSortButton(buttonNumber, true, this.ServiceProvider);
+		AutoSortButton button = new AutoSortButton(buttonNumber, true, this.Services);
 		button.Location = new Point(this.BagSackPanel.Location.X - button.Width, this.BagSackPanel.Location.Y);
 		button.Visible = false;
 		button.MouseDown += new MouseEventHandler(this.AutoSortButtonClick);
@@ -1076,7 +1075,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		{
 			var button = this.BagButtons[this.CurrentBag];
 
-			var bbs = this.ServiceProvider.GetService<BagButtonSettings>();
+			var bbs = this.Services.Forms.Create<BagButtonSettings>();
 			bbs.CurrentBagButton = button;
 
 			if (bbs.ShowDialog() == DialogResult.OK)
@@ -1255,7 +1254,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <returns>Instance of the new BagButton</returns>
 	private BagButton CreateBagButton(int bagNumber, int numberOfBags)
 	{
-		BagButton button = new BagButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.ServiceProvider);
+		BagButton button = new BagButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.Services);
 
 		float buttonWidth = (float)Resources.inventorybagup01.Width;
 		float buttonHeight = (float)Resources.inventorybagup01.Height;

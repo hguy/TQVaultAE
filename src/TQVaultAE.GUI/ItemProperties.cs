@@ -32,7 +32,7 @@ internal partial class ItemProperties : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the ItemProperties class.
 	/// </summary>
-	public ItemProperties(MainForm instance) : base(instance.ServiceProvider)
+	public ItemProperties(MainForm instance) : base(instance.Services)
 	{
 		this.Owner = instance;
 

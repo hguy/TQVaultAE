@@ -19,9 +19,9 @@ public class BagButton : BagButtonBase
 	/// </summary>
 	/// <param name="bagNumber">number of the bag for display</param>
 	/// <param name="getToolTip">Tooltip delegate</param>
-	/// <param name="serviceProvider"></param>
-	public BagButton(int bagNumber, GetToolTip getToolTip, IServiceProvider serviceProvider)
-		: base(bagNumber, getToolTip, serviceProvider)
+	/// <param name="services"></param>
+	public BagButton(int bagNumber, GetToolTip getToolTip, GuiServices services)
+		: base(bagNumber, getToolTip, services)
 	{ }
 
 	/// <summary>

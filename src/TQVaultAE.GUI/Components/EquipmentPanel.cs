@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Logs;
 using TQVaultAE.Domain.Entities;
@@ -30,11 +29,11 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <param name="sackHeight">Height of the sack panel in cells</param>
 	/// <param name="dragInfo">ItemDragInfo instance.</param>
 	/// <param name="autoMoveLocation">AutoMoveLocation for this panel.</param>
-	public EquipmentPanel(int sackWidth, int sackHeight, ItemDragInfo dragInfo, AutoMoveLocation autoMoveLocation, IServiceProvider serviceProvider)
-		: base(sackWidth, sackHeight, dragInfo, autoMoveLocation, serviceProvider)
+	public EquipmentPanel(int sackWidth, int sackHeight, ItemDragInfo dragInfo, AutoMoveLocation autoMoveLocation, GuiServices services)
+		: base(sackWidth, sackHeight, dragInfo, autoMoveLocation, services)
 	{
-		this.Log = serviceProvider.GetService<ILogger<EquipmentPanel>>();
-		this.USettings = serviceProvider.GetService<UserSettings>();
+		this.Log = services.Logger<EquipmentPanel>();
+		this.USettings = services.Settings;
 
 		this.SackType = SackType.Equipment;
 		this.BackColor = Color.Transparent;

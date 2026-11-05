@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
@@ -62,7 +61,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 	/// Gets or sets the dragInfo instance of any items being dragged.
 	/// </summary>
 	protected ItemDragInfo DragInfo;
-	private readonly IServiceProvider ServiceProvider;
+	private readonly GuiServices Services;
 	private Bitmap dragingBmp;
 	private Item lastDragedItem;
 
@@ -115,21 +114,21 @@ public partial class ForgePanel : UserControl, IScalingControl
 		InitializeComponent();
 	}
 
-	public ForgePanel(ItemDragInfo dragInfo, IServiceProvider serviceProvider)
+	public ForgePanel(ItemDragInfo dragInfo, GuiServices services)
 	{
 		InitializeComponent();
 
 		DoubleBuffered = true;
 
 		DragInfo = dragInfo;
-		ServiceProvider = serviceProvider;
+		Services = services;
 		SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.SupportsTransparentBackColor, true);
 
-		SoundService = serviceProvider.GetService<ISoundService>();
-		UIService = serviceProvider.GetService<IUIService>();
-		FontService = serviceProvider.GetService<IFontService>();
-		TranslationService = serviceProvider.GetService<ITranslationService>();
-		ItemProvider = serviceProvider.GetService<IItemProvider>();
+		SoundService = services.SoundService;
+		UIService = services.UIService;
+		FontService = services.FontService;
+		TranslationService = services.TranslationService;
+		ItemProvider = services.ItemProvider;
 
 		#region Font, Scaling, Translate, BackGround
 
@@ -1373,7 +1372,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 		if (itm is null) return;
 
-		ItemTooltip.ShowTooltip(ServiceProvider, itm, picbox, true);
+		ItemTooltip.ShowTooltip(Services, itm, picbox, true);
 	}
 
 	private void pictureBox_MouseLeave(object sender, EventArgs e)

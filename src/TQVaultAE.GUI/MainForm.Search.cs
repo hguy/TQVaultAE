@@ -23,7 +23,7 @@ public partial class MainForm
 	/// </summary>
 	private void OpenSearchDialog()
 	{
-		var searchDialog = this.ServiceProvider.GetService<SearchDialogAdvanced>();
+		var searchDialog = this.Services.Forms.Create<SearchDialogAdvanced>();
 		//searchDialog.Scale(new SizeF(UIService.Scale, UIService.Scale));
 		var result = searchDialog.ShowDialog();
 
@@ -71,7 +71,7 @@ public partial class MainForm
 		}
 
 		// Display a dialog with the results.
-		ResultsDialog dlg = this.ServiceProvider.GetService<ResultsDialog>();
+		ResultsDialog dlg = this.Services.Forms.Create<ResultsDialog>();
 		dlg.ResultChanged += new ResultsDialog.EventHandler<ResultChangedEventArgs>(this.SelectResult);
 		dlg.ResultsList.Clear();
 		dlg.ResultsList.AddRange(results);
