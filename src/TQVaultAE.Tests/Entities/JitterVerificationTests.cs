@@ -72,7 +72,7 @@ public class JitterVerificationTests
 	{
 		// Arrange: real database records, full the game roll table.
 		var game = TQVaultAE.DbCli.Core.GameLocator.Locate(TestingConditions.TitanQuestPath);
-		using var db = TQVaultAE.DbCli.Core.ArzDatabaseFactory.Open(game.Database);
+		using var db = ArzDatabaseFactory.Open(game.Database);
 
 		// Act
 		var result = ItemRollSimulator.Roll(seed, isArmor, Load(db, baseId),
@@ -86,15 +86,15 @@ public class JitterVerificationTests
 		}
 	}
 
-	private static TQVaultAE.Domain.Entities.DBRecordCollection Load(TQVaultAE.DbCli.Core.IArzDatabase db, string id)
+	private static TQVaultAE.Domain.Entities.DBRecordCollection Load(IArzDatabase db, string id)
 	{
 		var rec = db.Read(db.Find(id) ?? throw new InvalidOperationException($"Missing record {id}"));
 		var record = new TQVaultAE.Domain.Entities.DBRecordCollection(TQVaultAE.Domain.Entities.RecordId.Create(id), rec.Info.Class);
 		foreach (var v in rec.Variables) {
 			var type = v.Type switch {
-				TQVaultAE.DbCli.Core.ArzValueType.Int => TQVaultAE.Domain.Entities.VariableDataType.Integer,
-				TQVaultAE.DbCli.Core.ArzValueType.Float => TQVaultAE.Domain.Entities.VariableDataType.Float,
-				TQVaultAE.DbCli.Core.ArzValueType.Bool => TQVaultAE.Domain.Entities.VariableDataType.Boolean,
+				ArzValueType.Int => TQVaultAE.Domain.Entities.VariableDataType.Integer,
+				ArzValueType.Float => TQVaultAE.Domain.Entities.VariableDataType.Float,
+				ArzValueType.Bool => TQVaultAE.Domain.Entities.VariableDataType.Boolean,
 				_ => TQVaultAE.Domain.Entities.VariableDataType.StringVar,
 			};
 			var variable = new TQVaultAE.Domain.Entities.Variable(v.Name, type, v.Values.Length);

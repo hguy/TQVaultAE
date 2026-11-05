@@ -4,15 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-// Entry points of the Core layer. Signatures are part of the contract; the bodies live in partial files:
+// Entry points of the game file readers. Signatures are part of the contract; the bodies live in partial files:
 //   ArzDatabaseFactory.Open(string path)                          -> ArzDatabase.cs
 //   ArcArchiveFactory.Open(string path)                           -> ArcArchive.cs
 //   TextDatabaseFactory.Load(string textArchivePath, string lang) -> TextDatabase.cs
-//   GameLocator.Locate(string? explicitRoot = null)               -> GameLocator.cs
-//   TexConverter.FrameCount / ToDds / ToPng                       -> TexConverter.cs
-//   DisplayNames.NameTag / Resolve                                -> DisplayNames.cs
 
-namespace TQVaultAE.DbCli.Core;
+namespace TQVaultAE.GameFiles;
 
 /// <summary>Opens database.arz files.</summary>
 public static partial class ArzDatabaseFactory;

@@ -161,7 +161,7 @@ public sealed class ArcArchiveTests : IDisposable
 		incremental.Append(data.AsSpan(0, length / 3));
 		incremental.Append(data.AsSpan(length / 3));
 
-		TQVaultAE.DbCli.Core.Adler32.Compute(data).Should().Be(Adler(data));
+		Adler32.Compute(data).Should().Be(Adler(data));
 		incremental.Value.Should().Be(Adler(data));
 	}
 

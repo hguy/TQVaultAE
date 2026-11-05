@@ -13,7 +13,7 @@ This project use DDS to PNG conversion from nuget [Magick.NET-Q8-AnyCPU](https:/
 The simple way to do that is to use command `winget install ImageMagick.Q8` before opening the solution.
 
 ## Game file formats
-Working on the game file readers (`src/TQVaultAE.Data`, `src/TQVaultAE.DbCli/Core`)? The `.arc`, `.arz`, text and `.tex` formats, the known pitfalls and the item stat randomization are documented in [Titan Quest Game File Formats](documentation/tq-file-formats.md).
+Working on the game file readers (`src/TQVaultAE.GameFiles`, used by `src/TQVaultAE.Data` and `src/TQVaultAE.DbCli`)? The `.arc`, `.arz`, text and `.tex` formats, the known pitfalls and the item stat randomization are documented in [Titan Quest Game File Formats](documentation/tq-file-formats.md).
 
 ## Style and format
 TQVaultAE follows the standard C# format and import order. Refrain from submitting white-space changes mixed-in with your functional changes. 

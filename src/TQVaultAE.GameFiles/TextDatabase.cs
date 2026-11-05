@@ -6,7 +6,7 @@
 
 using System.Text;
 
-namespace TQVaultAE.DbCli.Core;
+namespace TQVaultAE.GameFiles;
 
 public static partial class TextDatabaseFactory
 {

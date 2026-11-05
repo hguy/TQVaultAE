@@ -6,7 +6,7 @@
 
 using System.Text;
 
-namespace TQVaultAE.DbCli.Core;
+namespace TQVaultAE.GameFiles;
 
 /// <summary>Encodings used by the game files.</summary>
 internal static class TextEncodings

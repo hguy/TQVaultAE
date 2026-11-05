@@ -6,7 +6,7 @@ namespace TQVaultAE.Tests.DbCli.Cli;
 
 public class WhereClauseTests
 {
-	private static readonly TQVaultAE.DbCli.Core.ArzRecord Sword = V.Record(
+	private static readonly ArzRecord Sword = V.Record(
 		@"records\item\equipmentweapon\sword\c10_sword01.dbr",
 		V.Int("itemLevel", 40),
 		V.Float("offensivePhysicalMin", 12.5f),

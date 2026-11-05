@@ -9,6 +9,20 @@ using System.Text.RegularExpressions;
 
 namespace TQVaultAE.DbCli.Core;
 
+/// <summary>Located game install.</summary>
+/// <param name="Root">Install folder.</param>
+/// <param name="Database">database.arz path.</param>
+/// <param name="Archives">Every .arc under the install (Resources, Resources\XPack*, Audio, Text, Toolset).</param>
+public sealed record GameInstall(string Root, string Database, IReadOnlyList<string> Archives)
+{
+	/// <summary>Text archive for a language (e.g. "EN" → Text\Text_EN.arc), <see langword="null"/> when missing.</summary>
+	public string? TextArchive(string language)
+	{
+		var p = System.IO.Path.Combine(this.Root, "Text", $"Text_{language.ToUpperInvariant()}.arc");
+		return File.Exists(p) ? p : null;
+	}
+}
+
 /// <summary>Finds the game install.</summary>
 public static partial class GameLocator
 {

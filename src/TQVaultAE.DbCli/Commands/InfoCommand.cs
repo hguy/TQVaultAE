@@ -25,7 +25,7 @@ internal sealed class InfoCommand : ICommand
 		["tqdb info", "tqdb info --top 0 --format json"]);
 
 	/// <summary>Class histogram sorted by count desc, then name.</summary>
-	internal static List<KeyValuePair<string, int>> ClassHistogram(IReadOnlyList<Core.ArzRecordInfo> records) {
+	internal static List<KeyValuePair<string, int>> ClassHistogram(IReadOnlyList<ArzRecordInfo> records) {
 		var counts = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
 		foreach (var r in records) {
 			var key = r.Class.Length == 0 ? "(none)" : r.Class;

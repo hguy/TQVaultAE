@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace TQVaultAE.DbCli.Core;
+namespace TQVaultAE.GameFiles;
 
 /// <summary>Incremental Adler-32 (RFC 1950).</summary>
 public struct Adler32

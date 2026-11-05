@@ -2,7 +2,7 @@
 
 This document describes the binary file formats used by Titan Quest / Immortal Throne / Anniversary Edition.
 It is essential for anyone working on the ARC/ARZ file I/O layer (`src/TQVaultAE.Data`) or on the
-[`tqdb` command line](DBCLI.md) (`src/TQVaultAE.DbCli/Core`).
+[`tqdb` command line](DBCLI.md) (`src/TQVaultAE.GameFiles`, shared by TQVaultAE and `tqdb`).
 
 The original layouts come from the TQVault authors. They were re-verified byte by byte in 2026 against the
 complete Steam Anniversary Edition install (with all DLCs):
@@ -36,7 +36,7 @@ Figures quoted below come from that install.
 * `u32`/`i32` are 4 bytes and `u16`/`i16` are 2 bytes.
 * `FILETIME` is the Windows 64-bit count of 100 ns intervals since 1601-01-01 UTC.
 * `adler32` is the zlib Adler-32 checksum.
-* Strings are **cp1252 / Latin-1**, never UTF-8, except the UTF-16 text files described [below](#Text).
+* Strings are **cp1252** (Windows-1252), never UTF-8 or Latin-1 (`0x92` is `’` in cp1252 but a control character in Latin-1), except the UTF-16 text files described [below](#Text).
 
 ---
 
@@ -384,7 +384,7 @@ The file is modified by:
 | Pitfall | Correct handling |
 |---|---|
 | Reading ARC names sequentially | Use each record's `nameOffset`/`nameLength`; inactive entries break sequential reading. |
-| Decoding names as ASCII or UTF-8 | Use cp1252/Latin-1 (`’` = `0x92`). |
+| Decoding names as ASCII, UTF-8 or Latin-1 | Use cp1252 (`’` = `0x92`). |
 | Treating `compressedSize == size` as "stored" in a type 3 entry | Only `storageType == 1` is raw. |
 | Allocating a whole entry in memory | Stream part by part (`world01.map` is 2 GB). |
 | Reading text with the default (UTF-8) encoding | Use the BOM if present, otherwise cp1252. |
