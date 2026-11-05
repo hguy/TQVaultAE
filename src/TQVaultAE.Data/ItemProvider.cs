@@ -125,6 +125,17 @@ public partial class ItemProvider : IItemProvider
 	}
 
 	/// <summary>
+	/// <see cref="ITranslationService.TryTranslateXTag"/> for a <see cref="ToFriendlyNameResult"/> property, which
+	/// cannot be an <c>out</c> argument: <paramref name="assign"/> always receives the translation, as the out value did.
+	/// </summary>
+	private bool TryTranslateXTag(string tag, Action<string> assign)
+	{
+		bool found = this.TranslationService.TryTranslateXTag(tag, out var value);
+		assign(value);
+		return found;
+	}
+
+	/// <summary>
 	/// Gets the item name and attributes.
 	/// </summary>
 	/// <param name="itm"></param>
@@ -185,39 +196,39 @@ public partial class ItemProvider : IItemProvider
 				res.ItemWith = this.TranslationService.ItemWith;
 
 				if (k.Item.RelicInfo != null)
-					TranslationService.TryTranslateXTag(k.Item.RelicInfo.DescriptionTag, out res.RelicInfo1Description);
+					this.TryTranslateXTag(k.Item.RelicInfo.DescriptionTag, v => res.RelicInfo1Description = v);
 
 				if (k.Item.Relic2Info != null)
-					TranslationService.TryTranslateXTag(k.Item.Relic2Info.DescriptionTag, out res.RelicInfo2Description);
+					this.TryTranslateXTag(k.Item.Relic2Info.DescriptionTag, v => res.RelicInfo2Description = v);
 
 				var labelCompleted = "Completed";
-				if (!TranslationService.TryTranslateXTag("tagAnimalPartComplete", out res.AnimalPartComplete))
+				if (!this.TryTranslateXTag("tagAnimalPartComplete", v => res.AnimalPartComplete = v))
 					res.AnimalPartComplete = labelCompleted;
 
-				if (!TranslationService.TryTranslateXTag("tagRelicComplete", out res.RelicComplete))
+				if (!this.TryTranslateXTag("tagRelicComplete", v => res.RelicComplete = v))
 					res.RelicComplete = labelCompleted;
 
 				var labelPartcomplete = "Completion Bonus: ";
-				if (!TranslationService.TryTranslateXTag("tagAnimalPartcompleteBonus", out res.AnimalPartCompleteBonus))
+				if (!this.TryTranslateXTag("tagAnimalPartcompleteBonus", v => res.AnimalPartCompleteBonus = v))
 					res.AnimalPartCompleteBonus = labelPartcomplete;
 
-				if (!TranslationService.TryTranslateXTag("tagRelicBonus", out res.RelicBonus))
+				if (!this.TryTranslateXTag("tagRelicBonus", v => res.RelicBonus = v))
 					res.RelicBonus = labelPartcomplete;
 
 				var labelRelic = "Relic";
-				if (!TranslationService.TryTranslateXTag("tagAnimalPart", out res.AnimalPart))
+				if (!this.TryTranslateXTag("tagAnimalPart", v => res.AnimalPart = v))
 					res.AnimalPart = labelRelic;
 
-				if (!TranslationService.TryTranslateXTag("tagRelicShard", out res.RelicShard))
+				if (!this.TryTranslateXTag("tagRelicShard", v => res.RelicShard = v))
 					res.RelicShard = labelRelic;
 
 				var labelRelicPattern = "{0} - {1} / {2}";
-				if (TranslationService.TryTranslateXTag("tagAnimalPartRatio", out res.AnimalPartRatio))
+				if (this.TryTranslateXTag("tagAnimalPartRatio", v => res.AnimalPartRatio = v))
 					res.AnimalPartRatio = ItemAttributeProvider.ConvertFormat(res.AnimalPartRatio);
 				else
 					res.AnimalPartRatio = labelRelicPattern;
 
-				if (TranslationService.TryTranslateXTag("tagRelicRatio", out res.RelicRatio))
+				if (this.TryTranslateXTag("tagRelicRatio", v => res.RelicRatio = v))
 					res.RelicRatio = ItemAttributeProvider.ConvertFormat(res.RelicRatio);
 				else
 					res.RelicRatio = labelRelicPattern;
@@ -235,18 +246,18 @@ public partial class ItemProvider : IItemProvider
 				{
 					if (!k.Item.IsPotion && !k.Item.IsRelicOrCharm && !k.Item.IsScroll && !k.Item.IsParchment && !k.Item.IsQuestItem)
 					{
-						if (!TranslationService.TryTranslateXTag(k.Item.baseItemInfo.StyleTag, out res.BaseItemInfoStyle))
+						if (!this.TryTranslateXTag(k.Item.baseItemInfo.StyleTag, v => res.BaseItemInfoStyle = v))
 							res.BaseItemInfoStyle = k.Item.baseItemInfo.StyleTag;
 					}
 				}
 
 				if (!string.IsNullOrEmpty(k.Item.baseItemInfo.QualityTag))
 				{
-					if (!TranslationService.TryTranslateXTag(k.Item.baseItemInfo.QualityTag, out res.BaseItemInfoQuality))
+					if (!this.TryTranslateXTag(k.Item.baseItemInfo.QualityTag, v => res.BaseItemInfoQuality = v))
 						res.BaseItemInfoQuality = k.Item.baseItemInfo.QualityTag;
 				}
 
-				if (!TranslationService.TryTranslateXTag(k.Item.baseItemInfo.DescriptionTag, out res.BaseItemInfoDescription))
+				if (!this.TryTranslateXTag(k.Item.baseItemInfo.DescriptionTag, v => res.BaseItemInfoDescription = v))
 					res.BaseItemInfoDescription = k.Item.BaseItemId.Raw;
 
 				res.BaseItemInfoClass = TranslationService.TranslateXTag(k.Item.ItemClassTagName, removeAllTQTags: true);
@@ -320,11 +331,11 @@ public partial class ItemProvider : IItemProvider
 				else if (k.Item.IsFormulae)
 				{
 					// Added to show recipe type for Formulae
-					if (!TranslationService.TryTranslateXTag("xtagArtifactRecipe", out res.ArtifactRecipe))
+					if (!this.TryTranslateXTag("xtagArtifactRecipe", v => res.ArtifactRecipe = v))
 						res.ArtifactRecipe = "Recipe";
 
 					// Get Reagents format
-					if (TranslationService.TryTranslateXTag("xtagArtifactReagents", out res.ArtifactReagents))
+					if (this.TryTranslateXTag("xtagArtifactReagents", v => res.ArtifactReagents = v))
 						res.ArtifactReagents = ItemAttributeProvider.ConvertFormat(res.ArtifactReagents);
 					else
 						res.ArtifactReagents = "Required Reagents  ({0}/{1})";
@@ -352,7 +363,7 @@ public partial class ItemProvider : IItemProvider
 				if (k.Item.suffixInfo != null)
 				{
 					res.SuffixInfoDescription =
-							TranslationService.TryTranslateXTag(k.Item.suffixInfo.DescriptionTag, out res.SuffixInfoDescription)
+							this.TryTranslateXTag(k.Item.suffixInfo.DescriptionTag, v => res.SuffixInfoDescription = v)
 								? res.SuffixInfoDescription.TQCleanup(true)
 								: k.Item.suffixID.Raw;
 				}
@@ -484,7 +495,7 @@ public partial class ItemProvider : IItemProvider
 					res.FormulaeArtifactRecords = Database.GetRecordFromFile(artifactName);
 
 					// Display the name of the Artifact
-					if (!TranslationService.TryTranslateXTag(res.FormulaeArtifactRecords.GetString("description", 0), out res.FormulaeArtifactName))
+					if (!this.TryTranslateXTag(res.FormulaeArtifactRecords.GetString("description", 0), v => res.FormulaeArtifactName = v))
 						res.FormulaeArtifactName = "?Unknown Artifact Name?";
 
 					// Class

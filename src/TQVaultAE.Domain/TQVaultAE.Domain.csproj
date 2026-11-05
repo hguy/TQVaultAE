@@ -11,6 +11,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- ToFriendlyNameResult is filled only by ItemProvider (Data); its setters are internal. -->
+		<InternalsVisibleTo Include="TQVaultAE.Data" />
+		<InternalsVisibleTo Include="TQVaultAE.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\TQVaultAE.GameFiles\TQVaultAE.GameFiles.csproj" />
 	</ItemGroup>
 
