@@ -15,6 +15,7 @@ public static class TestingConditions
 		"""D:\DATA\Titan Quest Anniversary Edition""",
 		"""D:\Games\Titan Quest Anniversary Edition""",
 		"""d:\games\steam\SteamApps\common\Titan Quest Anniversary Edition""",
+		"""E:\GAMES\Steam\steamapps\common\Titan Quest Anniversary Edition""",
 		"""C:\Games\Titan Quest Anniversary Edition"""
 	};
 

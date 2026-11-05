@@ -28,6 +28,7 @@
     <ProjectReference Include="..\TQVaultAE.Domain\TQVaultAE.Domain.csproj" />
     <ProjectReference Include="..\TQVaultAE.Services\TQVaultAE.Services.csproj" />
     <ProjectReference Include="..\TQVaultAE.Presentation\TQVaultAE.Presentation.csproj" />
+    <ProjectReference Include="..\TQVaultAE.DbCli\TQVaultAE.DbCli.csproj" />
   </ItemGroup>
 
   <ItemGroup>
