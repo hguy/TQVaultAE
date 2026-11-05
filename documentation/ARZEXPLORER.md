@@ -4,6 +4,8 @@ This tool let you explore Titan Quest *.arc and *.arz game files.
 
 It is very useful for TQVaultAE contributors to be able to dig into these files for support and maintenance reasons.
 
+The binary layout of these files is described in [Titan Quest Game File Formats](tq-file-formats.md). For scripted searches and exports, see the [DB CLI (`tqdb`)](DBCLI.md).
+
 ---
 
 ## Table of contents
@@ -113,7 +115,7 @@ The status bar shows the search result location.
 
 ### <a id="MainFiles"></a>Main TQ Files
 
-Most resources files are located in these subdirectories of TQ install directory.
+Most resources files are located in these subdirectories of TQ install directory (full layout in [Game file layout](tq-file-formats.md#Layout)).
 
 - `./Audio`
 - `./Database`

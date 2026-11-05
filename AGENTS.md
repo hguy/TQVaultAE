@@ -139,5 +139,7 @@ Application (DTOs, Results, Search)
 4. Verify actual behavior, not property assignments
 
 ## Resources
+- Game file formats (ARC, ARZ, text, TEX, item stat jitter): `documentation/tq-file-formats.md`
+- DB CLI (`tqdb`) usage: `documentation/DBCLI.md`
 - GitHub: https://github.com/EtienneLamoureux/TQVaultAE
 - Issues: https://github.com/EtienneLamoureux/TQVaultAE/issues

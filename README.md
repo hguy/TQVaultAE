@@ -41,7 +41,9 @@ Works with all expansions!
     - If an error occurs, backups are located at `My Documents\My Games\Titan Quest\TQVaultData\Backup`
 - External tools
     - [ARZ Explorer](documentation/ARZEXPLORER.md) : Game resource file exploration
+    - [DB CLI (`tqdb`)](documentation/DBCLI.md) : Command-line search of the game database and archives, with JSON / TSV / raw asset export
     - [Save File Explorer](documentation/SAVEFILEEXPLORER.md) : Game save file exploration
+    - [Game file formats](documentation/tq-file-formats.md) : Technical reference of the `.arc` / `.arz` / `.tex` formats and item stat randomization
 
 ## Installation
 
