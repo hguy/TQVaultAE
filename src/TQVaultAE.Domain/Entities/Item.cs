@@ -937,6 +937,22 @@ public class Item
 	}
 
 	/// <summary>
+	/// Shallow copy of this item that shares no mutable state with it: its own <see cref="Place"/>, and no
+	/// <see cref="CurrentFriendlyNameResult"/> (that result describes this item, not the copy).
+	/// </summary>
+	/// <remarks>
+	/// A shared <see cref="Place"/> made both items report the location of whichever was moved last, so search
+	/// results pointed the original to the copy's bag.
+	/// </remarks>
+	private Item CopyDetached()
+	{
+		Item newItem = (Item)this.MemberwiseClone();
+		newItem.Place = this.Place with { };
+		newItem.CurrentFriendlyNameResult = null;
+		return newItem;
+	}
+
+	/// <summary>
 	/// Makes a duplicate of the item
 	/// VillageIdiot - Added option to keep item seed.
 	/// </summary>
@@ -944,7 +960,7 @@ public class Item
 	/// <returns>New Duplicated item</returns>
 	public Item Duplicate(bool keepItemSeed)
 	{
-		Item newItem = (Item)this.MemberwiseClone();
+		Item newItem = this.CopyDetached();
 		if (!keepItemSeed)
 			newItem.Seed = GenerateSeed();
 
@@ -961,7 +977,7 @@ public class Item
 	/// <returns>A new clone of the item</returns>
 	public Item Clone()
 	{
-		Item newItem = (Item)this.MemberwiseClone();
+		Item newItem = this.CopyDetached();
 		newItem.IsModified = true;
 		return newItem;
 	}
@@ -976,7 +992,7 @@ public class Item
 			return null;
 
 		// make a complete copy then change a few things
-		Item newItem = (Item)this.MemberwiseClone();
+		Item newItem = this.CopyDetached();
 
 		newItem.StackSize = this.StackSize - 1;
 		newItem.Var1 = 0;

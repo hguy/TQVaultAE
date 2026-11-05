@@ -270,6 +270,47 @@ public class ItemTests
 
 	#endregion
 
+	#region Copy Tests
+
+	public static TheoryData<string> CopyMethods => ["Duplicate", "Clone"];
+
+	private static Item Copy(Item item, string method) => method switch
+	{
+		"Duplicate" => item.Duplicate(true),
+		_ => item.Clone(),
+	};
+
+	[Theory]
+	[MemberData(nameof(CopyMethods))]
+	public void Copy_MovingTheCopy_LeavesTheOriginalPlace(string method)
+	{
+		// A shared Place made the original report the copy's bag, so search results focused the wrong item.
+		var original = new Item();
+		original.Place.Name = "Main Vault";
+		original.Place.SackNumber = 2;
+		original.Place.SackType = SackType.Vault;
+
+		var copy = Copy(original, method);
+		copy.Place.Name = "Second Vault";
+		copy.Place.SackNumber = 5;
+
+		original.Place.Name.Should().Be("Main Vault");
+		original.Place.SackNumber.Should().Be(2);
+		copy.Place.SackType.Should().Be(SackType.Vault, "the copy starts at the original's place");
+	}
+
+	[Theory]
+	[MemberData(nameof(CopyMethods))]
+	public void Copy_DoesNotKeepTheOriginalsFriendlyNames(string method)
+	{
+		var original = new Item();
+		original.CurrentFriendlyNameResult = new TQVaultAE.Domain.Results.ToFriendlyNameResult(original);
+
+		Copy(original, method).CurrentFriendlyNameResult.Should().BeNull();
+	}
+
+	#endregion
+
 	#region Constants Tests
 
 	[Fact]
