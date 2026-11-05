@@ -145,15 +145,15 @@ public partial class ToFriendlyNameResult
 		.JoinWithoutStartingSpaces(" ");
 
 	public readonly Item Item;
-	public string PrefixInfoDescription;
-	public string[] PrefixAttributes;
-	public DBRecordCollection PrefixInfoRecords;
-	public string SuffixInfoDescription;
-	public string[] SuffixAttributes;
-	public DBRecordCollection SuffixInfoRecords;
+	public string PrefixInfoDescription { get; internal set; }
+	public string[] PrefixAttributes { get; internal set; }
+	public DBRecordCollection PrefixInfoRecords { get; internal set; }
+	public string SuffixInfoDescription { get; internal set; }
+	public string[] SuffixAttributes { get; internal set; }
+	public DBRecordCollection SuffixInfoRecords { get; internal set; }
 
-	public RecordId BaseItemId;
-	public string BaseItemRarity;
+	public RecordId BaseItemId { get; internal set; }
+	public string BaseItemRarity { get; internal set; }
 
 	[GeneratedRegex(@"[^\w\s']")]
 	private static partial Regex BaseItemInfoClassRegEx();
@@ -161,77 +161,77 @@ public partial class ToFriendlyNameResult
 	public string BaseItemInfoClass
 	{
 		get => _BaseItemInfoClass;
-		set => _BaseItemInfoClass = BaseItemInfoClassRegEx().Replace((value ?? string.Empty), string.Empty);// Clean everything except few things;
+		internal set => _BaseItemInfoClass = BaseItemInfoClassRegEx().Replace((value ?? string.Empty), string.Empty);// Clean everything except few things;
 	}
 
-	public string BaseItemInfoStyle;
-	public string BaseItemInfoQuality;
-	public string BaseItemInfoDescription;
-	public string ItemSeed;
-	public string ItemQuest;
-	public string ItemOrigin;
-	public string ItemThrown;
-	public string NumberFormat;
-	public string ItemWith;
-	public string[] FlavorText = new string[] { };
-	public string[] Requirements = new string[] { };
-	public SortedList<string, Variable> RequirementVariables;
-	public RequirementInfo RequirementInfo;
-	public string[] BaseAttributes = new string[] { };
+	public string BaseItemInfoStyle { get; internal set; }
+	public string BaseItemInfoQuality { get; internal set; }
+	public string BaseItemInfoDescription { get; internal set; }
+	public string ItemSeed { get; internal set; }
+	public string ItemQuest { get; internal set; }
+	public string ItemOrigin { get; internal set; }
+	public string ItemThrown { get; internal set; }
+	public string NumberFormat { get; internal set; }
+	public string ItemWith { get; internal set; }
+	public string[] FlavorText { get; internal set; } = new string[] { };
+	public string[] Requirements { get; internal set; } = new string[] { };
+	public SortedList<string, Variable> RequirementVariables { get; internal set; }
+	public RequirementInfo RequirementInfo { get; internal set; }
+	public string[] BaseAttributes { get; internal set; } = new string[] { };
 
 	/// <summary>
 	/// One line per value changed by the in-game jitter ("database → in-game"), when <c>ShowInGameValues</c> is on.
 	/// </summary>
-	public string[] InGameRolls = new string[] { };
+	public string[] InGameRolls { get; internal set; } = new string[] { };
 
 	/// <summary>
 	/// Possible in-game values of each <see cref="PrefixAttributes"/> line, e.g. "(90 - 126)", or <see langword="null"/>
 	/// when the line is not randomized. Same length as <see cref="PrefixAttributes"/>, or empty without in-game values.
 	/// </summary>
-	public string?[] PrefixAttributeRanges = [];
+	public string?[] PrefixAttributeRanges { get; internal set; } = [];
 
 	/// <summary>Possible in-game values of each <see cref="SuffixAttributes"/> line (see <see cref="PrefixAttributeRanges"/>).</summary>
-	public string?[] SuffixAttributeRanges = [];
+	public string?[] SuffixAttributeRanges { get; internal set; } = [];
 
 	/// <summary>Possible in-game values of each <see cref="BaseAttributes"/> line (see <see cref="PrefixAttributeRanges"/>).</summary>
-	public string?[] BaseAttributeRanges = [];
-	public SetItemInfo ItemSet;
-	public DBRecordCollection BaseItemInfoRecords;
+	public string?[] BaseAttributeRanges { get; internal set; } = [];
+	public SetItemInfo ItemSet { get; internal set; }
+	public DBRecordCollection BaseItemInfoRecords { get; internal set; }
 
 	#region Relic Common
 
-	public string AnimalPartComplete;
-	public string AnimalPartCompleteBonus;
-	public string AnimalPart;
-	public string AnimalPartRatio;
-	public string RelicComplete;
-	public string RelicBonus;
-	public string RelicShard;
-	public string RelicRatio;
-	public string RelicClass;
-	public string RelicCompletionFormat;
-	public string RelicPattern;
-	public string RelicBonusPattern;
-	public string RelicBonusFormat;
-	public string RelicBonusFileName;
-	public string RelicBonusTitle;
-	public DBRecordCollection RelicInfoRecords;
+	public string AnimalPartComplete { get; internal set; }
+	public string AnimalPartCompleteBonus { get; internal set; }
+	public string AnimalPart { get; internal set; }
+	public string AnimalPartRatio { get; internal set; }
+	public string RelicComplete { get; internal set; }
+	public string RelicBonus { get; internal set; }
+	public string RelicShard { get; internal set; }
+	public string RelicRatio { get; internal set; }
+	public string RelicClass { get; internal set; }
+	public string RelicCompletionFormat { get; internal set; }
+	public string RelicPattern { get; internal set; }
+	public string RelicBonusPattern { get; internal set; }
+	public string RelicBonusFormat { get; internal set; }
+	public string RelicBonusFileName { get; internal set; }
+	public string RelicBonusTitle { get; internal set; }
+	public DBRecordCollection RelicInfoRecords { get; internal set; }
 
 	#endregion
 
 	#region RelicInfo 1 & 2
 
-	public string ItemRelicBonus1Format;
-	public string ItemRelicBonus2Format;
-	public string RelicInfo1Description;
-	public string RelicInfo2Description;
-	public string[] Relic1Attributes = new string[] { };
-	public string[] Relic2Attributes = new string[] { };
-	public string[] RelicBonus1Attributes = new string[] { };
-	public string[] RelicBonus2Attributes = new string[] { };
-	public DBRecordCollection RelicBonus1InfoRecords;
-	public DBRecordCollection RelicBonus2InfoRecords;
-	public DBRecordCollection Relic2InfoRecords;
+	public string ItemRelicBonus1Format { get; internal set; }
+	public string ItemRelicBonus2Format { get; internal set; }
+	public string RelicInfo1Description { get; internal set; }
+	public string RelicInfo2Description { get; internal set; }
+	public string[] Relic1Attributes { get; internal set; } = new string[] { };
+	public string[] Relic2Attributes { get; internal set; } = new string[] { };
+	public string[] RelicBonus1Attributes { get; internal set; } = new string[] { };
+	public string[] RelicBonus2Attributes { get; internal set; } = new string[] { };
+	public DBRecordCollection RelicBonus1InfoRecords { get; internal set; }
+	public DBRecordCollection RelicBonus2InfoRecords { get; internal set; }
+	public DBRecordCollection Relic2InfoRecords { get; internal set; }
 	/// <summary>
 	/// Resolve first relic completion label
 	/// </summary>
@@ -332,17 +332,17 @@ public partial class ToFriendlyNameResult
 
 	#endregion
 
-	public string ArtifactClass;
-	public string ArtifactRecipe;
-	public string ArtifactReagents;
-	public string ArtifactBonus;
-	public string ArtifactBonusFormat;
+	public string ArtifactClass { get; internal set; }
+	public string ArtifactRecipe { get; internal set; }
+	public string ArtifactReagents { get; internal set; }
+	public string ArtifactBonus { get; internal set; }
+	public string ArtifactBonusFormat { get; internal set; }
 
-	public string FormulaeArtifactClass;
-	public string FormulaeArtifactName;
-	public string FormulaeFormat;
-	public string[] FormulaeArtifactAttributes = new string[] { };
-	public DBRecordCollection FormulaeArtifactRecords;
+	public string FormulaeArtifactClass { get; internal set; }
+	public string FormulaeArtifactName { get; internal set; }
+	public string FormulaeFormat { get; internal set; }
+	public string[] FormulaeArtifactAttributes { get; internal set; } = new string[] { };
+	public DBRecordCollection FormulaeArtifactRecords { get; internal set; }
 
 	public ToFriendlyNameResult(Item itm)
 	{
@@ -391,6 +391,6 @@ public partial class ToFriendlyNameResult
 	/// <summary>
 	/// Used to give attribute list factory some kind of global awareness during its process
 	/// </summary>
-	public readonly List<string> TmpAttrib = new List<string>();
+	internal List<string> TmpAttrib { get; } = new List<string>();
 
 }
