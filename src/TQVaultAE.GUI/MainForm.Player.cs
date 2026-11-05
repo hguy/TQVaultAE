@@ -83,7 +83,13 @@ public partial class MainForm
 		this.comboBoxCharacter.SelectedIndex = 0;
 	}
 
-	// Called on FileSystemWatcher thread
+	/// <summary>
+	/// Coalesces the change events of the game save files (player, player stash, caravan and relic stash).
+	/// </summary>
+	private FileReloadDebouncer _fileReloadDebouncer;
+	private FileReloadDebouncer FileReloadDebouncer => this._fileReloadDebouncer ??= new FileReloadDebouncer(this.Log);
+
+	// Raised on the UI thread (SynchronizingObject = this)
 	private void PlayerSaveFile_Changed(object sender, FileSystemEventArgs e)
 	{
 		if (e.ChangeType != WatcherChangeTypes.Changed
@@ -91,107 +97,37 @@ public partial class MainForm
 		) return;
 
 		var fw = sender as FileSystemWatcher;
-		fw.EnableRaisingEvents = false;
+		var folder = fw.Path;
+		var fileName = e.Name;
 
-		// retrieve PlayerSave
-		var playerSave = this.comboBoxCharacter.Items.OfType<PlayerSave>().FirstOrDefault(ps => ps.Folder == fw.Path);
-
-		this.ReloadFromWatcher(fw, e.FullPath, () =>
+		this.FileReloadDebouncer.Schedule(e.FullPath, () =>
 		{
+			// retrieve PlayerSave
+			var playerSave = this.comboBoxCharacter.Items.OfType<PlayerSave>().FirstOrDefault(ps => ps.Folder == folder);
+			if (playerSave is null) return;
+
 			// Reload player file
 			PlayerLoadResult playerResult = null;
-			if (e.Name.Equals(this.GamePathResolver.PlayerSaveFileName, StringComparison.OrdinalIgnoreCase))
+			if (fileName.Equals(this.GamePathResolver.PlayerSaveFileName, StringComparison.OrdinalIgnoreCase))
 				playerResult = this.LoadPlayer(playerSave, true);
 
 			StashLoadResult stashResult = null;
-			if (e.Name.Equals(this.GamePathResolver.PlayerStashFileNameB, StringComparison.OrdinalIgnoreCase))
+			if (fileName.Equals(this.GamePathResolver.PlayerStashFileNameB, StringComparison.OrdinalIgnoreCase))
 				stashResult = this.LoadPlayerStash(playerSave, true);
 
-			// Refresh
-			this.Invoke((MethodInvoker)delegate
+			// Refresh if is current displayed character
+			if (this.comboBoxCharacter.SelectedItem == playerSave)
 			{
-				// if is current displayed character
-				if (this.comboBoxCharacter.SelectedItem == playerSave)
+				if (playerResult is not null)
 				{
-					if (playerResult is not null)
-					{
-						this.playerPanel.Player = playerResult.Player;
-						this.stashPanel.Player = playerResult.Player;
-					}
-
-					if (stashResult is not null)
-						this.stashPanel.Stash = stashResult.Stash;
+					this.playerPanel.Player = playerResult.Player;
+					this.stashPanel.Player = playerResult.Player;
 				}
 
-				fw.EnableRaisingEvents = true;
-			});
+				if (stashResult is not null)
+					this.stashPanel.Stash = stashResult.Stash;
+			}
 		});
-	}
-
-	/// <summary>Attempts made to reload a file changed by the game before giving up.</summary>
-	private const int HotReloadMaxAttempts = 10;
-
-	/// <summary>Pause between two reload attempts.</summary>
-	private static readonly TimeSpan HotReloadRetryDelay = TimeSpan.FromMilliseconds(500);
-
-	/// <summary>How long to wait for the game to release a file it is writing.</summary>
-	private static readonly TimeSpan HotReloadFileReleaseTimeout = TimeSpan.FromSeconds(5);
-
-	/// <summary>
-	/// Runs <paramref name="reload"/> on the <see cref="FileSystemWatcher"/> thread once the game has finished writing
-	/// <paramref name="filePath"/>, retrying a bounded number of times while the file stays locked.
-	/// <paramref name="reload"/> re-enables <paramref name="watcher"/> when it succeeds; on give-up it is re-enabled here.
-	/// </summary>
-	private void ReloadFromWatcher(FileSystemWatcher watcher, string filePath, Action reload)
-	{
-		for (int attempt = 1; ; attempt++)
-		{
-			try
-			{
-				WaitForFileRelease(filePath, HotReloadFileReleaseTimeout);
-				reload();
-				return;
-			}
-			catch (IOException ex) when (attempt < HotReloadMaxAttempts)
-			{
-				this.Log.LogWarning(ex, "Hot reload of {File} failed (attempt {Attempt}/{Max}), retrying", filePath, attempt, HotReloadMaxAttempts);
-				Thread.Sleep(HotReloadRetryDelay);
-			}
-			catch (IOException ex)
-			{
-				this.Log.LogError(ex, "Hot reload of {File} abandoned after {Attempts} attempts", filePath, attempt);
-				if (!this.IsDisposed)
-					this.BeginInvoke(() => watcher.EnableRaisingEvents = true);
-				return;
-			}
-		}
-	}
-
-	/// <summary>
-	/// Waits until no other process holds <paramref name="filePath"/> open, which is when the game has finished writing it.
-	/// </summary>
-	/// <exception cref="IOException">The file is still in use after <paramref name="timeout"/>.</exception>
-	private static void WaitForFileRelease(string filePath, TimeSpan timeout)
-	{
-		var deadline = DateTime.UtcNow + timeout;
-		while (true)
-		{
-			try
-			{
-				// Exclusive open only succeeds once the writer has closed its handle.
-				using var probe = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
-				return;
-			}
-			catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
-			{
-				// Nothing to wait for; the loader reports the missing file itself.
-				return;
-			}
-			catch (IOException) when (DateTime.UtcNow < deadline)
-			{
-				Thread.Sleep(100);
-			}
-		}
 	}
 
 

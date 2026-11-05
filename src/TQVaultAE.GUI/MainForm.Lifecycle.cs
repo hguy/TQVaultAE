@@ -57,6 +57,10 @@ public partial class MainForm
 				return false;
 			}
 
+			// No hot reload may land while files are saved and the form goes away.
+			this._fileReloadDebouncer?.Dispose();
+			this._fileReloadDebouncer = null;
+
 			this.SaveAllModifiedFiles();
 
 			// Added by VillageIdiot

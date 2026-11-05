@@ -128,49 +128,29 @@ public partial class MainForm
 		return result;
 	}
 
+	// Raised on the UI thread (SynchronizingObject = this)
 	private void fileSystemWatcherRelicStash_Changed(object sender, FileSystemEventArgs e)
 	{
 		if (e.ChangeType != WatcherChangeTypes.Changed) return;
 
-		var fw = sender as FileSystemWatcher;
-		fw.EnableRaisingEvents = false;
-
-		this.ReloadFromWatcher(fw, e.FullPath, () =>
+		this.FileReloadDebouncer.Schedule(e.FullPath, () =>
 		{
-			// Reload
 			var stashResult = LoadRelicVaultStash(true);
-
-			// Refresh
-			this.Invoke((MethodInvoker)delegate
-			{
-				if (stashResult is not null)
-					this.stashPanel.RelicVaultStash = stashResult.Stash;
-
-				fw.EnableRaisingEvents = true;
-			});
+			if (stashResult is not null)
+				this.stashPanel.RelicVaultStash = stashResult.Stash;
 		});
 	}
 
+	// Raised on the UI thread (SynchronizingObject = this)
 	private void fileSystemWatcherTransferStash_Changed(object sender, FileSystemEventArgs e)
 	{
 		if (e.ChangeType != WatcherChangeTypes.Changed) return;
 
-		var fw = sender as FileSystemWatcher;
-		fw.EnableRaisingEvents = false;
-
-		this.ReloadFromWatcher(fw, e.FullPath, () =>
+		this.FileReloadDebouncer.Schedule(e.FullPath, () =>
 		{
-			// Reload
 			var stashResult = LoadTransferStash(true);
-
-			// Refresh
-			this.Invoke((MethodInvoker)delegate
-			{
-				if (stashResult is not null)
-					this.stashPanel.TransferStash = stashResult.Stash;
-
-				fw.EnableRaisingEvents = true;
-			});
+			if (stashResult is not null)
+				this.stashPanel.TransferStash = stashResult.Stash;
 		});
 	}
 	/// <summary>
