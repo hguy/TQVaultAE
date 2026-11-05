@@ -13,9 +13,10 @@ namespace TQVaultAE.GUI.Tooltip;
 public partial class ItemTooltip : BaseTooltip
 {
 	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();
-	private static Dictionary<(Item Item, float Scale, bool AltView), (Bitmap Bmp, ToFriendlyNameResult Data)> ToImage = new Dictionary<(Item, float, bool), (Bitmap, ToFriendlyNameResult)>();
+	private static Dictionary<(Item Item, float Scale, bool AltView, bool InGameValues), (Bitmap Bmp, ToFriendlyNameResult Data)> ToImage = new Dictionary<(Item, float, bool, bool), (Bitmap, ToFriendlyNameResult)>();
 
 	internal bool EnableDetailedTooltipView { get; set; }
+	internal bool ShowInGameValues { get; set; }
 	internal Item FocusedItem { get; set; }
 	internal SackPanel SackPanel { get; set; }
 	internal ResultsDialog ResultsDialog { get; set; }
@@ -23,6 +24,9 @@ public partial class ItemTooltip : BaseTooltip
 
 
 	internal ToFriendlyNameResult Data { get; private set; }
+
+	/// <summary>Attribute rows with a right-aligned range, sized to the tooltip width once all rows exist.</summary>
+	private readonly List<(Panel Row, Control Left, Control Right)> rangeRows = new();
 
 #if DEBUG
 	// For Design Mode
@@ -94,7 +98,8 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				FocusedItem = focusedItem,
 				SackPanel = sackPanel,
-				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView
+				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
+				ShowInGameValues = userSettings.ShowInGameValues
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
 			_Current.Show();
@@ -125,7 +130,8 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				FocusedItem = focusedItem,
 				ResultsDialog = resultsDialog,
-				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView
+				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
+				ShowInGameValues = userSettings.ShowInGameValues
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
 			_Current.Show();
@@ -156,7 +162,8 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				FocusedItem = focusedItem,
 				PictureBox = picBox,
-				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView
+				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
+				ShowInGameValues = userSettings.ShowInGameValues
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
 			_Current.Show();
@@ -171,7 +178,7 @@ public partial class ItemTooltip : BaseTooltip
 	/// </summary>
 	public void FillToolTip()
 	{
-		var key = (this.FocusedItem, UIService.Scale, this.EnableDetailedTooltipView);
+		var key = (this.FocusedItem, UIService.Scale, this.EnableDetailedTooltipView, this.ShowInGameValues);
 
 		// Redraw
 		if (ToImage.ContainsKey(key))
@@ -190,6 +197,7 @@ public partial class ItemTooltip : BaseTooltip
 
 		this.SuspendLayout();
 		this.flowLayoutPanelFriendlyNames.SuspendLayout();
+		this.rangeRows.Clear();
 
 		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, FriendlyNamesExtraScopes.ItemFullDisplay);
 
@@ -240,19 +248,19 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(AdjustColor(this.Data.PrefixInfoDescription, Resources.ItemPropertiesLabelPrefixProperties), style: FontStyle.Bold);
-				foreach (var str in Data.PrefixAttributes) AddRow(str);
+				AddAttributeRows(Data.PrefixAttributes, Data.PrefixAttributeRanges);
 			}
 			if (Data.BaseAttributes.Any())
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(AdjustColor(this.Data.BaseItemInfoDescription, Resources.ItemPropertiesLabelBaseItemProperties), style: FontStyle.Bold);
-				foreach (var str in Data.BaseAttributes) AddRow(str);
+				AddAttributeRows(Data.BaseAttributes, Data.BaseAttributeRanges);
 			}
 			if (Data.SuffixAttributes.Any())
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(AdjustColor(this.Data.SuffixInfoDescription, Resources.ItemPropertiesLabelSuffixProperties), style: FontStyle.Bold);
-				foreach (var str in Data.SuffixAttributes) AddRow(str);
+				AddAttributeRows(Data.SuffixAttributes, Data.SuffixAttributeRanges);
 			}
 		}
 		else
@@ -261,6 +269,14 @@ public partial class ItemTooltip : BaseTooltip
 			foreach (var str in Data.BaseAttributes) AddRow(str);
 			foreach (var str in Data.PrefixAttributes) AddRow(str);
 			foreach (var str in Data.SuffixAttributes) AddRow(str);
+		}
+
+		// In-game jitter comparison (database -> in-game), detailed view only
+		if (this.EnableDetailedTooltipView && Data.InGameRolls.Any())
+		{
+			AddRow(TOOLTIPSPACER);
+			AddRow(Resources.ItemPropertiesLabelInGameRolls, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);
+			foreach (var str in Data.InGameRolls) AddRow(str, ItemStyle.Broken.TQColor().Color());
 		}
 
 		// formula Artifact Details goes after formula attributes
@@ -345,6 +361,7 @@ public partial class ItemTooltip : BaseTooltip
 			foreach (var str in Data.Requirements) AddRow(str, ItemStyle.Broken.TQColor().Color());
 		}
 
+		this.AlignRangeRows();
 		this.flowLayoutPanelFriendlyNames.ResumeLayout();
 		this.ResumeLayout();
 
@@ -361,6 +378,84 @@ public partial class ItemTooltip : BaseTooltip
 		Control row = MakeRow(this.UIService, this.FontService, friendlyName, FGColor, fontSize, style, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
 
 		this.flowLayoutPanelFriendlyNames.Controls.Add(row);
+	}
+
+	/// <summary>
+	/// Adds attribute lines, each with its possible in-game values right-aligned when known (detailed view only).
+	/// </summary>
+	private void AddAttributeRows(string[] lines, string?[] ranges)
+	{
+		for (int i = 0; i < lines.Length; i++)
+		{
+			var range = i < ranges.Length ? ranges[i] : null;
+			if (string.IsNullOrEmpty(range))
+				AddRow(lines[i]);
+			else
+				this.flowLayoutPanelFriendlyNames.Controls.Add(this.MakeRangeRow(lines[i], range));
+		}
+	}
+
+	/// <summary>
+	/// A row with the attribute on the left and its range on the right. Its width is set by <see cref="AlignRangeRows"/>:
+	/// a flow layout does not count rows stretched with anchors when it measures its widest row.
+	/// </summary>
+	private Control MakeRangeRow(string line, string range)
+	{
+		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
+		var left = MakeRow(this.UIService, this.FontService, line, BGColor: bg);
+		var right = MakeSingleColorLabel(this.UIService, this.FontService, range, ItemStyle.Broken.TQColor().Color(), 10F, FontStyle.Regular, bg);
+
+		var row = new Panel()
+		{
+			AutoSize = false,
+			BackColor = bg,
+			Margin = new Padding(0),
+			Padding = new Padding(0),
+			Anchor = AnchorStyles.Left,
+		};
+
+		left.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+		left.Location = Point.Empty;
+		right.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+
+		row.Controls.Add(left);
+		row.Controls.Add(right);
+		this.rangeRows.Add((row, left, right));
+		return row;
+	}
+
+	/// <summary>
+	/// Gives every range row the width of the widest tooltip row (or its own natural width if larger),
+	/// so ranges line up on the right edge without truncating the attribute text.
+	/// </summary>
+	private void AlignRangeRows()
+	{
+		if (this.rangeRows.Count == 0)
+			return;
+
+		var gap = (int)(16 * this.UIService.Scale);
+		int width = 0;
+		foreach (Control control in this.flowLayoutPanelFriendlyNames.Controls)
+		{
+			if (control is Panel panel && this.rangeRows.Exists(r => r.Row == panel))
+				continue;
+			if ((control.Anchor & AnchorStyles.Right) == AnchorStyles.Right)
+				continue; // stretched delimiters follow the others
+			width = Math.Max(width, control.PreferredSize.Width + control.Margin.Horizontal);
+		}
+
+		foreach (var (_, left, right) in this.rangeRows)
+			width = Math.Max(width, left.PreferredSize.Width + gap + right.PreferredSize.Width);
+
+		foreach (var (row, left, right) in this.rangeRows)
+		{
+			var leftSize = left.PreferredSize;
+			var rightSize = right.PreferredSize;
+			row.Size = new Size(width, Math.Max(leftSize.Height, rightSize.Height));
+			left.Size = leftSize;
+			right.Size = rightSize;
+			right.Location = new Point(width - rightSize.Width, 0);
+		}
 	}
 
 	private void ItemTooltip_Load(object sender, EventArgs e)

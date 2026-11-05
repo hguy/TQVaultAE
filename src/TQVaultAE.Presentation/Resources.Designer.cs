@@ -5904,5 +5904,32 @@ namespace TQVaultAE.Presentation {
             }
         }
 
+        
+        /// <summary>
+        ///   Looks up a localized string similar to In-Game Rolls (database -&gt; in-game).
+        /// </summary>
+        public static string ItemPropertiesLabelInGameRolls {
+            get {
+                return ResourceManager.GetString("ItemPropertiesLabelInGameRolls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show In-Game Values.
+        /// </summary>
+        public static string SettingShowInGameValues {
+            get {
+                return ResourceManager.GetString("SettingShowInGameValues", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Apply the game's stat jitter (item seed) to equipment tooltips. With the detailed view, also lists each rolled value..
+        /// </summary>
+        public static string SettingShowInGameValuesTT {
+            get {
+                return ResourceManager.GetString("SettingShowInGameValuesTT", resourceCulture);
+            }
+        }
     }
 }

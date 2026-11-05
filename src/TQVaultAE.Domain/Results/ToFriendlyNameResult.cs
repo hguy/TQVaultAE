@@ -178,6 +178,23 @@ public partial class ToFriendlyNameResult
 	public SortedList<string, Variable> RequirementVariables;
 	public RequirementInfo RequirementInfo;
 	public string[] BaseAttributes = new string[] { };
+
+	/// <summary>
+	/// One line per value changed by the in-game jitter ("database → in-game"), when <c>ShowInGameValues</c> is on.
+	/// </summary>
+	public string[] InGameRolls = new string[] { };
+
+	/// <summary>
+	/// Possible in-game values of each <see cref="PrefixAttributes"/> line, e.g. "(90 - 126)", or <see langword="null"/>
+	/// when the line is not randomized. Same length as <see cref="PrefixAttributes"/>, or empty without in-game values.
+	/// </summary>
+	public string?[] PrefixAttributeRanges = [];
+
+	/// <summary>Possible in-game values of each <see cref="SuffixAttributes"/> line (see <see cref="PrefixAttributeRanges"/>).</summary>
+	public string?[] SuffixAttributeRanges = [];
+
+	/// <summary>Possible in-game values of each <see cref="BaseAttributes"/> line (see <see cref="PrefixAttributeRanges"/>).</summary>
+	public string?[] BaseAttributeRanges = [];
 	public SetItemInfo ItemSet;
 	public DBRecordCollection BaseItemInfoRecords;
 
