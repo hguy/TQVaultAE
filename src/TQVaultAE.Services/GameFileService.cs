@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Medallion.Shell;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Presentation;
@@ -7,7 +5,6 @@ using TQVaultAE.Config;
 using TQVaultAE.Domain.Helpers;
 using System.ComponentModel;
 using System.IO.Compression;
-using Medallion.Shell.Streams;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 
@@ -126,19 +123,6 @@ public partial class GameFileService : IGameFileService
 										   })
 									  )
 								{
-									// Hook console output verbosity
-
-									// --- Method StandardError direct reading
-									//var tsk = Task.Run(() => ConsumeStandardOutputAsync(push.StandardError));
-									//push.Wait();
-									//return push.Result.Success;
-
-									// --- Method BindingList event model
-									//BindingList<string> pushoutStd = new(), pusherrStd = new();
-									//pusherrStd.ListChanged += PusherrStd_ListChanged;
-									//var res = HandleExecuteRef(push, errMess, ref pushoutStd, ref pusherrStd);
-									//return res;
-
 									if (HandleExecuteOut(push, errMess, out var pushoutStd, out var pusherrStd))
 									{
 										pushTags = Command.Run("git", new[] { "push", "origin", "latest", "-f" }, options);
@@ -163,52 +147,6 @@ public partial class GameFileService : IGameFileService
 		}
 		return false;
 	}
-
-	#region MedallionShell output hook
-
-	private void PusherrStd_ListChanged(object sender, ListChangedEventArgs e)
-	{
-		var lst = sender as BindingList<string>;
-
-		if (e.ListChangedType == ListChangedType.ItemAdded)
-		{
-			var line = lst[e.NewIndex];
-			if (line is not null && PercentProgressRegEx().Match(line) is { Success: true } m)
-			{
-				var num = m.Groups["Num"].Value;
-				Debug.WriteLine("Num : " + num);
-				var percent = int.Parse(num);
-				//UIService.ProgressBarReport("Git Push - " + line, percent);
-				//GitAddCommitTagAndPushProgress.Report(("Git Push : " + line, percent));// Do report in time but everything is flushed after work.
-			}
-		}
-	}
-
-	private async void ConsumeStandardOutputAsync(ProcessStreamReader output)
-	{
-		// From https://github.com/madelson/MedallionShell/issues/23
-		string line;
-		while ((line = await output.ReadLineAsync().ConfigureAwait(false)) != null)
-		{
-			Console.WriteLine(line);
-			/* Will match
-			Counting objects: 100% (2173/2173), done.
-			Compressing objects: 100% (2117/2117), done.
-			Writing objects: 100% (2172/2172), 38.08 MiB | 2.23 MiB/s, done.
-			remote: Resolving deltas: 100% (1886/1886), done.
-			*/
-			if (line is not null && PercentProgressRegEx().Match(line) is { Success: true } m)
-			{
-				var percent = int.Parse(m.Groups["Num"].Value);
-				//UIService.ProgressBarReport("Git Push", percent);
-			}
-		}
-	}
-
-	[GeneratedRegex(@"(?<Num>\d{1,3})%")]
-	private static partial Regex PercentProgressRegEx();
-
-	#endregion
 
 	public void GitRepositorySetup()
 	{
@@ -409,13 +347,16 @@ public partial class GameFileService : IGameFileService
 				stderr = cmd.StandardError.PipeToAsync(errorLines);
 			}
 
+			// Deliberately synchronous: callers (e.g. the push on app close) must finish before continuing.
+			// GetResult() rethrows the real exception instead of an AggregateException, so the log shows the cause.
 			fullTask = Task.WhenAll(stdout, stderr, cmd.Task);
-			fullTask.Wait();
+			fullTask.GetAwaiter().GetResult();
 
-			if (!cmd.Result.Success)
+			var success = cmd.Task.GetAwaiter().GetResult().Success;
+			if (!success)
 				errLog = errorLines.JoinString(Environment.NewLine);
 
-			return cmd.Result.Success;
+			return success;
 		}
 		catch (Exception ex)
 		{

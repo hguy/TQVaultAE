@@ -135,8 +135,7 @@ public partial class MainForm
 		var fw = sender as FileSystemWatcher;
 		fw.EnableRaisingEvents = false;
 
-	retryOnLock:
-		try
+		this.ReloadFromWatcher(fw, e.FullPath, () =>
 		{
 			// Reload
 			var stashResult = LoadRelicVaultStash(true);
@@ -149,13 +148,7 @@ public partial class MainForm
 
 				fw.EnableRaisingEvents = true;
 			});
-		}
-		catch (IOException ioException)
-		{
-			Log.LogError(ioException, "Retry in 0.5 sec");
-			Thread.Sleep(500);
-			goto retryOnLock;
-		}
+		});
 	}
 
 	private void fileSystemWatcherTransferStash_Changed(object sender, FileSystemEventArgs e)
@@ -165,8 +158,7 @@ public partial class MainForm
 		var fw = sender as FileSystemWatcher;
 		fw.EnableRaisingEvents = false;
 
-	retryOnLock:
-		try
+		this.ReloadFromWatcher(fw, e.FullPath, () =>
 		{
 			// Reload
 			var stashResult = LoadTransferStash(true);
@@ -179,13 +171,7 @@ public partial class MainForm
 
 				fw.EnableRaisingEvents = true;
 			});
-		}
-		catch (IOException ioException)
-		{
-			Log.LogError(ioException, "Retry in 0.5 sec");
-			Thread.Sleep(500);
-			goto retryOnLock;
-		}
+		});
 	}
 	/// <summary>
 	/// Attempts to save all modified stash files.

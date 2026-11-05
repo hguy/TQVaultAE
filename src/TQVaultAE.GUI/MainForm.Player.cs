@@ -96,23 +96,16 @@ public partial class MainForm
 		// retrieve PlayerSave
 		var playerSave = this.comboBoxCharacter.Items.OfType<PlayerSave>().FirstOrDefault(ps => ps.Folder == fw.Path);
 
-	retryOnLock:
-		try
+		this.ReloadFromWatcher(fw, e.FullPath, () =>
 		{
 			// Reload player file
 			PlayerLoadResult playerResult = null;
 			if (e.Name.Equals(this.GamePathResolver.PlayerSaveFileName, StringComparison.OrdinalIgnoreCase))
-			{
-				Thread.Sleep(500);// Wait for content availability
 				playerResult = this.LoadPlayer(playerSave, true);
-			}
 
 			StashLoadResult stashResult = null;
 			if (e.Name.Equals(this.GamePathResolver.PlayerStashFileNameB, StringComparison.OrdinalIgnoreCase))
-			{
-				Thread.Sleep(500);// Wait for content availability
 				stashResult = this.LoadPlayerStash(playerSave, true);
-			}
 
 			// Refresh
 			this.Invoke((MethodInvoker)delegate
@@ -132,12 +125,72 @@ public partial class MainForm
 
 				fw.EnableRaisingEvents = true;
 			});
-		}
-		catch (IOException ioException)
+		});
+	}
+
+	/// <summary>Attempts made to reload a file changed by the game before giving up.</summary>
+	private const int HotReloadMaxAttempts = 10;
+
+	/// <summary>Pause between two reload attempts.</summary>
+	private static readonly TimeSpan HotReloadRetryDelay = TimeSpan.FromMilliseconds(500);
+
+	/// <summary>How long to wait for the game to release a file it is writing.</summary>
+	private static readonly TimeSpan HotReloadFileReleaseTimeout = TimeSpan.FromSeconds(5);
+
+	/// <summary>
+	/// Runs <paramref name="reload"/> on the <see cref="FileSystemWatcher"/> thread once the game has finished writing
+	/// <paramref name="filePath"/>, retrying a bounded number of times while the file stays locked.
+	/// <paramref name="reload"/> re-enables <paramref name="watcher"/> when it succeeds; on give-up it is re-enabled here.
+	/// </summary>
+	private void ReloadFromWatcher(FileSystemWatcher watcher, string filePath, Action reload)
+	{
+		for (int attempt = 1; ; attempt++)
 		{
-			Log.LogError(ioException, "Retry in 0.5 sec");
-			Thread.Sleep(500);
-			goto retryOnLock;
+			try
+			{
+				WaitForFileRelease(filePath, HotReloadFileReleaseTimeout);
+				reload();
+				return;
+			}
+			catch (IOException ex) when (attempt < HotReloadMaxAttempts)
+			{
+				this.Log.LogWarning(ex, "Hot reload of {File} failed (attempt {Attempt}/{Max}), retrying", filePath, attempt, HotReloadMaxAttempts);
+				Thread.Sleep(HotReloadRetryDelay);
+			}
+			catch (IOException ex)
+			{
+				this.Log.LogError(ex, "Hot reload of {File} abandoned after {Attempts} attempts", filePath, attempt);
+				if (!this.IsDisposed)
+					this.BeginInvoke(() => watcher.EnableRaisingEvents = true);
+				return;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Waits until no other process holds <paramref name="filePath"/> open, which is when the game has finished writing it.
+	/// </summary>
+	/// <exception cref="IOException">The file is still in use after <paramref name="timeout"/>.</exception>
+	private static void WaitForFileRelease(string filePath, TimeSpan timeout)
+	{
+		var deadline = DateTime.UtcNow + timeout;
+		while (true)
+		{
+			try
+			{
+				// Exclusive open only succeeds once the writer has closed its handle.
+				using var probe = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.None);
+				return;
+			}
+			catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+			{
+				// Nothing to wait for; the loader reports the missing file itself.
+				return;
+			}
+			catch (IOException) when (DateTime.UtcNow < deadline)
+			{
+				Thread.Sleep(100);
+			}
 		}
 	}
 
