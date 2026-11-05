@@ -9,7 +9,8 @@ namespace TQVaultAE.GUI.Tooltip;
 
 public partial class FoundResultsTooltip : BaseTooltip
 {
-	private static Dictionary<(string ResultCollectionHash, float Scale), Bitmap> ToImage = new Dictionary<(string, float), Bitmap>();
+	/// <summary>Rendered search result summaries, up to 16 MB.</summary>
+	private static readonly TooltipImageCache<(string ResultCollectionHash, float Scale), object?> ToImage = new(16L << 20);
 
 	private Rectangle CurrentWorkingArea;
 	private int RightSide;
@@ -48,11 +49,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 	{
 		var hashlisttoremove = resultlistCollection.Where(s => s?.Any() ?? false).Select(l => MakeHash(l));
 
-		var cacheentrytoremove = ToImage
-			.Where(c => hashlisttoremove.Contains(c.Key.ResultCollectionHash)).Select(c => c.Key)
-			.ToList();
-
-		cacheentrytoremove.ForEach(c => ToImage.Remove(c));
+		ToImage.RemoveWhere(k => hashlisttoremove.Contains(k.ResultCollectionHash));
 	}
 
 	private static string MakeHash(IEnumerable<SearchResult> list)
@@ -112,16 +109,9 @@ public partial class FoundResultsTooltip : BaseTooltip
 			var key = (MakeHash(this.ResultsToDisplay), UIService.Scale);
 
 			// Redraw
-			if (ToImage.ContainsKey(key))
+			if (ToImage.TryGetCopy(key, out var cached, out _))
 			{
-				this.Controls.Clear();
-				this.Padding = new Padding(0);
-				this.Controls.Add(new PictureBox()
-				{
-					Image = ToImage[key],
-					SizeMode = PictureBoxSizeMode.AutoSize,
-					Dock = DockStyle.Fill,
-				});
+				this.ShowCachedImage(cached);
 				return;
 			}
 
@@ -158,7 +148,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 			var h = this.flowLayoutPanelFriendlyNames.Height;
 			var raster = new Bitmap(w, h);
 			this.flowLayoutPanelFriendlyNames.DrawToBitmap(raster, new Rectangle(0, 0, w, h));
-			ToImage[key] = raster;
+			ToImage.Add(key, raster, null);
 		}
 	}
 

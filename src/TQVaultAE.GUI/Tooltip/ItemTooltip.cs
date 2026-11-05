@@ -12,7 +12,8 @@ namespace TQVaultAE.GUI.Tooltip;
 public partial class ItemTooltip : BaseTooltip
 {
 	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();
-	private static Dictionary<(Item Item, float Scale, bool AltView, bool InGameValues), (Bitmap Bmp, ToFriendlyNameResult Data)> ToImage = new Dictionary<(Item, float, bool, bool), (Bitmap, ToFriendlyNameResult)>();
+	/// <summary>Rendered item tooltips and their text, up to 48 MB.</summary>
+	private static readonly TooltipImageCache<(Item Item, float Scale, bool AltView, bool InGameValues), ToFriendlyNameResult> ToImage = new(48L << 20);
 
 	internal bool EnableDetailedTooltipView { get; set; }
 	internal bool ShowInGameValues { get; set; }
@@ -49,12 +50,7 @@ public partial class ItemTooltip : BaseTooltip
 	public static void InvalidateCache(params Item[] items)
 	{
 		items = items.Where(i => i != null).ToArray();
-		var cacheentrytoremove = ToImage
-			.Where(c => items.Contains(c.Key.Item))
-			.Select(c => c.Key)
-			.ToList();
-		foreach (var c in cacheentrytoremove)
-			ToImage.Remove(c);
+		ToImage.RemoveWhere(k => items.Contains(k.Item));
 	}
 
 	// to avoid Mainform lost focus with this.TopMost = false
@@ -180,17 +176,10 @@ public partial class ItemTooltip : BaseTooltip
 		var key = (this.FocusedItem, UIService.Scale, this.EnableDetailedTooltipView, this.ShowInGameValues);
 
 		// Redraw
-		if (ToImage.ContainsKey(key))
+		if (ToImage.TryGetCopy(key, out var cached, out var data))
 		{
-			this.Controls.Clear();
-			this.Padding = new Padding(0);
-			this.Data = ToImage[key].Data;
-			this.Controls.Add(new PictureBox()
-			{
-				Image = ToImage[key].Bmp,
-				SizeMode = PictureBoxSizeMode.AutoSize,
-				Dock = DockStyle.Fill,
-			});
+			this.Data = data;
+			this.ShowCachedImage(cached);
 			return;
 		}
 
@@ -369,7 +358,7 @@ public partial class ItemTooltip : BaseTooltip
 		var h = this.flowLayoutPanelFriendlyNames.Height;
 		var raster = new Bitmap(w, h);
 		this.flowLayoutPanelFriendlyNames.DrawToBitmap(raster, new Rectangle(0, 0, w, h));
-		ToImage[key] = (raster, Data);
+		ToImage.Add(key, raster, Data);
 	}
 
 	private void AddRow(string friendlyName = TOOLTIPSPACER, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)

@@ -27,6 +27,37 @@ public class BaseTooltip : Form
 		this.TranslationService = translationService;
 	}
 
+	/// <summary>Copy of a cached image shown by this tooltip; owned by the tooltip.</summary>
+	private Bitmap? _shownImage;
+
+	/// <summary>
+	/// Replaces the tooltip content with <paramref name="image"/>, a copy taken from a <c>TooltipImageCache</c>.
+	/// The tooltip owns the copy and disposes it with itself.
+	/// </summary>
+	protected void ShowCachedImage(Bitmap image)
+	{
+		this.Controls.Clear();
+		this.Padding = new Padding(0);
+		this._shownImage?.Dispose();
+		this._shownImage = image;
+		this.Controls.Add(new PictureBox()
+		{
+			Image = image,
+			SizeMode = PictureBoxSizeMode.AutoSize,
+			Dock = DockStyle.Fill,
+		});
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		base.Dispose(disposing);
+		if (disposing)
+		{
+			this._shownImage?.Dispose();
+			this._shownImage = null;
+		}
+	}
+
 	internal static Control MakeRow(IUIService uiService, IFontService fontService, string friendlyName, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
 	{
 		friendlyName = friendlyName ?? string.Empty;

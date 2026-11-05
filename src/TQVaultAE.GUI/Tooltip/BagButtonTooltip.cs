@@ -10,7 +10,8 @@ namespace TQVaultAE.GUI.Tooltip;
 public partial class BagButtonTooltip : BaseTooltip
 {
 	private static Dictionary<BagButtonBase, BagButtonTooltip> ItemTooltipOpened = new Dictionary<BagButtonBase, BagButtonTooltip>();
-	private static Dictionary<(SackCollection Sack, float Scale), Bitmap> ToImage = new Dictionary<(SackCollection, float), Bitmap>();
+	/// <summary>Rendered sack summaries, up to 16 MB.</summary>
+	private static readonly TooltipImageCache<(SackCollection Sack, float Scale), object?> ToImage = new(16L << 20);
 
 	public BagButtonBase ButtonSack;
 
@@ -45,20 +46,13 @@ public partial class BagButtonTooltip : BaseTooltip
 	public static void InvalidateCache(params SackCollection[] sack)
 	{
 		sack = sack.Where(s => s != null).ToArray();
-		var cacheentrytoremove = ToImage.Where(c => sack.Contains(c.Key.Sack)).Select(c => c.Key).ToList();
-		foreach (var c in cacheentrytoremove)
-			ToImage.Remove(c);
+		ToImage.RemoveWhere(k => sack.Contains(k.Sack));
 	}
 
 	public static void InvalidateCache(params Item[] items)
 	{
 		items = items.Where(i => i != null).ToArray();
-		var cacheentrytoremove = ToImage
-			.Where(c => c.Key.Sack.Intersect(items).Any())
-			.Select(c => c.Key)
-			.ToList();
-		foreach (var c in cacheentrytoremove)
-			ToImage.Remove(c);
+		ToImage.RemoveWhere(k => k.Sack.Intersect(items).Any());
 	}
 
 	public static void HideTooltip()
@@ -107,16 +101,9 @@ public partial class BagButtonTooltip : BaseTooltip
 		var key = (this.ButtonSack.Sack, UIService.Scale);
 
 		// Redraw
-		if (ToImage.ContainsKey(key))
+		if (ToImage.TryGetCopy(key, out var cached, out _))
 		{
-			this.Controls.Clear();
-			this.Padding = new Padding(0);
-			this.Controls.Add(new PictureBox()
-			{
-				Image = ToImage[key],
-				SizeMode = PictureBoxSizeMode.AutoSize,
-				Dock = DockStyle.Fill,
-			});
+			this.ShowCachedImage(cached);
 			return;
 		}
 
@@ -156,7 +143,7 @@ public partial class BagButtonTooltip : BaseTooltip
 		var h = this.flowLayoutPanelFriendlyNames.Height;
 		var raster = new Bitmap(w, h);
 		this.flowLayoutPanelFriendlyNames.DrawToBitmap(raster, new Rectangle(0, 0, w, h));
-		ToImage[key] = raster;
+		ToImage.Add(key, raster, null);
 	}
 
 	private void AddRow(string friendlyName, Color color)
