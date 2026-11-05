@@ -362,59 +362,6 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		}).ToArray();
 	}
 
-	/*
-
-#if DEBUG
-		// Generate RelicAndCharm Enum
-		if (path.Contains("Share"))
-		{
-			var str = pc.Sacks
-				//.Skip(8)
-				.SelectMany(s => s.items)
-				.Select(s =>
-				{
-					var Id = s.BaseItemId.Normalized;
-					var filename = this.PathIO.GetFileNameWithoutExtension(Id);
-					var filesplit = filename.Split('_');
-					var enumName = filesplit.Reverse().JoinString("_");
-
-					if (s.BaseItemId.TokensNormalized.Contains("HCDUNGEON"))
-						enumName = "HCDUNGEON_" + enumName;
-
-					return new
-					{
-						Item = s,
-						Friendly = ItemProvider.GetFriendlyNames(s, FriendlyNamesExtraScopes.ItemFullDisplay),
-						Id,
-						filename,
-						enumName
-					};
-				})
-				.OrderBy(s => s.enumName)
-				.GroupBy(s => s.enumName)
-				.Select(g =>
-				{
-					var i = g.First();
-					return $@"
-/// <summary>
-/// {i.Friendly.FullNameClean}
-/// </summary>
-/// <remarks>
-/// {string.Join("\n/// ", i.Friendly.FlavorText).RemoveAllTQTags()}
-/// </remarks>
-[Description(@""{i.Id}"")]
-[GearType(GearType.Undefined)]
-{i.enumName},";
-				})
-				.JoinString("\n");
-
-			System.Diagnostics.Debug.WriteLine(str);
-		}
-
-#endif
-
-	*/
-
 	/// <summary>
 	/// Looks for the next begin_block or end_block.
 	/// </summary>
