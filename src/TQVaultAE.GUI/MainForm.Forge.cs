@@ -21,7 +21,7 @@ public partial class MainForm
 
 	private ForgePanel CreateForgePanel()
 	{
-		forgePanel = new ForgePanel(DragInfo, ServiceProvider);
+		forgePanel = new ForgePanel(DragInfo, Services);
 
 		flowLayoutPanelRightPanels.Controls.Add(forgePanel);
 		forgePanel.Anchor = AnchorStyles.Left | AnchorStyles.Top;

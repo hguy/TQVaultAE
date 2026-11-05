@@ -9,7 +9,6 @@ using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.GUI;
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel;
@@ -137,7 +136,7 @@ public partial class VaultForm : Form, IScalingControl
 	protected readonly IGamePathService GamePathResolver;
 	protected readonly IGameFileService GameFileService;
 	protected readonly ISoundService SoundService;
-	internal readonly IServiceProvider ServiceProvider;
+	internal readonly GuiServices Services;
 
 
 #if DEBUG
@@ -147,26 +146,26 @@ public partial class VaultForm : Form, IScalingControl
 	/// <summary>
 	/// Initializes a new instance of the VaultForm class.
 	/// </summary>
-	public VaultForm(IServiceProvider serviceProvider)
+	public VaultForm(GuiServices services)
 	{
 		if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
 		{
-			this.ServiceProvider = serviceProvider;
-			this.FontService = this.ServiceProvider.GetService<IFontService>();
-			this.UIService = this.ServiceProvider.GetService<IUIService>();
-			this.Database = this.ServiceProvider.GetService<IDatabase>();
-			this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
-			this.PlayerCollectionProvider = this.ServiceProvider.GetService<IPlayerCollectionProvider>();
-			this.GamePathResolver = this.ServiceProvider.GetService<IGamePathService>();
-			this.GameFileService = this.ServiceProvider.GetService<IGameFileService>();
-			this.SoundService = this.ServiceProvider.GetService<ISoundService>();
+			this.Services = services;
+			this.FontService = this.Services.FontService;
+			this.UIService = this.Services.UIService;
+			this.Database = this.Services.Database;
+			this.ItemProvider = this.Services.ItemProvider;
+			this.PlayerCollectionProvider = this.Services.PlayerCollectionProvider;
+			this.GamePathResolver = this.Services.GamePathService;
+			this.GameFileService = this.Services.GameFileService;
+			this.SoundService = this.Services.SoundService;
 			this.titleFont = FontService.GetFontLight(9.5F);
-			this.Log = this.ServiceProvider.GetService<ILogger<VaultForm>>();
-			this.TranslationService = this.ServiceProvider.GetService<ITranslationService>();
-			this.PathIO = this.ServiceProvider.GetService<IPathIO>();
-			this.FileIO = this.ServiceProvider.GetService<IFileIO>();
-			this.DirectoryIO = this.ServiceProvider.GetService<IDirectoryIO>();
-			this.USettings = this.ServiceProvider.GetService<UserSettings>();
+			this.Log = this.Services.Logger<VaultForm>();
+			this.TranslationService = this.Services.TranslationService;
+			this.PathIO = this.Services.PathIO;
+			this.FileIO = this.Services.FileIO;
+			this.DirectoryIO = this.Services.DirectoryIO;
+			this.USettings = this.Services.Settings;
 
 			InitForm();
 		}

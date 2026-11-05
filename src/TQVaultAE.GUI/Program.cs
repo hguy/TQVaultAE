@@ -118,6 +118,10 @@ public static class Program
 		.AddSingleton<IPasteBinService, PasteBinService>()
 		.AddSingleton<HttpClient>()
 
+				// GUI: services passed to forms and controls, and the only way to create forms
+				.AddSingleton<GuiServices>()
+				.AddSingleton<FormFactory>()
+
 				// Forms
 				.AddSingleton<MainForm>()
 				.AddTransient<AboutBox>()

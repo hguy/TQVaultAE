@@ -32,8 +32,8 @@ public class PlayerPanel : VaultPanel
 	/// <param name="numberOfBags">Number of bags in this panel</param>
 	/// <param name="panel1Size">Main panel size</param>
 	/// <param name="panel2Size">Secondary panel size for players who have the additional game sacks</param>
-	public PlayerPanel(ItemDragInfo dragInfo, int numberOfBags, Size panel1Size, Size panel2Size, IServiceProvider serviceProvider)
-		: base(dragInfo, numberOfBags, panel2Size, 2, AutoMoveLocation.Player, serviceProvider)
+	public PlayerPanel(ItemDragInfo dragInfo, int numberOfBags, Size panel1Size, Size panel2Size, GuiServices services)
+		: base(dragInfo, numberOfBags, panel2Size, 2, AutoMoveLocation.Player, services)
 	{
 		this.Text = Resources.PlayerPanelNoPlayer;
 		this.NoPlayerString = Resources.PlayerPanelNoPlayer;
@@ -47,7 +47,7 @@ public class PlayerPanel : VaultPanel
 		int borderPad = Convert.ToInt32(2.0F * UIService.Scale);
 
 		this.BagPanelOffset = 1; // bag panel starts with bag #1
-		this.mainSackPanel = new SackPanel(panel1Size.Width, panel1Size.Height, this.DragInfo, AutoMoveLocation.Player, serviceProvider);
+		this.mainSackPanel = new SackPanel(panel1Size.Width, panel1Size.Height, this.DragInfo, AutoMoveLocation.Player, services);
 		this.mainSackPanel.SetLocation(new Point(borderPad, this.Size.Height - this.mainSackPanel.Size.Height - borderPad));
 		this.mainSackPanel.OnNewItemHighlighted += new EventHandler<SackPanelEventArgs>(this.NewItemHighlightedCallback);
 		this.mainSackPanel.OnAutoMoveItem += new EventHandler<SackPanelEventArgs>(this.AutoMoveItemCallback);
@@ -134,7 +134,7 @@ public class PlayerPanel : VaultPanel
 	/// <returns>A new AutoSortButton instance</returns>
 	protected override AutoSortButton CreateAutoSortButton(int buttonNumber)
 	{
-		AutoSortButton button = new AutoSortButton(buttonNumber, false, this.ServiceProvider);
+		AutoSortButton button = new AutoSortButton(buttonNumber, false, this.Services);
 
 		// Temporary location since we will be moving the panel later.
 		// This is called from the base constructor.

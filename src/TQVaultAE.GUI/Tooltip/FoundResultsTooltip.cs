@@ -1,7 +1,6 @@
 ﻿using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
@@ -71,7 +70,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 		}
 	}
 
-	public static FoundResultsTooltip ShowTooltip(IServiceProvider serviceProvider, Control anchorControl, IEnumerable<SearchResult> results)
+	public static FoundResultsTooltip ShowTooltip(GuiServices services, Control anchorControl, IEnumerable<SearchResult> results)
 	{
 		if (anchorControl is null) return null;
 		if (!(results?.Any() ?? false)) return null;
@@ -81,11 +80,11 @@ public partial class FoundResultsTooltip : BaseTooltip
 		{
 			HideTooltip();
 			newTT = new FoundResultsTooltip(
-				serviceProvider.GetService<SearchDialogAdvanced>()
-				, serviceProvider.GetService<IItemProvider>()
-				, serviceProvider.GetService<IFontService>()
-				, serviceProvider.GetService<IUIService>()
-				, serviceProvider.GetService<ITranslationService>()
+				(SearchDialogAdvanced)anchorControl.FindForm()
+				, services.ItemProvider
+				, services.FontService
+				, services.UIService
+				, services.TranslationService
 			)
 			{
 				AnchorControl = anchorControl,

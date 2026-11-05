@@ -7,7 +7,6 @@ using TQVaultAE.Services;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Collections.Concurrent;
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Application;
 using TQVaultAE.GUI.Models;
 
@@ -503,7 +502,7 @@ public partial class MainForm
 
 			if (settingsDialog.EnableTQVaultSoundsChanged)
 			{
-				var soundSrv = this.ServiceProvider.GetService<ISoundService>();
+				var soundSrv = this.Services.SoundService;
 				soundSrv.InitAllPlayers();
 			}
 

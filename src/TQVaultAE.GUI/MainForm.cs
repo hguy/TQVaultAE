@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Permissions;
@@ -154,7 +153,7 @@ public partial class MainForm : VaultForm
 	/// </summary>
 	[PermissionSet(SecurityAction.LinkDemand, Unrestricted = true)]
 	public MainForm(
-			IServiceProvider serviceProvider
+			GuiServices services
 			, ILogger<MainForm> log
 			, SessionContext sessionContext
 			, IPlayerService playerService
@@ -162,10 +161,10 @@ public partial class MainForm : VaultForm
 			, IStashService stashService
 			, ITagService tagService
 			, IItemExchangeService itemExchangeService
-		) : base(serviceProvider)
+		) : base(services)
 	{
 		this.userContext = sessionContext;
-		this.HighlightService = serviceProvider.GetService<IHighlightService>();
+		this.HighlightService = services.HighlightService;
 		this.playerService = playerService;
 		this.vaultService = vaultService;
 		this.stashService = stashService;

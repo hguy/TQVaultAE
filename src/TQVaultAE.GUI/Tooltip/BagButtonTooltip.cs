@@ -2,7 +2,6 @@
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 
@@ -74,7 +73,7 @@ public partial class BagButtonTooltip : BaseTooltip
 		}
 	}
 
-	public static BagButtonTooltip ShowTooltip(IServiceProvider serviceProvider, BagButtonBase button)
+	public static BagButtonTooltip ShowTooltip(GuiServices services, BagButtonBase button)
 	{
 		BagButtonTooltip _Current;
 		if (button?.Sack is null) return null;
@@ -82,11 +81,11 @@ public partial class BagButtonTooltip : BaseTooltip
 		{
 			HideTooltip();
 			_Current = new BagButtonTooltip(
-				serviceProvider.GetService<MainForm>()
-				, serviceProvider.GetService<IItemProvider>()
-				, serviceProvider.GetService<IFontService>()
-				, serviceProvider.GetService<IUIService>()
-				, serviceProvider.GetService<ITranslationService>()
+				services.Forms.MainForm
+				, services.ItemProvider
+				, services.FontService
+				, services.UIService
+				, services.TranslationService
 			)
 			{
 				ButtonSack = button

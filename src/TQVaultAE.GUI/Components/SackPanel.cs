@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -37,7 +36,7 @@ public partial class SackPanel : Panel, IScalingControl
 	protected readonly IDatabase Database;
 	protected readonly IItemProvider ItemProvider;
 	protected readonly ITQDataService TQData;
-	protected readonly IServiceProvider ServiceProvider;
+	protected readonly GuiServices Services;
 	protected readonly IHighlightService HighlightService;
 	protected readonly IItemDatabaseService ItemDatabaseService;
 	protected readonly IItemExchangeService ExchangeService;
@@ -209,24 +208,24 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="sackHeight">Height of the sack panel in cells</param>
 	/// <param name="dragInfo">ItemDragInfo instance.</param>
 	/// <param name="autoMoveLocation">AutoMoveLocation for this sack</param>
-	public SackPanel(int sackWidth, int sackHeight, ItemDragInfo dragInfo, AutoMoveLocation autoMoveLocation, IServiceProvider serviceProvider)
+	public SackPanel(int sackWidth, int sackHeight, ItemDragInfo dragInfo, AutoMoveLocation autoMoveLocation, GuiServices services)
 	{
 		InitializeComponent();
 
-		this.ServiceProvider = serviceProvider;
-		this.FontService = this.ServiceProvider.GetService<IFontService>();
-		this.UIService = this.ServiceProvider.GetService<IUIService>();
-		this.Database = this.ServiceProvider.GetService<IDatabase>();
-		this.ItemProvider = this.ServiceProvider.GetService<IItemProvider>();
-		this.TQData = this.ServiceProvider.GetService<ITQDataService>();
-		this.TranslationService = this.ServiceProvider.GetService<ITranslationService>();
-		this.userContext = this.ServiceProvider.GetService<SessionContext>();
-		this.USettings = this.ServiceProvider.GetService<UserSettings>();
-		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
-		this.ItemDatabaseService = this.ServiceProvider.GetService<IItemDatabaseService>();
-		this.ExchangeService = this.ServiceProvider.GetService<IItemExchangeService>();
+		this.Services = services;
+		this.FontService = this.Services.FontService;
+		this.UIService = this.Services.UIService;
+		this.Database = this.Services.Database;
+		this.ItemProvider = this.Services.ItemProvider;
+		this.TQData = this.Services.TQData;
+		this.TranslationService = this.Services.TranslationService;
+		this.userContext = this.Services.Session;
+		this.USettings = this.Services.Settings;
+		this.HighlightService = this.Services.HighlightService;
+		this.ItemDatabaseService = this.Services.ItemDatabaseService;
+		this.ExchangeService = this.Services.ItemExchangeService;
 
-		this.Log = this.ServiceProvider.GetService<ILogger<SackPanel>>();
+		this.Log = this.Services.Logger<SackPanel>();
 
 		this.DragInfo = dragInfo;
 		this.AutoMoveLocation = autoMoveLocation;

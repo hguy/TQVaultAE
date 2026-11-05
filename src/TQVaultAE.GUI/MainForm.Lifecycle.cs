@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
 using TQVaultAE.GUI.Models;
@@ -89,7 +88,7 @@ public partial class MainForm
 		// Sync git local repo first
 		this.GameFileService.GitRepositorySetup();
 
-		this.splashScreen = this.ServiceProvider.GetService<SplashScreenForm>();
+		this.splashScreen = this.Services.Forms.Create<SplashScreenForm>();
 		this.splashScreen.MaximumValue = 1;
 		this.splashScreen.FormClosed += new FormClosedEventHandler(this.SplashScreenClosed);
 
@@ -217,7 +216,7 @@ public partial class MainForm
 	/// <param name="e">EventArgs data</param>
 	private void AboutButtonClick(object sender, EventArgs e)
 	{
-		AboutBox dlg = this.ServiceProvider.GetService<AboutBox>();
+		AboutBox dlg = this.Services.Forms.Create<AboutBox>();
 		dlg.Scale(new SizeF(UIService.Scale, UIService.Scale));
 		dlg.ShowDialog();
 	}

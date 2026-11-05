@@ -60,7 +60,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the SplashScreenForm class.
 	/// </summary>
-	public SplashScreenForm(MainForm instance) : base(instance.ServiceProvider)
+	public SplashScreenForm(MainForm instance) : base(instance.Services)
 	{
 		this.Owner = instance;
 

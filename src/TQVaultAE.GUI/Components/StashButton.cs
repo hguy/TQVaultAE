@@ -17,7 +17,7 @@ public class StashButton : BagButtonBase
 	/// </summary>
 	/// <param name="bagNumber">number of the bag for display</param>
 	/// <param name="getToolTip">Tooltip delegate</param>
-	public StashButton(int bagNumber, GetToolTip getToolTip, IServiceProvider serviceProvider) : base(bagNumber, getToolTip, serviceProvider)
+	public StashButton(int bagNumber, GetToolTip getToolTip, GuiServices services) : base(bagNumber, getToolTip, services)
 	{
 		// Override the default background graphics.
 		this.CreateBackgroundGraphics();

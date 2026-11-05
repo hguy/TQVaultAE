@@ -1,4 +1,3 @@
-using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
@@ -19,7 +18,7 @@ public partial class MainForm
 	/// <param name="numBags">Number of bags in the vault panel.</param>
 	private void CreateVaultPanel(int numBags)
 	{
-		this.vaultPanel = new VaultPanel(this.DragInfo, numBags, new Size(18, 20), 1, AutoMoveLocation.Vault, this.ServiceProvider);
+		this.vaultPanel = new VaultPanel(this.DragInfo, numBags, new Size(18, 20), 1, AutoMoveLocation.Vault, this.Services);
 
 		this.vaultPanel.DrawAsGroupBox = false;
 
@@ -41,7 +40,7 @@ public partial class MainForm
 	/// <param name="numBags">Number of bags in the secondary vault panel.</param>
 	private void CreateSecondaryVaultPanel(int numBags)
 	{
-		this.secondaryVaultPanel = new VaultPanel(this.DragInfo, numBags, new Size(18, 20), 1, AutoMoveLocation.SecondaryVault, this.ServiceProvider);
+		this.secondaryVaultPanel = new VaultPanel(this.DragInfo, numBags, new Size(18, 20), 1, AutoMoveLocation.SecondaryVault, this.Services);
 		this.secondaryVaultPanel.DrawAsGroupBox = false;
 
 		this.secondaryVaultPanel.OnNewItemHighlighted += new EventHandler<SackPanelEventArgs>(this.NewItemHighlightedCallback);
@@ -197,7 +196,7 @@ public partial class MainForm
 		{
 			this.SaveAllModifiedFiles();
 
-			var dlg = this.ServiceProvider.GetService<VaultMaintenanceDialog>();
+			var dlg = this.Services.Forms.Create<VaultMaintenanceDialog>();
 			dlg.Scale(new SizeF(UIService.Scale, UIService.Scale));
 
 			if (dlg.ShowDialog() == DialogResult.OK)

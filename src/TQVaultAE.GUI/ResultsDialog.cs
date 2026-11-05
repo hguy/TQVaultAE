@@ -35,7 +35,7 @@ public partial class ResultsDialog : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the ResultsDialog class.
 	/// </summary>
-	public ResultsDialog(MainForm instance) : base(instance.ServiceProvider)
+	public ResultsDialog(MainForm instance) : base(instance.Services)
 	{
 		this.Owner = instance;
 
@@ -171,7 +171,7 @@ public partial class ResultsDialog : VaultForm
 		if (selectedResult == null || selectedResult.FriendlyNames == null)
 			ItemTooltip.HideTooltip();
 		else
-			ItemTooltip.ShowTooltip(this.ServiceProvider, selectedResult.FriendlyNames.Item, this);
+			ItemTooltip.ShowTooltip(this.Services, selectedResult.FriendlyNames.Item, this);
 	}
 
 	/// <summary>

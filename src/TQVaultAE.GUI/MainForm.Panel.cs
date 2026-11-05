@@ -151,7 +151,7 @@ public partial class MainForm
 		}
 		else
 		{
-			var itt = ItemTooltip.ShowTooltip(this.ServiceProvider, item, sackPanel);
+			var itt = ItemTooltip.ShowTooltip(this.Services, item, sackPanel);
 
 			this.NotificationText.ForeColor = itt.Data.Item.ExtractTextColorOrItemColor(itt.Data.BaseItemInfoDescription);
 			this.NotificationText.Text = itt.Data.FullNameBagTooltipClean;

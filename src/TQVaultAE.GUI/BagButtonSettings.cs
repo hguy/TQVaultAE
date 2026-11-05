@@ -58,7 +58,7 @@ public partial class BagButtonSettings : VaultForm
 	public BagButtonSettings(MainForm instance
 		, IIconService iconService
 		, ILogger<BagButtonSettings> log
-	) : base(instance.ServiceProvider)
+	) : base(instance.Services)
 	{
 		this.Owner = instance;
 		this.iconService = iconService;

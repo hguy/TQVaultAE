@@ -31,7 +31,7 @@ internal partial class CharacterEditDialog : VaultForm
 	/// <summary>
 	/// Initializes a new instance of the ItemSeedDialog class.
 	/// </summary>
-	public CharacterEditDialog(IServiceProvider serviceProvider, ILogger<CharacterEditDialog> log) : base(serviceProvider)
+	public CharacterEditDialog(GuiServices services, ILogger<CharacterEditDialog> log) : base(services)
 	{
 		this.Log = log;
 

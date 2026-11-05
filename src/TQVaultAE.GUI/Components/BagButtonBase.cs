@@ -3,7 +3,6 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-using Microsoft.Extensions.DependencyInjection;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Application;
@@ -24,7 +23,7 @@ public delegate void GetToolTip(BagButtonBase button);
 /// </summary>
 public class BagButtonBase : Panel
 {
-	protected readonly IServiceProvider ServiceProvider;
+	protected readonly GuiServices Services;
 	protected readonly IFontService FontService;
 	protected readonly IUIService UIService;
 	protected readonly IBitmapService BitmapService;
@@ -124,17 +123,17 @@ public class BagButtonBase : Panel
 	/// </summary>
 	/// <param name="bagNumber">number of the bag for display</param>
 	/// <param name="getToolTip">Tooltip delegate</param>
-	public BagButtonBase(int bagNumber, GetToolTip getToolTip, IServiceProvider serviceProvider)
+	public BagButtonBase(int bagNumber, GetToolTip getToolTip, GuiServices services)
 	{
 		InitializeComponent();
 
-		this.ServiceProvider = serviceProvider;
-		this.FontService = this.ServiceProvider.GetService<IFontService>();
-		this.UIService = this.ServiceProvider.GetService<IUIService>();
-		this.userContext = this.ServiceProvider.GetService<SessionContext>();
-		this.USettings = this.ServiceProvider.GetService<UserSettings>();
-		this.BitmapService = this.ServiceProvider.GetService<IBitmapService>();
-		this.HighlightService = this.ServiceProvider.GetService<IHighlightService>();
+		this.Services = services;
+		this.FontService = this.Services.FontService;
+		this.UIService = this.Services.UIService;
+		this.userContext = this.Services.Session;
+		this.USettings = this.Services.Settings;
+		this.BitmapService = this.Services.BitmapService;
+		this.HighlightService = this.Services.HighlightService;
 
 		this.getToolTip = getToolTip;
 		this.ButtonNumber = bagNumber;
@@ -231,7 +230,7 @@ public class BagButtonBase : Panel
 	/// <param name="e">EventArgs data</param>
 	private void MouseEnterCallback(object sender, EventArgs e)
 	{
-		BagButtonLabelTooltip.ShowTooltip(this.ServiceProvider, this);
+		BagButtonLabelTooltip.ShowTooltip(this.Services, this);
 
 		if (this.getToolTip != null)
 		{
@@ -247,7 +246,7 @@ public class BagButtonBase : Panel
 					case BagIdConstants.BAGID_PLAYERSTASH when !this.USettings.DisableTooltipStash:
 					case BagIdConstants.BAGID_RELICVAULTSTASH when !this.USettings.DisableTooltipRelic:
 					case BagIdConstants.BAGID_TRANSFERSTASH when !this.USettings.DisableTooltipTransfer:
-						BagButtonTooltip.ShowTooltip(this.ServiceProvider, this);
+						BagButtonTooltip.ShowTooltip(this.Services, this);
 						break;
 				}
 			}
@@ -256,7 +255,7 @@ public class BagButtonBase : Panel
 				|| panel is PlayerPanel || panel is SackPanel || panel is StashPanel // Others
 			)
 			{
-				BagButtonTooltip.ShowTooltip(this.ServiceProvider, this);
+				BagButtonTooltip.ShowTooltip(this.Services, this);
 			}
 		}
 

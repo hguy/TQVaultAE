@@ -64,7 +64,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 	#region Factory
 
-	public static SearchFiltersTooltip ShowTooltip(IServiceProvider serviceProvider, Control anchorControl, List<BoxItem> filters, SearchOperator ope)
+	public static SearchFiltersTooltip ShowTooltip(GuiServices services, Control anchorControl, List<BoxItem> filters, SearchOperator ope)
 	{
 		if (anchorControl is null) return null;
 		if (!(filters?.Any() ?? false)) return null;
@@ -74,11 +74,11 @@ public partial class SearchFiltersTooltip : BaseTooltip
 		{
 			HideTooltip();
 			newTT = new SearchFiltersTooltip(
-				serviceProvider.GetService<SearchDialogAdvanced>()
-				, serviceProvider.GetService<IItemProvider>()
-				, serviceProvider.GetService<IFontService>()
-				, serviceProvider.GetService<IUIService>()
-				, serviceProvider.GetService<ITranslationService>()
+				(SearchDialogAdvanced)anchorControl.FindForm()
+				, services.ItemProvider
+				, services.FontService
+				, services.UIService
+				, services.TranslationService
 			)
 			{
 				AnchorControl = anchorControl,
