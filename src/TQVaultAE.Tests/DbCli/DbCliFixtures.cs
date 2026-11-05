@@ -9,6 +9,9 @@ internal static class DbCliFixtures
 {
 	static DbCliFixtures() => Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
+	/// <summary>Windows-1252, the encoding of every string in the game files.</summary>
+	private static Encoding Cp1252 => Encoding.GetEncoding(1252);
+
 	public static byte[] Zlib(ReadOnlySpan<byte> data)
 	{
 		using var ms = new MemoryStream();
@@ -71,7 +74,7 @@ internal static class DbCliFixtures
 		int recStart = (int)file.Position;
 		for (int i = 0; i < records.Count; i++) {
 			fw.Write(nameIds[i]);
-			var cls = Encoding.Latin1.GetBytes(records[i].Class);
+			var cls = Cp1252.GetBytes(records[i].Class);
 			fw.Write(cls.Length);
 			fw.Write(cls);
 			fw.Write(offsets[i]);
@@ -83,7 +86,7 @@ internal static class DbCliFixtures
 		int strStart = (int)file.Position;
 		fw.Write(strings.Count);
 		foreach (var s in strings) {
-			var b = Encoding.Latin1.GetBytes(s);
+			var b = Cp1252.GetBytes(s);
 			fw.Write(b.Length);
 			fw.Write(b);
 		}

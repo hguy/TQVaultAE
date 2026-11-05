@@ -84,7 +84,6 @@ public static class Program
 				.AddTransient<IPathIO, PathIO>()
 				.AddTransient<IDirectoryIO, DirectoryIO>()
 				// Providers
-				.AddTransient<IRecordInfoProvider, RecordInfoProvider>()
 				.AddTransient<IArcFileProvider, ArcFileProvider>()
 				.AddTransient<IArzFileProvider, ArzFileProvider>()
 				.AddSingleton<IDatabase, Database>()
@@ -110,7 +109,6 @@ public static class Program
 			.AddSingleton<ISoundService, SoundServiceWin>()
 			.AddTransient<IGameFileService, GameFileServiceWin>()
 			.AddSingleton<ITagService, TagService>()
-			.AddTransient<IDecompressionService, DeflateDecompressionService>()
 
 		// Application Layer - Core Services
 		.AddSingleton<IItemMovementService, ItemMovementService>()
@@ -119,9 +117,6 @@ public static class Program
 		.AddSingleton<IItemExchangeService, ItemExchangeService>()
 		.AddSingleton<IPasteBinService, PasteBinService>()
 		.AddSingleton<HttpClient>()
-
-				// Performance: Memory-Mapped File Services
-				.AddSingleton<IFileDataService, MemoryMappedFileService>()
 
 				// Forms
 				.AddSingleton<MainForm>()

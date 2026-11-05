@@ -49,7 +49,7 @@ internal sealed class RecordCommand : ICommand
 		var projection = Projection.Parse(items);
 
 		var db = context.Database;
-		var infos = new List<Core.ArzRecordInfo>();
+		var infos = new List<ArzRecordInfo>();
 		foreach (var id in args.Positionals) {
 			var info = db.Find(id) ?? throw new NotFoundException($"Record '{id}' not found.{SuggestRecord(db, id)}");
 			infos.Add(info);
@@ -77,7 +77,7 @@ internal sealed class RecordCommand : ICommand
 		return ExitCodes.Ok;
 	}
 
-	private static string SuggestRecord(Core.IArzDatabase db, string id) {
+	private static string SuggestRecord(IArzDatabase db, string id) {
 		var file = Path.GetFileName(id.Replace('\\', '/'));
 		if (file.Length == 0)
 			return string.Empty;

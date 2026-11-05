@@ -116,9 +116,9 @@ internal sealed class RecordsCommand : ICommand
 	{
 		public static readonly TagOnlyNamer Instance = new();
 
-		public string? NameTag(Core.ArzRecord record) => Core.DisplayNames.NameTag(record);
+		public string? NameTag(ArzRecord record) => Core.DisplayNames.NameTag(record);
 
-		public string? DisplayName(Core.ArzRecord record) => null;
+		public string? DisplayName(ArzRecord record) => null;
 
 		public string? ResolveTag(string? tag) => null;
 	}

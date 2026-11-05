@@ -7,9 +7,10 @@ namespace TQVaultAE.Domain.Entities;
 
 using System.Collections.Generic;
 using System.Linq;
+using TQVaultAE.GameFiles;
 
 /// <summary>
-/// Class for decoding Titan Quest ARZ files.
+/// A Titan Quest database (.arz) and its record table.
 /// </summary>
 public class ArzFile
 {
@@ -19,9 +20,9 @@ public class ArzFile
 	public readonly string FileName;
 
 	/// <summary>
-	/// String table
+	/// Open reader for the file, set by <c>IArzFileProvider.Read</c>; records are decoded from it on demand.
 	/// </summary>
-	public string[] Strings;
+	public IArzDatabase? Database { get; set; }
 
 	/// <summary>
 	/// RecordInfo keyed by their ID
@@ -46,12 +47,4 @@ public class ArzFile
 	/// Gets the number of DBRecords
 	/// </summary>
 	public int Count => this.RecordInfo?.Count ?? 0;
-
-	/// <summary>
-	/// Retrieves a string from the string table.
-	/// </summary>
-	/// <param name="index">Offset in the string table.</param>
-	/// <returns>string from the string table</returns>
-	public string Getstring(int index) => this.Strings[index];
-
 }

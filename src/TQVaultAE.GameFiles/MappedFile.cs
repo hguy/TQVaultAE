@@ -7,7 +7,7 @@
 using System.IO.Compression;
 using System.IO.MemoryMappedFiles;
 
-namespace TQVaultAE.DbCli.Core;
+namespace TQVaultAE.GameFiles;
 
 /// <summary>Read-only memory-mapped view of a whole file. Reads are thread-safe.</summary>
 internal sealed unsafe class MappedFile : IDisposable

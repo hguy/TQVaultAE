@@ -7,9 +7,9 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.IO.Compression;
-using System.Text;
 
-namespace TQVaultAE.DbCli.Core;
+
+namespace TQVaultAE.GameFiles;
 
 public static partial class ArzDatabaseFactory
 {
@@ -198,7 +198,7 @@ internal sealed class ArzDatabase : IArzDatabase
 		for (int i = 0; i < count; i++) {
 			int len = BinaryPrimitives.ReadInt32LittleEndian(table[pos..]);
 			pos += 4;
-			strings[i] = Encoding.Latin1.GetString(table.Slice(pos, len));
+			strings[i] = TextEncodings.Cp1252.GetString(table.Slice(pos, len));
 			pos += len;
 		}
 		return strings;
@@ -213,7 +213,7 @@ internal sealed class ArzDatabase : IArzDatabase
 			int nameId = BinaryPrimitives.ReadInt32LittleEndian(table[pos..]);
 			int classLen = BinaryPrimitives.ReadInt32LittleEndian(table[(pos + 4)..]);
 			pos += 8;
-			string cls = Encoding.Latin1.GetString(table.Slice(pos, classLen));
+			string cls = TextEncodings.Cp1252.GetString(table.Slice(pos, classLen));
 			if (classes.TryGetValue(cls, out var shared))
 				cls = shared;
 			else

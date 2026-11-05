@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------
 namespace TQVaultAE.Domain.Entities;
 
+using TQVaultAE.GameFiles;
+
 /// <summary>
 /// Holds information about the directory entry.
 /// </summary>
@@ -22,28 +24,17 @@ public class ArcDirEntry
 	public int StorageType { get; set; }
 
 	/// <summary>
-	/// Gets or sets the offset within the file.
-	/// </summary>
-	public int FileOffset { get; set; }
-
-	/// <summary>
 	/// Gets or sets the compressed size of this entry.
 	/// </summary>
-	public int CompressedSize { get; set; }
+	public long CompressedSize { get; set; }
 
 	/// <summary>
 	/// Gets or sets the real size of this entry.
 	/// </summary>
-	public int RealSize { get; set; }
+	public long RealSize { get; set; }
 
 	/// <summary>
-	/// Gets or sets the part data
+	/// Entry of the shared reader, used to read the content.
 	/// </summary>
-	public ArcPartEntry[] Parts { get; set; }
-
-	/// <summary>
-	/// Gets a value indicating whether this part is active.
-	/// </summary>
-	public bool IsActive
-		=> (this.StorageType == 1) ? true : this.Parts != null;
+	public ArcEntry? Entry { get; set; }
 }

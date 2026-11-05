@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <Using Include="Xunit" />
+    <Using Include="TQVaultAE.GameFiles" />
   </ItemGroup>
 
 </Project>

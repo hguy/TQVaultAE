@@ -115,6 +115,8 @@ Application (DTOs, Results, Search)
 | TQVaultAE.Application | .NET 10.0 | DTOs, Results |
 | TQVaultAE.Data | .NET 10.0 | Data access |
 | TQVaultAE.Domain | .NET 10.0 | Entities |
+| TQVaultAE.GameFiles | .NET 10.0 | Game file readers (`.arz`, `.arc`, text), shared by Data and `tqdb` |
+| TQVaultAE.DbCli | .NET 10.0 | `tqdb` command line |
 | TQVaultAE.Tests | .NET 10.0 | Unit tests |
 
 ### Key Abstractions (for DI)
