@@ -1665,4 +1665,13 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 Partager le coffre</value>
   </data>
+	<data name="ItemPropertiesLabelInGameRolls" xml:space="preserve">
+    <value>Valeurs en jeu (base de données -&gt; jeu)</value>
+  </data>
+	<data name="SettingShowInGameValues" xml:space="preserve">
+    <value>Afficher les valeurs en jeu</value>
+  </data>
+	<data name="SettingShowInGameValuesTT" xml:space="preserve">
+    <value>Applique la variation aléatoire du jeu (graine de l'objet) aux infobulles d'équipement. Avec la vue détaillée, liste aussi chaque valeur tirée.</value>
+  </data>
 </root>

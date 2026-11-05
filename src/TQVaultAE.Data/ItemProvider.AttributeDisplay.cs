@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Jitter;
 
 namespace TQVaultAE.Data;
 
@@ -28,7 +29,8 @@ public partial class ItemProvider
 	/// <param name="recordId">string containing the database record id</param>
 	/// <param name="results">List for the results</param>
 	/// <param name="convertStrings">flag on whether we convert attributes to strings.</param>
-	private void GetAttributesFromRecord(Item itm, DBRecordCollection record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true)
+	private void GetAttributesFromRecord(Item itm, DBRecordCollection record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true
+		, IReadOnlyDictionary<string, ValueRange>? valueRanges = null, List<string?>? lineRanges = null)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -187,6 +189,10 @@ public partial class ItemProvider
 			}
 		}
 
+		// Keep lineRanges aligned with results (one entry per line, null when no range).
+		while (lineRanges is not null && lineRanges.Count < results.Count)
+			lineRanges.Add(null);
+
 		foreach (List<Variable> attrList in attrArray)
 		{
 			// Used to sort out the Damage Qualifier effects.
@@ -197,10 +203,59 @@ public partial class ItemProvider
 				ConvertBareAttributeListToString(attrList, results);
 			else
 				ConvertAttributeListToString(itm, record, attrList, recordId, results);
+
+			// The group's possible in-game values go on its last line.
+			if (lineRanges is not null)
+			{
+				var rangeText = valueRanges is null ? null : FormatValueRanges(attrList, valueRanges);
+				while (lineRanges.Count < results.Count)
+					lineRanges.Add(lineRanges.Count == results.Count - 1 ? rangeText : null);
+			}
 		}
 
 		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.GetAttributesFromRecord()");
+	}
+
+	/// <summary>
+	/// Formats the possible in-game values of the randomized variables of an attribute group,
+	/// e.g. "(90 - 126)", or "(9 - 12 / 26 - 36)" for a damage min/max pair.
+	/// </summary>
+	/// <returns><see langword="null"/> when no variable of the group is randomized.</returns>
+	private string? FormatValueRanges(List<Variable> attributeList, IReadOnlyDictionary<string, ValueRange> valueRanges)
+	{
+		// Same multiplier as GetAmountSingle/GetAmountRange: damage over time is shown as value x duration.
+		float durationFactor = 1f;
+		var first = attributeList.FirstOrDefault(v => v is not null);
+		var effect = first is null ? null : ItemAttributeProvider.GetAttributeData(first.Name)?.Effect;
+		var durationMin = attributeList.FirstOrDefault(v => v is not null
+			&& string.Equals(ItemAttributeProvider.GetAttributeData(v.Name)?.Variable, "DURATIONMIN", StringComparison.OrdinalIgnoreCase));
+		if (durationMin is not null && effect is not null && IsDurationReliantValue(effect))
+			durationFactor = durationMin.GetSingle(durationMin.NumberOfValues - 1);
+
+		// Min before max, like the "min ~ max" damage text (groups may list the max variable first).
+		var parts = new List<(int Order, string Text)>();
+		foreach (var variable in attributeList)
+		{
+			if (variable is null || !valueRanges.TryGetValue(variable.Name, out var range) || range.Min == range.Max)
+				continue;
+
+			var kind = ItemAttributeProvider.GetAttributeData(variable.Name)?.Variable;
+			int order = string.Equals(kind, "MIN", StringComparison.OrdinalIgnoreCase) ? 0
+				: string.Equals(kind, "MAX", StringComparison.OrdinalIgnoreCase) ? 1
+				: 2;
+
+			float factor = variable.DataType == VariableDataType.Float ? durationFactor : 1f;
+			parts.Add((order, string.Format(CultureInfo.CurrentCulture, "{0:0.#} - {1:0.#}", range.Min * factor, range.Max * factor)));
+		}
+
+		if (parts.Count == 0)
+			return null;
+
+		// A min/max pair reads "(minLow - minHigh ~ maxLow - maxHigh)"; other groups separate values with " / ".
+		var ordered = parts.OrderBy(p => p.Order).ToList();
+		var separator = ordered.Count == 2 && ordered[0].Order == 0 && ordered[1].Order == 1 ? " ~ " : " / ";
+		return $"({string.Join(separator, ordered.Select(p => p.Text))})";
 	}
 
 	/// <summary>
@@ -1704,7 +1759,10 @@ public partial class ItemProvider
 				// Set the scale percent here
 				if (recordId == itm.BaseItemId && normalizedFullAttribute == "ATTRIBUTESCALEPERCENT" && itm.itemScalePercent == 1.00)
 				{
-					itm.itemScalePercent += variable.GetSingle(0) / 100;
+					// With in-game values the roll simulator already applies the scale, and only to the item's
+					// own stores (the game ScaleAttributes): socketed relics/charms and their bonuses are not scaled.
+					if (!this.USettings.ShowInGameValues)
+						itm.itemScalePercent += variable.GetSingle(0) / 100;
 
 					// Set line to nothing so we do not see the tag text.
 					line = string.Empty;

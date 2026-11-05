@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Jitter;
 using TQVaultAE.Domain.Results;
 
 namespace TQVaultAE.Data;
@@ -34,6 +35,7 @@ public partial class ItemProvider : IItemProvider
 	private readonly UserSettings USettings;
 	private readonly LazyConcurrentDictionary<(Item Item, FriendlyNamesExtraScopes? Scope, bool FilterExtra), ToFriendlyNameResult> FriendlyNamesCache = new LazyConcurrentDictionary<(Item, FriendlyNamesExtraScopes?, bool), ToFriendlyNameResult>();
 	private readonly LazyConcurrentDictionary<RecordId, ItemAffixes> ItemAffixesCache = new();
+	private volatile bool _cachedShowInGameValues;
 
 
 	public ItemProvider(
@@ -56,6 +58,32 @@ public partial class ItemProvider : IItemProvider
 		USettings = uSettings;
 	}
 
+
+	/// <summary>
+	/// Replays the game's stat jitter for equipment (armor, jewellery, weapons, shields).
+	/// </summary>
+	/// <returns><see langword="null"/> when the item is not equipment or has no seed.</returns>
+	private ItemRollResult? RollInGameValues(Item itm, DBRecordCollection? baseRecord)
+	{
+		var itemClass = itm.baseItemInfo?.ItemClass;
+		if (baseRecord is null || itm.Seed == 0 || itemClass is null || itm.IsRelicOrCharm
+			|| !(itemClass.StartsWith("ArmorProtective", StringComparison.OrdinalIgnoreCase)
+				|| itemClass.StartsWith("ArmorJewelry", StringComparison.OrdinalIgnoreCase)
+				|| itemClass.StartsWith("Weapon", StringComparison.OrdinalIgnoreCase)))
+			return null;
+
+		try {
+			var prefix = RecordId.IsNullOrEmpty(itm.prefixID) ? null : this.Database.GetRecordFromFile(itm.prefixID);
+			var suffix = RecordId.IsNullOrEmpty(itm.suffixID) ? null : this.Database.GetRecordFromFile(itm.suffixID);
+			return ItemRollSimulator.Roll((uint)itm.Seed, itm.IsArmor, baseRecord, prefix, suffix);
+		} catch (Exception ex) {
+			this.Log.LogError(ex, "Failed to compute in-game values for {Item}", itm.BaseItemId);
+			return null;
+		}
+	}
+
+	private static string FormatInGameRoll(RolledValue roll)
+		=> string.Format(CultureInfo.CurrentCulture, "{0} {1}: {2:0.##} -> {3:0.##}", roll.Source, roll.Variable, roll.Original, roll.Rolled);
 
 	public bool InvalidateFriendlyNamesCache(params IEnumerable<Item> items)
 	{
@@ -105,6 +133,12 @@ public partial class ItemProvider : IItemProvider
 	/// <returns>An object containing the item name and attributes</returns>
 	public ToFriendlyNameResult GetFriendlyNames(Item itm, FriendlyNamesExtraScopes? scopes = null, bool filterExtra = true)
 	{
+		// Cached results depend on the in-game values setting: drop them when it changes.
+		if (this.USettings.ShowInGameValues != this._cachedShowInGameValues) {
+			this.FriendlyNamesCache.Clear();
+			this._cachedShowInGameValues = this.USettings.ShowInGameValues;
+		}
+
 		var key = (itm, scopes, filterExtra);
 		return FriendlyNamesCache.GetOrAddAtomic(key, k =>
 		{
@@ -345,6 +379,16 @@ public partial class ItemProvider : IItemProvider
 			#endregion
 
 			List<string> results = new List<string>();
+			List<string?> ranges = new List<string?>();
+
+			// In-game values (issue #552): jittered copies used for display only.
+			// The legacy display multiplier (attributeScalePercent) may remain from a render without in-game values.
+			if (this.USettings.ShowInGameValues)
+				k.Item.itemScalePercent = 1.00F;
+
+			var inGame = this.USettings.ShowInGameValues ? this.RollInGameValues(k.Item, res.BaseItemInfoRecords) : null;
+			if (inGame is not null)
+				res.InGameRolls = inGame.Rolls.Select(FormatInGameRoll).ToArray();
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.PrefixAttributes) ?? false)
 			{
@@ -352,34 +396,42 @@ public partial class ItemProvider : IItemProvider
 					res.PrefixInfoRecords = Database.GetRecordFromFile(k.Item.prefixID);
 
 				if (res.PrefixInfoRecords?.Any() ?? false)
-					GetAttributesFromRecord(k.Item, res.PrefixInfoRecords, k.FilterExtra, k.Item.prefixID, results);
+					GetAttributesFromRecord(k.Item, inGame?.Prefix ?? res.PrefixInfoRecords, k.FilterExtra, k.Item.prefixID, results
+						, valueRanges: inGame?.RangesOf(RollSource.Prefix), lineRanges: ranges);
 
 				res.PrefixAttributes = results.ToArray();
+				res.PrefixAttributeRanges = inGame is null ? [] : ranges.ToArray();
 			}
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.SuffixAttributes) ?? false)
 			{
 				results.Clear();
+				ranges.Clear();
 
 				if (k.Item.suffixInfo != null)
 					res.SuffixInfoRecords = Database.GetRecordFromFile(k.Item.suffixID);
 
 				if (res.SuffixInfoRecords?.Any() ?? false)
-					GetAttributesFromRecord(k.Item, res.SuffixInfoRecords, k.FilterExtra, k.Item.suffixID, results);
+					GetAttributesFromRecord(k.Item, inGame?.Suffix ?? res.SuffixInfoRecords, k.FilterExtra, k.Item.suffixID, results
+						, valueRanges: inGame?.RangesOf(RollSource.Suffix), lineRanges: ranges);
 
 				res.SuffixAttributes = results.ToArray();
+				res.SuffixAttributeRanges = inGame is null ? [] : ranges.ToArray();
 			}
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.BaseAttributes) ?? false)
 			{
 				results.Clear();
+				ranges.Clear();
 
 				// res.baseItemInfoRecords should be already loaded
 				if (res.BaseItemInfoRecords?.Any() ?? false)
-					GetAttributesFromRecord(k.Item, res.BaseItemInfoRecords, k.FilterExtra, k.Item.BaseItemId, results);
+					GetAttributesFromRecord(k.Item, inGame?.Base ?? res.BaseItemInfoRecords, k.FilterExtra, k.Item.BaseItemId, results
+						, valueRanges: inGame?.RangesOf(RollSource.Base), lineRanges: ranges);
 			}
 
 			res.BaseAttributes = results.ToArray();
+			res.BaseAttributeRanges = inGame is null ? [] : ranges.ToArray();
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.RelicAttributes) ?? false)
 			{

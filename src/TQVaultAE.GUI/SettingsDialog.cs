@@ -88,6 +88,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// Activate the alternative Tooltip display
 	/// </summary>
 	private bool enableDetailedTooltipView;
+	private bool showInGameValues;
 
 	/// <summary>
 	/// Value Range (0-255) for item background color opacity
@@ -377,6 +378,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.baseFontLabel.Font =
 		this.baseFontComboBox.Font =
 		this.EnableDetailedTooltipViewCheckBox.Font =
+		this.ShowInGameValuesCheckBox.Font =
 		this.EnableItemRequirementRestrictionCheckBox.Font =
 		this.ItemBGColorOpacityLabel.Font =
 		this.scalingLabelCSVDelim.Font =
@@ -422,6 +424,8 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.toolTip.SetToolTip(this.resetButton, Resources.SettingsResetTT);
 		this.EnableDetailedTooltipViewCheckBox.Text = Resources.SettingEnableDetailedTooltipView;
 		this.toolTip.SetToolTip(this.EnableDetailedTooltipViewCheckBox, Resources.SettingEnableDetailedTooltipViewTT);
+		this.ShowInGameValuesCheckBox.Text = Resources.SettingShowInGameValues;
+		this.toolTip.SetToolTip(this.ShowInGameValuesCheckBox, Resources.SettingShowInGameValuesTT);
 		this.ItemBGColorOpacityLabel.Text = Resources.SettingsItemBGColorOpacityLabel;
 		this.toolTip.SetToolTip(this.ItemBGColorOpacityLabel, Resources.SettingsItemBGColorOpacityLabelTT);
 		this.EnableItemRequirementRestrictionCheckBox.Text = Resources.SettingsEnableItemRequirementRestriction;
@@ -566,6 +570,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.loadLastVault = USettings.LoadLastVault;
 		this.detectLanguage = USettings.AutoDetectLanguage;
 		this.enableDetailedTooltipView = USettings.EnableDetailedTooltipView;
+		this.showInGameValues = USettings.ShowInGameValues;
 		this.itemBGColorOpacity = USettings.ItemBGColorOpacity;
 		this.enableItemRequirementRestriction = USettings.EnableItemRequirementRestriction;
 		this.enableHotReload = USettings.EnableHotReload;
@@ -648,6 +653,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.suppressWarningsCheckBox.Checked = this.suppressWarnings;
 		this.playerReadonlyCheckbox.Checked = this.playerReadonly;
 		this.EnableDetailedTooltipViewCheckBox.Checked = this.enableDetailedTooltipView;
+		this.ShowInGameValuesCheckBox.Checked = this.showInGameValues;
 		this.ItemBGColorOpacityTrackBar.Value = this.itemBGColorOpacity;
 		this.EnableItemRequirementRestrictionCheckBox.Checked = this.enableItemRequirementRestriction;
 		this.hotReloadCheckBox.Checked = this.enableHotReload;
@@ -760,6 +766,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			USettings.PlayerReadonly = this.playerReadonly;
 			USettings.BaseFont = this.BaseFont;
 			USettings.EnableDetailedTooltipView = this.enableDetailedTooltipView;
+			USettings.ShowInGameValues = this.showInGameValues;
 			USettings.ItemBGColorOpacity = this.itemBGColorOpacity;
 			USettings.EnableItemRequirementRestriction = this.enableItemRequirementRestriction;
 			USettings.EnableHotReload = this.enableHotReload;
@@ -1205,6 +1212,15 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 				this.enableDetailedTooltipView = false;
 				this.ConfigurationChanged = true;
 			}
+		}
+	}
+
+	private void ShowInGameValuesCheckBox_CheckedChanged(object sender, EventArgs e)
+	{
+		if (this.ShowInGameValuesCheckBox.Checked != this.showInGameValues)
+		{
+			this.showInGameValues = this.ShowInGameValuesCheckBox.Checked;
+			this.ConfigurationChanged = true;
 		}
 	}
 

@@ -186,6 +186,7 @@ namespace TQVaultAE.GUI
 			playerReadonlyCheckbox = new ScalingCheckBox();
 			characterEditCheckBox = new ScalingCheckBox();
 			EnableDetailedTooltipViewCheckBox = new ScalingCheckBox();
+			ShowInGameValuesCheckBox = new ScalingCheckBox();
 			ItemBGColorOpacityLabel = new ScalingLabel();
 			EnableItemRequirementRestrictionCheckBox = new ScalingCheckBox();
 			hotReloadCheckBox = new ScalingCheckBox();
@@ -536,6 +537,17 @@ namespace TQVaultAE.GUI
 			toolTip.SetToolTip(EnableDetailedTooltipViewCheckBox, "Split tooltip attributes into Prefix/Base/Suffix categories");
 			EnableDetailedTooltipViewCheckBox.UseVisualStyleBackColor = true;
 			EnableDetailedTooltipViewCheckBox.CheckedChanged += EnableDetailedTooltipViewCheckBox_CheckedChanged;
+			// 
+			// ShowInGameValuesCheckBox
+			// 
+			ShowInGameValuesCheckBox.AutoSize = true;
+			ShowInGameValuesCheckBox.Font = new Font("Microsoft Sans Serif", 11.25F);
+			ShowInGameValuesCheckBox.ForeColor = Color.White;
+			ShowInGameValuesCheckBox.Name = "ShowInGameValuesCheckBox";
+			ShowInGameValuesCheckBox.Size = new Size(213, 22);
+			ShowInGameValuesCheckBox.Text = "Show In-Game Values";
+			ShowInGameValuesCheckBox.UseVisualStyleBackColor = true;
+			ShowInGameValuesCheckBox.CheckedChanged += ShowInGameValuesCheckBox_CheckedChanged;
 			// 
 			// ItemBGColorOpacityLabel
 			// 
@@ -974,6 +986,7 @@ namespace TQVaultAE.GUI
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(hotReloadCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(suppressWarningsCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(EnableDetailedTooltipViewCheckBox);
+			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(ShowInGameValuesCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(playerReadonlyCheckbox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(scalingCheckBoxDisableAutoStacking);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(scalingLabelCSVDelim);
@@ -1388,6 +1401,7 @@ namespace TQVaultAE.GUI
 		private ScalingComboBox baseFontComboBox;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelButtons;
 		private ScalingCheckBox EnableDetailedTooltipViewCheckBox;
+		private ScalingCheckBox ShowInGameValuesCheckBox;
 		private System.Windows.Forms.TrackBar ItemBGColorOpacityTrackBar;
 		private ScalingLabel ItemBGColorOpacityLabel;
 		private ScalingCheckBox EnableItemRequirementRestrictionCheckBox;

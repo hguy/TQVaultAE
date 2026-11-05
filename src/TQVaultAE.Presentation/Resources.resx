@@ -2174,4 +2174,13 @@ You still have to close TQVaultAE to apply your changes.
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 Share Vault</value>
   </data>
+	<data name="ItemPropertiesLabelInGameRolls" xml:space="preserve">
+    <value>In-Game Rolls (database -&gt; in-game)</value>
+  </data>
+	<data name="SettingShowInGameValues" xml:space="preserve">
+    <value>Show In-Game Values</value>
+  </data>
+	<data name="SettingShowInGameValuesTT" xml:space="preserve">
+    <value>Apply the game's stat jitter (item seed) to equipment tooltips. With the detailed view, also lists each rolled value.</value>
+  </data>
 </root>

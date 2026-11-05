@@ -86,6 +86,12 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(EnableDetailedTooltipView))]
 	public bool EnableDetailedTooltipView { get; set; } = false;
 
+	/// <summary>
+	/// Show item attributes with the in-game jitter applied (issue #552) instead of the database values.
+	/// </summary>
+	[XmlElement(ElementName = nameof(ShowInGameValues))]
+	public bool ShowInGameValues { get; set; } = true;
+
 	[XmlElement(ElementName = nameof(ItemBGColorOpacity))]
 	public int ItemBGColorOpacity { get; set; } = 15;
 
