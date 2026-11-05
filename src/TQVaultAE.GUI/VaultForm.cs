@@ -739,6 +739,9 @@ public partial class VaultForm : Form, IScalingControl
 	/// <param name="e">PaintEventArgs data</param>
 	protected virtual void PaintCallback(object sender, PaintEventArgs e)
 	{
+		if (this.IsDisposed || this.Disposing)
+			return;
+
 		if (this.DrawCustomBorder)
 		{
 			if (this.topBorder != null)
