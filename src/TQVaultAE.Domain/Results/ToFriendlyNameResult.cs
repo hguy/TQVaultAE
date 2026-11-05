@@ -13,8 +13,8 @@ public partial class ToFriendlyNameResult
 		if (_FullText is null)
 		{
 			// No mutation, just a comprehensive list of string ref 
-			_FullText = new[] {
-					new string[] {
+			string[][] parts = [
+					[
 						FullName
 						, ItemThrown
 						, ArtifactClass
@@ -31,12 +31,13 @@ public partial class ToFriendlyNameResult
 						// Socketed Relic Completion Bonus label
 						, Item.HasRelicOrCharmSlot1 ? RelicInfo1CompletionBonusResolved : null
 						, Item.HasRelicOrCharmSlot2 ? RelicInfo2CompletionBonusResolved : null
-					}
+					]
 					, AttributesAll
 					, FlavorText
-					, ItemSet?.Translations.Select(si => si.Value).ToArray() ?? new string[0]
+					, ItemSet?.Translations.Select(si => si.Value).ToArray() ?? []
 					, Requirements
-				}.SelectMany(s => s).Where(s => !string.IsNullOrEmpty(s));
+				];
+			_FullText = parts.SelectMany(s => s).Where(s => !string.IsNullOrEmpty(s));
 		}
 	}
 
@@ -119,18 +120,28 @@ public partial class ToFriendlyNameResult
 	}
 
 	public string FullNameClean => FullName.RemoveAllTQTags();
-	public string FullName => new string[] {
-			PrefixInfoDescription
-			, BaseItemInfoQuality
-			, BaseItemInfoDescription
-			, Item.IsThrownWeapon ? null : BaseItemInfoStyle
-			, SuffixInfoDescription
-			, Item.DoesStack ? NumberFormat : null
-		}.RemoveEmptyAndSanitize()
-	.JoinWithoutStartingSpaces(" ");
+	public string FullName
+	{
+		get
+		{
+			string[] parts = [
+				PrefixInfoDescription
+				, BaseItemInfoQuality
+				, BaseItemInfoDescription
+				, Item.IsThrownWeapon ? null : BaseItemInfoStyle
+				, SuffixInfoDescription
+				, Item.DoesStack ? NumberFormat : null
+			];
+			return parts.RemoveEmptyAndSanitize().JoinWithoutStartingSpaces(" ");
+		}
+	}
 
 	public string FullNameBagTooltipClean => FullNameBagTooltip.RemoveAllTQTags();
-	public string FullNameBagTooltip => new string[] {
+	public string FullNameBagTooltip
+	{
+		get
+		{
+			string[] parts = [
 				PrefixInfoDescription
 				, BaseItemInfoQuality
 				, Item.IsRelicOrCharm && !Item.IsCharmOnly ? TQColor.Silver.ColorTag() : null // Make a color diff for Relic & Charm
@@ -141,8 +152,10 @@ public partial class ToFriendlyNameResult
 				, Item.IsRelicOrCharm ? "- " + RelicBonusFormat : null
 				, Item.IsQuestItem ? this.ItemQuest : null
 				, Item.GameDlcSuffix
-			}.RemoveEmptyAndSanitize()
-		.JoinWithoutStartingSpaces(" ");
+			];
+			return parts.RemoveEmptyAndSanitize().JoinWithoutStartingSpaces(" ");
+		}
+	}
 
 	public readonly Item Item;
 	public string PrefixInfoDescription { get; internal set; }
@@ -173,16 +186,16 @@ public partial class ToFriendlyNameResult
 	public string ItemThrown { get; internal set; }
 	public string NumberFormat { get; internal set; }
 	public string ItemWith { get; internal set; }
-	public string[] FlavorText { get; internal set; } = new string[] { };
-	public string[] Requirements { get; internal set; } = new string[] { };
+	public string[] FlavorText { get; internal set; } = [];
+	public string[] Requirements { get; internal set; } = [];
 	public SortedList<string, Variable> RequirementVariables { get; internal set; }
 	public RequirementInfo RequirementInfo { get; internal set; }
-	public string[] BaseAttributes { get; internal set; } = new string[] { };
+	public string[] BaseAttributes { get; internal set; } = [];
 
 	/// <summary>
 	/// One line per value changed by the in-game jitter ("database → in-game"), when <c>ShowInGameValues</c> is on.
 	/// </summary>
-	public string[] InGameRolls { get; internal set; } = new string[] { };
+	public string[] InGameRolls { get; internal set; } = [];
 
 	/// <summary>
 	/// Possible in-game values of each <see cref="PrefixAttributes"/> line, e.g. "(90 - 126)", or <see langword="null"/>
@@ -225,10 +238,10 @@ public partial class ToFriendlyNameResult
 	public string ItemRelicBonus2Format { get; internal set; }
 	public string RelicInfo1Description { get; internal set; }
 	public string RelicInfo2Description { get; internal set; }
-	public string[] Relic1Attributes { get; internal set; } = new string[] { };
-	public string[] Relic2Attributes { get; internal set; } = new string[] { };
-	public string[] RelicBonus1Attributes { get; internal set; } = new string[] { };
-	public string[] RelicBonus2Attributes { get; internal set; } = new string[] { };
+	public string[] Relic1Attributes { get; internal set; } = [];
+	public string[] Relic2Attributes { get; internal set; } = [];
+	public string[] RelicBonus1Attributes { get; internal set; } = [];
+	public string[] RelicBonus2Attributes { get; internal set; } = [];
 	public DBRecordCollection RelicBonus1InfoRecords { get; internal set; }
 	public DBRecordCollection RelicBonus2InfoRecords { get; internal set; }
 	public DBRecordCollection Relic2InfoRecords { get; internal set; }
@@ -341,7 +354,7 @@ public partial class ToFriendlyNameResult
 	public string FormulaeArtifactClass { get; internal set; }
 	public string FormulaeArtifactName { get; internal set; }
 	public string FormulaeFormat { get; internal set; }
-	public string[] FormulaeArtifactAttributes { get; internal set; } = new string[] { };
+	public string[] FormulaeArtifactAttributes { get; internal set; } = [];
 	public DBRecordCollection FormulaeArtifactRecords { get; internal set; }
 
 	public ToFriendlyNameResult(Item itm)
@@ -368,7 +381,7 @@ public partial class ToFriendlyNameResult
 		{
 			if (_AttributesAll is null)
 			{
-				_AttributesAll = new string[][] {
+				string[][] groups = [
 					BaseAttributes
 					, PrefixAttributes
 					, SuffixAttributes
@@ -377,7 +390,8 @@ public partial class ToFriendlyNameResult
 					, RelicBonus1Attributes
 					, RelicBonus2Attributes
 					, FormulaeArtifactAttributes
-				}.Where(c => c?.Any() ?? false)
+				];
+				_AttributesAll = groups.Where(c => c?.Any() ?? false)
 				.SelectMany(a => a)
 				.Where(a => !(string.IsNullOrWhiteSpace(a) || a.IsColorTagOnly()))
 				.Select(a => a.RemoveAllTQTags())
@@ -391,6 +405,6 @@ public partial class ToFriendlyNameResult
 	/// <summary>
 	/// Used to give attribute list factory some kind of global awareness during its process
 	/// </summary>
-	internal List<string> TmpAttrib { get; } = new List<string>();
+	internal List<string> TmpAttrib { get; } = [];
 
 }
