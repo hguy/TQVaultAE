@@ -24,7 +24,7 @@ namespace TQVaultAE.GUI.Automation;
 /// Every UI access is marshalled to the UI thread through <see cref="AutomationHost.OnUi{T}"/>.
 /// </summary>
 [McpServerToolType]
-internal static class AutomationTools
+internal static partial class AutomationTools
 {
 	private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 

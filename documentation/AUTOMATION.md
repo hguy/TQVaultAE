@@ -61,6 +61,15 @@ Cells are grid coordinates, as reported by `get_state`.
 | `cancel_drag` | Returns the dragged item to where it was picked up, like a right click. |
 | `capture(control)` | A PNG made with `Control.DrawToBitmap`, returned as an image and also saved under `%TEMP%`. Targets: a panel id, `<panel>.container` (the panel with its bag buttons), `main`, or part of a form title. It works when the window is behind other windows. |
 | `recent_log(n)` | The last `n` log lines, kept in memory. |
+| `recent_sounds(n)` | The last `n` sounds played. For a named sound, `loaded` and `wavBytes` tell whether its data could be loaded. The level-up MP3 is converted to WAV by NAudio first. |
+| `forge_show(show)` | Shows or hides the forge, like the Forge button. Items for the forge are picked from the `vault` panel with `pick_item`. |
+| `forge_state` | Mode, hardcore, the item in each slot (`Base`, `Prefix`, `Suffix`, `Relic1`, `Relic2`) with the parts it offers in God mode, the preview of the forged item, and the messages shown to the user. |
+| `forge_set_mode(mode)` / `forge_set_hardcore(enabled)` | Like the mode radio buttons (`Game`, `Strict`, `Relax`, `God`) and the Hardcore box. A stricter mode clears the slots, as in the app. |
+| `forge_drop(slot)` | Drops the dragged item on a forge slot. The rules of the current mode decide. A refusal is reported in `newMessages`, and the item stays dragged. |
+| `forge_select_part(slot, part)` | God mode: chooses which part of a material item is merged, like its combo box. |
+| `forge_reset` / `forge_cancel` / `forge_forge` | Like the Reset, Cancel and Forge buttons. `forge_forge` merges in memory only, since the save guard keeps it from being written, and reports the forged item and the sounds played. |
+
+Every forge tool returns the forge state, with the `newMessages` and `sounds` that the call produced.
 | `set_save_guard(enabled)` | Turns the save guard on or off. |
 
 ### How drags are simulated
@@ -71,6 +80,19 @@ with synthetic `MouseEventArgs`, and a Debug-only `VirtualCursor` replaces `Curs
 (`CellsUnderDragItem`) are computed by the regular code.
 
 All the app's rules still apply: item requirements, slot types, stacking and swapping.
+
+### Example: forge in God mode
+
+```text
+forge_show()                                 -> forge shown, mode Game
+forge_set_mode("God")
+pick_item("vault", 0, 3); forge_drop("Base")  -> base item in the Base slot
+pick_item("vault", 0, 1); forge_drop("Prefix")
+forge_select_part("Prefix", "Prefix")        -> preview: base item with the other item's prefix
+forge_forge()                                -> forgedItem, sounds: PlayLevelUp UI_LEVELUP.MP3 loaded, wavBytes 626732
+```
+
+In Debug builds, `ISoundService` is wrapped by `RecordingSoundService`, which records every sound for `recent_sounds`.
 
 ## Safety
 

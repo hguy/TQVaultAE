@@ -1,0 +1,86 @@
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Forge;
+
+namespace TQVaultAE.GUI.Components;
+
+/// <summary>
+/// Debug-only access to the forge for the automation endpoint. Every action goes through the forge's own code.
+/// </summary>
+public partial class ForgePanel
+{
+	/// <summary>One forge slot as the automation endpoint reports it.</summary>
+	internal sealed record AutomationSlotState(ForgeSlot Slot, Item? Item, SackCollection? Sack, IReadOnlyList<ForgePart> Parts, ForgePart? SelectedPart);
+
+	private readonly List<(ForgeMessage Message, string Text)> automationMessages = [];
+
+	internal ForgeMode AutomationMode => this.Mode;
+
+	internal bool AutomationHardcore => this.HardcoreMode;
+
+	/// <summary>The base item with the current selection applied, as its tooltip shows it.</summary>
+	internal Item? AutomationPreview => this.PreviewItem;
+
+	internal IReadOnlyList<AutomationSlotState> AutomationSlots
+		=> this.Slots.Select(view => new AutomationSlotState(
+			view.Slot,
+			this.Selection[view.Slot],
+			this.Sacks.GetValueOrDefault(view.Slot),
+			view.Combo?.Items.OfType<ForgeComboItem>().Select(i => i.Value).ToList() ?? [],
+			view.Combo is { Visible: true } ? this.GodPart(view.Slot) : null)).ToList();
+
+	/// <summary>Messages the forge showed to the user, oldest first.</summary>
+	internal IReadOnlyList<(ForgeMessage Message, string Text)> AutomationMessages => this.automationMessages;
+
+	internal void AutomationRecordMessage(ForgeMessage message)
+	{
+		this.automationMessages.Add((message, this.TextOf(message)));
+		if (this.automationMessages.Count > 50)
+			this.automationMessages.RemoveAt(0);
+	}
+
+	/// <summary>Selects a mode like a click on its radio button, including the selection reset on a stricter mode.</summary>
+	internal void AutomationSetMode(ForgeMode mode)
+	{
+		var radio = mode switch
+		{
+			ForgeMode.God => this.scalingRadioButtonGod,
+			ForgeMode.Relax => this.scalingRadioButtonRelax,
+			ForgeMode.Strict => this.scalingRadioButtonStrict,
+			_ => this.scalingRadioButtonGame,
+		};
+		radio.Checked = true;
+		this.ForgeMode_Clicked(radio, EventArgs.Empty);
+	}
+
+	internal void AutomationSetHardcore(bool enabled) => this.scalingCheckBoxHardcore.Checked = enabled;
+
+	/// <summary>Drops the dragged item on <paramref name="slot"/>, like a click on that slot's picture.</summary>
+	/// <returns>false when nothing is dragged.</returns>
+	internal bool AutomationDrop(ForgeSlot slot)
+	{
+		if (!this.IsDraging)
+			return false;
+
+		this.DropDraggedItem(slot);
+		return true;
+	}
+
+	/// <summary>God mode: picks which part of a material item is used, like choosing it in the slot's combo box.</summary>
+	/// <returns>false when the slot has no such part.</returns>
+	internal bool AutomationSelectPart(ForgeSlot slot, ForgePart part)
+	{
+		var combo = this.SlotOf(slot).Combo;
+		var entry = combo?.Items.OfType<ForgeComboItem>().FirstOrDefault(i => i.Value == part);
+		if (combo is null || entry is null)
+			return false;
+
+		combo.SelectedItem = entry;
+		return true;
+	}
+
+	internal void AutomationReset() => this.scalingButtonReset_Click(this.ResetButton, EventArgs.Empty);
+
+	internal void AutomationForge() => this.ForgeButton_Click(this.ForgeButton, EventArgs.Empty);
+
+	internal void AutomationCancel() => this.CancelButton_Click(this.CancelButton, EventArgs.Empty);
+}

@@ -70,4 +70,17 @@ public partial class MainForm
 	internal PlayerPanel? AutomationPlayerPanel => this.playerPanel;
 
 	internal StashPanel? AutomationStashPanel => this.stashPanel;
+
+	internal ForgePanel? AutomationForgePanel => this.forgePanel;
+
+	internal bool AutomationForgeShown => this.forgePanel?.Visible == true;
+
+	/// <summary>
+	/// Shows or hides the forge like the Forge button does, which also hides or restores the other panels.
+	/// </summary>
+	internal void AutomationShowForge(bool show)
+	{
+		if (show != this.AutomationForgeShown)
+			this.scalingButtonForge_Click(this, EventArgs.Empty);
+	}
 }
