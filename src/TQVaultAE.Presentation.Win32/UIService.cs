@@ -7,7 +7,7 @@ using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 
-namespace TQVaultAE.Presentation;
+namespace TQVaultAE.Presentation.Win32;
 
 public class UIService : IUIService
 {

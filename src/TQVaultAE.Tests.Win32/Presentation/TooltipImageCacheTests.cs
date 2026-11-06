@@ -1,8 +1,8 @@
 using System.Drawing;
 using AwesomeAssertions;
-using TQVaultAE.Presentation;
+using TQVaultAE.Presentation.Win32;
 
-namespace TQVaultAE.Tests.Presentation;
+namespace TQVaultAE.Tests.Win32.Presentation;
 
 public class TooltipImageCacheTests
 {

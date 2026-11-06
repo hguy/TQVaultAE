@@ -1,3 +1,5 @@
+using TQVaultAE.Presentation.Win32;
+
 //-----------------------------------------------------------------------
 // <copyright file="AutoSortButton.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
@@ -55,15 +57,15 @@ public class AutoSortButton : BagButtonBase
 	/// </summary>
 	public override void CreateBackgroundGraphics()
 	{
-		this.OffBitmap = Resources.autosortup01;
-		this.OnBitmap = Resources.autosortdown01;
-		this.OverBitmap = Resources.autosortover01;
+		this.OffBitmap = Images.autosortup01;
+		this.OnBitmap = Images.autosortdown01;
+		this.OverBitmap = Images.autosortover01;
 
 		if (this.IsVault)
 		{
-			this.OffBitmap = Resources.rotatedautosortup01;
-			this.OnBitmap = Resources.rotatedautosortdown01;
-			this.OverBitmap = Resources.rotatedautosortover01;
+			this.OffBitmap = Images.rotatedautosortup01;
+			this.OnBitmap = Images.rotatedautosortdown01;
+			this.OverBitmap = Images.rotatedautosortover01;
 		}
 
 		// Scale the button to the size of the graphic.

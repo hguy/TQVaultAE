@@ -87,16 +87,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap AboutGraphic {
-            get {
-                object obj = ResourceManager.GetObject("AboutGraphic", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to About {0}.
         /// </summary>
         public static string AboutText {
@@ -360,36 +350,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap autosortdown01 {
-            get {
-                object obj = ResourceManager.GetObject("autosortdown01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap autosortover01 {
-            get {
-                object obj = ResourceManager.GetObject("autosortover01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap autosortup01 {
-            get {
-                object obj = ResourceManager.GetObject("autosortup01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Available pictures.
         /// </summary>
         public static string BagButtonSettingsAvailablePictures {
@@ -594,156 +554,6 @@ namespace TQVaultAE.Presentation {
         public static string BaseStrength {
             get {
                 return ResourceManager.GetString("BaseStrength", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap BorderBottom {
-            get {
-                object obj = ResourceManager.GetObject("BorderBottom", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap BorderBottomLeftCorner {
-            get {
-                object obj = ResourceManager.GetObject("BorderBottomLeftCorner", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap BorderBottomRightCorner {
-            get {
-                object obj = ResourceManager.GetObject("BorderBottomRightCorner", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap BorderSide {
-            get {
-                object obj = ResourceManager.GetObject("BorderSide", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap BorderTop {
-            get {
-                object obj = ResourceManager.GetObject("BorderTop", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonCloseDown {
-            get {
-                object obj = ResourceManager.GetObject("ButtonCloseDown", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonCloseOver {
-            get {
-                object obj = ResourceManager.GetObject("ButtonCloseOver", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonCloseUp {
-            get {
-                object obj = ResourceManager.GetObject("ButtonCloseUp", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonMaximizeDown {
-            get {
-                object obj = ResourceManager.GetObject("ButtonMaximizeDown", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonMaximizeOver {
-            get {
-                object obj = ResourceManager.GetObject("ButtonMaximizeOver", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonMaximizeUp {
-            get {
-                object obj = ResourceManager.GetObject("ButtonMaximizeUp", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonMinimizeDown {
-            get {
-                object obj = ResourceManager.GetObject("ButtonMinimizeDown", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonMinimizeOver {
-            get {
-                object obj = ResourceManager.GetObject("ButtonMinimizeOver", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ButtonMinimizeUp {
-            get {
-                object obj = ResourceManager.GetObject("ButtonMinimizeUp", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap caravan_bg {
-            get {
-                object obj = ResourceManager.GetObject("caravan_bg", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -1047,36 +857,6 @@ namespace TQVaultAE.Presentation {
         public static string DuplicateCharacter_SourceRequired {
             get {
                 return ResourceManager.GetString("DuplicateCharacter_SourceRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap equipment_bg_and_char {
-            get {
-                object obj = ResourceManager.GetObject("equipment_bg_and_char", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Equipment_bg_new {
-            get {
-                object obj = ResourceManager.GetObject("Equipment_bg_new", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap EquipmentPanel {
-            get {
-                object obj = ResourceManager.GetObject("EquipmentPanel", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -2242,46 +2022,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap inventorybagdown01 {
-            get {
-                object obj = ResourceManager.GetObject("inventorybagdown01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap inventorybagover01 {
-            get {
-                object obj = ResourceManager.GetObject("inventorybagover01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap inventorybagup01 {
-            get {
-                object obj = ResourceManager.GetObject("inventorybagup01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ItemAccent {
-            get {
-                object obj = ResourceManager.GetObject("ItemAccent", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Atlantis Item.
         /// </summary>
         public static string ItemAtlantis {
@@ -2404,56 +2144,6 @@ namespace TQVaultAE.Presentation {
         public static string ItemWith {
             get {
                 return ResourceManager.GetString("ItemWith", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap MainButtonDown {
-            get {
-                object obj = ResourceManager.GetObject("MainButtonDown", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap MainButtonOver {
-            get {
-                object obj = ResourceManager.GetObject("MainButtonOver", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap MainButtonUp {
-            get {
-                object obj = ResourceManager.GetObject("MainButtonUp", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap MainForm_Background {
-            get {
-                object obj = ResourceManager.GetObject("MainForm_Background", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap MainForm_NewBackground {
-            get {
-                object obj = ResourceManager.GetObject("MainForm_NewBackground", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -3082,26 +2772,6 @@ namespace TQVaultAE.Presentation {
         public static string MaintenanceText {
             get {
                 return ResourceManager.GetString("MaintenanceText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Majestic_Chest {
-            get {
-                object obj = ResourceManager.GetObject("Majestic_Chest", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Majestic_Chest_small {
-            get {
-                object obj = ResourceManager.GetObject("Majestic_Chest_small", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -3736,26 +3406,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap NewAboutGraphic {
-            get {
-                object obj = ResourceManager.GetObject("NewAboutGraphic", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap NewSplashScreen {
-            get {
-                object obj = ResourceManager.GetObject("NewSplashScreen", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Deaths.
         /// </summary>
         public static string NumberOfDeaths {
@@ -3985,26 +3635,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ProgressBar {
-            get {
-                object obj = ResourceManager.GetObject("ProgressBar", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap ProgressBarFill {
-            get {
-                object obj = ResourceManager.GetObject("ProgressBarFill", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Reset Attributes.
         /// </summary>
         public static string ResetAttributesButton {
@@ -4118,36 +3748,6 @@ namespace TQVaultAE.Presentation {
         public static string ResultsText {
             get {
                 return ResourceManager.GetString("ResultsText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap rotatedautosortdown01 {
-            get {
-                object obj = ResourceManager.GetObject("rotatedautosortdown01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap rotatedautosortover01 {
-            get {
-                object obj = ResourceManager.GetObject("rotatedautosortover01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap rotatedautosortup01 {
-            get {
-                object obj = ResourceManager.GetObject("rotatedautosortup01", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -5316,16 +4916,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap SplashScreen {
-            get {
-                object obj = ResourceManager.GetObject("SplashScreen", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Cannot find Stash file..
         /// </summary>
         public static string StashNotFound {
@@ -5342,16 +4932,6 @@ namespace TQVaultAE.Presentation {
         public static string StashNotFoundMsg {
             get {
                 return ResourceManager.GetString("StashNotFoundMsg", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap StashPanel {
-            get {
-                object obj = ResourceManager.GetObject("StashPanel", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -5388,36 +4968,6 @@ namespace TQVaultAE.Presentation {
         public static string StashPanelText {
             get {
                 return ResourceManager.GetString("StashPanelText", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap StashTabDown {
-            get {
-                object obj = ResourceManager.GetObject("StashTabDown", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap StashTabOver {
-            get {
-                object obj = ResourceManager.GetObject("StashTabOver", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap StashTabUp {
-            get {
-                object obj = ResourceManager.GetObject("StashTabUp", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         
@@ -5706,36 +5256,6 @@ namespace TQVaultAE.Presentation {
         public static string TextTag_tailVelocity {
             get {
                 return ResourceManager.GetString("TextTag_tailVelocity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap tqmedallion {
-            get {
-                object obj = ResourceManager.GetObject("tqmedallion", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap tqmedalliondoor {
-            get {
-                object obj = ResourceManager.GetObject("tqmedalliondoor", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
-        /// </summary>
-        public static System.Drawing.Icon TQVIcon {
-            get {
-                object obj = ResourceManager.GetObject("TQVIcon", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
             }
         }
         

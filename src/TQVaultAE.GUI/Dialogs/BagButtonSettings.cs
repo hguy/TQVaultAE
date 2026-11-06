@@ -4,6 +4,7 @@ using TQVaultAE.GUI.Components.Icons;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Infrastructure;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
@@ -306,9 +307,9 @@ public partial class BagButtonSettings : VaultForm
 	{
 		if (this.scalingRadioButtonDefaultIcon.Checked)
 		{
-			this.pictureBoxOn.Image = Resources.inventorybagup01;
-			this.pictureBoxOff.Image = this.pictureBoxSimple.Image = Resources.inventorybagdown01;
-			this.pictureBoxOver.Image = Resources.inventorybagover01;
+			this.pictureBoxOn.Image = Images.inventorybagup01;
+			this.pictureBoxOff.Image = this.pictureBoxSimple.Image = Images.inventorybagdown01;
+			this.pictureBoxOver.Image = Images.inventorybagover01;
 			return;
 		}
 
@@ -556,9 +557,9 @@ public partial class BagButtonSettings : VaultForm
 		if (dispmode == BagButtonDisplayMode.Default)
 		{
 			// Reset to default settings
-			this._CurrentBagButton.OnBitmap = Resources.inventorybagup01;
-			this._CurrentBagButton.OffBitmap = Resources.inventorybagdown01;
-			this._CurrentBagButton.OverBitmap = Resources.inventorybagover01;
+			this._CurrentBagButton.OnBitmap = Images.inventorybagup01;
+			this._CurrentBagButton.OffBitmap = Images.inventorybagdown01;
+			this._CurrentBagButton.OverBitmap = Images.inventorybagover01;
 
 			this._CurrentBagButton.Sack.BagButtonIconInfo = null;
 		}

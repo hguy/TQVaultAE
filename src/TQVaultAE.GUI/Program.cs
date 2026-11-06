@@ -14,6 +14,7 @@ using TQVaultAE.Domain.Exceptions;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.Logs;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using TQVaultAE.Services.Win32;

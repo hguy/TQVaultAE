@@ -8,6 +8,7 @@ using System.Globalization;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.Logs;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;
@@ -349,7 +350,7 @@ public partial class SackPanel : Panel, IScalingControl
 		System.Drawing.Imaging.ImageAttributes imgAttr = new System.Drawing.Imaging.ImageAttributes();
 		imgAttr.SetColorMatrix(colorMatrix);
 
-		graphics.DrawImage(Resources.ItemAccent, itemRectangle, 0, 0, Resources.ItemAccent.Width, Resources.ItemAccent.Height, GraphicsUnit.Pixel, imgAttr);
+		graphics.DrawImage(Images.ItemAccent, itemRectangle, 0, 0, Images.ItemAccent.Width, Images.ItemAccent.Height, GraphicsUnit.Pixel, imgAttr);
 	}
 
 	/// <summary>

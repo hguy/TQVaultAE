@@ -19,6 +19,7 @@ using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Logs;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;
@@ -245,7 +246,7 @@ public partial class SackPanel : Panel, IScalingControl
 		this.borderPen = new Pen(Color.FromArgb(223, 188, 97));
 		this.borderPen.Width = BorderWidth;
 
-		this.DefaultImage = Resources.tqmedallion;
+		this.DefaultImage = Images.tqmedallion;
 		this.DefaultItemBackgroundColor = Color.FromArgb(220, 220, 220);  // White
 		this.HighlightValidItemColor = Color.FromArgb(23, 149, 15);       // Green
 		this.HighlightInvalidItemColor = Color.FromArgb(153, 28, 28);     // Red
