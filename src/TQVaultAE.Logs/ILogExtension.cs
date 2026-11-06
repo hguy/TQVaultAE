@@ -1,40 +1,39 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace TQVaultAE.Logs
+namespace TQVaultAE.Logs;
+
+/// <summary>
+/// Extensions communes pour ILog
+/// </summary>
+public static class ILogExtension
 {
+
 	/// <summary>
-	/// Extensions communes pour ILog
+	/// Error Exception Only
 	/// </summary>
-	public static class ILogExtension
+	/// <param name="Log"></param>
+	/// <param name="ex"></param>
+	public static void ErrorException(this ILogger Log, Exception ex)
 	{
+		Log.LogError(ex, ex.Message);
+	}
 
-		/// <summary>
-		/// Error Exception Only
-		/// </summary>
-		/// <param name="Log"></param>
-		/// <param name="ex"></param>
-		public static void ErrorException(this ILogger Log, Exception ex)
+	/// <summary>
+	/// format l'exception seulement
+	/// </summary>
+	/// <param name="Log"></param>
+	/// <param name="ex"></param>
+	public static string FormatException(this ILogger Log, Exception ex)
+	{
+		string mess = string.Empty;
+		try
 		{
-			Log.LogError(ex, ex.Message);
+			mess = new TextExceptionFormatter(ex).Format();
 		}
-
-		/// <summary>
-		/// format l'exception seulement
-		/// </summary>
-		/// <param name="Log"></param>
-		/// <param name="ex"></param>
-		public static string FormatException(this ILogger Log, Exception ex)
+		catch (Exception)
 		{
-			string mess = string.Empty;
-			try
-			{
-				mess = new TextExceptionFormatter(ex).Format();
-			}
-			catch (Exception)
-			{
-				mess = $@"TextExceptionFormatter().Format() failed for error ""{ex.Message}"" !";
-			}
-			return mess;
+			mess = $@"TextExceptionFormatter().Format() failed for error ""{ex.Message}"" !";
 		}
+		return mess;
 	}
 }
