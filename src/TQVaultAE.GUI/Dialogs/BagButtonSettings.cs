@@ -4,6 +4,8 @@ using TQVaultAE.GUI.Components.Icons;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Infrastructure;
+using TQVaultAE.Presentation.Win32.Contracts;
+using TQVaultAE.Presentation.Win32.Models;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using System.Collections.ObjectModel;

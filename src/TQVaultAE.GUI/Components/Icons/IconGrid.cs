@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Drawing.Drawing2D;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Presentation.Win32.Models;
 
 namespace TQVaultAE.GUI.Components.Icons;
 

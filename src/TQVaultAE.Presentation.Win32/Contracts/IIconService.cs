@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
-using TQVaultAE.Domain.Entities;
+using TQVaultAE.Presentation.Win32.Models;
 
-namespace TQVaultAE.Application.Contracts.Services;
+namespace TQVaultAE.Presentation.Win32.Contracts;
 
 public interface IIconService
 {
