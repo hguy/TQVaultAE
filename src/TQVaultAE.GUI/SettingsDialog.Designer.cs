@@ -1085,6 +1085,8 @@ namespace TQVaultAE.GUI
 			// 
 			// detectGamePathsCheckBox
 			// 
+			detectGamePathsCheckBox.AutoSize = true;
+			detectGamePathsCheckBox.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			detectGamePathsCheckBox.CheckedBehavior = UIToolbox.CheckGroupBoxCheckedBehavior.Disable;
 			detectGamePathsCheckBox.Controls.Add(bufferedFlowLayoutPanelAutoDetectGamePath);
 			detectGamePathsCheckBox.ForeColor = Color.Gold;
@@ -1098,6 +1100,8 @@ namespace TQVaultAE.GUI
 			// 
 			// bufferedFlowLayoutPanelAutoDetectGamePath
 			// 
+			bufferedFlowLayoutPanelAutoDetectGamePath.AutoSize = true;
+			bufferedFlowLayoutPanelAutoDetectGamePath.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			bufferedFlowLayoutPanelAutoDetectGamePath.Controls.Add(titanQuestPathLabel);
 			bufferedFlowLayoutPanelAutoDetectGamePath.Controls.Add(bufferedFlowLayoutPanelTQPath);
 			bufferedFlowLayoutPanelAutoDetectGamePath.Controls.Add(immortalThronePathLabel);
@@ -1108,6 +1112,7 @@ namespace TQVaultAE.GUI
 			bufferedFlowLayoutPanelAutoDetectGamePath.Name = "bufferedFlowLayoutPanelAutoDetectGamePath";
 			bufferedFlowLayoutPanelAutoDetectGamePath.Size = new Size(460, 118);
 			bufferedFlowLayoutPanelAutoDetectGamePath.TabIndex = 1;
+			bufferedFlowLayoutPanelAutoDetectGamePath.WrapContents = false;
 			// 
 			// bufferedFlowLayoutPanelTQPath
 			// 
@@ -1120,6 +1125,7 @@ namespace TQVaultAE.GUI
 			bufferedFlowLayoutPanelTQPath.Name = "bufferedFlowLayoutPanelTQPath";
 			bufferedFlowLayoutPanelTQPath.Size = new Size(456, 33);
 			bufferedFlowLayoutPanelTQPath.TabIndex = 55;
+			bufferedFlowLayoutPanelTQPath.WrapContents = false;
 			// 
 			// bufferedFlowLayoutPanelTQITPath
 			// 
@@ -1132,6 +1138,7 @@ namespace TQVaultAE.GUI
 			bufferedFlowLayoutPanelTQITPath.Name = "bufferedFlowLayoutPanelTQITPath";
 			bufferedFlowLayoutPanelTQITPath.Size = new Size(456, 33);
 			bufferedFlowLayoutPanelTQITPath.TabIndex = 55;
+			bufferedFlowLayoutPanelTQITPath.WrapContents = false;
 			// 
 			// enableCustomMapsCheckBox
 			// 
