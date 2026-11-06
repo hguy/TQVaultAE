@@ -16,7 +16,7 @@ public class ItemExchangeServiceVaultTests
 {
 	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly Mock<IVaultService> _mockVaultService;
-	private readonly Mock<IUIService> _mockUIService;
+	private readonly Mock<IUserNotifier> _mockUserNotifier;
 	private readonly ItemExchangeService _service;
 
 	public ItemExchangeServiceVaultTests()
@@ -29,7 +29,7 @@ public class ItemExchangeServiceVaultTests
 		};
 
 		_mockVaultService = new Mock<IVaultService>();
-		_mockUIService = new Mock<IUIService>();
+		_mockUserNotifier = new Mock<IUserNotifier>();
 		_service = new ItemExchangeService(_jsonOptions);
 	}
 

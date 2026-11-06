@@ -15,12 +15,12 @@ public class GameFileServiceWin : GameFileService
 	public GameFileServiceWin(
 		ILogger<GameFileServiceWin> log
 		, IGamePathService iGamePathService
-		, IUIService iUIService
+		, IUserNotifier userNotifier
 		, IFileIO fileIO
 		, IPathIO pathIO
 		, IDirectoryIO directoryIO
 		, UserSettings userSettings
-	) : base(log, iGamePathService, iUIService, fileIO, pathIO, directoryIO, userSettings)
+	) : base(log, iGamePathService, userNotifier, fileIO, pathIO, directoryIO, userSettings)
 	{
 	}
 

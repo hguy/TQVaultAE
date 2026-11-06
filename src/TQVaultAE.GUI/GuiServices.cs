@@ -5,6 +5,7 @@ using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 using TQVaultAE.GUI.Forms;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.GUI;
 

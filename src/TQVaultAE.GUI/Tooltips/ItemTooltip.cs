@@ -7,6 +7,7 @@ using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Forms;
+using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;

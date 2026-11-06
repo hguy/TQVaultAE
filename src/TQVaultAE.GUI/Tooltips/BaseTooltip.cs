@@ -2,6 +2,7 @@
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.GUI.Tooltips;
 

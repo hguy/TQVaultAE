@@ -4,6 +4,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 

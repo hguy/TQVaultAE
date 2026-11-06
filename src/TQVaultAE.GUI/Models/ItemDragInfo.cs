@@ -6,6 +6,7 @@
 
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Panels;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.GUI.Models;
 

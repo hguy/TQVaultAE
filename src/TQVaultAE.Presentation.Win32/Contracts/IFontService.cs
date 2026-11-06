@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace TQVaultAE.Application.Contracts.Services;
+namespace TQVaultAE.Presentation.Win32.Contracts;
 
 public interface IFontService
 {

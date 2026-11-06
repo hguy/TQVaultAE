@@ -9,6 +9,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.GUI.Components.Buttons;
 
