@@ -587,6 +587,9 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	private void Notify(ForgeMessage message)
 	{
+#if DEBUG
+		this.AutomationRecordMessage(message);
+#endif
 		this.UIService.NotifyUser(TextOf(message), TQColor.Red);
 		SoundService.PlayRandomCancel();
 	}

@@ -110,7 +110,14 @@ public static class Program
 			.AddSingleton<IIconService, IconService>()
 			.AddSingleton<ITQDataService, TQDataService>()
 			.AddTransient<IBitmapService, BitmapService>()
+#if DEBUG
+			// Records the sounds played, for the automation endpoint's recent_sounds tool.
+			.AddSingleton<SoundServiceWin>()
+			.AddSingleton<ISoundService>(sp => new TQVaultAE.GUI.Automation.RecordingSoundService(
+				sp.GetRequiredService<SoundServiceWin>(), sp.GetRequiredService<UserSettings>()))
+#else
 			.AddSingleton<ISoundService, SoundServiceWin>()
+#endif
 			.AddTransient<IGameFileService, GameFileServiceWin>()
 			.AddSingleton<ITagService, TagService>()
 
