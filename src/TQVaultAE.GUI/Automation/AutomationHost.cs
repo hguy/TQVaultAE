@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol;
+using TQVaultAE.GUI.Forms;
 
 namespace TQVaultAE.GUI.Automation;
 
@@ -28,6 +29,9 @@ internal static class AutomationHost
 	public const int DefaultPort = 47017;
 
 	private static ILogger? _log;
+
+	/// <summary>Logger of the automation endpoint, once started.</summary>
+	internal static ILogger? Log => _log;
 	private static WebApplication? _app;
 	private static MainForm? _mainForm;
 	private static volatile bool _isDriving;
