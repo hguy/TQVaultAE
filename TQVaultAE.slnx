@@ -44,7 +44,9 @@
   <Project Path="src\TQVaultAE.GUI\TQVaultAE.GUI.csproj" />
   <Project Path="src\TQVaultAE.Logs\TQVaultAE.Logs.csproj" />
   <Project Path="src\TQVaultAE.Presentation\TQVaultAE.Presentation.csproj" />
+  <Project Path="src\TQVaultAE.Presentation.Win32\TQVaultAE.Presentation.Win32.csproj" />
   <Project Path="src\TQVaultAE.Services.Win32\TQVaultAE.Services.Win32.csproj" />
   <Project Path="src\TQVaultAE.Services\TQVaultAE.Services.csproj" />
   <Project Path="src\TQVaultAE.Tests\TQVaultAE.Tests.csproj" />
+  <Project Path="src\TQVaultAE.Tests.Win32\TQVaultAE.Tests.Win32.csproj" />
 </Solution>

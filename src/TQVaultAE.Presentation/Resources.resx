@@ -852,9 +852,6 @@ The Storage Area tab will be unavailable for this character.</value>
     <value>Caravan</value>
   </data>
 	<assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-	<data name="TQVIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Icon\app.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="UpdateCompletion" xml:space="preserve">
     <value>{0}    {1} % complete.</value>
   </data>
@@ -927,60 +924,6 @@ Used to track changes in the translation file.</comment>
     <comment>Do not Translate.  Used for AutoUpdate.
 Change this value to match program version when new keys are added.  Will trigger an update on next restart.</comment>
   </data>
-	<data name="AboutGraphic" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\aboutgraphic.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="autosortdown01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\autosortdown01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="autosortover01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\autosortover01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="autosortup01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\autosortup01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="EquipmentPanel" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\EquipmentPanel.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="inventorybagdown01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\inventorybagdown01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="inventorybagover01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\inventorybagover01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="inventorybagup01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\inventorybagup01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="MainForm_Background" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\MainForm Background.PNG;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="rotatedautosortdown01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\rotatedautosortdown01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="rotatedautosortover01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\rotatedautosortover01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="rotatedautosortup01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\rotatedautosortup01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="StashPanel" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\StashPanel.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="StashTabDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\StashTabDown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="StashTabOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\StashTabOver.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="StashTabUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\StashTabUp.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="tqmedallion" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\tqmedallion.JPG;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="tqmedalliondoor" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\tqmedalliondoor.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="VaultGroupBoxEmpty" xml:space="preserve">
     <value>&lt;EMPTY&gt;</value>
   </data>
@@ -991,27 +934,6 @@ Would you like to disable loading all files?</value>
 	<data name="MainFormDisableLoadAllFilesCaption" xml:space="preserve">
     <value>Disable loading all files?</value>
   </data>
-	<data name="caravan_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\caravan_bg.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="MainButtonDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\mainbuttondown.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="MainButtonOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\mainbuttonover.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="MainButtonUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\mainbuttonup.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="MainForm_NewBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\mainform_newbackground.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="Majestic_Chest" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\majestic chest.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="Majestic_Chest_small" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\majestic chest_small.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="MainFormSearchButtonText" xml:space="preserve">
     <value>Search</value>
   </data>
@@ -1030,51 +952,6 @@ You can use | in a term as an OR condition. '$common | rare' returns all common 
 
 Here is a complex example: 'arctic &amp; of frost @ring $rare | common'</value>
   </data>
-	<data name="BorderBottom" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\borderbottom.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="BorderBottomLeftCorner" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\borderbottomleftcorner.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="BorderBottomRightCorner" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\borderbottomrightcorner.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="BorderSide" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\borderside.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="BorderTop" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\bordertop.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonMaximizeDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonmaximizedown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonMaximizeOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonmaximizeover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonMaximizeUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonmaximizeup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonMinimizeDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonminimizedown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonMinimizeOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonminimizeover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonMinimizeUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonminimizeup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonCloseDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttonclosedown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonCloseOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttoncloseover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ButtonCloseUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\buttoncloseup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="Equipment_bg_new" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\equipment_bg_new.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="GlobalClose" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -1096,21 +973,6 @@ Here is a complex example: 'arctic &amp; of frost @ring $rare | common'</value>
 	<data name="GlobalSize" xml:space="preserve">
     <value>Size</value>
   </data>
-	<data name="NewAboutGraphic" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\newaboutgraphic.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="NewSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\newsplashscreen.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="SplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\splashscreen.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ProgressBar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\progressbar.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
-	<data name="ProgressBarFill" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\progressbarfill.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="SettingsPlayerReadonly" xml:space="preserve">
     <value>Player Equipment ReadOnly</value>
   </data>
@@ -1132,9 +994,6 @@ Here is a complex example: 'arctic &amp; of frost @ring $rare | common'</value>
 	<data name="GlobalRelicVaultStash" xml:space="preserve">
     <value>Relic Vault</value>
   </data>
-	<data name="equipment_bg_and_char" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\equipment_bg_and_char.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="SettingsAllowEditCE" xml:space="preserve">
     <value>Allow Character Editing Features</value>
   </data>
@@ -1704,9 +1563,6 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="DuplicateCharacter_NewNameAlreadyUsed" xml:space="preserve">
     <value>Name is already used!</value>
   </data>
-	<data name="ItemAccent" type="System.Resources.ResXFileRef, System.Windows.Forms">
-		<value>Resources\Img\ItemAccent.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-	</data>
 	<data name="ItemEmbers" xml:space="preserve">
     <value>Eternal Embers Item</value>
   </data>

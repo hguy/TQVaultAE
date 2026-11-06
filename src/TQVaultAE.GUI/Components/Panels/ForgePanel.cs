@@ -7,6 +7,7 @@ using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;
@@ -304,8 +305,8 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	private void RenderBackgrounds()
 	{
-		ReplaceBackground(this, ref this.panelBackground, () => Resources.caravan_bg);
-		ReplaceBackground(this.tableLayoutPanelForge, ref this.tableBackground, () => Resources.StashPanel);
+		ReplaceBackground(this, ref this.panelBackground, () => Images.caravan_bg);
+		ReplaceBackground(this.tableLayoutPanelForge, ref this.tableBackground, () => Images.StashPanel);
 	}
 
 	/// <summary>Sets <paramref name="control"/>'s background to the image drawn once at its size.</summary>

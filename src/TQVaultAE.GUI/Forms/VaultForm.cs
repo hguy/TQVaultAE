@@ -8,6 +8,7 @@ using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Interop;
+using TQVaultAE.Presentation.Win32;
 
 namespace TQVaultAE.GUI.Forms;
 
@@ -176,11 +177,11 @@ public partial class VaultForm : Form, IScalingControl
 	{
 		this.InitializeComponent();
 
-		this.topBorder = Resources.BorderTop;
-		this.bottomBorder = Resources.BorderBottom;
-		this.sideBorder = Resources.BorderSide;
-		this.bottomRightCorner = Resources.BorderBottomRightCorner;
-		this.bottomLeftCorner = Resources.BorderBottomLeftCorner;
+		this.topBorder = Images.BorderTop;
+		this.bottomBorder = Images.BorderBottom;
+		this.sideBorder = Images.BorderSide;
+		this.bottomRightCorner = Images.BorderBottomRightCorner;
+		this.bottomLeftCorner = Images.BorderBottomLeftCorner;
 		this.ShowResizeBorders = false;
 
 		this.TitleTextColor = SystemColors.ControlText;
@@ -541,11 +542,11 @@ public partial class VaultForm : Form, IScalingControl
 		else if (scaleFactor == 1.0F)
 		{
 			// Reset the border graphics to the originals.
-			this.topBorder = Resources.BorderTop;
-			this.bottomBorder = Resources.BorderBottom;
-			this.sideBorder = Resources.BorderSide;
-			this.bottomRightCorner = Resources.BorderBottomRightCorner;
-			this.bottomLeftCorner = Resources.BorderBottomLeftCorner;
+			this.topBorder = Images.BorderTop;
+			this.bottomBorder = Images.BorderBottom;
+			this.sideBorder = Images.BorderSide;
+			this.bottomRightCorner = Images.BorderBottomRightCorner;
+			this.bottomLeftCorner = Images.BorderBottomLeftCorner;
 
 			UIService.Scale = 1.0F;
 
@@ -756,19 +757,19 @@ public partial class VaultForm : Form, IScalingControl
 					Rectangle textRect = new Rectangle(new Point((this.ClientSize.Width - textSize.Width) / 2, (this.topBorder.Height - textSize.Height) / 2), textSize);
 
 					// Check if the background for the title text needs to be resized.
-					float factor = (float)topBorderRect.Width / (float)Resources.BorderTop.Width;
+					float factor = (float)topBorderRect.Width / (float)Images.BorderTop.Width;
 					int textBackroundWidth = Convert.ToInt32(114.0F * factor);
 					if (textRect.Width > textBackroundWidth)
 					{
 						// Copy the center 126 pixels from the top border which make up the background to the title text.
-						Rectangle srcRect = new Rectangle((Resources.BorderTop.Width / 2) - 61, 0, 126, Resources.BorderTop.Height);
+						Rectangle srcRect = new Rectangle((Images.BorderTop.Width / 2) - 61, 0, 126, Images.BorderTop.Height);
 						Rectangle destRect = new Rectangle(
 							textRect.Left - Convert.ToInt32(6.0F * factor)
 							, 0
 							, textRect.Width + Convert.ToInt32(12.0F * factor)
 							, topBorderRect.Height
 						);
-						e.Graphics.DrawImage(Resources.BorderTop, destRect, srcRect, GraphicsUnit.Pixel);
+						e.Graphics.DrawImage(Images.BorderTop, destRect, srcRect, GraphicsUnit.Pixel);
 					}
 
 					TextRenderer.DrawText(
@@ -781,7 +782,7 @@ public partial class VaultForm : Form, IScalingControl
 				}
 			}
 
-			int topBorderOffset = Convert.ToInt32(3.0F * ((float)this.topBorder.Height) / (float)Resources.BorderTop.Height);
+			int topBorderOffset = Convert.ToInt32(3.0F * ((float)this.topBorder.Height) / (float)Images.BorderTop.Height);
 
 			// Draw the Left side
 			e.Graphics.DrawImage(

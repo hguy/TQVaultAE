@@ -1,4 +1,6 @@
-﻿//-----------------------------------------------------------------------
+﻿using TQVaultAE.Presentation.Win32;
+
+//-----------------------------------------------------------------------
 // <copyright file="ScalingButton.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -37,9 +39,9 @@ public class ScalingButton : Button, IScalingControl
 	{
 		InitializeComponent();
 
-		this.DownBitmap = Resources.MainButtonDown;
-		this.OverBitmap = Resources.MainButtonOver;
-		this.UpBitmap = Resources.MainButtonUp;
+		this.DownBitmap = Images.MainButtonDown;
+		this.OverBitmap = Images.MainButtonOver;
+		this.UpBitmap = Images.MainButtonUp;
 	}
 
 	private void InitializeComponent()

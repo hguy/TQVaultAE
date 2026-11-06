@@ -4,6 +4,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components;
@@ -24,7 +25,7 @@ public partial class HighlightFilters : UserControl
 		SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
 		BackgroundImageLayout = ImageLayout.Stretch;
-		BackgroundImage = Resources.caravan_bg;
+		BackgroundImage = Images.caravan_bg;
 	}
 
 	internal void InitializeFilters()

@@ -6,6 +6,7 @@
 
 using TQVaultAE.Application;
 using TQVaultAE.GUI.Components.Buttons;
+using TQVaultAE.Presentation.Win32;
 
 namespace TQVaultAE.GUI.Components.Panels;
 
@@ -67,8 +68,8 @@ public class PlayerPanel : VaultPanel
 		// Recalculate the button sizing and placement since we moved the BagSackPanel.
 		if (this.BagButtons != null && this.BagButtons.Count > 0)
 		{
-			float buttonWidth = (float)Resources.inventorybagup01.Width;
-			float buttonHeight = (float)Resources.inventorybagup01.Height;
+			float buttonWidth = (float)Images.inventorybagup01.Width;
+			float buttonHeight = (float)Images.inventorybagup01.Height;
 			float pad = 2.0F;
 			float slotWidth = buttonWidth + (2.0F * pad);
 

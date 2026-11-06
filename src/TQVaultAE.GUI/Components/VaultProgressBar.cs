@@ -1,4 +1,5 @@
 ﻿using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.Presentation.Win32;
 
 //-----------------------------------------------------------------------
 // <copyright file="VaultProgressBar.cs" company="None">
@@ -53,9 +54,9 @@ public class VaultProgressBar : UserControl
 		this.Maximum = 0;
 		this.Title = string.Empty;
 		this.Value = 0;
-		this.backgroundImage = Resources.ProgressBar;
+		this.backgroundImage = Images.ProgressBar;
 		this.Size = this.backgroundImage.Size;
-		this.fillImage = Resources.ProgressBarFill;
+		this.fillImage = Images.ProgressBarFill;
 
 		this.SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 	}

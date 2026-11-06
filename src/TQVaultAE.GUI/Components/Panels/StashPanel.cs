@@ -11,6 +11,7 @@ using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components.Layout;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Dialogs;
+using TQVaultAE.Presentation.Win32;
 
 namespace TQVaultAE.GUI.Components.Panels;
 
@@ -156,9 +157,9 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		this.BagSackPanel.MaxSacks = 1;
 		this.BagSackPanel.Anchor = AnchorStyles.None;
 
-		//this.EquipmentBackground = Resources.Equipment_bg_new;
-		this.background = this.EquipmentBackground = Resources.equipment_bg_and_char;
-		this.StashBackground = Resources.caravan_bg;
+		//this.EquipmentBackground = Images.Equipment_bg_new;
+		this.background = this.EquipmentBackground = Images.equipment_bg_and_char;
+		this.StashBackground = Images.caravan_bg;
 
 		// Set up the inital font size
 		if (UIService.Scale != 1.0F)
@@ -348,16 +349,16 @@ public partial class StashPanel : VaultPanel, IScalingControl
 				Anchor = AnchorStyles.Top | AnchorStyles.Right,
 				BackColor = Color.Transparent,
 				DialogResult = DialogResult.OK,
-				DownBitmap = Resources.MainButtonDown,
+				DownBitmap = Images.MainButtonDown,
 				FlatStyle = FlatStyle.Flat,
 				ForeColor = Color.FromArgb(51, 44, 28),
-				Image = Resources.MainButtonUp,
+				Image = Images.MainButtonUp,
 				Name = "editButton",
-				OverBitmap = Resources.MainButtonOver,
+				OverBitmap = Images.MainButtonOver,
 				Size = new Size(137, 30),
 				SizeToGraphic = false,
 				Text = Resources.CharacterEditBtn,
-				UpBitmap = Resources.MainButtonUp,
+				UpBitmap = Images.MainButtonUp,
 				UseCustomGraphic = true,
 				UseVisualStyleBackColor = false,
 				Font = FontService.GetFontLight(11F),
@@ -655,8 +656,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	{
 		StashButton button = new StashButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.Services);
 
-		float buttonWidth = (float)Resources.StashTabUp.Width;
-		float buttonHeight = (float)Resources.StashTabUp.Height;
+		float buttonWidth = (float)Images.StashTabUp.Width;
+		float buttonHeight = (float)Images.StashTabUp.Height;
 		float pad = 2.0F;
 		float slotWidth = buttonWidth + (2.0F * pad);
 

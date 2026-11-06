@@ -10,6 +10,7 @@ using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
@@ -240,12 +241,12 @@ Item Debug Level: {USettings.ItemDebugLevel}
 
 		this.InitializeComponent();
 
-		this.vaultPictureBox.Image = Resources.Majestic_Chest_small;
-		this.vaultPictureBox.Size = Resources.Majestic_Chest_small.Size;
+		this.vaultPictureBox.Image = Images.Majestic_Chest_small;
+		this.vaultPictureBox.Size = Images.Majestic_Chest_small.Size;
 		this.toolTip.SetToolTip(this.vaultPictureBox, Resources.MainFormLabel2);
 
-		this.pictureBoxSecondVault.Image = Resources.Majestic_Chest_small;
-		this.pictureBoxSecondVault.Size = Resources.Majestic_Chest_small.Size;
+		this.pictureBoxSecondVault.Image = Images.Majestic_Chest_small;
+		this.pictureBoxSecondVault.Size = Images.Majestic_Chest_small.Size;
 		this.toolTip.SetToolTip(this.pictureBoxSecondVault, Resources.MainForm2ndVault);
 
 		this.comboBoxCharacter.Init(
@@ -272,7 +273,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		this.configureButton.Text = Resources.MainFormBtnConfigure;
 		this.exitButton.Text = Resources.GlobalExit;
 		this.showVaulButton.Text = Resources.MainFormBtnPanelSelect;
-		this.Icon = Resources.TQVIcon;
+		this.Icon = Images.TQVIcon;
 		this.searchButton.Text = Resources.MainFormSearchButtonText;
 		this.scalingLabelHighlight.Text = Resources.MainFormHighlightLabelText;
 

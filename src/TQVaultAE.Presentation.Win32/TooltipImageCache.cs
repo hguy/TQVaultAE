@@ -1,6 +1,6 @@
 using System.Drawing;
 
-namespace TQVaultAE.Presentation;
+namespace TQVaultAE.Presentation.Win32;
 
 /// <summary>
 /// Rendered tooltip images, kept within a memory budget: the least recently used images are disposed first.

@@ -4,7 +4,7 @@ using System.Drawing;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 
-namespace TQVaultAE.Presentation;
+namespace TQVaultAE.Presentation.Win32;
 
 public class FontService : IFontService
 {

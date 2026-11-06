@@ -1,3 +1,5 @@
+using TQVaultAE.Presentation.Win32;
+
 //-----------------------------------------------------------------------
 // <copyright file="BagButton.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
@@ -29,8 +31,8 @@ public class BagButton : BagButtonBase
 	/// </summary>
 	public override void CreateBackgroundGraphics()
 	{
-		if (this.OnBitmap is null) this.OnBitmap = Resources.inventorybagup01;
-		if (this.OffBitmap is null) this.OffBitmap = Resources.inventorybagdown01;
-		if (this.OverBitmap is null) this.OverBitmap = Resources.inventorybagover01;
+		if (this.OnBitmap is null) this.OnBitmap = Images.inventorybagup01;
+		if (this.OffBitmap is null) this.OffBitmap = Images.inventorybagdown01;
+		if (this.OverBitmap is null) this.OverBitmap = Images.inventorybagover01;
 	}
 }

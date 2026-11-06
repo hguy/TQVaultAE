@@ -1,3 +1,5 @@
+using TQVaultAE.Presentation.Win32;
+
 //-----------------------------------------------------------------------
 // <copyright file="SplashScreenForm.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
@@ -80,7 +82,7 @@ internal partial class SplashScreenForm : VaultForm
 		this.exitButton.Text = Resources.GlobalExit;
 		this.nextButton.Text = Resources.Form1bNext;
 		this.labelPleaseWait.Text = Resources.Form1LblPleaseWait;
-		this.Icon = Resources.TQVIcon;
+		this.Icon = Images.TQVIcon;
 		this.ShowMainForm = false;
 		//this.Opacity = 0.0F;
 

@@ -19,6 +19,7 @@ using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;
@@ -1260,8 +1261,8 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	{
 		BagButton button = new BagButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.Services);
 
-		float buttonWidth = (float)Resources.inventorybagup01.Width;
-		float buttonHeight = (float)Resources.inventorybagup01.Height;
+		float buttonWidth = (float)Images.inventorybagup01.Width;
+		float buttonHeight = (float)Images.inventorybagup01.Height;
 		float pad = 2.0F;
 		float slotWidth = buttonWidth + (2.0F * pad);
 

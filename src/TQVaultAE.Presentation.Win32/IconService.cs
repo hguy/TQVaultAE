@@ -11,7 +11,7 @@ using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 
-namespace TQVaultAE.Presentation;
+namespace TQVaultAE.Presentation.Win32;
 
 /// <summary>
 /// Loads Titan Quest Icons.

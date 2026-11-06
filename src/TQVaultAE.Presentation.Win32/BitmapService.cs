@@ -12,7 +12,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using TQVaultAE.Application.Contracts.Services;
 
-namespace TQVaultAE.Presentation;
+namespace TQVaultAE.Presentation.Win32;
 
 /// <summary>
 /// Loads Titan Quest textures and converts them into bitmaps.
