@@ -7,18 +7,6 @@
 		/// </summary>
 		private System.ComponentModel.IContainer components = null;
 
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing)
-		{
-			if (disposing && (components != null))
-			{
-				components.Dispose();
-			}
-			base.Dispose(disposing);
-		}
 
 		#region Component Designer generated code
 
@@ -31,7 +19,6 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ForgePanel));
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.pictureBoxDragDrop = new System.Windows.Forms.PictureBox();
             this.tableLayoutPanelForge = new TQVaultAE.GUI.Components.BufferedTableLayoutPanel();
             this.scalingLabelSuffix = new TQVaultAE.GUI.Components.ScalingLabel();
             this.scalingLabelPrefix = new TQVaultAE.GUI.Components.ScalingLabel();
@@ -59,7 +46,6 @@
             this.ResetButton = new TQVaultAE.GUI.Components.ScalingButton();
             this.flowLayoutPanelBottom = new TQVaultAE.GUI.Components.BufferedFlowLayoutPanel();
             this.scalingCheckBoxHardcore = new TQVaultAE.GUI.Components.ScalingCheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDragDrop)).BeginInit();
             this.tableLayoutPanelForge.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRelic2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSuffix)).BeginInit();
@@ -71,19 +57,6 @@
             this.flowLayoutPanelTop.SuspendLayout();
             this.flowLayoutPanelBottom.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // pictureBoxDragDrop
-            // 
-            this.pictureBoxDragDrop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(41)))), ((int)(((byte)(31)))));
-            this.pictureBoxDragDrop.Location = new System.Drawing.Point(466, 21);
-            this.pictureBoxDragDrop.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBoxDragDrop.Name = "pictureBoxDragDrop";
-            this.pictureBoxDragDrop.Size = new System.Drawing.Size(78, 95);
-            this.pictureBoxDragDrop.TabIndex = 1;
-            this.pictureBoxDragDrop.TabStop = false;
-            this.pictureBoxDragDrop.Visible = false;
-            this.pictureBoxDragDrop.Click += new System.EventHandler(this.pictureBoxDragDrop_Click);
-            this.pictureBoxDragDrop.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBoxDragDrop_MouseMove);
             // 
             // tableLayoutPanelForge
             // 
@@ -551,14 +524,12 @@
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.Transparent;
-            this.Controls.Add(this.pictureBoxDragDrop);
             this.Controls.Add(this.tableLayoutPanelForge);
             this.DoubleBuffered = true;
             this.Margin = new System.Windows.Forms.Padding(0, 10, 0, 0);
             this.Name = "ForgePanel";
             this.Padding = new System.Windows.Forms.Padding(15);
             this.Size = new System.Drawing.Size(559, 760);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDragDrop)).EndInit();
             this.tableLayoutPanelForge.ResumeLayout(false);
             this.tableLayoutPanelForge.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxRelic2)).EndInit();
@@ -603,7 +574,6 @@
 		private System.Windows.Forms.ComboBox comboBoxPrefix;
 		private System.Windows.Forms.ComboBox comboBoxRelic1;
 		private System.Windows.Forms.ComboBox comboBoxRelic2;
-		private System.Windows.Forms.PictureBox pictureBoxDragDrop;
 		private ScalingButton ResetButton;
         private ScalingRadioButton scalingRadioButtonGame;
         private BufferedFlowLayoutPanel flowLayoutPanelBottom;

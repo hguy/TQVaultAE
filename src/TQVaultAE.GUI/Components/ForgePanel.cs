@@ -1,6 +1,7 @@
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Forge;
 using TQVaultAE.GUI.Helpers;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltip;
@@ -8,25 +9,27 @@ using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components;
 
+/// <summary>
+/// Forge: merges the prefix, suffix and relics of material items into a base item, under the rules of a
+/// <see cref="ForgeMode"/> (<see cref="ForgeRules"/>).
+/// </summary>
+/// <remarks>
+/// While an item is dragged over the panel it is shown as the mouse cursor (<see cref="ItemDragCursor"/>), so moving
+/// the mouse repaints nothing; clicking a slot drops it there.
+/// </remarks>
 public partial class ForgePanel : UserControl, IScalingControl
 {
 	#region Internal Types
 
-	private enum ItemPropertyType
+	private sealed class ForgeComboItem
 	{
-		Base,
-		Prefix,
-		Suffix,
-		Relic1,
-		Relic2,
-	}
-
-	private class ForgeComboItem
-	{
-		public ItemPropertyType Value;
+		public ForgePart Value;
 		public string Text;
 		public override string ToString() => Text;
 	}
+
+	/// <summary>Controls of one slot.</summary>
+	private sealed record SlotView(ForgeSlot Slot, PictureBox Picture, ComboBox? Combo);
 
 	#endregion
 
@@ -35,20 +38,16 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private readonly IFontService FontService;
 	private readonly ITranslationService TranslationService;
 	private readonly IItemProvider ItemProvider;
+	private readonly IItemDatabaseService ItemDatabaseService;
 
 	internal Action CancelAction;
 	internal Action ForgeAction;
 
-	private Item BaseItem;
-	private SackCollection BaseSack;
-	private Item PrefixItem;
-	private SackCollection PrefixSack;
-	private Item SuffixItem;
-	private SackCollection SuffixSack;
-	private Item Relic1Item;
-	private SackCollection Relic1Sack;
-	private Item Relic2Item;
-	private SackCollection Relic2Sack;
+	/// <summary>Items placed in the slots, and the sacks they come from.</summary>
+	private readonly ForgeSelection Selection = new();
+	private readonly Dictionary<ForgeSlot, SackCollection?> Sacks = new();
+	private readonly SlotView[] Slots;
+	private readonly ForgeRules Rules;
 
 	private ScalingRadioButton lastMode;
 
@@ -62,26 +61,26 @@ public partial class ForgePanel : UserControl, IScalingControl
 	/// </summary>
 	protected ItemDragInfo DragInfo;
 	private readonly GuiServices Services;
-	private Bitmap dragingBmp;
-	private Item lastDragedItem;
+
+	/// <summary>Cursor showing the dragged item while over the panel, and the item it was made for.</summary>
+	private ItemDragCursor? dragCursor;
+	private Item? dragCursorItem;
+
+	/// <summary>Backgrounds drawn once at the control size, instead of being stretched on every paint.</summary>
+	private Bitmap? panelBackground;
+	private Bitmap? tableBackground;
 
 	private bool IsGodMode => scalingRadioButtonGod.Checked;
 	private bool IsRelaxMode => scalingRadioButtonRelax.Checked;
 	private bool IsStrictMode => scalingRadioButtonStrict.Checked;
 	private bool IsGameMode => scalingRadioButtonGame.Checked;
-	bool IsDraging => DragInfo != null && DragInfo.IsActive;
+	private bool IsDraging => DragInfo != null && DragInfo.IsActive;
 
-	private Point CurrentDragPicturePosition
-	{
-		get
-		{
-			var cursorPos = PointToClient(Cursor.Position);
-			return new Point(
-				cursorPos.X - (pictureBoxDragDrop.Size.Width / 2)
-				, cursorPos.Y - pictureBoxDragDrop.Size.Height / 2
-			);
-		}
-	}
+	private ForgeMode Mode
+		=> IsGodMode ? ForgeMode.God
+		: IsRelaxMode ? ForgeMode.Relax
+		: IsStrictMode ? ForgeMode.Strict
+		: ForgeMode.Game;
 
 	private readonly string OfTheTinkererTranslation;
 
@@ -91,17 +90,18 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	internal bool HardcoreMode;
 
+	/// <summary>Base item with the current selection applied, for its tooltip.</summary>
 	private Item PreviewItem
 	{
 		get
 		{
-			if (BaseItem is null) return null;
+			if (Selection.Base is null) return null;
 			if (_PreviewItem is null)
 			{
-				_PreviewItem = BaseItem.Clone();
-				if (SuffixItem is not null || PrefixItem is not null || Relic1Item is not null || Relic2Item is not null)
+				_PreviewItem = Selection.Base.Clone();
+				if (Selection.Prefix is not null || Selection.Suffix is not null || Selection.Relic1 is not null || Selection.Relic2 is not null)
 				{
-					MergeItemProperties(_PreviewItem);
+					ForgeMerge.Apply(_PreviewItem, Selection, IsGodMode, GodPart);
 					this.ItemProvider.GetDBData(_PreviewItem);
 				}
 			}
@@ -129,18 +129,26 @@ public partial class ForgePanel : UserControl, IScalingControl
 		FontService = services.FontService;
 		TranslationService = services.TranslationService;
 		ItemProvider = services.ItemProvider;
+		ItemDatabaseService = services.ItemDatabaseService;
+
+		Rules = new ForgeRules(LevelRequirement);
+		Slots = [
+			new(ForgeSlot.Base, pictureBoxBaseItem, null),
+			new(ForgeSlot.Prefix, pictureBoxPrefix, comboBoxPrefix),
+			new(ForgeSlot.Suffix, pictureBoxSuffix, comboBoxSuffix),
+			new(ForgeSlot.Relic1, pictureBoxRelic1, comboBoxRelic1),
+			new(ForgeSlot.Relic2, pictureBoxRelic2, comboBoxRelic2),
+		];
 
 		#region Font, Scaling, Translate, BackGround
 
-		BackgroundImageLayout = ImageLayout.Stretch;
-		BackgroundImage = Resources.caravan_bg;
+		this.RenderBackgrounds();
+		this.SizeChanged += (_, _) => this.RenderBackgrounds();
+		tableLayoutPanelForge.SizeChanged += (_, _) => this.RenderBackgrounds();
 
 		// Reduce slightly the designed component to fit better the UI.
-		List<PictureBox> pictureBoxList = [pictureBoxBaseItem, pictureBoxPrefix, pictureBoxRelic1, pictureBoxRelic2, pictureBoxSuffix];
-		foreach (var pictureBox in pictureBoxList) pictureBox.Size = new Size(Convert.ToInt32(pictureBox.Size.Width * 0.9), Convert.ToInt32(pictureBox.Size.Height * 0.9));
-
-		tableLayoutPanelForge.BackgroundImageLayout = ImageLayout.Stretch;
-		tableLayoutPanelForge.BackgroundImage = Resources.StashPanel;
+		foreach (var slot in Slots)
+			slot.Picture.Size = new Size(Convert.ToInt32(slot.Picture.Size.Width * 0.9), Convert.ToInt32(slot.Picture.Size.Height * 0.9));
 
 		scalingCheckBoxHardcore.Font =
 		scalingRadioButtonGame.Font =
@@ -207,285 +215,188 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 		HideGodModeRows();
 
-		// Everything in the Forge must respond
-		this.ProcessAllControls(c =>
-		{
-			c.MouseEnter += ForgePanel_MouseEnter;
-			c.MouseMove += pictureBoxDragDrop_MouseMove;
-		});
+		// Everything in the Forge takes part in dragging
+		this.WireDragEvents(this);
+		this.ProcessAllControls(this.WireDragEvents);
 
 		ResetSelection();
 	}
 
-	private void HideGodModeRows()
+	private void WireDragEvents(Control c)
 	{
-		comboBoxPrefix.Visible =
-		comboBoxRelic1.Visible =
-		comboBoxRelic2.Visible =
-		comboBoxSuffix.Visible = false;
+		c.MouseEnter += Forge_MouseEnter;
+		c.MouseMove += Forge_MouseMove;
+		c.MouseLeave += Forge_MouseLeave;
+		c.Click += Forge_Click;
 	}
 
-	private void InvalidateItemCacheAll(params Item[] items)
+	private int LevelRequirement(Item item)
+		=> this.ItemProvider.GetRequirementVariables(item).TryGetValue(Variable.KEY_LEVELREQ, out var level) ? level.GetInt32(0) : 0;
+
+	#region Backgrounds
+
+	private void RenderBackgrounds()
 	{
-		ItemTooltip.InvalidateCache(items);
-		BagButtonTooltip.InvalidateCache(items);
-		ItemProvider.InvalidateFriendlyNamesCache(items);
+		ReplaceBackground(this, ref this.panelBackground, () => Resources.caravan_bg);
+		ReplaceBackground(this.tableLayoutPanelForge, ref this.tableBackground, () => Resources.StashPanel);
 	}
 
-	private void HardcoreDeleteMaterialItems()
+	/// <summary>Sets <paramref name="control"/>'s background to the image drawn once at its size.</summary>
+	/// <param name="load">Loads the source image (a new copy each call); only called when the size changed.</param>
+	private static void ReplaceBackground(Control control, ref Bitmap? cache, Func<Bitmap> load)
 	{
-		if (this.HardcoreMode)
+		var size = control.ClientSize;
+		if (size.Width <= 0 || size.Height <= 0 || (cache is not null && cache.Size == size))
+			return;
+
+		using (var source = load())
 		{
-			if (PrefixSack is not null)
+			var rendered = new Bitmap(size.Width, size.Height, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+			using (var g = Graphics.FromImage(rendered))
 			{
-				PrefixSack.RemoveItem(PrefixItem);
-				InvalidateItemCacheAll(PrefixItem);
+				g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear;
+				g.DrawImage(source, new Rectangle(Point.Empty, size));
 			}
 
-			if (SuffixSack is not null)
-			{
-				SuffixSack.RemoveItem(SuffixItem);
-				InvalidateItemCacheAll(SuffixItem);
-			}
-
-			if (Relic1Sack is not null)
-			{
-				Relic1Sack.RemoveItem(Relic1Item);
-				InvalidateItemCacheAll(Relic1Item);
-			}
-
-			if (Relic2Sack is not null)
-			{
-				Relic2Sack.RemoveItem(Relic2Item);
-				InvalidateItemCacheAll(Relic2Item);
-			}
+			control.BackgroundImageLayout = ImageLayout.None;
+			control.BackgroundImage = rendered;
+			cache?.Dispose();
+			cache = rendered;
 		}
-
-		this.FindForm().Refresh();
 	}
 
-	private void ShowGodModeRows()
-	{
-		comboBoxPrefix.SelectedIndex =
-		comboBoxRelic1.SelectedIndex =
-		comboBoxRelic2.SelectedIndex =
-		comboBoxSuffix.SelectedIndex = -1;
+	#endregion
 
-		comboBoxPrefix.Visible =
-		comboBoxRelic1.Visible =
-		comboBoxRelic2.Visible =
-		comboBoxSuffix.Visible = true;
+	#region Dragging
+
+	private void Forge_MouseEnter(object sender, EventArgs e)
+	{
+		// Enforce first autosize display
+		if (MaximumSize == Size.Empty)
+			MaximumSize = new Size(Size.Width, Size.Height + 50);
+
+		this.UpdateDragCursor();
 	}
 
-	private void MergeItemProperties(Item itm)
+	private void Forge_MouseMove(object sender, MouseEventArgs e) => this.UpdateDragCursor();
+
+	private void Forge_MouseLeave(object sender, EventArgs e)
 	{
-		if (PrefixItem is not null)
+		// Leaving a child for another one stays inside the panel
+		if (!this.ClientRectangle.Contains(this.PointToClient(Cursor.Position)))
+			this.EndDragCursor();
+	}
+
+	private void Forge_Click(object sender, EventArgs e)
+	{
+		if (!IsDraging)
+			return;
+
+		var slot = Slots.FirstOrDefault(s => s.Picture.Visible
+			&& s.Picture.RectangleToScreen(s.Picture.ClientRectangle).Contains(Cursor.Position));
+		if (slot is not null)
+			this.DropDraggedItem(slot.Slot);
+	}
+
+	/// <summary>Shows the dragged item as the cursor, or the normal cursor when nothing is dragged.</summary>
+	private void UpdateDragCursor()
+	{
+		if (!IsDraging)
 		{
-			itm.prefixInfo = null;
-			if (!IsGodMode)
-				itm.prefixID = PrefixItem.prefixID;
-			else
-			{ // God Mode
-				var selectedPropreties = comboBoxPrefix.SelectedItem as ForgeComboItem;
-				if (selectedPropreties is not null)
-				{
-					switch (selectedPropreties.Value)
-					{
-						case ItemPropertyType.Prefix:
-							itm.prefixID = PrefixItem.prefixID;
-							break;
-						case ItemPropertyType.Suffix:
-							itm.prefixID = PrefixItem.suffixID;
-							break;
-						case ItemPropertyType.Relic1:
-							itm.prefixID = PrefixItem.relicID;
-							break;
-						case ItemPropertyType.Relic2:
-							itm.prefixID = PrefixItem.relic2ID;
-							break;
-						case ItemPropertyType.Base:
-						default:
-							itm.prefixID = PrefixItem.BaseItemId;
-							break;
-					}
-				}
-			}
+			this.EndDragCursor();
+			return;
 		}
 
-		if (SuffixItem is not null)
+		if (this.dragCursor is not null && ReferenceEquals(this.dragCursorItem, DragInfo.Item))
+			return;
+
+		this.EndDragCursor();
+		var bitmap = UIService.LoadBitmap(DragInfo.Item.TexImageResourceId);
+		if (bitmap is null)
+			return;
+
+		this.dragCursor = ItemDragCursor.Create(bitmap, UIService.Scale);
+		this.dragCursorItem = DragInfo.Item;
+		if (this.dragCursor is not null)
+			this.Cursor = this.dragCursor.Cursor;
+	}
+
+	private void EndDragCursor()
+	{
+		if (this.dragCursor is null)
+			return;
+		this.Cursor = Cursors.Default;
+		this.dragCursor.Dispose();
+		this.dragCursor = null;
+		this.dragCursorItem = null;
+	}
+
+	/// <summary>Puts the dragged item in <paramref name="slot"/> when the rules of the current mode allow it.</summary>
+	private void DropDraggedItem(ForgeSlot slot)
+	{
+		if (DragInfo.SrcSack is null)
 		{
-			itm.suffixInfo = null;
-			if (!IsGodMode)
-				itm.suffixID = SuffixItem.suffixID;
-			else
-			{ // God Mode
-				var selectedPropreties = comboBoxSuffix.SelectedItem as ForgeComboItem;
-				if (selectedPropreties is not null)
-				{
-					switch (selectedPropreties.Value)
-					{
-						case ItemPropertyType.Prefix:
-							itm.suffixID = SuffixItem.prefixID;
-							break;
-						case ItemPropertyType.Suffix:
-							itm.suffixID = SuffixItem.suffixID;
-							break;
-						case ItemPropertyType.Relic1:
-							itm.suffixID = SuffixItem.relicID;
-							break;
-						case ItemPropertyType.Relic2:
-							itm.suffixID = SuffixItem.relic2ID;
-							break;
-						case ItemPropertyType.Base:
-						default:
-							itm.suffixID = SuffixItem.BaseItemId;
-							break;
-					}
-				}
-			}
+			Notify(ForgeMessage.ItemMustBeStoredFirst);
+			return;
 		}
 
-		if (Relic1Item is not null)
-		{
-			itm.RelicInfo = itm.RelicBonusInfo = null;
+		var item = DragInfo.Item;
+		if (Selection.Contains(item))
+			return;
 
-			if (!IsGodMode)
-			{
-				if (Relic1Item.IsRelicOrCharm)
-				{
-					itm.relicID = Relic1Item.BaseItemId;
-					itm.RelicBonusId = Relic1Item.RelicBonusId;
-					itm.Var1 = Relic1Item.Var1;
-				}
-				else
-				{
-					itm.relicID = Relic1Item.relicID;
-					itm.RelicBonusId = Relic1Item.RelicBonusId;
-					itm.Var1 = Relic1Item.Var1;
-				}
-			}
-			else
-			{ // God Mode
-				var selectedPropreties = comboBoxRelic1.SelectedItem as ForgeComboItem;
-				if (selectedPropreties is not null)
-				{
-					switch (selectedPropreties.Value)
-					{
-						case ItemPropertyType.Prefix:
-							itm.relicID = Relic1Item.prefixID;
-							itm.RelicBonusId = null;
-							itm.Var1 = 1;
-							break;
-						case ItemPropertyType.Suffix:
-							itm.relicID = Relic1Item.suffixID;
-							itm.RelicBonusId = null;
-							itm.Var1 = 1;
-							break;
-						case ItemPropertyType.Relic1:
-							itm.relicID = Relic1Item.relicID;
-							itm.RelicBonusId = Relic1Item.RelicBonusId;
-							itm.Var1 = Relic1Item.Var1;
-							break;
-						case ItemPropertyType.Relic2:
-							itm.relicID = Relic1Item.relic2ID;
-							itm.RelicBonusId = Relic1Item.RelicBonus2Id;
-							itm.Var1 = Relic1Item.Var2;
-							break;
-						case ItemPropertyType.Base:
-						default:
-							itm.relicID = Relic1Item.BaseItemId;
-							itm.RelicBonusId = Relic1Item.RelicBonusId;
-							itm.Var1 = Relic1Item.Var1;
-							break;
-					}
-				}
-			}
+		var decision = Rules.CheckDrop(Mode, slot, item, Selection);
+
+		foreach (var cleared in decision.Cleared)
+			ClearSlot(cleared);
+		foreach (var warning in decision.Warnings)
+			Notify(warning);
+
+		if (!decision.Accepted)
+		{
+			Notify(decision.Rejection!.Value);
+			return;
 		}
 
-		if (Relic2Item is not null)
-		{
-			itm.Relic2Info = itm.RelicBonus2Info = null;
+		PlaceInSlot(slot, item, DragInfo.SrcSack);
+		DragInfo.Cancel();
+		EndDragCursor();
+		SoundService.PlayRandomItemDrop();
+		ResetPreviewItem();
+	}
 
-			if (!IsGodMode)
-			{
-				if (Relic2Item.IsRelicOrCharm)
-				{
-					itm.relic2ID = Relic2Item.BaseItemId;
-					itm.RelicBonus2Id = Relic2Item.RelicBonusId;
-					itm.Var2 = Relic2Item.Var1;
-				}
-				else
-				{
-					itm.relic2ID = Relic2Item.relicID;
-					itm.RelicBonus2Id = Relic2Item.RelicBonusId;
-					itm.Var2 = Relic2Item.Var1;
-				}
-			}
-			else
-			{ // God Mode
-				var selectedPropreties = comboBoxRelic2.SelectedItem as ForgeComboItem;
-				if (selectedPropreties is not null)
-				{
-					switch (selectedPropreties.Value)
-					{
-						case ItemPropertyType.Prefix:
-							itm.relic2ID = Relic2Item.prefixID;
-							itm.RelicBonus2Id = null;
-							itm.Var2 = 1;
-							break;
-						case ItemPropertyType.Suffix:
-							itm.relic2ID = Relic2Item.suffixID;
-							itm.RelicBonus2Id = null;
-							itm.Var2 = 1;
-							break;
-						case ItemPropertyType.Relic1:
-							itm.relic2ID = Relic2Item.relicID;
-							itm.RelicBonus2Id = Relic2Item.RelicBonusId;
-							itm.Var2 = Relic2Item.Var1;
-							break;
-						case ItemPropertyType.Relic2:
-							itm.relic2ID = Relic2Item.relic2ID;
-							itm.RelicBonus2Id = Relic2Item.RelicBonus2Id;
-							itm.Var2 = Relic2Item.Var2;
-							break;
-						case ItemPropertyType.Base:
-						default:
-							itm.relic2ID = Relic2Item.BaseItemId;
-							itm.RelicBonus2Id = Relic2Item.RelicBonusId;
-							itm.Var2 = Relic2Item.Var1;
-							break;
-					}
-				}
-			}
-		}
+	#endregion
+
+	#region Slots
+
+	private SlotView SlotOf(ForgeSlot slot) => Slots.First(s => s.Slot == slot);
+
+	private void PlaceInSlot(ForgeSlot slot, Item item, SackCollection sack)
+	{
+		Selection[slot] = item;
+		Sacks[slot] = sack;
+
+		var view = SlotOf(slot);
+		view.Picture.Image = UIService.LoadBitmap(item.TexImageResourceId);
+		view.Picture.BackColor = Color.FromArgb(127, ControlPaint.Dark(item.ItemStyle.Color()));
+		if (view.Combo is not null)
+			FillPartComboBox(view.Combo, item);
+	}
+
+	private void ClearSlot(ForgeSlot slot)
+	{
+		Selection[slot] = null;
+		Sacks[slot] = null;
+
+		var view = SlotOf(slot);
+		view.Picture.Image = null;
+		view.Picture.BackColor = PictureBoxBaseColor;
+		view.Combo?.Items.Clear();
 	}
 
 	private void ResetSelection()
 	{
-		pictureBoxBaseItem.Image =
-		pictureBoxPrefix.Image =
-		pictureBoxRelic1.Image =
-		pictureBoxRelic2.Image =
-		pictureBoxSuffix.Image = null;
-
-		pictureBoxBaseItem.BackColor =
-		pictureBoxPrefix.BackColor =
-		pictureBoxRelic1.BackColor =
-		pictureBoxRelic2.BackColor =
-		pictureBoxSuffix.BackColor = PictureBoxBaseColor;
-
-		BaseItem =
-		PrefixItem =
-		Relic1Item =
-		Relic2Item =
-		SuffixItem = null;
-
-		BaseSack = null;
-
-		comboBoxPrefix.Items.Clear();
-		comboBoxSuffix.Items.Clear();
-		comboBoxRelic1.Items.Clear();
-		comboBoxRelic2.Items.Clear();
+		foreach (var slot in Slots)
+			ClearSlot(slot.Slot);
 
 		ResetPreviewItem();
 	}
@@ -497,40 +408,73 @@ public partial class ForgePanel : UserControl, IScalingControl
 		_PreviewItem = null;
 	}
 
-	private void CancelButton_Click(object sender, EventArgs e)
-	{
-		ResetSelection();
+	/// <summary>God mode: the part of the material item chosen in its combo box.</summary>
+	private ForgePart? GodPart(ForgeSlot slot)
+		=> (SlotOf(slot).Combo?.SelectedItem as ForgeComboItem)?.Value;
 
-		if (CancelAction is not null)
-			CancelAction();
+	/// <summary>Parts of <paramref name="item"/> usable in God mode.</summary>
+	private static void FillPartComboBox(ComboBox comboBox, Item item)
+	{
+		comboBox.Items.Clear();
+		comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Base, Text = Resources.ForgeUseBase });
+
+		if (item.HasPrefix)
+			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Prefix, Text = Resources.ForgeUsePrefix });
+
+		if (item.HasSuffix)
+			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Suffix, Text = Resources.ForgeUseSuffix });
+
+		if (item.HasRelicOrCharmSlot1)
+			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Relic1, Text = Resources.ForgeUseRelic1 });
+
+		if (item.HasRelicOrCharmSlot2)
+			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Relic2, Text = Resources.ForgeUseRelic2 });
+
+		comboBox.SelectedIndex = 0;// default on Base
 	}
 
-	private void ForgeButton_Click(object sender, EventArgs e)
+	private void HideGodModeRows()
 	{
-		ForgeItem();
+		foreach (var slot in Slots)
+			if (slot.Combo is not null)
+				slot.Combo.Visible = false;
 	}
+
+	private void ShowGodModeRows()
+	{
+		foreach (var slot in Slots)
+			if (slot.Combo is not null)
+			{
+				slot.Combo.SelectedIndex = -1;
+				slot.Combo.Visible = true;
+			}
+	}
+
+	#endregion
+
+	#region Forge
 
 	private void ForgeItem()
 	{
-		if (MustSelectBaseItem())
+		if (Rules.CheckForge(Selection) is { } problem)
+		{
+			Notify(problem);
 			return;
-
-		if (MustSelectAtLeastAnotherItem())
-			return;
+		}
 
 		// Merge item properties into Base item
-		var itm = BaseItem;
-
-		MergeItemProperties(itm);
-
+		var itm = Selection.Base!;
+		ForgeMerge.Apply(itm, Selection, IsGodMode, GodPart);
 		ItemProvider.GetDBData(itm);
 
-		BaseSack.IsModified = itm.IsModified = true;
+		Sacks[ForgeSlot.Base]!.IsModified = itm.IsModified = true;
 
 		HardcoreDeleteMaterialItems();
 
-		ItemTooltip.InvalidateCache(itm);
-		ItemProvider.InvalidateFriendlyNamesCache(itm);
+		InvalidateItemCacheAll(itm);
+		// The search keeps the item's display data: replace its entry so it shows the forged item.
+		ItemDatabaseService.RemoveItemFromDatabase(itm);
+		ItemDatabaseService.TryAddItemToDatabase(itm);
 
 		ResetSelection();
 
@@ -544,6 +488,81 @@ public partial class ForgePanel : UserControl, IScalingControl
 		if (ForgeAction is not null)
 			ForgeAction();
 	}
+
+	/// <summary>Hardcore mode: the material items are consumed.</summary>
+	private void HardcoreDeleteMaterialItems()
+	{
+		if (this.HardcoreMode)
+		{
+			foreach (var slot in new[] { ForgeSlot.Prefix, ForgeSlot.Suffix, ForgeSlot.Relic1, ForgeSlot.Relic2 })
+			{
+				if (Selection[slot] is not { } item || Sacks.GetValueOrDefault(slot) is not { } sack)
+					continue;
+
+				sack.RemoveItem(item);
+				InvalidateItemCacheAll(item);
+				ItemDatabaseService.RemoveItemFromDatabase(item);
+			}
+		}
+
+		// Repaint the sacks the items left (and the forged item) at the next paint, not synchronously.
+		this.FindForm()?.Invalidate(true);
+	}
+
+	private void InvalidateItemCacheAll(params Item[] items)
+	{
+		ItemTooltip.InvalidateCache(items);
+		BagButtonTooltip.InvalidateCache(items);
+		ItemProvider.InvalidateFriendlyNamesCache(items);
+	}
+
+	#endregion
+
+	#region Messages
+
+	private void Notify(ForgeMessage message)
+	{
+		this.UIService.NotifyUser(TextOf(message), TQColor.Red);
+		SoundService.PlayRandomCancel();
+	}
+
+	private string TextOf(ForgeMessage message) => message switch
+	{
+		ForgeMessage.ItemMustBeStoredFirst => Resources.ForgeItemMustBeStoredFirst,
+		ForgeMessage.MustSelectBaseItemFirst => Resources.ForgeMustSelectBaseItemFirst,
+		ForgeMessage.MustSelectArmorOrWeaponOrJewellery => Resources.ForgeMustSelectArmorOrWeaponOrJewellery,
+		ForgeMessage.MustHavePrefix => Resources.ForgeMustHavePrefixOutsideOfGodMode,
+		ForgeMessage.MustHaveSuffix => Resources.ForgeMustHaveSuffixOutsideOfGodMode,
+		ForgeMessage.MustSelectRelicOrItemWithRelic => Resources.ForgeMustSelectRelicOrItemWithRelic,
+		ForgeMessage.NoEpicLegendary => Resources.ForgeNoEpicLegendaryAllowed,
+		ForgeMessage.PrefixSuffixOfAnotherBaseItem => Resources.ForgeCantUsePrefixSuffixOfAnotherBaseItem,
+		ForgeMessage.PrefixSuffixHigherLevelRequirement => Resources.ForgeCantUsePrefixSuffixHavingGreaterReqLevelThanBaseItem,
+		ForgeMessage.PrefixSuffixOfAnotherGearType => Resources.ForgeCantUsePrefixSuffixOfAnotherGearType,
+		ForgeMessage.PrefixSuffixBetterThanBase => Resources.ForgeCantUsePrefixSuffixBetterThanBase,
+		ForgeMessage.MustBeRelic => Resources.ForgeMustBeRelicInStrictMode,
+		ForgeMessage.MustHaveRelic => Resources.ForgeMustHaveRelicInRelaxMode,
+		ForgeMessage.RelicNotAllowed => Resources.ForgeRelicNotAllowed,
+		ForgeMessage.MustHaveTinkeredSuffix => string.Format(Resources.ForgeMustHaveTinkeredSuffix, OfTheTinkererTranslation),
+		ForgeMessage.MustSelectBaseItem => Resources.ForgeMustSelectBaseItem,
+		ForgeMessage.MustSelectItemToMerge => Resources.ForgeMustSelectItemToMerge,
+		_ => message.ToString(),
+	};
+
+	#endregion
+
+	#region Event handlers
+
+	private void CancelButton_Click(object sender, EventArgs e)
+	{
+		ResetSelection();
+
+		if (CancelAction is not null)
+			CancelAction();
+	}
+
+	private void ForgeButton_Click(object sender, EventArgs e) => ForgeItem();
+
+	private void scalingButtonReset_Click(object sender, EventArgs e) => ResetSelection();
 
 	private void ForgeMode_Clicked(object sender, EventArgs e)
 	{
@@ -595,784 +614,17 @@ public partial class ForgePanel : UserControl, IScalingControl
 		}
 	}
 
-	private void ForgePanel_MouseEnter(object sender, EventArgs e)
-	{
-		// Enforce first autosize display
-		if (MaximumSize == Size.Empty)
-			MaximumSize = new Size(Size.Width, Size.Height + 50);
-
-		if (lastDragedItem != DragInfo.Item)// Item Switching
-		{
-			lastDragedItem = DragInfo.Item;
-			dragingBmp = null;
-		}
-
-		if (IsDraging && dragingBmp is null) // First time with this item
-		{
-			dragingBmp = UIService.LoadBitmap(DragInfo.Item.TexImageResourceId);
-
-			pictureBoxDragDrop.Location = CurrentDragPicturePosition;
-			pictureBoxDragDrop.Size = dragingBmp.Size;
-			// TODO try to make transparency work with a picturebox with an overrided Paint() event https://stackoverflow.com/questions/34673496/override-picturbox-onpaint-event-to-rotate-the-image-create-custom-picturebox
-			//pictureBoxDragDrop.BackColor = Color.FromArgb(46, 41, 31);// Not pretty but Transparent doesn't work 
-			pictureBoxDragDrop.Image = dragingBmp;
-			pictureBoxDragDrop.BringToFront();
-			pictureBoxDragDrop.Visible = true;
-
-			// seek for mouse out of panel
-			SubscribeExternalMouseMove();
-		}
-	}
-
-	private void SubscribeExternalMouseMove()
-	{
-		// tout le form sauf ce control
-		this.FindForm().ProcessAllControlsWithExclusion(c =>
-		{
-			if (c == this)
-				return true;// Exclude myself and my children
-
-			c.MouseMove += Parent_MouseMove;
-
-			return false;
-		});
-	}
-
-	private void UnsubscribeExternalMouseMove()
-	{
-		// tout le form sauf ce control
-		this.FindForm().ProcessAllControlsWithExclusion(c =>
-			{
-				if (c == this)
-					return true;// Exclude myself and my children
-
-				c.MouseMove -= Parent_MouseMove;
-
-				return false;
-			}
-		);
-	}
-
-	private void Parent_MouseMove(object sender, EventArgs e)
-	{
-		// Out of Panel
-		if (pictureBoxDragDrop.Visible)
-		{
-			UnsubscribeExternalMouseMove();
-			pictureBoxDragDrop.Image = dragingBmp = null;
-			pictureBoxDragDrop.Visible = false;
-		}
-	}
-
-	private void pictureBoxDragDrop_MouseMove(object sender, MouseEventArgs e)
-	{
-		if (IsDraging)
-		{
-			pictureBoxDragDrop.Location = CurrentDragPicturePosition;
-		}
-	}
-
-
-	/// <summary>
-	/// Drop <see cref="pictureBoxDragDrop"/>
-	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
-	private void pictureBoxDragDrop_Click(object sender, EventArgs e)
-	{
-		if (ItemMustBeInsideASack())
-			return;
-
-		if (IsAlreadyPlaced(DragInfo.Item))
-			return;
-
-		pictureBoxDragDrop.Visible = false;
-
-		var found = tableLayoutPanelForge.GetChildAtPoint(
-			tableLayoutPanelForge.PointToClient(Cursor.Position)
-			, GetChildAtPointSkip.Invisible | GetChildAtPointSkip.Transparent
-		) as PictureBox;
-
-		var drgItm = DragInfo.Item;
-		var drgSack = DragInfo.SrcSack;
-
-		if (found == pictureBoxBaseItem)
-		{
-			if (GameModePrefixSuffixMustBeSameBaseItem(found, drgItm))
-				return;
-
-			if (GameModePrefixSuffixMustHaveLevelRequirementLowerThanEqualThanBaseItem(found, drgItm))
-				return;
-
-			if (StrictModeNoEpicLegendaryItem(drgItm))
-				return;
-
-			if (StrictModePrefixSuffixMustBeSameType(found, drgItm))
-				return;
-
-			if (StrictModeCantUsePrefixSuffixOfHigherLevelThanBaseItem(found, drgItm))
-				return;
-
-			// Strict reset relic 2 if non Tinkered forge result
-			if ((IsStrictMode || IsGameMode)
-				&& Relic2Item is not null
-				&& SuffixItem is not null
-				&& !SuffixItem.AcceptExtraRelic
-				&& drgItm.AcceptExtraRelic
-			)
-			{
-				ResetRelic2();
-			}
-
-			// Strict/Relax reset relic 1 & 2 if non allowed gear type
-			if (!IsGodMode)
-			{
-				if (Relic1Item is not null
-					&& (
-						(Relic1Item.IsRelicOrCharm && !drgItm.IsRelicAllowed(Relic1Item))
-						|| (Relic1Item.HasRelicOrCharmSlot1 && !drgItm.IsRelicAllowed(Relic1Item.relicID))
-					)
-				)
-				{
-					ResetRelic1();
-				}
-				if (Relic2Item is not null
-					&& (
-						(Relic2Item.IsRelicOrCharm && !drgItm.IsRelicAllowed(Relic2Item))
-						|| (Relic2Item.HasRelicOrCharmSlot1 && !drgItm.IsRelicAllowed(Relic2Item.relicID))
-					)
-				)
-				{
-					ResetRelic2();
-				}
-			}
-
-			// Only Weapon/Armor/Jewellery allowed
-			if (drgItm.IsWeaponShield || drgItm.IsArmor || drgItm.IsJewellery || IsGodMode)
-			{
-				BaseItem = drgItm;
-				BaseSack = drgSack;
-				pictureBoxBaseItem.Image = UIService.LoadBitmap(BaseItem.TexImageResourceId);
-				pictureBoxBaseItem.BackColor = Color.FromArgb(127, ControlPaint.Dark(drgItm.ItemStyle.Color()));
-				DragInfo.Cancel();
-				SoundService.PlayRandomItemDrop();
-				ResetPreviewItem();
-				return;
-			}
-			// Not good item class
-			this.UIService.NotifyUser(Resources.ForgeMustSelectArmorOrWeaponOrJewellery, TQColor.Red);
-
-			SoundService.PlayRandomCancel();
-		}
-
-		if (found == pictureBoxPrefix)
-		{
-			if (BaseItemFirst())
-				return;
-
-			if (GameModePrefixSuffixMustBeSameBaseItem(found, drgItm))
-				return;
-
-			if (GameModePrefixSuffixMustHaveLevelRequirementLowerThanEqualThanBaseItem(found, drgItm))
-				return;
-
-			if (StrictModeNoEpicLegendaryItem(drgItm))
-				return;
-
-			if (StrictModePrefixSuffixMustBeSameType(found, drgItm))
-				return;
-
-			if (StrictModeCantUsePrefixSuffixOfHigherLevelThanBaseItem(found, drgItm))
-				return;
-
-			// Strict & Relax mode need item having prefix
-			if (!IsGodMode && !drgItm.HasPrefix)
-			{
-				pictureBoxDragDrop.Visible = true;
-				this.UIService.NotifyUser(Resources.ForgeMustHavePrefixOutsideOfGodMode, TQColor.Red);
-				SoundService.PlayRandomCancel();
-				return;
-			}
-
-			// Only Weapon/Armor/Jewellery allowed
-			if (drgItm.IsWeaponShield || drgItm.IsArmor || drgItm.IsJewellery || IsGodMode)
-			{
-				PrefixItem = drgItm;
-				PrefixSack = drgSack;
-				pictureBoxPrefix.Image = UIService.LoadBitmap(PrefixItem.TexImageResourceId);
-				pictureBoxPrefix.BackColor = Color.FromArgb(127, ControlPaint.Dark(drgItm.ItemStyle.Color()));
-				DragInfo.Cancel();
-				AdjustComboBox(comboBoxPrefix);
-				SoundService.PlayRandomItemDrop();
-				ResetPreviewItem();
-				return;
-			}
-
-			// Not good item class
-			this.UIService.NotifyUser(Resources.ForgeMustSelectArmorOrWeaponOrJewellery, TQColor.Red);
-			SoundService.PlayRandomCancel();
-		}
-
-		if (found == pictureBoxSuffix)
-		{
-			if (BaseItemFirst())
-				return;
-
-			if (GameModePrefixSuffixMustBeSameBaseItem(found, drgItm))
-				return;
-
-			if (GameModePrefixSuffixMustHaveLevelRequirementLowerThanEqualThanBaseItem(found, drgItm))
-				return;
-
-			if (StrictModeNoEpicLegendaryItem(drgItm))
-				return;
-
-			if (StrictModePrefixSuffixMustBeSameType(found, drgItm))
-				return;
-
-			if (StrictModeCantUsePrefixSuffixOfHigherLevelThanBaseItem(found, drgItm))
-				return;
-
-			// Strict mode : reset relic 2 if non Tinkered forge result
-			if ((IsStrictMode || IsGameMode)
-				&& Relic2Item is not null
-				&& !drgItm.AcceptExtraRelic
-			)
-			{
-				ResetRelic2();
-			}
-
-			// Strict & Relax mode need item having suffix
-			if (!IsGodMode && !drgItm.HasSuffix)
-			{
-				pictureBoxDragDrop.Visible = true;
-				this.UIService.NotifyUser(Resources.ForgeMustHaveSuffixOutsideOfGodMode, TQColor.Red);
-				SoundService.PlayRandomCancel();
-				return;
-			}
-
-			// Only Weapon/Armor/Jewellery allowed
-			if (drgItm.IsWeaponShield || drgItm.IsArmor || drgItm.IsJewellery || IsGodMode)
-			{
-				SuffixItem = drgItm;
-				SuffixSack = drgSack;
-				pictureBoxSuffix.Image = UIService.LoadBitmap(SuffixItem.TexImageResourceId);
-				pictureBoxSuffix.BackColor = Color.FromArgb(127, ControlPaint.Dark(drgItm.ItemStyle.Color()));
-				DragInfo.Cancel();
-				AdjustComboBox(comboBoxSuffix);
-				SoundService.PlayRandomItemDrop();
-				ResetPreviewItem();
-				return;
-			}
-			// Not good item class
-			this.UIService.NotifyUser(Resources.ForgeMustSelectArmorOrWeaponOrJewellery, TQColor.Red);
-			SoundService.PlayRandomCancel();
-		}
-
-		if (found == pictureBoxRelic1)
-		{
-			if (BaseItemFirst())
-				return;
-
-			// Strict mode need relic
-			if (StrictModeMustBeRelic(drgItm))
-				return;
-
-			// Relax mode need item having relic or a relic
-			if (RelaxModeMustHaveRelic(drgItm))
-				return;
-
-			if (StrictRelaxEnforceRelicGearConstraint(drgItm))
-				return;
-
-			// Only Weapon/Armor/Jewellery with relic allowed or a relic item
-			if (
-				IsGodMode
-				|| (
-					(drgItm.IsWeaponShield && drgItm.HasRelicOrCharmSlot1)
-					|| (drgItm.IsArmor && drgItm.HasRelicOrCharmSlot1)
-					|| (drgItm.IsJewellery && drgItm.HasRelicOrCharmSlot1)
-					|| drgItm.IsRelicOrCharm
-				)
-			)
-			{
-				Relic1Item = drgItm;
-				Relic1Sack = drgSack;
-				pictureBoxRelic1.Image = UIService.LoadBitmap(Relic1Item.TexImageResourceId);
-				pictureBoxRelic1.BackColor = Color.FromArgb(127, ControlPaint.Dark(drgItm.ItemStyle.Color()));
-				DragInfo.Cancel();
-				AdjustComboBox(comboBoxRelic1);
-				SoundService.PlayRandomItemDrop();
-				ResetPreviewItem();
-				return;
-			}
-			// Not good item class
-			this.UIService.NotifyUser(Resources.ForgeMustSelectRelicOrItemWithRelic, TQColor.Red);
-
-			SoundService.PlayRandomCancel();
-		}
-
-		if (found == pictureBoxRelic2)
-		{
-			if (BaseItemFirst())
-				return;
-
-			// Strict mode need relic
-			if (StrictModeMustBeRelic(drgItm))
-				return;
-
-			// Relax mode need item having relic or a relic
-			if (RelaxModeMustHaveRelic(drgItm))
-				return;
-
-			if (StrictRelaxEnforceRelicGearConstraint(drgItm))
-				return;
-
-			// Strict Mode only allowed on BaseItem "of the Tinkered"
-			if ((IsStrictMode || IsGameMode)
-				&& !(
-					// No Suffix Item && BaseItem of Tinkerer
-					(SuffixItem is null && BaseItem.AcceptExtraRelic)
-					// Or Suffix Item of Tinkerer
-					|| (SuffixItem is not null && SuffixItem.AcceptExtraRelic)
-				)
-			)
-			{
-				pictureBoxDragDrop.Visible = true;
-				this.UIService.NotifyUser(string.Format(Resources.ForgeMustHaveTinkeredSuffix, OfTheTinkererTranslation), TQColor.Red);
-				SoundService.PlayRandomCancel();
-				return;
-			}
-
-			// Only Weapon/Armor/Jewellery with relic allowed or a relic item
-			if (
-				IsGodMode
-				|| (
-					(drgItm.IsWeaponShield && drgItm.HasRelicOrCharmSlot1)
-					|| (drgItm.IsArmor && drgItm.HasRelicOrCharmSlot1)
-					|| (drgItm.IsJewellery && drgItm.HasRelicOrCharmSlot1)
-					|| drgItm.IsRelicOrCharm
-				)
-			)
-			{
-				Relic2Item = drgItm;
-				Relic2Sack = drgSack;
-				pictureBoxRelic2.Image = UIService.LoadBitmap(Relic2Item.TexImageResourceId);
-				pictureBoxRelic2.BackColor = Color.FromArgb(127, ControlPaint.Dark(drgItm.ItemStyle.Color()));
-				DragInfo.Cancel();
-				AdjustComboBox(comboBoxRelic2);
-				SoundService.PlayRandomItemDrop();
-				ResetPreviewItem();
-				return;
-			}
-			// Not good item class
-			this.UIService.NotifyUser(Resources.ForgeMustSelectRelicOrItemWithRelic, TQColor.Red);
-			SoundService.PlayRandomCancel();
-		}
-
-		pictureBoxDragDrop.Visible = true;
-	}
-
-
-	#region Validate
-
-	private bool ItemMustBeInsideASack()
-	{
-		// Happen when i copy an item without droping it in a sack first
-		if (DragInfo.SrcSack is null)
-		{
-			this.UIService.NotifyUser(Resources.ForgeItemMustBeStoredFirst, TQColor.Red);
-
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// Strict/Relax : Enforce relic gear constraint 
-	/// </summary>
-	/// <param name="drgItm"></param>
-	/// <returns></returns>
-	private bool StrictRelaxEnforceRelicGearConstraint(Item drgItm)
-	{
-		if (!IsGodMode
-			&& (
-				(drgItm.IsRelicOrCharm && !BaseItem.IsRelicAllowed(drgItm))
-				|| (drgItm.HasRelicOrCharmSlot1 && !BaseItem.IsRelicAllowed(drgItm.relicID))
-			)
-		)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeRelicNotAllowed, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-		return false;
-	}
-
-	/// <summary>
-	/// Relax mode need item having relic or a relic
-	/// </summary>
-	/// <param name="drgItm"></param>
-	/// <returns></returns>
-	private bool RelaxModeMustHaveRelic(Item drgItm)
-	{
-		// Relax mode need item having relic
-		if (IsRelaxMode
-			&& !(drgItm.IsRelicOrCharm || drgItm.HasRelicOrCharmSlot1)
-		)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeMustHaveRelicInRelaxMode, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-		return false;
-	}
-
-	/// <summary>
-	/// Strict mode need relic
-	/// </summary>
-	/// <param name="drgItm"></param>
-	/// <returns></returns>
-	private bool StrictModeMustBeRelic(Item drgItm)
-	{
-		// Strict mode need relic
-		if ((IsStrictMode || IsGameMode)
-			&& !drgItm.IsRelicOrCharm
-		)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeMustBeRelicInStrictMode, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-		return false;
-	}
-
-	private void ResetRelic1()
-	{
-		Relic1Item = null;
-		pictureBoxRelic1.Image = null;
-		pictureBoxRelic1.BackColor = PictureBoxBaseColor;
-		comboBoxRelic1.Items.Clear();
-	}
-
-	private void ResetRelic2()
-	{
-		Relic2Item = null;
-		pictureBoxRelic2.Image = null;
-		pictureBoxRelic2.BackColor = PictureBoxBaseColor;
-		comboBoxRelic2.Items.Clear();
-	}
-
-	private bool IsAlreadyPlaced(Item item)
-		=> BaseItem == item
-			|| SuffixItem == item
-			|| PrefixItem == item
-			|| Relic2Item == item
-			|| Relic1Item == item;
-	private bool MustSelectAtLeastAnotherItem()
-	{
-		// Must select at least another item
-		if (PrefixItem is null
-			&& SuffixItem is null
-			&& Relic1Item is null
-			&& Relic2Item is null)
-		{
-			this.UIService.NotifyUser(Resources.ForgeMustSelectItemToMerge, TQColor.Red);
-
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-
-		return false;
-	}
-
-	private bool MustSelectBaseItem()
-	{
-		// Must select Base Item
-		if (BaseItem is null)
-		{
-			this.UIService.NotifyUser(Resources.ForgeMustSelectBaseItem, TQColor.Red);
-
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-
-		return false;
-	}
-
-	private bool GameModePrefixSuffixMustHaveLevelRequirementLowerThanEqualThanBaseItem(PictureBox from, Item drgItm)
-	{
-		if (IsGameMode)
-		{
-			int drgLvl = 0, baseLvl = 0;
-			var reqs = ItemProvider.GetRequirementVariables(drgItm);
-			if (reqs.TryGetValue(Variable.KEY_LEVELREQ, out var varLvl))
-				drgLvl = varLvl.GetInt32(0);
-
-			if (BaseItem is not null)
-			{
-				reqs = ItemProvider.GetRequirementVariables(BaseItem);
-				if (reqs.TryGetValue(Variable.KEY_LEVELREQ, out varLvl))
-					baseLvl = varLvl.GetInt32(0);
-			}
-
-			if (from == pictureBoxBaseItem
-				&& BaseItem is not null
-				&& drgLvl > baseLvl
-			)
-			{
-				Notify(true);// Reset & Notify
-			}
-
-			if ((from == pictureBoxSuffix || from == pictureBoxPrefix)
-				&& drgLvl > baseLvl
-			)
-			{
-				return Notify(false);// Notify & Prevent Drop
-			}
-		}
-
-		return false;
-
-		bool Notify(bool reset)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeCantUsePrefixSuffixHavingGreaterReqLevelThanBaseItem, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			if (reset) ResetPrefixSuffix();
-			return true;
-		}
-	}
-
-	private bool GameModePrefixSuffixMustBeSameBaseItem(PictureBox from, Item drgItm)
-	{
-		if (IsGameMode)
-		{
-			var baseId = RecordId.IsNullOrEmpty(BaseItem?.BaseItemId) ? RecordId.Empty : BaseItem.BaseItemId;
-			var drgItmBaseId = RecordId.IsNullOrEmpty(drgItm?.BaseItemId) ? RecordId.Empty : drgItm.BaseItemId;
-
-			if (from == pictureBoxBaseItem
-				&& BaseItem is not null
-				&& drgItmBaseId != baseId
-			)
-			{
-				Notify(true);// Reset & Notify
-			}
-
-			if ((from == pictureBoxSuffix || from == pictureBoxPrefix)
-				&& drgItmBaseId != baseId
-			)
-			{
-				return Notify(false);// Notify & Prevent Drop
-			}
-		}
-
-		return false;
-
-		bool Notify(bool reset)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeCantUsePrefixSuffixOfAnotherBaseItem, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			if (reset) ResetPrefixSuffix();
-			return true;
-		}
-	}
-
-	/// <summary>
-	/// Strict Mode Can't use Prefix/Suffix of another type
-	/// </summary>
-	/// <param name="from"></param>
-	/// <param name="drgItm"></param>
-	/// <returns></returns>
-	private bool StrictModePrefixSuffixMustBeSameType(PictureBox from, Item drgItm)
-	{
-		if (IsStrictMode || IsGameMode)
-		{
-			var baseClass = string.IsNullOrWhiteSpace(BaseItem?.ItemClass) ? "NoClass" : BaseItem.ItemClass;
-			var drgItmClass = string.IsNullOrWhiteSpace(drgItm?.ItemClass) ? "NoClass" : drgItm.ItemClass;
-
-			if (from == pictureBoxBaseItem
-				&& BaseItem is not null
-				&& drgItmClass != baseClass
-			)
-			{
-				Notify(true);// Reset & Notify
-			}
-
-			if ((from == pictureBoxSuffix || from == pictureBoxPrefix)
-				&& drgItmClass != baseClass
-			)
-			{
-				return Notify(false);// Notify & Prevent Drop
-			}
-		}
-
-		return false;
-
-		bool Notify(bool reset)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeCantUsePrefixSuffixOfAnotherGearType, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			if (reset) ResetPrefixSuffix();
-			return true;
-		}
-	}
-
-	/// <summary>
-	/// Strict Mode Can't use Prefix/Suffix of higher level than baseitem
-	/// </summary>
-	/// <param name="from"></param>
-	/// <param name="drgItm"></param>
-	/// <returns></returns>
-	private bool StrictModeCantUsePrefixSuffixOfHigherLevelThanBaseItem(PictureBox from, Item drgItm)
-	{
-		if (IsStrictMode || IsGameMode)
-		{
-			if (from == pictureBoxBaseItem
-				&& BaseItem is not null
-				&& (
-					((PrefixItem?.Rarity ?? 0) > drgItm.Rarity)
-					|| ((SuffixItem?.Rarity ?? 0) > drgItm.Rarity)
-				)
-			)
-			{
-				Notify(true);// Reset & Notify 
-			}
-
-			if ((from == pictureBoxPrefix || from == pictureBoxSuffix)
-				&& (BaseItem.Rarity < drgItm.Rarity)
-			)
-			{
-				return Notify(false);// Notify & Prevent Drop
-			}
-		}
-
-		return false;
-
-		bool Notify(bool reset)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeCantUsePrefixSuffixBetterThanBase, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			if (reset) ResetPrefixSuffix();
-			return true;
-		}
-	}
-
-	private void ResetPrefixSuffix()
-	{
-		SuffixItem = PrefixItem = null;
-		pictureBoxSuffix.Image = pictureBoxPrefix.Image = null;
-		pictureBoxSuffix.BackColor = pictureBoxPrefix.BackColor = PictureBoxBaseColor;
-		comboBoxPrefix.Items.Clear();
-		comboBoxSuffix.Items.Clear();
-	}
-
-	private bool BaseItemFirst()
-	{
-		// BaseItem First
-		if (BaseItem is null)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeMustSelectBaseItemFirst, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// No Epic/Legendary item in Strict Mode
-	/// </summary>
-	/// <param name="drgItm"></param>
-	/// <returns></returns>
-	private bool StrictModeNoEpicLegendaryItem(Item drgItm)
-	{
-		if ((IsStrictMode || IsGameMode)
-			&& (drgItm.Rarity > Rarity.Rare)
-		)
-		{
-			pictureBoxDragDrop.Visible = true;
-			this.UIService.NotifyUser(Resources.ForgeNoEpicLegendaryAllowed, TQColor.Red);
-			SoundService.PlayRandomCancel();
-			return true;
-		}
-
-		return false;
-	}
-
-	#endregion
-
-	private void AdjustComboBox(ComboBox comboBox)
-	{
-		Item current = null;
-		if (comboBox == comboBoxPrefix) current = PrefixItem;
-		if (comboBox == comboBoxSuffix) current = SuffixItem;
-		if (comboBox == comboBoxRelic1) current = Relic1Item;
-		if (comboBox == comboBoxRelic2) current = Relic2Item;
-
-		comboBox.Items.Clear();
-		comboBox.Items.Add(new ForgeComboItem
-		{
-			Value = ItemPropertyType.Base,
-			Text = Resources.ForgeUseBase,
-		});
-
-		if (current.HasPrefix)
-			comboBox.Items.Add(new ForgeComboItem
-			{
-				Value = ItemPropertyType.Prefix,
-				Text = Resources.ForgeUsePrefix,
-			});
-
-		if (current.HasSuffix)
-			comboBox.Items.Add(new ForgeComboItem
-			{
-				Value = ItemPropertyType.Suffix,
-				Text = Resources.ForgeUseSuffix,
-			});
-
-		if (current.HasRelicOrCharmSlot1)
-			comboBox.Items.Add(new ForgeComboItem
-			{
-				Value = ItemPropertyType.Relic1,
-				Text = Resources.ForgeUseRelic1,
-			});
-
-		if (current.HasRelicOrCharmSlot2)
-			comboBox.Items.Add(new ForgeComboItem
-			{
-				Value = ItemPropertyType.Relic2,
-				Text = Resources.ForgeUseRelic2,
-			});
-
-		comboBox.SelectedIndex = 0;// default on Base
-	}
-
-	private void scalingButtonReset_Click(object sender, EventArgs e) => ResetSelection();
-
 	private void pictureBox_MouseEnter(object sender, EventArgs e)
 	{
-		var picbox = sender as PictureBox;
+		// No tooltip over the slot the dragged item is about to be dropped on
+		if (IsDraging)
+			return;
 
-		Item itm = null;
-		if (picbox == pictureBoxPrefix) itm = PrefixItem;
-		if (picbox == pictureBoxSuffix) itm = SuffixItem;
-		if (picbox == pictureBoxRelic1) itm = Relic1Item;
-		if (picbox == pictureBoxRelic2) itm = Relic2Item;
-		if (picbox == pictureBoxBaseItem) itm = PreviewItem;
-
+		var slot = Slots.First(s => s.Picture == sender).Slot;
+		var itm = slot == ForgeSlot.Base ? PreviewItem : Selection[slot];
 		if (itm is null) return;
 
-		ItemTooltip.ShowTooltip(Services, itm, picbox, true);
+		ItemTooltip.ShowTooltip(Services, itm, (PictureBox)sender, true);
 	}
 
 	private void pictureBox_MouseLeave(object sender, EventArgs e)
@@ -1381,13 +633,24 @@ public partial class ForgePanel : UserControl, IScalingControl
 	}
 
 	private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
-	{
-		var combo = sender as ComboBox;
-		ResetPreviewItem();
-	}
+		=> ResetPreviewItem();
 
 	private void scalingCheckBoxHardcore_CheckedChanged(object sender, EventArgs e)
 	{
 		this.HardcoreMode = scalingCheckBoxHardcore.Checked;
+	}
+
+	#endregion
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			this.EndDragCursor();
+			this.panelBackground?.Dispose();
+			this.tableBackground?.Dispose();
+			this.components?.Dispose();
+		}
+		base.Dispose(disposing);
 	}
 }

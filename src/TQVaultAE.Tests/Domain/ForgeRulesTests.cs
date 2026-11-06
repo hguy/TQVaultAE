@@ -1,0 +1,238 @@
+using AwesomeAssertions;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Forge;
+
+namespace TQVaultAE.Tests.Domain;
+
+/// <summary>
+/// <see cref="ForgeRules"/> and <see cref="ForgeMerge"/>: what the Forge accepts in each mode, and what forging changes.
+/// </summary>
+public class ForgeRulesTests
+{
+	private const string Sword = Item.ICLASS_SWORD;
+	private const string Shield = Item.ICLASS_SHIELD;
+	private const string TinkererSuffix = @"records\item\lootmagicalaffixes\suffix\default\rare_extrarelic_01.dbr";
+
+	/// <summary>Shield relic (Aegis of Athena).</summary>
+	private static readonly RecordId ShieldRelic = RelicAndCharm.AEGISOFATHENA_ACT1_01.GetRecordId();
+
+	private readonly Dictionary<Item, int> _levels = new();
+	private readonly ForgeRules _rules;
+
+	public ForgeRulesTests() => this._rules = new ForgeRules(i => this._levels.GetValueOrDefault(i));
+
+	private static Item Make(string itemClass, string id, string classification = "COMMON", string? prefix = null, string? suffix = null)
+	{
+		var record = new DBRecordCollection(RecordId.Create(id), itemClass);
+		record.Set(Text("Class", itemClass));
+		record.Set(Text("itemClassification", classification));
+		return new Item
+		{
+			BaseItemId = RecordId.Create(id),
+			baseItemInfo = new Info(record),
+			prefixID = prefix is null ? RecordId.Empty : RecordId.Create(prefix),
+			suffixID = suffix is null ? RecordId.Empty : RecordId.Create(suffix),
+		};
+
+		static Variable Text(string name, string value)
+		{
+			var v = new Variable(name, VariableDataType.StringVar, 1);
+			v[0] = value;
+			return v;
+		}
+	}
+
+	private static Item SwordItem(string id = @"records\item\sword01.dbr", string classification = "COMMON", string? prefix = @"records\prefix\p01.dbr", string? suffix = @"records\suffix\s01.dbr")
+		=> Make(Sword, id, classification, prefix, suffix);
+
+	private static Item Relic(RecordId id) => Make(Item.ICLASS_RELIC, id.Raw);
+
+	private static ForgeSelection With(Item? baseItem = null, Item? prefix = null, Item? suffix = null, Item? relic1 = null, Item? relic2 = null)
+	{
+		var s = new ForgeSelection();
+		s[ForgeSlot.Base] = baseItem;
+		s[ForgeSlot.Prefix] = prefix;
+		s[ForgeSlot.Suffix] = suffix;
+		s[ForgeSlot.Relic1] = relic1;
+		s[ForgeSlot.Relic2] = relic2;
+		return s;
+	}
+
+	[Theory]
+	[InlineData(ForgeSlot.Prefix)]
+	[InlineData(ForgeSlot.Suffix)]
+	[InlineData(ForgeSlot.Relic1)]
+	[InlineData(ForgeSlot.Relic2)]
+	public void CheckDrop_WithoutBaseItem_IsRefused(ForgeSlot slot)
+	{
+		var decision = this._rules.CheckDrop(ForgeMode.God, slot, SwordItem(), With());
+
+		decision.Accepted.Should().BeFalse();
+		decision.Rejection.Should().Be(ForgeMessage.MustSelectBaseItemFirst);
+	}
+
+	[Fact]
+	public void CheckDrop_Base_StrictMode_RefusesEpicItems()
+		=> this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Base, SwordItem(classification: "EPIC"), With())
+			.Rejection.Should().Be(ForgeMessage.NoEpicLegendary);
+
+	[Fact]
+	public void CheckDrop_Base_GodMode_AcceptsAnything()
+	{
+		var relic = Relic(ShieldRelic);
+
+		this._rules.CheckDrop(ForgeMode.God, ForgeSlot.Base, relic, With()).Accepted.Should().BeTrue();
+		this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Base, relic, With()).Rejection
+			.Should().Be(ForgeMessage.MustSelectArmorOrWeaponOrJewellery);
+	}
+
+	[Fact]
+	public void CheckDrop_Base_OfAnotherGearType_ClearsAffixesButIsAccepted()
+	{
+		// Changing the base item to another gear type does not refuse it: the affixes taken from the old type go.
+		var current = With(SwordItem(), prefix: SwordItem(@"records\item\sword02.dbr"), suffix: SwordItem(@"records\item\sword03.dbr"));
+		var shield = Make(Shield, @"records\item\shield01.dbr");
+
+		var decision = this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Base, shield, current);
+
+		decision.Accepted.Should().BeTrue();
+		decision.Warnings.Should().Equal(ForgeMessage.PrefixSuffixOfAnotherGearType);
+		decision.Cleared.Should().BeEquivalentTo([ForgeSlot.Prefix, ForgeSlot.Suffix]);
+	}
+
+	[Fact]
+	public void CheckDrop_Base_WhenAffixesAlreadyCleared_LaterChecksSeeThemCleared()
+	{
+		// Another gear type clears the rare prefix first, so "better than base" has nothing left to report.
+		var current = With(SwordItem(), prefix: SwordItem(@"records\item\sword02.dbr", classification: "RARE"));
+		var commonShield = Make(Shield, @"records\item\shield01.dbr");
+
+		var decision = this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Base, commonShield, current);
+
+		decision.Warnings.Should().Equal(ForgeMessage.PrefixSuffixOfAnotherGearType);
+	}
+
+	[Fact]
+	public void CheckDrop_Base_ClearsARelicTheNewBaseCannotHold()
+	{
+		var shieldRelic = Relic(ShieldRelic);
+		var current = With(Make(Shield, @"records\item\shield01.dbr"), relic1: shieldRelic);
+
+		var decision = this._rules.CheckDrop(ForgeMode.Relax, ForgeSlot.Base, SwordItem(), current);
+
+		decision.Accepted.Should().BeTrue();
+		decision.Cleared.Should().Contain(ForgeSlot.Relic1);
+	}
+
+	[Fact]
+	public void CheckDrop_Prefix_OfAnotherGearType_IsRefusedInStrictMode()
+	{
+		var current = With(SwordItem());
+		var shield = Make(Shield, @"records\item\shield01.dbr", prefix: @"records\prefix\p02.dbr");
+
+		this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Prefix, shield, current).Rejection
+			.Should().Be(ForgeMessage.PrefixSuffixOfAnotherGearType);
+		this._rules.CheckDrop(ForgeMode.Relax, ForgeSlot.Prefix, shield, current).Accepted
+			.Should().BeTrue("Relax mode allows affixes from any gear type");
+	}
+
+	[Fact]
+	public void CheckDrop_Prefix_ItemWithoutPrefix_IsRefusedOutsideGodMode()
+	{
+		var current = With(SwordItem());
+		var plain = SwordItem(@"records\item\sword02.dbr", prefix: null);
+
+		this._rules.CheckDrop(ForgeMode.Relax, ForgeSlot.Prefix, plain, current).Rejection.Should().Be(ForgeMessage.MustHavePrefix);
+		this._rules.CheckDrop(ForgeMode.God, ForgeSlot.Prefix, plain, current).Accepted.Should().BeTrue();
+	}
+
+	[Fact]
+	public void CheckDrop_Prefix_GameMode_RefusesHigherLevelRequirement()
+	{
+		var baseItem = SwordItem();
+		var stronger = SwordItem();
+		this._levels[baseItem] = 20;
+		this._levels[stronger] = 30;
+
+		this._rules.CheckDrop(ForgeMode.Game, ForgeSlot.Prefix, stronger, With(baseItem)).Rejection
+			.Should().Be(ForgeMessage.PrefixSuffixHigherLevelRequirement);
+	}
+
+	[Fact]
+	public void CheckDrop_Suffix_NotTinkerer_ClearsSecondRelicInStrictMode()
+	{
+		var current = With(SwordItem(suffix: TinkererSuffix), relic2: Relic(ShieldRelic));
+
+		var decision = this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Suffix, SwordItem(@"records\item\sword02.dbr"), current);
+
+		decision.Accepted.Should().BeTrue();
+		decision.Cleared.Should().Equal(ForgeSlot.Relic2);
+	}
+
+	[Fact]
+	public void CheckDrop_Relic_StrictModeNeedsARelic_RelaxAcceptsItemWithRelic()
+	{
+		var current = With(Make(Shield, @"records\item\shield01.dbr"));
+		var plainItem = SwordItem();
+
+		this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Relic1, plainItem, current).Rejection.Should().Be(ForgeMessage.MustBeRelic);
+		this._rules.CheckDrop(ForgeMode.Relax, ForgeSlot.Relic1, plainItem, current).Rejection.Should().Be(ForgeMessage.MustHaveRelic);
+	}
+
+	[Fact]
+	public void CheckDrop_Relic_NotAllowedOnBaseGear_IsRefused()
+	{
+		var current = With(SwordItem());
+
+		this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Relic1, Relic(ShieldRelic), current).Rejection
+			.Should().Be(ForgeMessage.RelicNotAllowed);
+		this._rules.CheckDrop(ForgeMode.God, ForgeSlot.Relic1, Relic(ShieldRelic), current).Accepted
+			.Should().BeTrue();
+	}
+
+	[Fact]
+	public void CheckDrop_SecondRelic_NeedsTinkererSuffixInStrictMode()
+	{
+		var relic = Relic(ShieldRelic);
+
+		this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Relic2, relic, With(Make(Shield, @"records\item\shield01.dbr")))
+			.Rejection.Should().Be(ForgeMessage.MustHaveTinkeredSuffix);
+		this._rules.CheckDrop(ForgeMode.Strict, ForgeSlot.Relic2, relic, With(Make(Shield, @"records\item\shield01.dbr", suffix: TinkererSuffix)))
+			.Accepted.Should().BeTrue();
+	}
+
+	[Fact]
+	public void CheckForge_NeedsBaseAndAnotherItem()
+	{
+		this._rules.CheckForge(With()).Should().Be(ForgeMessage.MustSelectBaseItem);
+		this._rules.CheckForge(With(SwordItem())).Should().Be(ForgeMessage.MustSelectItemToMerge);
+		this._rules.CheckForge(With(SwordItem(), prefix: SwordItem())).Should().BeNull();
+	}
+
+	[Fact]
+	public void Merge_TakesAffixesAndRelicFromMaterials()
+	{
+		var target = SwordItem(prefix: null, suffix: null);
+		var prefix = SwordItem(@"records\item\sword02.dbr", prefix: @"records\prefix\fiery.dbr");
+		var relic = Relic(ShieldRelic);
+		relic.Var1 = 2;
+
+		ForgeMerge.Apply(target, With(target, prefix: prefix, relic1: relic), godMode: false, _ => null);
+
+		target.prefixID.Should().Be(RecordId.Create(@"records\prefix\fiery.dbr"));
+		target.relicID.Should().Be(ShieldRelic);
+		target.Var1.Should().Be(2);
+		target.HasSuffix.Should().BeFalse("no suffix material was selected");
+	}
+
+	[Fact]
+	public void Merge_GodMode_UsesTheChosenPart()
+	{
+		var target = SwordItem(prefix: null, suffix: null);
+		var material = SwordItem(@"records\item\sword02.dbr", prefix: @"records\prefix\fiery.dbr", suffix: @"records\suffix\of_bear.dbr");
+
+		ForgeMerge.Apply(target, With(target, prefix: material), godMode: true, slot => slot == ForgeSlot.Prefix ? ForgePart.Suffix : null);
+
+		target.prefixID.Should().Be(RecordId.Create(@"records\suffix\of_bear.dbr"), "God mode can use a suffix as a prefix");
+	}
+}

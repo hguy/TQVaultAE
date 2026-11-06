@@ -276,8 +276,12 @@ public partial class ItemTooltip : BaseTooltip
 			foreach (var str in Data.FormulaeArtifactAttributes) AddRow(str);
 		}
 
-		// Relic attributes after items attributes with delimiter
-		if (Data.Item.HasRelicOrCharm)
+		// Relic attributes after items attributes with delimiter.
+		// Besides real relics and charms, a relic slot may hold any record: God mode in the Forge ignores the rules
+		// (e.g. a weapon used as a relic), and what was socketed must still show.
+		bool hasSocketedRecord = !Data.Item.IsRelicOrCharm && !Data.Item.IsArtifact
+			&& (Data.Item.RelicInfo is not null || Data.Item.Relic2Info is not null);
+		if (Data.Item.HasRelicOrCharm || hasSocketedRecord)
 		{
 			if (Data.Relic1Attributes.Any())
 			{
