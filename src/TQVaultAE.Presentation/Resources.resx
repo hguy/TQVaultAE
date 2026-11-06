@@ -692,6 +692,9 @@ Are you sure you want to delete this item?</value>
 	<data name="SackPanelRemoveRelicMsg" xml:space="preserve">
     <value>Are you sure you want to remove the relic from this item?</value>
   </data>
+	<data name="SackPanelSocketedNotAnItem" xml:space="preserve">
+    <value>What was socketed is not a relic or a charm: it was removed.</value>
+  </data>
 	<data name="SeedBtnRandom" xml:space="preserve">
     <value>Random</value>
   </data>

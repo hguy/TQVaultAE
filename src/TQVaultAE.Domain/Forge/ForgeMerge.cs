@@ -84,8 +84,8 @@ public static class ForgeMerge
 	/// <summary>Relic, bonus and shard count, God mode: affixes become a relic with no bonus and one shard.</summary>
 	private static (RecordId Relic, RecordId Bonus, int Shards) RelicFrom(Item source, ForgePart part) => part switch
 	{
-		ForgePart.Prefix => (source.prefixID, null!, 1),
-		ForgePart.Suffix => (source.suffixID, null!, 1),
+		ForgePart.Prefix => (source.prefixID, RecordId.Empty, 1),
+		ForgePart.Suffix => (source.suffixID, RecordId.Empty, 1),
 		ForgePart.Relic1 => (source.relicID, source.RelicBonusId, source.Var1),
 		ForgePart.Relic2 => (source.relic2ID, source.RelicBonus2Id, source.Var2),
 		_ => (source.BaseItemId, source.RelicBonusId, source.Var1),

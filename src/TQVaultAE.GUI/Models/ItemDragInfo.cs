@@ -270,9 +270,12 @@ public class ItemDragInfo
 			    || newItem.Height != this.original.srcItem.Height
 			   )
 			{
-				var ibmp = this.UIService.GetBitmap(newItem);
-				this.mouseOffset.X = ibmp.Width / 2;
-				this.mouseOffset.Y = ibmp.Height / 2;
+				// An item without picture keeps the current offset.
+				if (this.UIService.GetBitmap(newItem) is { } ibmp)
+				{
+					this.mouseOffset.X = ibmp.Width / 2;
+					this.mouseOffset.Y = ibmp.Height / 2;
+				}
 			}
 		}
 	}

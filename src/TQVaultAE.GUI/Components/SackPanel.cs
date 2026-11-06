@@ -1174,10 +1174,10 @@ public partial class SackPanel : Panel, IScalingControl
 				{
 					if (USettings.AllowItemEdit)
 					{
-						if (focusedItem.HasRelicOrCharmSlot1)
+						if (focusedItem.HasSocketedSlot1)
 							this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic);
 
-						if (focusedItem.HasRelicOrCharmSlot2)
+						if (focusedItem.HasSocketedSlot2)
 							this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic2);
 					}
 

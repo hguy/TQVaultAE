@@ -226,6 +226,28 @@ public class ForgeRulesTests
 	}
 
 	[Fact]
+	public void Merge_GodMode_AffixAsRelic_HasNoBonusRecord()
+	{
+		// A null bonus made saving the vault crash (it writes every record id).
+		var target = SwordItem(prefix: null, suffix: null);
+		var material = SwordItem(@"records\item\sword02.dbr", prefix: @"records\prefix\fiery.dbr");
+
+		ForgeMerge.Apply(target, With(target, relic1: material, relic2: material), godMode: true, _ => ForgePart.Prefix);
+
+		target.relicID.Should().Be(RecordId.Create(@"records\prefix\fiery.dbr"));
+		target.RelicBonusId.Should().NotBeNull().And.Be(RecordId.Empty);
+		target.RelicBonus2Id.Should().NotBeNull().And.Be(RecordId.Empty);
+		target.Var1.Should().Be(1);
+	}
+
+	[Fact]
+	public void RawOf_NullRecord_IsEmpty()
+	{
+		RecordId.RawOf(null).Should().BeEmpty();
+		RecordId.RawOf(RecordId.Create(@"records\a.dbr")).Should().Be(@"records\a.dbr");
+	}
+
+	[Fact]
 	public void Merge_GodMode_UsesTheChosenPart()
 	{
 		var target = SwordItem(prefix: null, suffix: null);

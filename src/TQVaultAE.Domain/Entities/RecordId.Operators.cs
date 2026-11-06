@@ -65,6 +65,12 @@ public partial class RecordId
 
 	#endregion
 
+	/// <summary>
+	/// <see cref="Raw"/> of <paramref name="recordId"/>, or an empty string when it is <c>null</c>: what the save files
+	/// store for "no record".
+	/// </summary>
+	public static string RawOf(RecordId? recordId) => recordId?.Raw ?? string.Empty;
+
 	#region implicit
 
 	public static implicit operator string(RecordId recordId) => recordId.Raw;

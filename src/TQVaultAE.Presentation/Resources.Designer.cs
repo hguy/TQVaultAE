@@ -4254,6 +4254,15 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to What was socketed is not a relic or a charm: it was removed..
+        /// </summary>
+        public static string SackPanelSocketedNotAnItem {
+            get {
+                return ResourceManager.GetString("SackPanelSocketedNotAnItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to remove the relic from this item?.
         /// </summary>
         public static string SackPanelRemoveRelicMsg {

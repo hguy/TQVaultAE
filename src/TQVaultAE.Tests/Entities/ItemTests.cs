@@ -311,6 +311,35 @@ public class ItemTests
 
 	#endregion
 
+	#region Socketed slot Tests
+
+	[Fact]
+	public void HasSocketedSlot_AnyRecord_CountsEvenWhenNotARelic()
+	{
+		// God mode in the Forge can socket a weapon: "Remove Relic" must still be offered for it.
+		var item = new Item
+		{
+			relicID = RecordId.Create(@"records\item\equipmentweapon\spear\u_e_spear01.dbr"),
+			relic2ID = RecordId.Create(@"records\item\relics\01_act1_aegisofathena.dbr"),
+		};
+
+		item.HasSocketedSlot1.Should().BeTrue();
+		item.HasRelicOrCharmSlot1.Should().BeFalse("a weapon record is not a relic");
+		item.HasSocketedSlot2.Should().BeTrue();
+		item.HasRelicOrCharmSlot2.Should().BeTrue();
+	}
+
+	[Fact]
+	public void HasSocketedSlot_EmptySlots_AreFalse()
+	{
+		var item = new Item { relicID = RecordId.Empty, relic2ID = RecordId.Empty };
+
+		item.HasSocketedSlot1.Should().BeFalse();
+		item.HasSocketedSlot2.Should().BeFalse();
+	}
+
+	#endregion
+
 	#region Constants Tests
 
 	[Fact]
