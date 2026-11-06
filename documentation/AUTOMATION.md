@@ -61,7 +61,9 @@ Cells are grid coordinates, as reported by `get_state`.
 | `move_drag(panel, x, y)` | Hovers the dragged item so that its top-left corner lands on cell (x, y). The result reports the cells under the item. |
 | `drop_item(panel, x, y)` | Drops the dragged item with its top-left corner on cell (x, y). It reports whether the panel accepted the drop. |
 | `cancel_drag` | Returns the dragged item to where it was picked up, like a right click. |
-| `capture(control)` | A PNG made with `Control.DrawToBitmap`, returned as an image and also saved under `%TEMP%`. Targets: a panel id, `<panel>.container` (the panel with its bag buttons), `main`, or part of a form title. It works when the window is behind other windows. |
+| `hover_item(panel, x, y)` | Rests the virtual cursor on a cell without dragging. TQVault shows the item's tooltip and writes its name in the notification bar. The result gives the item, the notification text, the tooltips shown, and a PNG of the tooltip taken at once, since a tooltip can close by itself. |
+| `hover_end` | Moves the virtual cursor off the panel, which closes the tooltip. |
+| `capture(control)` | A PNG made with `Control.DrawToBitmap`, returned as an image and also saved under `%TEMP%`. Targets: a panel id, `<panel>.container` (the panel with its bag buttons), `main`, `tooltip` (the last tooltip shown), or part of a form title. It works when the window is behind other windows. |
 | `recent_log(n)` | The last `n` log lines, kept in memory. |
 | `recent_sounds(n)` | The last `n` sounds played. For a named sound, `loaded` and `wavBytes` tell whether its data could be loaded. The level-up MP3 is converted to WAV by NAudio first. |
 | `forge_show(show)` | Shows or hides the forge, like the Forge button. Items for the forge are picked from the `vault` panel with `pick_item`. |

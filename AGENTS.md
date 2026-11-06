@@ -154,6 +154,7 @@ Debug builds of `TQVaultAE.GUI` host an MCP server inside the app at `http://127
 | Read the state from the app's models | `get_state(panel?)`, which returns characters, vaults, panels and items with their cells |
 | Navigation | `select_character`, `select_vault`, `select_bag` |
 | Drag and drop through the panels' own handlers | `pick_item`, `move_drag`, `drop_item`, `cancel_drag` |
+| Item tooltips | `hover_item(panel, x, y)`, which returns the tooltip as a PNG; `hover_end` |
 | Forge | `forge_show`, `forge_state`, `forge_set_mode`, `forge_set_hardcore`, `forge_drop(slot)`, `forge_select_part`, `forge_reset`, `forge_forge`, `forge_cancel` |
 | Evidence | `capture(control)`, a PNG made with `DrawToBitmap` that works even when the window is hidden; `recent_log(n)`; `recent_sounds(n)`, with the sounds played and whether their data loaded |
 
