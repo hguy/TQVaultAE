@@ -1,5 +1,6 @@
 ﻿using TQVaultAE.Application;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltip;

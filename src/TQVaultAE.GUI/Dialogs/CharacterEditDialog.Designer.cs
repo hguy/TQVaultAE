@@ -1,3 +1,4 @@
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 
 namespace TQVaultAE.GUI.Dialogs
@@ -46,13 +47,13 @@ namespace TQVaultAE.GUI.Dialogs
 		private void InitializeComponent()
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(CharacterEditDialog));
-            this.ok = new TQVaultAE.GUI.Components.ScalingButton();
-            this.cancel = new TQVaultAE.GUI.Components.ScalingButton();
-            this.strengthLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.dexterityLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.IntelligenceLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.healthLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.manaLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.ok = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
+            this.cancel = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
+            this.strengthLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.dexterityLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.IntelligenceLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.healthLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.manaLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.attribGroupBox = new System.Windows.Forms.GroupBox();
             this.manacUpDown = new System.Windows.Forms.NumericUpDown();
             this.healthUpDown = new System.Windows.Forms.NumericUpDown();
@@ -60,24 +61,24 @@ namespace TQVaultAE.GUI.Dialogs
             this.dexterityUpDown = new System.Windows.Forms.NumericUpDown();
             this.strengthUpDown = new System.Windows.Forms.NumericUpDown();
             this.levelingGroupBox = new System.Windows.Forms.GroupBox();
-            this.levelingCheckBox = new TQVaultAE.GUI.Components.ScalingCheckBox();
-            this.difficultyLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.levelingCheckBox = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+            this.difficultyLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.difficultlyComboBox = new System.Windows.Forms.ComboBox();
             this.skillPointsNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.skillPointsLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.skillPointsLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.attributeNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.attributeLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.attributeLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.xpTextBox = new System.Windows.Forms.TextBox();
-            this.xpLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.xpLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.levelNumericUpDown = new System.Windows.Forms.NumericUpDown();
-            this.levelLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.ResetMasteriesScalingButton = new TQVaultAE.GUI.Components.ScalingButton();
+            this.levelLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.ResetMasteriesScalingButton = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
             this.MasteriesGroupBox = new System.Windows.Forms.GroupBox();
-            this.Mastery2ValueScalingLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.Mastery1ValueScalingLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.Mastery2NameScalingLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.Mastery1NameScalingLabel = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.ResetAttributesScalingButton = new TQVaultAE.GUI.Components.ScalingButton();
+            this.Mastery2ValueScalingLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.Mastery1ValueScalingLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.Mastery2NameScalingLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.Mastery1NameScalingLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.ResetAttributesScalingButton = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
             this.attribGroupBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.manacUpDown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.healthUpDown)).BeginInit();

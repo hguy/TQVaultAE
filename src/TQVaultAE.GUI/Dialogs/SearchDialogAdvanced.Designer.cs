@@ -1,4 +1,6 @@
-﻿using TQVaultAE.GUI.Components;
+﻿using TQVaultAE.GUI.Components.Layout;
+using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Components;
 
 namespace TQVaultAE.GUI.Dialogs
 {

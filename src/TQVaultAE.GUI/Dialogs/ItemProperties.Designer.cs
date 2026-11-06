@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using System.Windows.Forms;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
 
@@ -102,12 +103,12 @@ namespace TQVaultAE.GUI.Dialogs
 		private void InitializeComponent()
 		{
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ItemProperties));
-			this.ButtonOK = new TQVaultAE.GUI.Components.ScalingButton();
+			this.ButtonOK = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
 			this.labelItemName = new System.Windows.Forms.Label();
-			this.checkBoxFilterExtraInfo = new TQVaultAE.GUI.Components.ScalingCheckBox();
-			this.labelPrefixProperties = new TQVaultAE.GUI.Components.ScalingLabel();
-			this.labelBaseItemProperties = new TQVaultAE.GUI.Components.ScalingLabel();
-			this.labelSuffixProperties = new TQVaultAE.GUI.Components.ScalingLabel();
+			this.checkBoxFilterExtraInfo = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+			this.labelPrefixProperties = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+			this.labelBaseItemProperties = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+			this.labelSuffixProperties = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
 			this.dataGridViewBaseItemProperties = new System.Windows.Forms.DataGridView();
 			this.columnBaseItemProperty = new System.Windows.Forms.DataGridViewTextBoxColumn();
 			this.dataGridViewPrefixProperties = new System.Windows.Forms.DataGridView();

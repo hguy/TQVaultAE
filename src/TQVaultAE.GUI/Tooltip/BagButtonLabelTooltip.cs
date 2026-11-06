@@ -1,5 +1,6 @@
 ﻿using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Forms;
 

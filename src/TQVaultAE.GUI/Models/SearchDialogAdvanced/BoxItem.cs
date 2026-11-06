@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
 using TQVaultAE.Application.Results;
+using TQVaultAE.GUI.Components.Layout;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 
 namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;

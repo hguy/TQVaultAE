@@ -37,7 +37,7 @@ public static class WinFormExtension
 	}
 
 	/// <summary>Sizes the list to one column as wide as its widest item, check box included.</summary>
-	public static void AdjustToMaxTextWidth(this Components.VirtualCheckedListBox ctrl, int? maxVerticalItems)
+	public static void AdjustToMaxTextWidth(this Components.Layout.VirtualCheckedListBox ctrl, int? maxVerticalItems)
 	{
 		// Check box, the gap before the text and a little room after it.
 		var width = ctrl.GetMaxTextWidth() + SystemInformation.VerticalScrollBarWidth + 4;

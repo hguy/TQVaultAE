@@ -1,4 +1,7 @@
-﻿namespace TQVaultAE.GUI.Components
+﻿using TQVaultAE.GUI.Components.Layout;
+using TQVaultAE.GUI.Components.Scaling;
+
+namespace TQVaultAE.GUI.Components
 {
 	partial class HighlightFilters
 	{
@@ -32,37 +35,37 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(HighlightFilters));
             this.tableLayoutPanelHighlight = new System.Windows.Forms.TableLayoutPanel();
             this.flowLayoutPanelMax = new System.Windows.Forms.FlowLayoutPanel();
-            this.scalingLabelMaxLvl = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMaxLvl = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMaxLvl = new System.Windows.Forms.NumericUpDown();
-            this.scalingLabelMaxStr = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMaxStr = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMaxStr = new System.Windows.Forms.NumericUpDown();
-            this.scalingLabelMaxDex = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMaxDex = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMaxDex = new System.Windows.Forms.NumericUpDown();
-            this.scalingLabelMaxInt = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMaxInt = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMaxInt = new System.Windows.Forms.NumericUpDown();
-            this.scalingCheckBoxMax = new TQVaultAE.GUI.Components.ScalingCheckBox();
-            this.scalingCheckBoxMin = new TQVaultAE.GUI.Components.ScalingCheckBox();
+            this.scalingCheckBoxMax = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+            this.scalingCheckBoxMin = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
             this.flowLayoutPanelMin = new System.Windows.Forms.FlowLayoutPanel();
-            this.scalingLabelMinLvl = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMinLvl = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMinLvl = new System.Windows.Forms.NumericUpDown();
-            this.scalingLabelMinStr = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMinStr = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMinStr = new System.Windows.Forms.NumericUpDown();
-            this.scalingLabelMinDex = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMinDex = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMinDex = new System.Windows.Forms.NumericUpDown();
-            this.scalingLabelMinInt = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabelMinInt = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.numericUpDownMinInt = new System.Windows.Forms.NumericUpDown();
-            this.scalingCheckedListBoxTypes = new TQVaultAE.GUI.Components.ScalingCheckedListBox();
-            this.scalingCheckedListBoxRarity = new TQVaultAE.GUI.Components.ScalingCheckedListBox();
-            this.scalingCheckedListBoxOrigin = new TQVaultAE.GUI.Components.ScalingCheckedListBox();
-            this.buttonApply = new TQVaultAE.GUI.Components.ScalingButton();
-            this.buttonReset = new TQVaultAE.GUI.Components.ScalingButton();
-            this.bufferedFlowLayoutPanelPrefixSuffix = new TQVaultAE.GUI.Components.BufferedFlowLayoutPanel();
-            this.scalingCheckBoxHavingPrefix = new TQVaultAE.GUI.Components.ScalingCheckBox();
-            this.scalingCheckBoxHavingSuffix = new TQVaultAE.GUI.Components.ScalingCheckBox();
-            this.scalingCheckBoxHavingRelic = new TQVaultAE.GUI.Components.ScalingCheckBox();
-            this.scalingCheckBoxHavingCharm = new TQVaultAE.GUI.Components.ScalingCheckBox();
+            this.scalingCheckedListBoxTypes = new TQVaultAE.GUI.Components.Scaling.ScalingCheckedListBox();
+            this.scalingCheckedListBoxRarity = new TQVaultAE.GUI.Components.Scaling.ScalingCheckedListBox();
+            this.scalingCheckedListBoxOrigin = new TQVaultAE.GUI.Components.Scaling.ScalingCheckedListBox();
+            this.buttonApply = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
+            this.buttonReset = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
+            this.bufferedFlowLayoutPanelPrefixSuffix = new TQVaultAE.GUI.Components.Layout.BufferedFlowLayoutPanel();
+            this.scalingCheckBoxHavingPrefix = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+            this.scalingCheckBoxHavingSuffix = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+            this.scalingCheckBoxHavingRelic = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+            this.scalingCheckBoxHavingCharm = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.scalingCheckBoxSetItem = new TQVaultAE.GUI.Components.ScalingCheckBox();
+            this.scalingCheckBoxSetItem = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
             this.tableLayoutPanelHighlight.SuspendLayout();
             this.flowLayoutPanelMax.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxLvl)).BeginInit();

@@ -7,7 +7,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Automation;
 using TQVaultAE.GUI.Models;
 
-namespace TQVaultAE.GUI.Components;
+namespace TQVaultAE.GUI.Components.Panels;
 
 /// <summary>
 /// Debug-only entry points used by the automation endpoint.

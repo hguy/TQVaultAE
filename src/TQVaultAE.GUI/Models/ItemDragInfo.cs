@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.GUI.Components.Panels;
 
 namespace TQVaultAE.GUI.Models;
 

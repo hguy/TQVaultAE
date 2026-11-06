@@ -6,6 +6,7 @@
 
 using System.Globalization;
 using System.Reflection;
+using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;

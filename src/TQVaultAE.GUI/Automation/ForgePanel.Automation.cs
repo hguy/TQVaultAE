@@ -1,7 +1,7 @@
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Forge;
 
-namespace TQVaultAE.GUI.Components;
+namespace TQVaultAE.GUI.Components.Panels;
 
 /// <summary>
 /// Debug-only access to the forge for the automation endpoint. Every action goes through the forge's own code.

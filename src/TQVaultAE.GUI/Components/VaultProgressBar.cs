@@ -1,4 +1,6 @@
-﻿//-----------------------------------------------------------------------
+﻿using TQVaultAE.GUI.Components.Scaling;
+
+//-----------------------------------------------------------------------
 // <copyright file="VaultProgressBar.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -60,7 +62,7 @@ public class VaultProgressBar : UserControl
 
 	private void InitializeComponent()
 	{
-		this.scalingLabelTitle = new TQVaultAE.GUI.Components.ScalingLabel();
+		this.scalingLabelTitle = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
 		this.SuspendLayout();
 		// 
 		// scalingLabelTitle
