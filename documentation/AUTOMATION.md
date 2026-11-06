@@ -1,0 +1,111 @@
+# Automation endpoint (Debug builds only)
+
+Debug builds of TQVault host an [MCP](https://modelcontextprotocol.io) server inside the application.
+An AI agent (Claude Code, or any MCP client) can use it to inspect and drive the running UI
+without screenshots or real mouse clicks.
+
+The item grids (`SackPanel`, `EquipmentPanel`) are owner-drawn, so UI Automation sees each one as a single pane.
+This endpoint reads the app's own models instead, and drives drags through the panels' own mouse handlers.
+
+**Release builds contain none of this.** The `Automation/` folder, the `ModelContextProtocol.AspNetCore` package
+and the ASP.NET Core framework reference are only part of the `Debug` configuration, and every hook
+in existing code is inside `#if DEBUG`.
+
+---
+
+## Transport and address
+
+- Transport: MCP streamable HTTP, through the official C# SDK (`ModelContextProtocol.AspNetCore`) on Kestrel.
+- Address: `http://127.0.0.1:47017/mcp`. It listens on loopback only.
+- It starts with the application, before the first dialog, so startup message boxes can already be answered.
+- The address is written to the log at startup:
+  `Automation MCP endpoint listening on http://127.0.0.1:47017/mcp`
+
+| Environment variable | Effect |
+|---|---|
+| `TQVAULT_MCP_PORT` | Listen on another port. |
+| `TQVAULT_MCP_DISABLED=1` | Do not start the endpoint. |
+| `TQVAULT_MCP_ALLOW_SAVES=1` | Turn the save guard off by default (see below). |
+
+## Register it in Claude Code
+
+Start a Debug build (`dotnet build TQVaultAE.slnx`, then run
+`src/TQVaultAE.GUI/bin/Debug/net10.0-windows/TQVaultAE.exe`), then:
+
+```bash
+claude mcp add --transport http tqvault http://127.0.0.1:47017/mcp
+```
+
+Add `--scope project` to share the registration through `.mcp.json`. The tools show up as `mcp__tqvault__*`
+once the app is running.
+
+## Tools
+
+All UI access is marshalled to the UI thread with `Control.Invoke`.
+Panel ids are `vault`, `secondaryVault`, `player` (main inventory), `playerBag`, `stash` and `equipment`.
+Cells are grid coordinates, as reported by `get_state`.
+
+| Tool | What it does |
+|---|---|
+| `list_windows` | The process' visible top-level windows: WinForms forms and native message boxes, with title, class, modal state, message text and buttons. |
+| `close_dialog(title, button)` | Presses a dialog button by its text, for example `("Default Vault Path", "OK")`. It works for message boxes and WinForms forms, even when they are not in the foreground. |
+| `get_state(panel?)` | The selected vault and character, the available characters and vaults, `PlayerReadonly`, the save guard, the drag state, every panel (shown, sack type, bag, item count, modified). With `panel`, it adds the items of that panel's current sack: name, base name, record id, cell location and size. For `equipment` it also lists the slot rectangles. |
+| `select_character(name)` / `select_vault(name)` | Select an entry in the drop-downs, as listed by `get_state`. |
+| `select_bag(panel, bag)` | Clicks a bag button. `stash` bag 0 shows the equipment panel. |
+| `pick_item(panel, x, y)` | Picks up the item at a cell, like a left click there. |
+| `move_drag(panel, x, y)` | Hovers the dragged item so that its top-left corner lands on cell (x, y). The result reports the cells under the item. |
+| `drop_item(panel, x, y)` | Drops the dragged item with its top-left corner on cell (x, y). It reports whether the panel accepted the drop. |
+| `cancel_drag` | Returns the dragged item to where it was picked up, like a right click. |
+| `capture(control)` | A PNG made with `Control.DrawToBitmap`, returned as an image and also saved under `%TEMP%`. Targets: a panel id, `<panel>.container` (the panel with its bag buttons), `main`, or part of a form title. It works when the window is behind other windows. |
+| `recent_log(n)` | The last `n` log lines, kept in memory. |
+| `set_save_guard(enabled)` | Turns the save guard on or off. |
+
+### How drags are simulated
+
+The real cursor is never moved. The tools call the panels' own `MouseMove` / `MouseDown` / `MouseLeave` handlers
+with synthetic `MouseEventArgs`, and a Debug-only `VirtualCursor` replaces `Cursor.Position` in
+`SackPanel.PaintCallback`. After each move, the panel is painted synchronously, so the drop target cells
+(`CellsUnderDragItem`) are computed by the regular code.
+
+All the app's rules still apply: item requirements, slot types, stacking and swapping.
+
+## Safety
+
+- **`PlayerReadonly`**: when it is on (the default), `pick_item` and `drop_item` refuse the equipment panel,
+  just as the panel ignores real clicks. Hovering it with `move_drag` is allowed.
+- **Save guard**: once any tool has driven the UI (selection, drag, dialog answer), TQVault refuses to:
+  - save players, vaults and stashes, including on exit;
+  - save its configuration on exit;
+  - duplicate a character or import a vault;
+  - git commit and push the vault folder on exit.
+
+  Each refused write is logged as `Save refused while automation is driving TQVault: ...`.
+  To allow saves, start the app with `TQVAULT_MCP_ALLOW_SAVES=1`, or call `set_save_guard(false)`.
+  Small UI preferences (window position, tooltip toggles) are still written to `UserConfig.xml`.
+
+## Example session
+
+```text
+get_state()                                  -> characters, vaults, panels
+select_character("Warfare, Guerrier - Niveau : 67")
+select_bag("stash", 0)                       -> equipment panel shown
+get_state("player")                          -> helmet at x=0, y=0, 2x2
+pick_item("player", 0, 0)                    -> dragging, cellsUnderItem (0,0 2x2)
+move_drag("equipment", 4, 0)                 -> hoveredPanel equipment, cellsUnderItem (4,0 2x2)
+capture("equipment.container")               -> helmet drawn over the head slot, green highlight
+drop_item("player", 0, 0)                    -> accepted, dragging false
+capture("player")
+```
+
+Dropping an item back on its own cells re-places it and marks the sack modified, exactly like a real drop.
+Use `cancel_drag` to put it back untouched.
+
+## Limitations
+
+- Task dialogs (`TaskDialog`) draw their buttons without child windows. For those, `close_dialog` only knows the
+  standard buttons (OK, Cancel, Yes, No, Retry, Close...), through their command ids.
+- The tools that need the main window answer "not ready" until it has been created.
+  `list_windows` and `close_dialog` work from the start.
+- `capture("equipment")` shows the item grid only. Use `equipment.container` to include the stash tabs.
+- The real mouse still works while automation drives the app. Moving it over the panels during a drag
+  repaints them, but the virtual cursor keeps deciding where the dragged item is drawn and dropped.
