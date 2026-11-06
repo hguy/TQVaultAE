@@ -59,7 +59,7 @@ public partial class AboutBox : Form
 			}
 
 			// If there was no Title attribute, or if the Title attribute was the empty string, return the .exe name
-			return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+			return Assembly.GetExecutingAssembly().GetName().Name;
 		}
 	}
 
