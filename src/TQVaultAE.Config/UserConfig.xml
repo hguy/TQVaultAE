@@ -32,7 +32,7 @@
 	<DisableTooltipEquipment>0</DisableTooltipEquipment>
 	<DisableTooltipStash>0</DisableTooltipStash>
 	<DisableTooltipTransfer>0</DisableTooltipTransfer>
-	<DisableTooltipRelic>0</DisableTooltipRelic>
+	<DisableTooltipRelic>1</DisableTooltipRelic>
 	<EnableTQVaultSounds>1</EnableTQVaultSounds>
 	<CSVDelimiter>Comma</CSVDelimiter>
 	<EnableEpicLegendaryAffixes>0</EnableEpicLegendaryAffixes>

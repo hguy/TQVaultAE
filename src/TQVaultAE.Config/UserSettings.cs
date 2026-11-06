@@ -110,8 +110,11 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(DisableTooltipTransfer))]
 	public bool DisableTooltipTransfer { get; set; } = false;
 
+	/// <summary>
+	/// Hides the bag tooltips of the relic vault ("Enable Tooltip" unchecked on the Relic tab). Hidden by default.
+	/// </summary>
 	[XmlElement(ElementName = nameof(DisableTooltipRelic))]
-	public bool DisableTooltipRelic { get; set; } = false;
+	public bool DisableTooltipRelic { get; set; } = true;
 
 	[XmlElement(ElementName = nameof(EnableTQVaultSounds))]
 	public bool EnableTQVaultSounds { get; set; } = true;
