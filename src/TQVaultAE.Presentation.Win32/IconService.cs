@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation.Win32.Contracts;
+using TQVaultAE.Presentation.Win32.Models;
 
 namespace TQVaultAE.Presentation.Win32;
 

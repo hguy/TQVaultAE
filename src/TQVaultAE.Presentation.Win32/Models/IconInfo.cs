@@ -1,6 +1,7 @@
 ﻿using System.Drawing;
+using TQVaultAE.Domain.Entities;
 
-namespace TQVaultAE.Domain.Entities;
+namespace TQVaultAE.Presentation.Win32.Models;
 
 public record IconInfo(IconCategory Category, RecordId On, Bitmap? OnBitmap, RecordId Off, Bitmap? OffBitmap, RecordId Over, Bitmap? OverBitmap)
 {
