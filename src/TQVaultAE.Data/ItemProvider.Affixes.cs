@@ -205,7 +205,7 @@ public partial class ItemProvider
 	/// <returns>Returns the removed relic as a new Item</returns>
 	public Item RemoveRelic1(Item itm)
 	{
-		if (!itm.HasRelicOrCharmSlot1)
+		if (!itm.HasSocketedSlot1)
 			return null;
 
 		Item newRelic = itm.MakeEmptyCopy(itm.relicID);
@@ -232,7 +232,7 @@ public partial class ItemProvider
 	/// <returns>Returns the removed relic as a new Item</returns>
 	public Item RemoveRelic2(Item itm)
 	{
-		if (!itm.HasRelicOrCharmSlot2)
+		if (!itm.HasSocketedSlot2)
 			return null;
 
 		Item newRelic = itm.MakeEmptyCopy(itm.relic2ID);

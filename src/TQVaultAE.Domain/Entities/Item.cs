@@ -675,6 +675,15 @@ public class Item
 	public bool HasRelicOrCharm => HasRelicOrCharmSlot1 || HasRelicOrCharmSlot2;
 
 	/// <summary>
+	/// The first relic slot holds a record, whatever it is: a relic, a charm, or anything the Forge God mode put there
+	/// (e.g. a weapon). Unlike <see cref="HasRelicOrCharmSlot1"/>, it does not look at the record type.
+	/// </summary>
+	public bool HasSocketedSlot1 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relicID);
+
+	/// <summary>The second relic slot holds a record, whatever it is (see <see cref="HasSocketedSlot1"/>).</summary>
+	public bool HasSocketedSlot2 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relic2ID);
+
+	/// <summary>
 	/// Indicate that the item has an embedded relic in slot 1 or 2.
 	/// </summary>
 	public bool HasRelic => HasRelicSlot1 || HasRelicSlot2;

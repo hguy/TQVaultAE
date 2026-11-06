@@ -565,8 +565,20 @@ public partial class SackPanel
 						? ItemProvider.RemoveRelic1(focusedItem)
 						: ItemProvider.RemoveRelic2(focusedItem);
 
-					// Put relic in DragInfo
-					this.DragInfo.MarkModified(relic);
+					if (relic is null || !relic.IsRelicOrCharm)
+					{
+						// God mode in the Forge can socket anything (a weapon, an affix...). Only relics and charms
+						// come back to be placed; anything else is simply removed with the slot.
+						this.DragInfo.Cancel();
+						this.Sack.IsModified = true;
+						this.UIService.NotifyUser(Resources.SackPanelSocketedNotAnItem, TQColor.Yellow);
+					}
+					else
+					{
+						// Put relic in DragInfo
+						this.DragInfo.MarkModified(relic);
+					}
+
 					this.InvalidateItemCacheItemTooltip(focusedItem);
 					Refresh();
 				}

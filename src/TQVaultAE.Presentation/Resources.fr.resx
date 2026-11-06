@@ -672,6 +672,9 @@ Voulez-vous vraiment supprimer cet objet ?</value>
 	<data name="SackPanelRemoveRelicMsg" xml:space="preserve">
     <value>Voulez-vous vraiment retirer la relique de cet objet ?</value>
   </data>
+	<data name="SackPanelSocketedNotAnItem" xml:space="preserve">
+    <value>Ce qui était serti n'est ni une relique ni un charme : il a été retiré.</value>
+  </data>
 	<data name="SeedBtnRandom" xml:space="preserve">
     <value>Au hasard</value>
   </data>
