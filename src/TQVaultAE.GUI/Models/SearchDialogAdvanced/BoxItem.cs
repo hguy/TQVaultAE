@@ -6,9 +6,9 @@ namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
 
 public class BoxItem
 {
-	ScalingCheckedListBox _CheckedList;
+	VirtualCheckedListBox _CheckedList;
 	[JsonIgnore]
-	public ScalingCheckedListBox CheckedList
+	public VirtualCheckedListBox CheckedList
 	{
 		get => _CheckedList;
 		set

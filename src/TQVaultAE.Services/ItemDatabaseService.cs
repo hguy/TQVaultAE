@@ -190,6 +190,49 @@ public class ItemDatabaseService : IItemDatabaseService
 	    this.ItemDatabase = new(validItems);
 	}
 
+	private readonly object _warmUpLock = new();
+	private Task? _warmUp;
+
+	/// <inheritdoc/>
+	public Task WarmUpAsync()
+	{
+		lock (this._warmUpLock)
+		{
+			if (this._warmUp is { IsCompleted: false })
+				return this._warmUp;
+
+			var items = this.ItemDatabase.ToArray();
+			// LongRunning gives a dedicated thread, so its priority can be lowered without touching the thread pool.
+			this._warmUp = Task.Factory.StartNew(() => this.WarmUp(items), CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+			return this._warmUp;
+		}
+	}
+
+	private void WarmUp(SearchResult[] items)
+	{
+		Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+		var watch = System.Diagnostics.Stopwatch.StartNew();
+		int failed = 0;
+
+		// Half the cores, so the main window stays responsive while this runs.
+		var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+		Parallel.ForEach(items, options, item =>
+		{
+			try
+			{
+				item.LazyLoad();
+			}
+			catch (Exception ex)
+			{
+				// The search dialog drops items without a name; one broken item must not stop the others.
+				if (Interlocked.Increment(ref failed) == 1)
+					this._log.LogWarning(ex, "Search warm-up failed for {Item}", item.Item?.BaseItemId);
+			}
+		});
+
+		this._log.LogInformation("Search data warmed up in {Elapsed} ms ({Count} items, {Failed} failed)", watch.ElapsedMilliseconds, items.Length, failed);
+	}
+
 	/// <inheritdoc/>
 	public IReadOnlyList<SearchResult> ExecuteAdvancedSearch(AdvancedSearchRequest request)
     {

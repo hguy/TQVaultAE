@@ -60,4 +60,11 @@ public interface IItemDatabaseService
     #endregion
 
     void ResetAllItemDatabase(List<SearchResult> validItems);
+
+    /// <summary>
+    /// Computes, in the background and at low priority, the display data of every item in the database
+    /// (<see cref="SearchResult.LazyLoad"/>), the slow part of opening the search dialog, so it is ready when the
+    /// dialog opens. Calling it again while it runs returns the running task.
+    /// </summary>
+    Task WarmUpAsync();
 }
