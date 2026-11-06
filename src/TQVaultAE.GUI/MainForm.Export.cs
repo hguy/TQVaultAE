@@ -271,6 +271,10 @@ public partial class MainForm
 
 	private void HandleVaultImportFromJson(ImportResult importResult)
 	{
+#if DEBUG
+		if (Automation.AutomationHost.IsSaveBlocked("import vault"))
+			return;
+#endif
 		var targetVault = this.vaultPanel?.Player;
 		if (targetVault == null)
 		{

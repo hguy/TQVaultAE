@@ -62,6 +62,9 @@ public partial class MainForm
 			// Added by VillageIdiot
 			this.SaveConfiguration();
 
+#if DEBUG
+			if (!Automation.AutomationHost.IsSaveBlocked("git commit and push"))
+#endif
 			this.GameFileService.GitAddCommitTagAndPush();
 
 			ok = true;
