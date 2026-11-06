@@ -3,6 +3,7 @@ using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Models.SearchDialogAdvanced;
 using TQVaultAE.Presentation;
 

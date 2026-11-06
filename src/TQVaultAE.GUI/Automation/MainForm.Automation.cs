@@ -7,7 +7,7 @@ using TQVaultAE.Config;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 
-namespace TQVaultAE.GUI;
+namespace TQVaultAE.GUI.Forms;
 
 /// <summary>
 /// Debug-only read access to the main form state for the automation endpoint.

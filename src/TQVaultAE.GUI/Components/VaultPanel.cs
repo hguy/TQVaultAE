@@ -13,6 +13,8 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.GUI.Dialogs;
+using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.Presentation;

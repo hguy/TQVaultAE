@@ -1,4 +1,6 @@
-﻿namespace TQVaultAE.GUI.Inputs.Filters;
+﻿using TQVaultAE.GUI.Forms;
+
+namespace TQVaultAE.GUI.Inputs.Filters;
 /// <summary>
 /// Capture all mouse button event globally and trigger dedicated events
 /// </summary>

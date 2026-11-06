@@ -1,5 +1,6 @@
 ﻿using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.Presentation;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;

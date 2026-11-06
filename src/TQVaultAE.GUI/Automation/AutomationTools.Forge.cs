@@ -3,6 +3,7 @@ using ModelContextProtocol;
 using ModelContextProtocol.Server;
 using TQVaultAE.Domain.Forge;
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Forms;
 
 namespace TQVaultAE.GUI.Automation;
 

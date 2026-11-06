@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltip;
 using TQVaultAE.Presentation;
