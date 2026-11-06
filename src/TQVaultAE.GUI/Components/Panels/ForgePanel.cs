@@ -4,9 +4,9 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Forge;
 using TQVaultAE.GUI.Components.Icons;
 using TQVaultAE.GUI.Components.Scaling;
-using TQVaultAE.GUI.Helpers;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;

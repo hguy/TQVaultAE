@@ -14,7 +14,7 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 
 /// <summary>
 /// Stores information about the item being dragged around by the user

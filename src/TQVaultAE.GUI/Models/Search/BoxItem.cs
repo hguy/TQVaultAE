@@ -4,7 +4,7 @@ using TQVaultAE.GUI.Components.Layout;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 
-namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
+namespace TQVaultAE.GUI.Models.Search;
 
 public class BoxItem
 {

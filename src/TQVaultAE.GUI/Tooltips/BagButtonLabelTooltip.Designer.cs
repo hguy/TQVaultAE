@@ -1,4 +1,4 @@
-﻿namespace TQVaultAE.GUI.Tooltip
+﻿namespace TQVaultAE.GUI.Tooltips
 {
 	partial class BagButtonLabelTooltip
 	{

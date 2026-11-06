@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using TQVaultAE.GUI.Components.Panels;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;

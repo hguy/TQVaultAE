@@ -1,4 +1,4 @@
-namespace TQVaultAE.GUI.Components;
+namespace TQVaultAE.GUI.Tooltips;
 
 /// <summary>
 /// Tool tip drawn as a card: a coloured title, a summary, then sections of lines marked as allowed (✔) or restricted (✖).

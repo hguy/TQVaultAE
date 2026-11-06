@@ -18,7 +18,7 @@ using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;

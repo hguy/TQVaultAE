@@ -3,7 +3,7 @@ using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Scaling;
-using TQVaultAE.GUI.Helpers;
+using TQVaultAE.GUI.Infrastructure;
 
 namespace TQVaultAE.GUI.Components.Character;
 

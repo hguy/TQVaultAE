@@ -3,7 +3,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 
-namespace TQVaultAE.GUI.Tooltip;
+namespace TQVaultAE.GUI.Tooltips;
 
 public class BaseTooltip : Form
 {

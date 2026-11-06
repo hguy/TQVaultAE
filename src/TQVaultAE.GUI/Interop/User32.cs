@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Models;
+namespace TQVaultAE.GUI.Interop;
 
 /// <summary>
 /// Class encapsulating the User messages.
