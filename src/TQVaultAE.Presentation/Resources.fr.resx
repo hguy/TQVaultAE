@@ -1677,4 +1677,67 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
 	<data name="SettingShowInGameValuesTT" xml:space="preserve">
     <value>Applique la variation aléatoire du jeu (graine de l'objet) aux infobulles d'équipement. Avec la vue détaillée, liste aussi chaque valeur tirée.</value>
   </data>
+	<data name="ForgeCapSectionBase" xml:space="preserve">
+    <value>Objet de base</value>
+  </data>
+	<data name="ForgeCapSectionAffixes" xml:space="preserve">
+    <value>Préfixe et suffixe</value>
+  </data>
+	<data name="ForgeCapSectionRelics" xml:space="preserve">
+    <value>Reliques</value>
+  </data>
+	<data name="ForgeCapBaseGear" xml:space="preserve">
+    <value>Arme, bouclier, armure ou bijou uniquement</value>
+  </data>
+	<data name="ForgeCapAnyItem" xml:space="preserve">
+    <value>N'importe quel objet, y compris reliques, charmes et artefacts</value>
+  </data>
+	<data name="ForgeCapNoEpicLegendary" xml:space="preserve">
+    <value>Aucun objet Épique ou Légendaire</value>
+  </data>
+	<data name="ForgeCapEpicLegendary" xml:space="preserve">
+    <value>Objets Épiques et Légendaires autorisés</value>
+  </data>
+	<data name="ForgeCapSameBaseItem" xml:space="preserve">
+    <value>Pris uniquement sur le même objet de base</value>
+  </data>
+	<data name="ForgeCapLevelRequirement" xml:space="preserve">
+    <value>Niveau requis pas plus élevé que l'objet de base</value>
+  </data>
+	<data name="ForgeCapSameGearType" xml:space="preserve">
+    <value>Pris uniquement sur le même type d'équipement</value>
+  </data>
+	<data name="ForgeCapAnyGearType" xml:space="preserve">
+    <value>Pris sur n'importe quel type d'équipement</value>
+  </data>
+	<data name="ForgeCapNotRarerThanBase" xml:space="preserve">
+    <value>Pas plus rare que l'objet de base</value>
+  </data>
+	<data name="ForgeCapNeedsAffix" xml:space="preserve">
+    <value>L'objet matériau doit avoir ce préfixe ou ce suffixe</value>
+  </data>
+	<data name="ForgeCapAnyPart" xml:space="preserve">
+    <value>Utilise n'importe quelle partie d'un objet matériau : base, préfixe, suffixe ou reliques</value>
+  </data>
+	<data name="ForgeCapRelicOnly" xml:space="preserve">
+    <value>Reliques et charmes uniquement</value>
+  </data>
+	<data name="ForgeCapRelicOrSocketed" xml:space="preserve">
+    <value>Reliques, charmes, ou un objet portant une relique sertie</value>
+  </data>
+	<data name="ForgeCapRelicGear" xml:space="preserve">
+    <value>Doit être autorisée sur le type de l'objet de base</value>
+  </data>
+	<data name="ForgeCapAnyRelicSlot" xml:space="preserve">
+    <value>N'importe quel objet ou partie dans les emplacements de relique</value>
+  </data>
+	<data name="ForgeCapSecondRelicTinkerer" xml:space="preserve">
+    <value>Seconde relique uniquement avec le suffixe "{0}"</value>
+  </data>
+	<data name="ForgeCapSecondRelicFree" xml:space="preserve">
+    <value>Seconde relique sur n'importe quel objet</value>
+  </data>
+	<data name="ForgeCapResetOnStricter" xml:space="preserve">
+    <value>Passer à un mode plus strict vide les emplacements</value>
+  </data>
 </root>

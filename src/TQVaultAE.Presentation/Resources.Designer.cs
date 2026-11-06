@@ -1180,6 +1180,195 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Base item.
+        /// </summary>
+        public static string ForgeCapSectionBase {
+            get {
+                return ResourceManager.GetString("ForgeCapSectionBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prefix &amp; suffix.
+        /// </summary>
+        public static string ForgeCapSectionAffixes {
+            get {
+                return ResourceManager.GetString("ForgeCapSectionAffixes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relics.
+        /// </summary>
+        public static string ForgeCapSectionRelics {
+            get {
+                return ResourceManager.GetString("ForgeCapSectionRelics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Weapon, shield, armor or jewellery only.
+        /// </summary>
+        public static string ForgeCapBaseGear {
+            get {
+                return ResourceManager.GetString("ForgeCapBaseGear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Any item, including relics, charms and artifacts.
+        /// </summary>
+        public static string ForgeCapAnyItem {
+            get {
+                return ResourceManager.GetString("ForgeCapAnyItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No Epic or Legendary item.
+        /// </summary>
+        public static string ForgeCapNoEpicLegendary {
+            get {
+                return ResourceManager.GetString("ForgeCapNoEpicLegendary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Epic and Legendary items allowed.
+        /// </summary>
+        public static string ForgeCapEpicLegendary {
+            get {
+                return ResourceManager.GetString("ForgeCapEpicLegendary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taken from the same base item only.
+        /// </summary>
+        public static string ForgeCapSameBaseItem {
+            get {
+                return ResourceManager.GetString("ForgeCapSameBaseItem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Level requirement not above the base item.
+        /// </summary>
+        public static string ForgeCapLevelRequirement {
+            get {
+                return ResourceManager.GetString("ForgeCapLevelRequirement", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taken from the same gear type only.
+        /// </summary>
+        public static string ForgeCapSameGearType {
+            get {
+                return ResourceManager.GetString("ForgeCapSameGearType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Taken from any gear type.
+        /// </summary>
+        public static string ForgeCapAnyGearType {
+            get {
+                return ResourceManager.GetString("ForgeCapAnyGearType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Not rarer than the base item.
+        /// </summary>
+        public static string ForgeCapNotRarerThanBase {
+            get {
+                return ResourceManager.GetString("ForgeCapNotRarerThanBase", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The material item must have that prefix or suffix.
+        /// </summary>
+        public static string ForgeCapNeedsAffix {
+            get {
+                return ResourceManager.GetString("ForgeCapNeedsAffix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use any part of a material item: base, prefix, suffix or relics.
+        /// </summary>
+        public static string ForgeCapAnyPart {
+            get {
+                return ResourceManager.GetString("ForgeCapAnyPart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relics and charms only.
+        /// </summary>
+        public static string ForgeCapRelicOnly {
+            get {
+                return ResourceManager.GetString("ForgeCapRelicOnly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relics, charms, or an item with a socketed relic.
+        /// </summary>
+        public static string ForgeCapRelicOrSocketed {
+            get {
+                return ResourceManager.GetString("ForgeCapRelicOrSocketed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Must be allowed on the base item gear.
+        /// </summary>
+        public static string ForgeCapRelicGear {
+            get {
+                return ResourceManager.GetString("ForgeCapRelicGear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Any item or part in any relic slot.
+        /// </summary>
+        public static string ForgeCapAnyRelicSlot {
+            get {
+                return ResourceManager.GetString("ForgeCapAnyRelicSlot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Second relic only with the "{0}" suffix.
+        /// </summary>
+        public static string ForgeCapSecondRelicTinkerer {
+            get {
+                return ResourceManager.GetString("ForgeCapSecondRelicTinkerer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Second relic on any item.
+        /// </summary>
+        public static string ForgeCapSecondRelicFree {
+            get {
+                return ResourceManager.GetString("ForgeCapSecondRelicFree", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Switching to a stricter mode empties the slots.
+        /// </summary>
+        public static string ForgeCapResetOnStricter {
+            get {
+                return ResourceManager.GetString("ForgeCapResetOnStricter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Allow the use of all types of properties in placeholders.
         /// </summary>
         public static string ForgeGodModeTT {

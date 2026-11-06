@@ -49,6 +49,9 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private readonly SlotView[] Slots;
 	private readonly ForgeRules Rules;
 
+	/// <summary>Cards describing what each mode allows, on the mode radio buttons.</summary>
+	private RichToolTip? modeToolTip;
+
 	private ScalingRadioButton lastMode;
 
 	private static RecordId SoundStricMode = @"Sounds\MONSTERS\GREECE\G_TELKINE\TELEKINEVOICE01.WAV";
@@ -190,22 +193,20 @@ public partial class ForgePanel : UserControl, IScalingControl
 			FontService.GetFont(9.75F, FontStyle.Regular, UIService.Scale);
 
 		scalingRadioButtonGod.Text = Resources.ForgeGodMode;
-		toolTip.SetToolTip(scalingRadioButtonGod, Resources.ForgeGodModeTT);
 		scalingRadioButtonGod.ForeColor = TQColor.Indigo.Color();
 
 		OfTheTinkererTranslation = TranslationService.TranslateXTag("x3tagSuffix01");
 
 		scalingRadioButtonRelax.Text = Resources.ForgeRelaxMode;
-		toolTip.SetToolTip(scalingRadioButtonRelax, string.Format(Resources.ForgeRelaxModeTT, OfTheTinkererTranslation));
 		scalingRadioButtonRelax.ForeColor = TQColor.Aqua.Color();
 
 		scalingRadioButtonStrict.Text = Resources.ForgeStrictMode;
-		toolTip.SetToolTip(scalingRadioButtonStrict, Resources.ForgeStrictModeTT);
 		scalingRadioButtonStrict.ForeColor = TQColor.Yellow.Color();
 
 		scalingRadioButtonGame.Text = Resources.ForgeGameMode;
-		toolTip.SetToolTip(scalingRadioButtonGame, Resources.ForgeGameModeTT);
 		scalingRadioButtonGame.ForeColor = TQColor.Green.Color();
+
+		this.SetModeToolTips();
 
 		scalingCheckBoxHardcore.Text = Resources.GlobalHardcore;
 		toolTip.SetToolTip(scalingCheckBoxHardcore, Resources.ForgeHardcoreTT);
@@ -228,6 +229,70 @@ public partial class ForgePanel : UserControl, IScalingControl
 		c.MouseMove += Forge_MouseMove;
 		c.MouseLeave += Forge_MouseLeave;
 		c.Click += Forge_Click;
+	}
+
+	/// <summary>
+	/// Describes on each mode radio button what the mode allows: one line per check of <see cref="ForgeRules"/>.
+	/// </summary>
+	private void SetModeToolTips()
+	{
+		this.modeToolTip = new RichToolTip(
+			FontService.GetFont(11F, FontStyle.Bold, UIService.Scale),
+			FontService.GetFont(9.5F, FontStyle.Regular, UIService.Scale),
+			FontService.GetFont(10F, FontStyle.Bold, UIService.Scale),
+			UIService.Scale);
+
+		static RichToolTip.Line Allow(string text) => new(text, true);
+		static RichToolTip.Line Limit(string text) => new(text, false);
+		RichToolTip.Section Base(params RichToolTip.Line[] lines) => new(Resources.ForgeCapSectionBase, lines);
+		RichToolTip.Section Affixes(params RichToolTip.Line[] lines) => new(Resources.ForgeCapSectionAffixes, lines);
+		RichToolTip.Section Relics(params RichToolTip.Line[] lines) => new(Resources.ForgeCapSectionRelics, lines);
+		var tinkerer = string.Format(Resources.ForgeCapSecondRelicTinkerer, OfTheTinkererTranslation);
+
+		this.modeToolTip.Set(scalingRadioButtonGame, new RichToolTip.Card(
+			Resources.ForgeGameMode, scalingRadioButtonGame.ForeColor, Resources.ForgeGameModeTT,
+			[
+				Base(Limit(Resources.ForgeCapBaseGear), Limit(Resources.ForgeCapNoEpicLegendary)),
+				Affixes(
+					Limit(Resources.ForgeCapSameBaseItem),
+					Limit(Resources.ForgeCapLevelRequirement),
+					Limit(Resources.ForgeCapSameGearType),
+					Limit(Resources.ForgeCapNotRarerThanBase),
+					Limit(Resources.ForgeCapNoEpicLegendary),
+					Limit(Resources.ForgeCapNeedsAffix)),
+				Relics(Limit(Resources.ForgeCapRelicOnly), Limit(Resources.ForgeCapRelicGear), Limit(tinkerer)),
+			]));
+
+		this.modeToolTip.Set(scalingRadioButtonStrict, new RichToolTip.Card(
+			Resources.ForgeStrictMode, scalingRadioButtonStrict.ForeColor, Resources.ForgeStrictModeTT,
+			[
+				Base(Limit(Resources.ForgeCapBaseGear), Limit(Resources.ForgeCapNoEpicLegendary)),
+				Affixes(
+					Limit(Resources.ForgeCapSameGearType),
+					Limit(Resources.ForgeCapNotRarerThanBase),
+					Limit(Resources.ForgeCapNoEpicLegendary),
+					Limit(Resources.ForgeCapNeedsAffix)),
+				Relics(Limit(Resources.ForgeCapRelicOnly), Limit(Resources.ForgeCapRelicGear), Limit(tinkerer)),
+			],
+			Resources.ForgeCapResetOnStricter));
+
+		this.modeToolTip.Set(scalingRadioButtonRelax, new RichToolTip.Card(
+			Resources.ForgeRelaxMode, scalingRadioButtonRelax.ForeColor, string.Format(Resources.ForgeRelaxModeTT, OfTheTinkererTranslation),
+			[
+				Base(Limit(Resources.ForgeCapBaseGear), Allow(Resources.ForgeCapEpicLegendary)),
+				Affixes(Allow(Resources.ForgeCapAnyGearType), Allow(Resources.ForgeCapEpicLegendary), Limit(Resources.ForgeCapNeedsAffix)),
+				Relics(Allow(Resources.ForgeCapRelicOrSocketed), Limit(Resources.ForgeCapRelicGear), Allow(Resources.ForgeCapSecondRelicFree)),
+			],
+			Resources.ForgeCapResetOnStricter));
+
+		this.modeToolTip.Set(scalingRadioButtonGod, new RichToolTip.Card(
+			Resources.ForgeGodMode, scalingRadioButtonGod.ForeColor, Resources.ForgeGodModeTT,
+			[
+				Base(Allow(Resources.ForgeCapAnyItem)),
+				Affixes(Allow(Resources.ForgeCapAnyPart)),
+				Relics(Allow(Resources.ForgeCapAnyRelicSlot), Allow(Resources.ForgeCapSecondRelicFree)),
+			],
+			Resources.ForgeCapResetOnStricter));
 	}
 
 	private int LevelRequirement(Item item)
@@ -647,6 +712,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 		if (disposing)
 		{
 			this.EndDragCursor();
+			this.modeToolTip?.Dispose();
 			this.panelBackground?.Dispose();
 			this.tableBackground?.Dispose();
 			this.components?.Dispose();
