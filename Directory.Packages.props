@@ -4,7 +4,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AwesomeAssertions" Version="9.4.0" />
-    <PackageVersion Include="CheckGroupBox" Version="1.0.2" />
     <PackageVersion Include="coverlet.collector" Version="8.0.1" />
     <PackageVersion Include="Enums.NET" Version="5.0.0" />
     <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="14.17.2" />

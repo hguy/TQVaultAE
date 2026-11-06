@@ -36,7 +36,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CheckGroupBox" />
 		<PackageReference Include="Enums.NET" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Log4Net.AspNetCore" />
