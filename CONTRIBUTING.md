@@ -2,6 +2,7 @@
 - [Contributing in TQVaultAE](#contributing-in-tqvaultae)
   * [Prerequisite](#prerequisite)
   * [Game file formats](#game-file-formats)
+  * [Driving the app from an AI agent](#driving-the-app-from-an-ai-agent)
   * [Style and format](#style-and-format)
   * [Contributions](#contributions)
     + [What to work on](#what-to-work-on)
@@ -14,6 +15,15 @@ The simple way to do that is to use command `winget install ImageMagick.Q8` befo
 
 ## Game file formats
 Working on the game file readers (`src/TQVaultAE.GameFiles`, used by `src/TQVaultAE.Data` and `src/TQVaultAE.DbCli`)? The `.arc`, `.arz`, text and `.tex` formats, the known pitfalls and the item stat randomization are documented in [Titan Quest Game File Formats](documentation/tq-file-formats.md).
+
+## Driving the app from an AI agent
+Debug builds start an [MCP](https://modelcontextprotocol.io) server inside TQVault, at `http://127.0.0.1:47017/mcp` (loopback only). It lets an AI agent such as Claude Code check UI changes on the running app without screenshots:
+- read windows, vaults, characters and the items in each panel;
+- answer dialogs;
+- drag items through the panels' own code;
+- capture a panel to PNG.
+
+The repository's `.mcp.json` registers it as `tqvault`: start the Debug build, then open Claude Code at the repository root. While automation drives the app, a save guard blocks every write to your saves. Release builds contain none of this. See [Automation endpoint](documentation/AUTOMATION.md).
 
 ## Style and format
 TQVaultAE follows the standard C# format and import order. Refrain from submitting white-space changes mixed-in with your functional changes. 
