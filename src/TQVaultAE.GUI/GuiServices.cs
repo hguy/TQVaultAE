@@ -38,6 +38,7 @@ public sealed class GuiServices
 		, IHighlightService highlightService
 		, IItemDatabaseService itemDatabaseService
 		, IItemExchangeService itemExchangeService
+		, IIconService iconService
 		, IPathIO pathIO
 		, IFileIO fileIO
 		, IDirectoryIO directoryIO
@@ -61,6 +62,7 @@ public sealed class GuiServices
 		this.HighlightService = highlightService;
 		this.ItemDatabaseService = itemDatabaseService;
 		this.ItemExchangeService = itemExchangeService;
+		this.IconService = iconService;
 		this.PathIO = pathIO;
 		this.FileIO = fileIO;
 		this.DirectoryIO = directoryIO;
@@ -85,6 +87,7 @@ public sealed class GuiServices
 	public IHighlightService HighlightService { get; }
 	public IItemDatabaseService ItemDatabaseService { get; }
 	public IItemExchangeService ItemExchangeService { get; }
+	public IIconService IconService { get; }
 	public IPathIO PathIO { get; }
 	public IFileIO FileIO { get; }
 	public IDirectoryIO DirectoryIO { get; }

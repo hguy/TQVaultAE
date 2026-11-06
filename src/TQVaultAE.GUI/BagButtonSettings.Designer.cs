@@ -64,31 +64,30 @@ namespace TQVaultAE.GUI
             this.groupBoxAvailablePictures = new System.Windows.Forms.GroupBox();
             this.tabControlPics = new System.Windows.Forms.TabControl();
             this.tabPageSkills = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsSkills = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridSkills = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageRelics = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsRelics = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridRelics = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageArtifacts = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsArtifacts = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridArtifacts = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageJewellery = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsJewellery = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridJewellery = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageScrolls = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsScrolls = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridScrolls = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPagePotions = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsPotions = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridPotions = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageButtons = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsButtons = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridButtons = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageMisc = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsMisc = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridMisc = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageHelmets = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsHelmets = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridHelmets = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageShields = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsShields = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridShields = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageArmbands = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsArmbands = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridArmbands = new TQVaultAE.GUI.Components.IconGrid();
             this.tabPageGreaves = new System.Windows.Forms.TabPage();
-            this.flowLayoutPanelPicsGreaves = new System.Windows.Forms.FlowLayoutPanel();
+            this.iconGridGreaves = new TQVaultAE.GUI.Components.IconGrid();
             this.scalingLabelDragDropNotice = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.pictureBoxDrag = new System.Windows.Forms.PictureBox();
             this.iconMagnifier = new TQVaultAE.GUI.Components.IconMagnifier();
             this.tableLayoutPanelBottom.SuspendLayout();
             this.flowLayoutPanelSelectedButton.SuspendLayout();
@@ -121,7 +120,6 @@ namespace TQVaultAE.GUI
             this.tabPageShields.SuspendLayout();
             this.tabPageArmbands.SuspendLayout();
             this.tabPageGreaves.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDrag)).BeginInit();
             this.SuspendLayout();
             // 
             // tableLayoutPanelBottom
@@ -561,7 +559,7 @@ namespace TQVaultAE.GUI
             // 
             // tabPageSkills
             // 
-            this.tabPageSkills.Controls.Add(this.flowLayoutPanelPicsSkills);
+            this.tabPageSkills.Controls.Add(this.iconGridSkills);
             this.tabPageSkills.Location = new System.Drawing.Point(4, 27);
             this.tabPageSkills.Name = "tabPageSkills";
             this.tabPageSkills.Size = new System.Drawing.Size(948, 278);
@@ -569,19 +567,19 @@ namespace TQVaultAE.GUI
             this.tabPageSkills.Text = "Skills";
             this.tabPageSkills.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsSkills
+            // iconGridSkills
             // 
-            this.flowLayoutPanelPicsSkills.AutoScroll = true;
-            this.flowLayoutPanelPicsSkills.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsSkills.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsSkills.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelPicsSkills.Name = "flowLayoutPanelPicsSkills";
-            this.flowLayoutPanelPicsSkills.Size = new System.Drawing.Size(948, 278);
-            this.flowLayoutPanelPicsSkills.TabIndex = 3;
+            this.iconGridSkills.AutoScroll = true;
+            this.iconGridSkills.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridSkills.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridSkills.Location = new System.Drawing.Point(0, 0);
+            this.iconGridSkills.Name = "iconGridSkills";
+            this.iconGridSkills.Size = new System.Drawing.Size(948, 278);
+            this.iconGridSkills.TabIndex = 3;
             // 
             // tabPageRelics
             // 
-            this.tabPageRelics.Controls.Add(this.flowLayoutPanelPicsRelics);
+            this.tabPageRelics.Controls.Add(this.iconGridRelics);
             this.tabPageRelics.Location = new System.Drawing.Point(4, 27);
             this.tabPageRelics.Name = "tabPageRelics";
             this.tabPageRelics.Padding = new System.Windows.Forms.Padding(3);
@@ -590,19 +588,19 @@ namespace TQVaultAE.GUI
             this.tabPageRelics.Text = "Relics";
             this.tabPageRelics.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsRelics
+            // iconGridRelics
             // 
-            this.flowLayoutPanelPicsRelics.AutoScroll = true;
-            this.flowLayoutPanelPicsRelics.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsRelics.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsRelics.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanelPicsRelics.Name = "flowLayoutPanelPicsRelics";
-            this.flowLayoutPanelPicsRelics.Size = new System.Drawing.Size(942, 272);
-            this.flowLayoutPanelPicsRelics.TabIndex = 3;
+            this.iconGridRelics.AutoScroll = true;
+            this.iconGridRelics.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridRelics.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridRelics.Location = new System.Drawing.Point(3, 3);
+            this.iconGridRelics.Name = "iconGridRelics";
+            this.iconGridRelics.Size = new System.Drawing.Size(942, 272);
+            this.iconGridRelics.TabIndex = 3;
             // 
             // tabPageArtifacts
             // 
-            this.tabPageArtifacts.Controls.Add(this.flowLayoutPanelPicsArtifacts);
+            this.tabPageArtifacts.Controls.Add(this.iconGridArtifacts);
             this.tabPageArtifacts.Location = new System.Drawing.Point(4, 27);
             this.tabPageArtifacts.Name = "tabPageArtifacts";
             this.tabPageArtifacts.Padding = new System.Windows.Forms.Padding(3);
@@ -611,19 +609,19 @@ namespace TQVaultAE.GUI
             this.tabPageArtifacts.Text = "Artifacts";
             this.tabPageArtifacts.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsArtifacts
+            // iconGridArtifacts
             // 
-            this.flowLayoutPanelPicsArtifacts.AutoScroll = true;
-            this.flowLayoutPanelPicsArtifacts.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsArtifacts.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsArtifacts.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanelPicsArtifacts.Name = "flowLayoutPanelPicsArtifacts";
-            this.flowLayoutPanelPicsArtifacts.Size = new System.Drawing.Size(942, 272);
-            this.flowLayoutPanelPicsArtifacts.TabIndex = 3;
+            this.iconGridArtifacts.AutoScroll = true;
+            this.iconGridArtifacts.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridArtifacts.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridArtifacts.Location = new System.Drawing.Point(3, 3);
+            this.iconGridArtifacts.Name = "iconGridArtifacts";
+            this.iconGridArtifacts.Size = new System.Drawing.Size(942, 272);
+            this.iconGridArtifacts.TabIndex = 3;
             // 
             // tabPageJewellery
             // 
-            this.tabPageJewellery.Controls.Add(this.flowLayoutPanelPicsJewellery);
+            this.tabPageJewellery.Controls.Add(this.iconGridJewellery);
             this.tabPageJewellery.Location = new System.Drawing.Point(4, 27);
             this.tabPageJewellery.Name = "tabPageJewellery";
             this.tabPageJewellery.Size = new System.Drawing.Size(948, 278);
@@ -631,19 +629,19 @@ namespace TQVaultAE.GUI
             this.tabPageJewellery.Text = "Jewellery";
             this.tabPageJewellery.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsJewellery
+            // iconGridJewellery
             // 
-            this.flowLayoutPanelPicsJewellery.AutoScroll = true;
-            this.flowLayoutPanelPicsJewellery.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsJewellery.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsJewellery.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelPicsJewellery.Name = "flowLayoutPanelPicsJewellery";
-            this.flowLayoutPanelPicsJewellery.Size = new System.Drawing.Size(948, 278);
-            this.flowLayoutPanelPicsJewellery.TabIndex = 3;
+            this.iconGridJewellery.AutoScroll = true;
+            this.iconGridJewellery.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridJewellery.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridJewellery.Location = new System.Drawing.Point(0, 0);
+            this.iconGridJewellery.Name = "iconGridJewellery";
+            this.iconGridJewellery.Size = new System.Drawing.Size(948, 278);
+            this.iconGridJewellery.TabIndex = 3;
             // 
             // tabPageScrolls
             // 
-            this.tabPageScrolls.Controls.Add(this.flowLayoutPanelPicsScrolls);
+            this.tabPageScrolls.Controls.Add(this.iconGridScrolls);
             this.tabPageScrolls.Location = new System.Drawing.Point(4, 27);
             this.tabPageScrolls.Name = "tabPageScrolls";
             this.tabPageScrolls.Size = new System.Drawing.Size(948, 278);
@@ -651,19 +649,19 @@ namespace TQVaultAE.GUI
             this.tabPageScrolls.Text = "Scrolls";
             this.tabPageScrolls.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsScrolls
+            // iconGridScrolls
             // 
-            this.flowLayoutPanelPicsScrolls.AutoScroll = true;
-            this.flowLayoutPanelPicsScrolls.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsScrolls.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsScrolls.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelPicsScrolls.Name = "flowLayoutPanelPicsScrolls";
-            this.flowLayoutPanelPicsScrolls.Size = new System.Drawing.Size(948, 278);
-            this.flowLayoutPanelPicsScrolls.TabIndex = 3;
+            this.iconGridScrolls.AutoScroll = true;
+            this.iconGridScrolls.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridScrolls.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridScrolls.Location = new System.Drawing.Point(0, 0);
+            this.iconGridScrolls.Name = "iconGridScrolls";
+            this.iconGridScrolls.Size = new System.Drawing.Size(948, 278);
+            this.iconGridScrolls.TabIndex = 3;
             // 
             // tabPagePotions
             // 
-            this.tabPagePotions.Controls.Add(this.flowLayoutPanelPicsPotions);
+            this.tabPagePotions.Controls.Add(this.iconGridPotions);
             this.tabPagePotions.Location = new System.Drawing.Point(4, 27);
             this.tabPagePotions.Name = "tabPagePotions";
             this.tabPagePotions.Size = new System.Drawing.Size(948, 278);
@@ -671,19 +669,19 @@ namespace TQVaultAE.GUI
             this.tabPagePotions.Text = "Potions";
             this.tabPagePotions.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsPotions
+            // iconGridPotions
             // 
-            this.flowLayoutPanelPicsPotions.AutoScroll = true;
-            this.flowLayoutPanelPicsPotions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsPotions.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsPotions.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelPicsPotions.Name = "flowLayoutPanelPicsPotions";
-            this.flowLayoutPanelPicsPotions.Size = new System.Drawing.Size(948, 278);
-            this.flowLayoutPanelPicsPotions.TabIndex = 3;
+            this.iconGridPotions.AutoScroll = true;
+            this.iconGridPotions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridPotions.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridPotions.Location = new System.Drawing.Point(0, 0);
+            this.iconGridPotions.Name = "iconGridPotions";
+            this.iconGridPotions.Size = new System.Drawing.Size(948, 278);
+            this.iconGridPotions.TabIndex = 3;
             // 
             // tabPageButtons
             // 
-            this.tabPageButtons.Controls.Add(this.flowLayoutPanelPicsButtons);
+            this.tabPageButtons.Controls.Add(this.iconGridButtons);
             this.tabPageButtons.Location = new System.Drawing.Point(4, 27);
             this.tabPageButtons.Name = "tabPageButtons";
             this.tabPageButtons.Size = new System.Drawing.Size(948, 278);
@@ -691,20 +689,20 @@ namespace TQVaultAE.GUI
             this.tabPageButtons.Text = "Buttons";
             this.tabPageButtons.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsButtons
+            // iconGridButtons
             // 
-            this.flowLayoutPanelPicsButtons.AutoScroll = true;
-            this.flowLayoutPanelPicsButtons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsButtons.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsButtons.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelPicsButtons.Name = "flowLayoutPanelPicsButtons";
-            this.flowLayoutPanelPicsButtons.Size = new System.Drawing.Size(948, 278);
-            this.flowLayoutPanelPicsButtons.TabIndex = 3;
+            this.iconGridButtons.AutoScroll = true;
+            this.iconGridButtons.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridButtons.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridButtons.Location = new System.Drawing.Point(0, 0);
+            this.iconGridButtons.Name = "iconGridButtons";
+            this.iconGridButtons.Size = new System.Drawing.Size(948, 278);
+            this.iconGridButtons.TabIndex = 3;
             // 
             // tabPageMisc
             // 
             this.tabPageMisc.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.tabPageMisc.Controls.Add(this.flowLayoutPanelPicsMisc);
+            this.tabPageMisc.Controls.Add(this.iconGridMisc);
             this.tabPageMisc.Location = new System.Drawing.Point(4, 27);
             this.tabPageMisc.Name = "tabPageMisc";
             this.tabPageMisc.Padding = new System.Windows.Forms.Padding(3);
@@ -713,19 +711,19 @@ namespace TQVaultAE.GUI
             this.tabPageMisc.Text = "Misc";
             this.tabPageMisc.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsMisc
+            // iconGridMisc
             // 
-            this.flowLayoutPanelPicsMisc.AutoScroll = true;
-            this.flowLayoutPanelPicsMisc.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsMisc.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsMisc.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanelPicsMisc.Name = "flowLayoutPanelPicsMisc";
-            this.flowLayoutPanelPicsMisc.Size = new System.Drawing.Size(942, 272);
-            this.flowLayoutPanelPicsMisc.TabIndex = 2;
+            this.iconGridMisc.AutoScroll = true;
+            this.iconGridMisc.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridMisc.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridMisc.Location = new System.Drawing.Point(3, 3);
+            this.iconGridMisc.Name = "iconGridMisc";
+            this.iconGridMisc.Size = new System.Drawing.Size(942, 272);
+            this.iconGridMisc.TabIndex = 2;
             // 
             // tabPageHelmets
             // 
-            this.tabPageHelmets.Controls.Add(this.flowLayoutPanelPicsHelmets);
+            this.tabPageHelmets.Controls.Add(this.iconGridHelmets);
             this.tabPageHelmets.Location = new System.Drawing.Point(4, 27);
             this.tabPageHelmets.Name = "tabPageHelmets";
             this.tabPageHelmets.Padding = new System.Windows.Forms.Padding(3);
@@ -734,19 +732,19 @@ namespace TQVaultAE.GUI
             this.tabPageHelmets.Text = "Helmets";
             this.tabPageHelmets.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsHelmets
+            // iconGridHelmets
             // 
-            this.flowLayoutPanelPicsHelmets.AutoScroll = true;
-            this.flowLayoutPanelPicsHelmets.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsHelmets.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsHelmets.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanelPicsHelmets.Name = "flowLayoutPanelPicsHelmets";
-            this.flowLayoutPanelPicsHelmets.Size = new System.Drawing.Size(942, 272);
-            this.flowLayoutPanelPicsHelmets.TabIndex = 3;
+            this.iconGridHelmets.AutoScroll = true;
+            this.iconGridHelmets.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridHelmets.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridHelmets.Location = new System.Drawing.Point(3, 3);
+            this.iconGridHelmets.Name = "iconGridHelmets";
+            this.iconGridHelmets.Size = new System.Drawing.Size(942, 272);
+            this.iconGridHelmets.TabIndex = 3;
             // 
             // tabPageShields
             // 
-            this.tabPageShields.Controls.Add(this.flowLayoutPanelPicsShields);
+            this.tabPageShields.Controls.Add(this.iconGridShields);
             this.tabPageShields.Location = new System.Drawing.Point(4, 27);
             this.tabPageShields.Name = "tabPageShields";
             this.tabPageShields.Padding = new System.Windows.Forms.Padding(3);
@@ -755,19 +753,19 @@ namespace TQVaultAE.GUI
             this.tabPageShields.Text = "Shields";
             this.tabPageShields.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsShields
+            // iconGridShields
             // 
-            this.flowLayoutPanelPicsShields.AutoScroll = true;
-            this.flowLayoutPanelPicsShields.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsShields.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsShields.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanelPicsShields.Name = "flowLayoutPanelPicsShields";
-            this.flowLayoutPanelPicsShields.Size = new System.Drawing.Size(942, 272);
-            this.flowLayoutPanelPicsShields.TabIndex = 4;
+            this.iconGridShields.AutoScroll = true;
+            this.iconGridShields.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridShields.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridShields.Location = new System.Drawing.Point(3, 3);
+            this.iconGridShields.Name = "iconGridShields";
+            this.iconGridShields.Size = new System.Drawing.Size(942, 272);
+            this.iconGridShields.TabIndex = 4;
             // 
             // tabPageArmbands
             // 
-            this.tabPageArmbands.Controls.Add(this.flowLayoutPanelPicsArmbands);
+            this.tabPageArmbands.Controls.Add(this.iconGridArmbands);
             this.tabPageArmbands.Location = new System.Drawing.Point(4, 27);
             this.tabPageArmbands.Name = "tabPageArmbands";
             this.tabPageArmbands.Padding = new System.Windows.Forms.Padding(3);
@@ -776,19 +774,19 @@ namespace TQVaultAE.GUI
             this.tabPageArmbands.Text = "Armbands";
             this.tabPageArmbands.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsArmbands
+            // iconGridArmbands
             // 
-            this.flowLayoutPanelPicsArmbands.AutoScroll = true;
-            this.flowLayoutPanelPicsArmbands.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsArmbands.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsArmbands.Location = new System.Drawing.Point(3, 3);
-            this.flowLayoutPanelPicsArmbands.Name = "flowLayoutPanelPicsArmbands";
-            this.flowLayoutPanelPicsArmbands.Size = new System.Drawing.Size(942, 272);
-            this.flowLayoutPanelPicsArmbands.TabIndex = 5;
+            this.iconGridArmbands.AutoScroll = true;
+            this.iconGridArmbands.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridArmbands.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridArmbands.Location = new System.Drawing.Point(3, 3);
+            this.iconGridArmbands.Name = "iconGridArmbands";
+            this.iconGridArmbands.Size = new System.Drawing.Size(942, 272);
+            this.iconGridArmbands.TabIndex = 5;
             // 
             // tabPageGreaves
             // 
-            this.tabPageGreaves.Controls.Add(this.flowLayoutPanelPicsGreaves);
+            this.tabPageGreaves.Controls.Add(this.iconGridGreaves);
             this.tabPageGreaves.Location = new System.Drawing.Point(4, 27);
             this.tabPageGreaves.Name = "tabPageGreaves";
             this.tabPageGreaves.Size = new System.Drawing.Size(948, 278);
@@ -796,15 +794,15 @@ namespace TQVaultAE.GUI
             this.tabPageGreaves.Text = "Greaves";
             this.tabPageGreaves.UseVisualStyleBackColor = true;
             // 
-            // flowLayoutPanelPicsGreaves
+            // iconGridGreaves
             // 
-            this.flowLayoutPanelPicsGreaves.AutoScroll = true;
-            this.flowLayoutPanelPicsGreaves.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
-            this.flowLayoutPanelPicsGreaves.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanelPicsGreaves.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanelPicsGreaves.Name = "flowLayoutPanelPicsGreaves";
-            this.flowLayoutPanelPicsGreaves.Size = new System.Drawing.Size(948, 278);
-            this.flowLayoutPanelPicsGreaves.TabIndex = 6;
+            this.iconGridGreaves.AutoScroll = true;
+            this.iconGridGreaves.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.iconGridGreaves.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.iconGridGreaves.Location = new System.Drawing.Point(0, 0);
+            this.iconGridGreaves.Name = "iconGridGreaves";
+            this.iconGridGreaves.Size = new System.Drawing.Size(948, 278);
+            this.iconGridGreaves.TabIndex = 6;
             // 
             // scalingLabelDragDropNotice
             // 
@@ -818,17 +816,6 @@ namespace TQVaultAE.GUI
             this.scalingLabelDragDropNotice.TabIndex = 1;
             this.scalingLabelDragDropNotice.Tag = "";
             this.scalingLabelDragDropNotice.Text = "Drag and drop in \"Selected Pictures\" placeholders";
-            // 
-            // pictureBoxDrag
-            // 
-            this.pictureBoxDrag.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pictureBoxDrag.Location = new System.Drawing.Point(0, 0);
-            this.pictureBoxDrag.Name = "pictureBoxDrag";
-            this.pictureBoxDrag.Size = new System.Drawing.Size(32, 32);
-            this.pictureBoxDrag.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBoxDrag.TabIndex = 13;
-            this.pictureBoxDrag.TabStop = false;
-            this.pictureBoxDrag.Visible = false;
             // 
             // iconMagnifier
             // 
@@ -850,7 +837,6 @@ namespace TQVaultAE.GUI
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
             this.ClientSize = new System.Drawing.Size(1047, 680);
             this.Controls.Add(this.iconMagnifier);
-            this.Controls.Add(this.pictureBoxDrag);
             this.Controls.Add(this.groupBoxAvailablePictures);
             this.Controls.Add(this.flowLayoutPanelUpperParts);
             this.Controls.Add(this.flowLayoutPanelSelectedButton);
@@ -875,7 +861,6 @@ namespace TQVaultAE.GUI
             this.Controls.SetChildIndex(this.flowLayoutPanelSelectedButton, 0);
             this.Controls.SetChildIndex(this.flowLayoutPanelUpperParts, 0);
             this.Controls.SetChildIndex(this.groupBoxAvailablePictures, 0);
-            this.Controls.SetChildIndex(this.pictureBoxDrag, 0);
             this.Controls.SetChildIndex(this.iconMagnifier, 0);
             this.tableLayoutPanelBottom.ResumeLayout(false);
             this.tableLayoutPanelBottom.PerformLayout();
@@ -917,7 +902,6 @@ namespace TQVaultAE.GUI
             this.tabPageShields.ResumeLayout(false);
             this.tabPageArmbands.ResumeLayout(false);
             this.tabPageGreaves.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxDrag)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -951,7 +935,7 @@ namespace TQVaultAE.GUI
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelUpperParts;
 		private System.Windows.Forms.GroupBox groupBoxAvailablePictures;
 		private ScalingLabel scalingLabelDragDropNotice;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsMisc;
+		private TQVaultAE.GUI.Components.IconGrid iconGridMisc;
 		private ScalingTextBox scalingTextBoxDebug;
 		private System.Windows.Forms.TabControl tabControlPics;
 		private System.Windows.Forms.TabPage tabPageMisc;
@@ -962,26 +946,25 @@ namespace TQVaultAE.GUI
 		private System.Windows.Forms.TabPage tabPageScrolls;
 		private System.Windows.Forms.TabPage tabPageSkills;
 		private System.Windows.Forms.TabPage tabPageButtons;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsArtifacts;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsRelics;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsJewellery;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsPotions;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsScrolls;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsSkills;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsButtons;
-		private System.Windows.Forms.PictureBox pictureBoxDrag;
+		private TQVaultAE.GUI.Components.IconGrid iconGridArtifacts;
+		private TQVaultAE.GUI.Components.IconGrid iconGridRelics;
+		private TQVaultAE.GUI.Components.IconGrid iconGridJewellery;
+		private TQVaultAE.GUI.Components.IconGrid iconGridPotions;
+		private TQVaultAE.GUI.Components.IconGrid iconGridScrolls;
+		private TQVaultAE.GUI.Components.IconGrid iconGridSkills;
+		private TQVaultAE.GUI.Components.IconGrid iconGridButtons;
 		private ScalingCheckBox scalingCheckBoxNumber;
 		private ScalingCheckBox scalingCheckBoxLabel;
 		private ScalingRadioButton scalingRadioButtonDefaultIcon;
 		private ScalingRadioButton scalingRadioButtonCustomIcon;
 		private System.Windows.Forms.TabPage tabPageHelmets;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsHelmets;
+		private TQVaultAE.GUI.Components.IconGrid iconGridHelmets;
 		private System.Windows.Forms.TabPage tabPageShields;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsShields;
+		private TQVaultAE.GUI.Components.IconGrid iconGridShields;
 		private System.Windows.Forms.TabPage tabPageArmbands;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsArmbands;
+		private TQVaultAE.GUI.Components.IconGrid iconGridArmbands;
 		private System.Windows.Forms.TabPage tabPageGreaves;
-		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelPicsGreaves;
+		private TQVaultAE.GUI.Components.IconGrid iconGridGreaves;
 		private IconMagnifier iconMagnifier;
 	}
 }

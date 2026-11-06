@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿﻿using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Helpers;
 using TQVaultAE.Presentation;
 using System.Collections.ObjectModel;
@@ -6,6 +6,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components;
 using System.Diagnostics;
 using TQVaultAE.Application.Contracts.Services;
+using Cell = TQVaultAE.GUI.Components.IconGrid.Cell;
 
 namespace TQVaultAE.GUI;
 
@@ -16,18 +17,22 @@ public partial class BagButtonSettings : VaultForm
 	private readonly ILogger<BagButtonSettings> Log;
 
 	// Drag & Drop stuff
-	private bool IsDragging = false;
-	private Point DragPosition;
+	private Cell? DraggedCell;
+	private ItemDragCursor? DragCursor;
 
-	// Form object model crossing simplification
-	public readonly List<FlowLayoutPanel> PicsPanelList;
-	public readonly List<GroupBox> GroupBoxList;
-
-	// Remove duplicate
-	List<RecordId> alreadyAddedPics = new();
+	/// <summary>Grid showing the icons of each category.</summary>
+	private readonly Dictionary<IconCategory, IconGrid> GridByCategory;
 
 	// From Database
-	private ReadOnlyCollection<IconInfo> Pictures;
+	private ReadOnlyCollection<IconInfo> Pictures = ReadOnlyCollection<IconInfo>.Empty;
+
+	/// <summary>Icon picture for each resource id, from the first icon that has it.</summary>
+	private readonly Dictionary<RecordId, Cell> CellById = new();
+
+	// Pictures chosen for the button, kept while the default icon is shown.
+	private Cell? SelectedOn;
+	private Cell? SelectedOff;
+	private Cell? SelectedOver;
 
 	private BagButtonIconInfo _DefaultBagButtonIconInfo = new()
 	{
@@ -148,26 +153,32 @@ public partial class BagButtonSettings : VaultForm
 		this.scalingTextBoxDebug.Visible = true;
 #endif
 
-		this.PicsPanelList = new()
+		this.GridByCategory = new()
 		{
-			this.flowLayoutPanelPicsArtifacts,
-			this.flowLayoutPanelPicsButtons,
-			this.flowLayoutPanelPicsJewellery,
-			this.flowLayoutPanelPicsMisc,
-			this.flowLayoutPanelPicsPotions,
-			this.flowLayoutPanelPicsRelics,
-			this.flowLayoutPanelPicsScrolls,
-			this.flowLayoutPanelPicsSkills,
+			[IconCategory.Artifacts] = this.iconGridArtifacts,
+			[IconCategory.Buttons] = this.iconGridButtons,
+			[IconCategory.Jewellery] = this.iconGridJewellery,
+			[IconCategory.Misc] = this.iconGridMisc,
+			[IconCategory.Potions] = this.iconGridPotions,
+			[IconCategory.Relics] = this.iconGridRelics,
+			[IconCategory.Scrolls] = this.iconGridScrolls,
+			[IconCategory.Skills] = this.iconGridSkills,
+			[IconCategory.Helmets] = this.iconGridHelmets,
+			[IconCategory.Shields] = this.iconGridShields,
+			[IconCategory.Armbands] = this.iconGridArmbands,
+			[IconCategory.Greaves] = this.iconGridGreaves,
 		};
 
-		this.GroupBoxList = new()
+		foreach (var grid in this.GridByCategory.Values)
 		{
-			groupBoxOnBitmap,
-			groupBoxOffBitmap,
-			groupBoxOverBitmap,
-			groupBoxSimpleImage
-		};
+			// Magnifier
+			grid.HoverChanged += this.Grid_HoverChanged;
 
+			// Drag & Drop events
+			grid.MouseDown += this.Grid_MouseDown;
+			grid.MouseMove += this.Grid_MouseMove;
+			grid.MouseUp += this.Grid_MouseUp;
+		}
 	}
 
 	private void ApplySelectedBagPath()
@@ -180,33 +191,73 @@ public partial class BagButtonSettings : VaultForm
 		);
 	}
 
-	private void BagButtonSettings_Load(object sender, EventArgs e)
+	private async void BagButtonSettings_Load(object sender, EventArgs e)
 	{
-		this.Pictures = this.iconService.GetIconDatabase();// Singleton
-
-		ApplyIconInfo();
-
 		if (!IsLoaded)
 		{
-
 			TogglePicturePickup();
 
-			this.PicsPanelList.ForEach(p => p.SuspendLayout());
+			// The icons are usually loaded in the background after startup; until then the form shows without them.
+			var watch = Stopwatch.StartNew();
+			this.groupBoxAvailablePictures.Enabled = false;
+			this.UseWaitCursor = true;
+			try
+			{
+				this.Pictures = await this.iconService.GetIconDatabaseAsync();
+			}
+			catch (Exception ex)
+			{
+				this.Log.LogError(ex, "Failed to load the bag button icons");
+			}
+			finally
+			{
+				this.UseWaitCursor = false;
+				this.groupBoxAvailablePictures.Enabled = true;
+			}
 
-			this.SuspendLayout();
+			if (this.IsDisposed)
+				return;
 
-			foreach (var pic in this.Pictures) AddPicture(pic);
-
-			this.PicsPanelList.ForEach(p => p.ResumeLayout(false));
-			this.PicsPanelList.ForEach(p => p.PerformLayout());
-
-			DisplayPictures();
-
-			this.ResumeLayout(false);
-			this.PerformLayout();
+			long waited = watch.ElapsedMilliseconds;
+			this.FillGrids();
+			this.DisplayPictures();
+			this.Log.LogInformation("Bag button settings ready in {Elapsed} ms ({Waited} ms waiting for the icons, {Count} icons)"
+				, watch.ElapsedMilliseconds, waited, this.CellById.Count);
 
 			IsLoaded = true;
 		}
+
+		ApplyIconInfo();
+	}
+
+	/// <summary>
+	/// Puts each picture of each icon in the grid of its category, once.
+	/// </summary>
+	/// <remarks>An icon may use the same resource for several states, and several icons the same resource.</remarks>
+	private void FillGrids()
+	{
+		var cells = this.GridByCategory.Keys.ToDictionary(category => category, _ => new List<Cell>());
+
+		foreach (var info in this.Pictures)
+		{
+			Add(info.Off, info.OffBitmap);
+			Add(info.On, info.OnBitmap);
+			Add(info.Over, info.OverBitmap);
+
+			void Add(RecordId? id, Bitmap? bmp)
+			{
+				if (RecordId.IsNullOrEmpty(id) || bmp is null || this.CellById.ContainsKey(id!))
+					return;
+
+				var cell = new Cell(info, id!, bmp);
+				this.CellById.Add(id!, cell);
+				if (cells.TryGetValue(info.Category, out var list))
+					list.Add(cell);
+			}
+		}
+
+		foreach (var (category, grid) in this.GridByCategory)
+			grid.SetCells(cells[category]);
 	}
 
 	/// <summary>
@@ -214,13 +265,15 @@ public partial class BagButtonSettings : VaultForm
 	/// </summary>
 	private void ApplyIconInfo()
 	{
-		ResetImagePicker();
-
 		var info = _CurrentBagButton.Sack.BagButtonIconInfo;
 
 		if (info is null)
 			info = _DefaultBagButtonIconInfo;
 
+		// Apply previously saved icons
+		this.SelectedOn = CellOf(info.On);
+		this.SelectedOff = CellOf(info.Off);
+		this.SelectedOver = CellOf(info.Over);
 
 		this.scalingTextBoxLabel.Text = info.Label;
 
@@ -236,44 +289,37 @@ public partial class BagButtonSettings : VaultForm
 		if (info.DisplayMode == BagButtonDisplayMode.Default)
 			this.scalingRadioButtonDefaultIcon.Checked = true;
 
-		// Adjust Simple pickup or Detailed => Goes Detailed if non Default, user can change pickup view afterward
-		if (!this.scalingRadioButtonDefaultIcon.Checked)
-		{
-			// Apply previously saved icons
-			var prevOn = this.Pictures.Where(p => p.Own(info.On)).FirstOrDefault();
-			var prevOff = this.Pictures.Where(p => p.Own(info.Off)).FirstOrDefault();
-			var prevOver = this.Pictures.Where(p => p.Own(info.Over)).FirstOrDefault();
+		this.ShowSelection();
 
-			if (prevOn is not null)
-			{
-				this.pictureBoxOn.Image = prevOn.OnBitmap;
-				this.pictureBoxOn.Tag = prevOn;
-			}
-
-			if (prevOff is not null)
-			{
-				this.pictureBoxOff.Image = this.pictureBoxSimple.Image = prevOff.OffBitmap;
-				this.pictureBoxOff.Tag = this.pictureBoxSimple.Tag = prevOff;
-			}
-
-			if (prevOver is not null)
-			{
-				this.pictureBoxOver.Image = prevOver.OffBitmap;
-				this.pictureBoxOver.Tag = prevOver;
-			}
-
-			return;
-		}
+		Cell? CellOf(RecordId? id)
+			=> !RecordId.IsNullOrEmpty(id) && this.CellById.TryGetValue(id!, out var cell) ? cell : null;
 	}
 
-	private void ResetImagePicker()
+	/// <summary>
+	/// Shows the chosen pictures in the placeholders, or the default bag pictures when the default icon is used.
+	/// </summary>
+	private void ShowSelection()
 	{
-		// Reset image picker
-		this.pictureBoxOn.Image = this.pictureBoxOff.Image =
-			this.pictureBoxSimple.Image = this.pictureBoxOver.Image = null;
+		if (this.scalingRadioButtonDefaultIcon.Checked)
+		{
+			this.pictureBoxOn.Image = Resources.inventorybagup01;
+			this.pictureBoxOff.Image = this.pictureBoxSimple.Image = Resources.inventorybagdown01;
+			this.pictureBoxOver.Image = Resources.inventorybagover01;
+			return;
+		}
 
-		this.pictureBoxOn.Tag = this.pictureBoxOff.Tag =
-			this.pictureBoxSimple.Tag = this.pictureBoxOver.Tag = null;
+		this.pictureBoxOn.Image = this.SelectedOn?.Bitmap;
+		this.pictureBoxOff.Image = this.pictureBoxSimple.Image = this.SelectedOff?.Bitmap;
+		this.pictureBoxOver.Image = this.SelectedOver?.Bitmap;
+	}
+
+	/// <summary>Picture chosen for the placeholder <paramref name="pictureBox"/>.</summary>
+	private Cell? SelectionOf(object? pictureBox)
+	{
+		if (pictureBox == this.pictureBoxOn) return this.SelectedOn;
+		if (pictureBox == this.pictureBoxOff || pictureBox == this.pictureBoxSimple) return this.SelectedOff;
+		if (pictureBox == this.pictureBoxOver) return this.SelectedOver;
+		return null;
 	}
 
 	void TogglePicturePickup()
@@ -296,280 +342,183 @@ public partial class BagButtonSettings : VaultForm
 
 	private void DisplayPictures()
 	{
-		this.PicsPanelList.ForEach(p => p.SuspendLayout());
-
-		this.PicsPanelList.ForEach(p => p.ProcessAllControls(pb => DisplayPicture(pb)));
-
-		this.PicsPanelList.ForEach(p => p.ResumeLayout(false));
-		this.PicsPanelList.ForEach(p => p.PerformLayout());
+		// Simple mode shows the Off picture of each icon only; the others come with it.
+		Func<Cell, bool>? filter = this.radioButtonPictureSimple.Checked ? cell => cell.Id == cell.Info.Off : null;
+		foreach (var grid in this.GridByCategory.Values)
+			grid.Filter = filter;
 	}
 
-	private void DisplayPicture(Control picturebox)
+	private void CherryPickIconSimpleMode(IconInfo info)
 	{
-		var pb = picturebox as PictureBox;
-		var info = pb.Tag as IconInfo;
-		var resourceid = pb.Image.Tag as RecordId;
+		this.SelectedOff = PictureOf(info.Off, info.OffBitmap);
+		this.SelectedOn = PictureOf(info.On, info.OnBitmap);// May be missing on rare exception (TEX Filename rule not consitent)
+		// Apply only if different
+		this.SelectedOver = info.IsOverSameAsOthers ? null : PictureOf(info.Over, info.OverBitmap);
 
-		if (this.radioButtonPictureSimple.Checked)
+		Cell? PictureOf(RecordId? id, Bitmap? bmp)
+			=> RecordId.IsNullOrEmpty(id) || bmp is null ? null : new Cell(info, id!, bmp);
+	}
+
+	#region Magnifier
+
+	private void Grid_HoverChanged(object? sender, Cell? cell)
+	{
+		if (this.DraggedCell is not null || sender is not IconGrid grid)
+			return;
+
+		if (cell is null)
 		{
-			pb.Visible = (resourceid == info.Off); // Display Off pics only for Simple mode
+			this.iconMagnifier.Visible = false;
 			return;
 		}
 
-		pb.Visible = true;// Display all
-	}
-
-
-	private void AddPicture(IconInfo info)
-	{
-		if (info.Off is not null)
-			AddPicture(info, info.OffBitmap, info.Off);
-
-		if (info.On is not null)
-			AddPicture(info, info.OnBitmap, info.On);
-
-		if (info.Over is not null)
-			AddPicture(info, info.OverBitmap, info.Over);
-	}
-
-
-	private void AddPicture(IconInfo info, Bitmap bmp, RecordId resourceId)
-	{
-		if (alreadyAddedPics.Contains(resourceId)) return;// Because an instance of IconInfo may contain resourceId multiple time
-
-		if (bmp is not null)
-		{
-			var picOff = new PictureBox()
-			{
-				SizeMode = PictureBoxSizeMode.Zoom, // "Zoom" ensure aspect ratio on resize
-				Size = new Size(32, 32), // force image size for picking. Source Bmp may vary
-				Image = bmp,
-				Tag = info,
-				BorderStyle = BorderStyle.FixedSingle,
-			};
-
-			bmp.Tag = resourceId;
-
-			// Magnifier
-			picOff.MouseEnter += PicOff_MouseEnter;
-			picOff.MouseLeave += PicOff_MouseLeave;
-
-
-			// Drag & Drop events
-			picOff.MouseDown += PicOff_MouseDown;
-			picOff.MouseMove += PicOff_MouseMove;
-			picOff.MouseUp += PicOff_MouseUp;
-
-			// Allocate per category
-			switch (info.Category)
-			{
-				case IconCategory.Misc:
-					this.flowLayoutPanelPicsMisc.Controls.Add(picOff);
-					break;
-				case IconCategory.Artifacts:
-					this.flowLayoutPanelPicsArtifacts.Controls.Add(picOff);
-					break;
-				case IconCategory.Relics:
-					this.flowLayoutPanelPicsRelics.Controls.Add(picOff);
-					break;
-				case IconCategory.Jewellery:
-					this.flowLayoutPanelPicsJewellery.Controls.Add(picOff);
-					break;
-				case IconCategory.Potions:
-					this.flowLayoutPanelPicsPotions.Controls.Add(picOff);
-					break;
-				case IconCategory.Scrolls:
-					this.flowLayoutPanelPicsScrolls.Controls.Add(picOff);
-					break;
-				case IconCategory.Skills:
-					this.flowLayoutPanelPicsSkills.Controls.Add(picOff);
-					break;
-				case IconCategory.Buttons:
-					this.flowLayoutPanelPicsButtons.Controls.Add(picOff);
-					break;
-				case IconCategory.Helmets:
-					this.flowLayoutPanelPicsHelmets.Controls.Add(picOff);
-					break;
-				case IconCategory.Shields:
-					this.flowLayoutPanelPicsShields.Controls.Add(picOff);
-					break;
-				case IconCategory.Armbands:
-					this.flowLayoutPanelPicsArmbands.Controls.Add(picOff);
-					break;
-				case IconCategory.Greaves:
-					this.flowLayoutPanelPicsGreaves.Controls.Add(picOff);
-					break;
-			}
-			alreadyAddedPics.Add(resourceId);
-		}
-	}
-
-	private void CherryPickIconSimpleMode(IconInfo info, Image bmp)
-	{
-		pictureBoxSimple.Image = pictureBoxOff.Image = bmp;// Which is Off
-		pictureBoxSimple.Image.Tag = pictureBoxOff.Image.Tag = info.Off;// Which is Off
-
-		pictureBoxSimple.Tag = pictureBoxOver.Tag = pictureBoxOff.Tag = pictureBoxOn.Tag = info;
-
-		pictureBoxOn.Image = info.OnBitmap;
-		if (pictureBoxOn.Image is not null)// May happen on rare exception (TEX Filename rule not consitent)
-			pictureBoxOn.Image.Tag = info.On;
-
-		// Apply only if different
-		if (info.IsOverSameAsOthers)
-		{
-			pictureBoxOver.Image = null;
-		}
-		else
-		{
-			pictureBoxOver.Image = info.OverBitmap;
-			if (pictureBoxOver.Image is not null)
-				pictureBoxOver.Image.Tag = info.Over;
-		}
+		var bounds = grid.BoundsOf(cell);
+		this.ShowMagnifier(cell, grid.PointToScreen(bounds.Location), bounds.Height);
 	}
 
 	private void PicOff_MouseEnter(object sender, EventArgs e)
 	{
-		if (IsDragging) return;
+		if (this.DraggedCell is not null) return;
 		// No magnifier from icon placeholders for default icon
-		if (this.scalingRadioButtonDefaultIcon.Checked
-		    && (sender == this.pictureBoxOff
-		        || sender == this.pictureBoxOn
-		        || sender == this.pictureBoxOver
-		        || sender == this.pictureBoxSimple)
-		   ) return;
+		if (this.scalingRadioButtonDefaultIcon.Checked) return;
 
+		var picB = (PictureBox)sender;
+		var cell = this.SelectionOf(picB);
+		if (cell is null) return;
 
-		var picB = sender as PictureBox;
-
-		if (picB.Image is null) return;
-
-		var picFilePath = picB.Image.Tag as RecordId;
-		var picName = this.PathIO.GetFileNameWithoutExtension(picFilePath.Raw);
-		picName = picName[0] + new string(picName.ToLower().Skip(1).ToArray());// Titlecase
-		var info = picB.Tag as IconInfo;
-
-		// Find original size
-		Size? orig = null;
-		if (info.On == picFilePath) orig = info?.OnBitmap?.Size;
-		else if (info.Off == picFilePath) orig = info?.OffBitmap?.Size;
-		else if (info.Over == picFilePath) orig = info?.OverBitmap?.Size;
-
-		// Compute Position of Magnifier relative to picB
-		var loc = this.PointToClient(picB.PointToScreen(Point.Empty));
-		this.iconMagnifier.Location = new Point(loc.X, loc.Y + 32);// Locate below icon
-
-		this.iconMagnifier.pictureBox.Image = picB.Image;
-		this.iconMagnifier.scalingLabelFilename.Text = picName;
-		this.iconMagnifier.scalingLabelSize.Text = orig is not null ? string.Format("{0} x {1}", orig?.Width, orig?.Height) : string.Empty;
-
-		this.iconMagnifier.Visible = true;
+		this.ShowMagnifier(cell, picB.PointToScreen(Point.Empty), picB.Height);
 	}
 
 	private void PicOff_MouseLeave(object sender, EventArgs e)
 	{
-		if (IsDragging) return;
+		if (this.DraggedCell is not null) return;
 
 		this.iconMagnifier.Visible = false;
 	}
 
+	/// <summary>Shows <paramref name="cell"/> enlarged, below the icon at <paramref name="screenLocation"/>.</summary>
+	private void ShowMagnifier(Cell cell, Point screenLocation, int iconHeight)
+	{
+		var picName = this.PathIO.GetFileNameWithoutExtension(cell.Id.Raw);
+		if (picName.Length > 0)
+			picName = picName[0] + picName[1..].ToLower();// Titlecase
+
+		var loc = this.PointToClient(screenLocation);
+		this.iconMagnifier.Location = new Point(loc.X, loc.Y + iconHeight);// Locate below icon
+
+		this.iconMagnifier.pictureBox.Image = cell.Bitmap;
+		this.iconMagnifier.scalingLabelFilename.Text = picName;
+		this.iconMagnifier.scalingLabelSize.Text = string.Format("{0} x {1}", cell.Bitmap.Width, cell.Bitmap.Height);
+
+		this.iconMagnifier.Visible = true;
+	}
+
+	#endregion
+
 	#region Drag & Drop
 
-	private void PicOff_MouseDown(object sender, MouseEventArgs e)
+	private void Grid_MouseDown(object? sender, MouseEventArgs e)
 	{
-		var picB = sender as PictureBox;
-		var info = picB.Tag as IconInfo;
+		if (sender is not IconGrid grid || grid.CellAt(e.Location) is not { } cell)
+			return;
 
-		var bmp = info.OffBitmap;
+		this.iconMagnifier.Visible = false;
 
 		// Auto assign on Right Click
 		if (e.Button == MouseButtons.Right)
 		{
-			CherryPickIconSimpleMode(info, bmp);
+			CherryPickIconSimpleMode(cell.Info);
 
 			this.scalingRadioButtonCustomIcon.Checked = true;
+			this.ShowSelection();
 
-			UpdateTextBoxDebug(bmp);
+			UpdateTextBoxDebug(this.SelectedOff);
 
 			return;
 		}
 
-		IsDragging = true;
-		pictureBoxDrag.Location = this.PointToClient(Cursor.Position);
-		pictureBoxDrag.Image = picB.Image;
-		pictureBoxDrag.Tag = info;
-		pictureBoxDrag.Visible = true;
+		if (e.Button != MouseButtons.Left)
+			return;
+
+		// The dragged picture is the mouse cursor: Windows moves it, nothing is repainted.
+		this.DraggedCell = cell;
+		float scale = (float)IconGrid.IconSize / Math.Max(cell.Bitmap.Width, cell.Bitmap.Height);
+		this.DragCursor = ItemDragCursor.Create(cell.Bitmap, scale);
+		if (this.DragCursor is not null)
+			Cursor.Current = grid.Cursor = this.DragCursor.Cursor;
 	}
 
-	private void PicOff_MouseMove(object sender, MouseEventArgs e)
+	private void Grid_MouseMove(object? sender, MouseEventArgs e)
 	{
-		if (IsDragging)
-		{
-			DragPosition = this.PointToClient(Cursor.Position);
-			pictureBoxDrag.Location = new Point(DragPosition.X - 5, DragPosition.Y - 5);// Slight delta
-		}
+		// The grid has the mouse capture during the drag, so the cursor is not set back by the controls below it.
+		if (this.DragCursor is not null)
+			Cursor.Current = this.DragCursor.Cursor;
 	}
 
-	private void PicOff_MouseUp(object sender, MouseEventArgs e)
+	private void Grid_MouseUp(object? sender, MouseEventArgs e)
 	{
-		PictureBox picB = sender as PictureBox;
-		Image bmp = null;
-		IconInfo info = null;
-
-		IsDragging = false;
-		pictureBoxDrag.Visible = false;
-
-		info = pictureBoxDrag.Tag as IconInfo;
-		bmp = pictureBoxDrag.Image;
+		var cell = this.DraggedCell;
+		this.EndDrag(sender as IconGrid);
+		if (cell is null || e.Button != MouseButtons.Left)
+			return;
 
 		var found = flowLayoutPanelPicturePickup.GetChildAtPoint(
 			flowLayoutPanelPicturePickup.PointToClient(Cursor.Position)
 			, GetChildAtPointSkip.Invisible | GetChildAtPointSkip.Transparent
 		);
 
+		bool dropped = false;
 		if (this.radioButtonPictureDetailed.Checked)
 		{
+			// The placeholder takes the dropped picture itself.
 			if (found == this.groupBoxOnBitmap)
 			{
-				pictureBoxOn.Image = bmp;
-				pictureBoxOn.Tag = info;
-				pictureBoxOn.Image.Tag = info.On;
+				this.SelectedOn = cell;
+				dropped = true;
 			}
 			if (found == this.groupBoxOffBitmap)
 			{
-				pictureBoxOff.Image = bmp;
-				pictureBoxOff.Tag = info;
-				pictureBoxOff.Image.Tag = info.Off;
+				this.SelectedOff = cell;
+				dropped = true;
 			}
 			if (found == this.groupBoxOverBitmap)
 			{
-				pictureBoxOver.Image = bmp;
-				pictureBoxOver.Tag = info;
-				pictureBoxOver.Image.Tag = info.Over;
+				this.SelectedOver = cell;
+				dropped = true;
 			}
 		}
 
-		if (this.radioButtonPictureSimple.Checked)
+		if (this.radioButtonPictureSimple.Checked && found == this.groupBoxSimpleImage)
 		{
-			if (found == this.groupBoxSimpleImage)
-			{
-				CherryPickIconSimpleMode(info, bmp);
-			}
+			CherryPickIconSimpleMode(cell.Info);
+			dropped = true;
 		}
 
-		if (found is not null)
+		if (dropped)
 		{
 			this.scalingRadioButtonCustomIcon.Checked = true;
-			UpdateTextBoxDebug(bmp);
+			this.ShowSelection();
+			UpdateTextBoxDebug(cell);
 		}
+	}
+
+	private void EndDrag(IconGrid? grid)
+	{
+		this.DraggedCell = null;
+		if (grid is not null)
+			grid.Cursor = Cursors.Default;
+		Cursor.Current = Cursors.Default;
+		this.DragCursor?.Dispose();
+		this.DragCursor = null;
 	}
 
 	#endregion
 
 	[Conditional("DEBUG")]
-	private void UpdateTextBoxDebug(Image bmp)
+	private void UpdateTextBoxDebug(Cell? cell)
 	{
-		this.scalingTextBoxDebug.Text = bmp.Tag.ToString() + $" - ({bmp.Size.Width}x{bmp.Size.Height})";
+		if (cell is null) return;
+		this.scalingTextBoxDebug.Text = cell.Id.ToString() + $" - ({cell.Bitmap.Size.Width}x{cell.Bitmap.Size.Height})";
 	}
 
 	private void radioButtonPictureSimple_CheckedChanged(object sender, EventArgs e)
@@ -583,8 +532,8 @@ public partial class BagButtonSettings : VaultForm
 		var dispmode = GetDisplayMode();
 
 		// Validation
-		if (this.pictureBoxOff.Image is null || this.pictureBoxOn.Image is null
-		                                     || (dispmode.HasFlag(BagButtonDisplayMode.Label) && string.IsNullOrWhiteSpace(this.scalingTextBoxLabel.Text)))
+		if ((dispmode != BagButtonDisplayMode.Default && (this.SelectedOff is null || this.SelectedOn is null))
+		    || (dispmode.HasFlag(BagButtonDisplayMode.Label) && string.IsNullOrWhiteSpace(this.scalingTextBoxLabel.Text)))
 		{
 			MessageBox.Show(
 				Resources.BagButtonSettingsValidationMessage,
@@ -616,9 +565,9 @@ public partial class BagButtonSettings : VaultForm
 			{
 				DisplayMode = dispmode,
 				Label = this.scalingTextBoxLabel.Text.Trim(),
-				Off = this.pictureBoxOff.Image.Tag as RecordId,
-				On = this.pictureBoxOn.Image.Tag as RecordId,
-				Over = this.pictureBoxOver?.Image?.Tag as RecordId,
+				Off = this.SelectedOff!.Id,
+				On = this.SelectedOn!.Id,
+				Over = this.SelectedOver?.Id,
 			};
 
 			this._CurrentBagButton.Sack.BagButtonIconInfo = save;
@@ -662,11 +611,8 @@ public partial class BagButtonSettings : VaultForm
 		{
 			this.scalingCheckBoxLabel.Checked =
 				this.scalingCheckBoxNumber.Checked = false;
-
-			this.pictureBoxOn.Image = Resources.inventorybagup01;
-			this.pictureBoxOff.Image = this.pictureBoxSimple.Image = Resources.inventorybagdown01;
-			this.pictureBoxOver.Image = Resources.inventorybagover01;
 		}
-	}
 
+		this.ShowSelection();
+	}
 }
