@@ -51,11 +51,6 @@ public partial class MainForm : Form
 	/// </summary>
 	private int lastSearchPosition = -1;
 
-	/// <summary>
-	/// Search state - last file type searched
-	/// </summary>
-	private CompressedFileType? lastFileType;
-
 	#region MainForm
 
 	/// <summary>
@@ -1227,7 +1222,6 @@ public partial class MainForm : Form
 		if (key.Normalized.Contains(searchText, noCase))
 		{
 			this.lastSearchPosition = index;
-			this.lastFileType = null;
 			NavigateTo(node.Name);
 			this.toolStripStatusLabel.Text = $"Found at: {key}";
 			return true;
@@ -1237,7 +1231,6 @@ public partial class MainForm : Form
 		if (tag.Text.Contains(searchText, noCase))
 		{
 			this.lastSearchPosition = index;
-			this.lastFileType = null;
 			NavigateTo(node.Name);
 			this.toolStripStatusLabel.Text = $"Found in: {key}";
 			return true;
@@ -1247,7 +1240,6 @@ public partial class MainForm : Form
 		if (tag.RecordText.Any(line => line.Contains(searchText, noCase)))
 		{
 			this.lastSearchPosition = index;
-			this.lastFileType = null;
 			NavigateTo(node.Name);
 			this.toolStripStatusLabel.Text = $"Found in: {key}";
 			return true;
@@ -1267,7 +1259,6 @@ public partial class MainForm : Form
 						if (variable.ToString().Contains(searchText, noCase))
 						{
 							this.lastSearchPosition = index;
-							this.lastFileType = CompressedFileType.ArzFile;
 							NavigateTo(node.Name);
 							this.toolStripStatusLabel.Text = $"Found in: {key}";
 							return true;
