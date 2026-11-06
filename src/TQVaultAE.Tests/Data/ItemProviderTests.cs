@@ -180,7 +180,7 @@ public class ItemProviderTests
 	[InlineData("Value: {0}", null, null, null, "Value: ")] // null param becomes empty
 	[InlineData("Damage: {0}", 100, null, null, "Damage: 100")]
 	[InlineData("Multiplier: {0:F2}", 1.5, null, null, "Multiplier: 1.50")]
-	public void Format_ReturnsCorrectFormattedString(string formatSpec, object param1, object param2, object param3, string expected)
+	public void Format_ReturnsCorrectFormattedString(string formatSpec, object? param1, object? param2, object? param3, string expected)
 	{
 		// Act
 		var result = _provider.Format(formatSpec, param1, param2, param3);

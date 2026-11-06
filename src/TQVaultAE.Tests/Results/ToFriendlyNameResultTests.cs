@@ -37,7 +37,7 @@ public class ToFriendlyNameResultTests
 	[InlineData("   ")]
 	[InlineData("\t")]
 	[InlineData("\n")]
-	public void FulltextIsMatch_WithInvalidSearch_ReturnsFalse(string search)
+	public void FulltextIsMatch_WithInvalidSearch_ReturnsFalse(string? search)
 	{
 		// Arrange
 		var result = CreateMinimalResult();
@@ -53,7 +53,7 @@ public class ToFriendlyNameResultTests
 	[InlineData(null)]
 	[InlineData("")]
 	[InlineData("   ")]
-	public void FulltextIsMatchIndexOf_WithInvalidSearch_ReturnsFalse(string search)
+	public void FulltextIsMatchIndexOf_WithInvalidSearch_ReturnsFalse(string? search)
 	{
 		// Arrange
 		var result = CreateMinimalResult();
@@ -83,7 +83,7 @@ public class ToFriendlyNameResultTests
 	[InlineData(null)]
 	[InlineData("")]
 	[InlineData("   ")]
-	public void FulltextIsMatchRegex_WithInvalidPattern_ReturnsFalse(string pattern)
+	public void FulltextIsMatchRegex_WithInvalidPattern_ReturnsFalse(string? pattern)
 	{
 		// Arrange
 		var result = CreateMinimalResult();

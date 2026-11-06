@@ -91,7 +91,7 @@ public sealed class ArzDatabaseTests : IDisposable
 	[Fact]
 	public void ReadMany_Ordered_PreservesInputOrderAndAppliesPredicate()
 	{
-		var result = this._db.ReadMany(this._db.Records, r => r.Info.Class == "Bulk", ordered: true, maxDegreeOfParallelism: 8).ToList();
+		var result = this._db.ReadMany(this._db.Records, r => r.Info.Class == "Bulk", ordered: true, maxDegreeOfParallelism: 8, cancellationToken: TestContext.Current.CancellationToken).ToList();
 
 		result.Select(r => (int)r.Get("n")!.Values[0]).Should().Equal(Enumerable.Range(0, 50));
 	}
@@ -99,7 +99,7 @@ public sealed class ArzDatabaseTests : IDisposable
 	[Fact]
 	public void ReadMany_Unordered_ReturnsEveryRecordOnce()
 	{
-		var ids = this._db.ReadMany(this._db.Records).Select(r => r.Info.Index).ToList();
+		var ids = this._db.ReadMany(this._db.Records, cancellationToken: TestContext.Current.CancellationToken).Select(r => r.Info.Index).ToList();
 
 		ids.Should().HaveCount(52).And.OnlyHaveUniqueItems();
 	}
