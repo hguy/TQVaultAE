@@ -624,7 +624,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 
 			// Find the slot which is under the drag item
 			Rectangle rect = this.FindAllEquipmentCells(cellRectangle);
-			if (rect != null)
+			if (!rect.IsEmpty)
 			{
 				Point rectUL = this.CellTopLeft(rect.Location);
 				Point rectBR = this.CellBottomRight(new Point(rect.Right - 1, rect.Bottom - 1));
@@ -1305,10 +1305,6 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <returns>-1 if nothing found, otherwise the slot location in the equiment sack is returned</returns>
 	private int FindEquipmentSlot(Point cell)
 	{
-		if (cell == null)
-			// Make sure we are on the equipment panel
-			return -1;
-
 		// Iterate through the equipment slots
 		for (int slot = 0; slot < this.Sack.NumberOfSlots; ++slot)
 		{
@@ -1339,10 +1335,6 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <returns>-1 if nothing found, otherwise the slot location in the equiment sack is returned</returns>
 	private int FindEquipmentSlot(Rectangle cellsUnderMouse)
 	{
-		if (cellsUnderMouse == null)
-			// Make sure we are on the equipment panel
-			return -1;
-
 		// Iterate through the equipment slots
 		Point slotUL;
 		Size slotSize;
@@ -1375,10 +1367,6 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <returns>Rectangle of cells including all of the equipment slots under the mouse</returns>
 	private Rectangle FindAllEquipmentCells(Rectangle cellsUnderMouse)
 	{
-		if (cellsUnderMouse == null)
-			// Make sure we are on the equipment panel
-			return Rectangle.Empty;
-
 		// Iterate through the equipment slots
 		Point slotUL, slotBR;
 		Size slotSize;
@@ -1430,7 +1418,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			}
 		}
 
-		// We didn't find it so we return a null
+		// We didn't find it so we return an empty rectangle
 		if (foundCells)
 			return new Rectangle(x, y, width, height);
 		else
