@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.Presentation.Win32;
 

@@ -14,6 +14,7 @@ using TQVaultAE.Domain.Exceptions;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.Logs;
+using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
@@ -110,6 +111,7 @@ public static class Program
 			.AddTransient<IFontService, FontService>()
 			.AddTransient<ITranslationService, TranslationService>()
 			.AddSingleton<IUIService, UIService>()
+			.AddSingleton<IUserNotifier>(sp => sp.GetRequiredService<IUIService>())
 			.AddSingleton<IIconService, IconService>()
 			.AddSingleton<ITQDataService, TQDataService>()
 			.AddTransient<IBitmapService, BitmapService>()

@@ -17,18 +17,18 @@ public partial class GameFileService : IGameFileService
 {
 	protected readonly ILogger Log;
 	protected readonly IGamePathService GamePathService;
-	protected readonly IUIService UIService;
+	protected readonly IUserNotifier UserNotifier;
 	protected readonly IFileIO FileIO;
 	protected readonly IPathIO PathIO;
 	protected readonly IDirectoryIO DirectoryIO;
 
 	protected readonly UserSettings UserSettings;
 
-	public GameFileService(ILogger<GameFileService> log, IGamePathService iGamePathService, IUIService iUIService, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings userSettings)
+	public GameFileService(ILogger<GameFileService> log, IGamePathService iGamePathService, IUserNotifier userNotifier, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings userSettings)
 	{
 		this.Log = log;
 		this.GamePathService = iGamePathService;
-		this.UIService = iUIService;
+		this.UserNotifier = userNotifier;
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;
 		this.DirectoryIO = directoryIO;
@@ -143,7 +143,7 @@ public partial class GameFileService : IGameFileService
 		{
 			errMess += Environment.NewLine + ex.Message;
 			this.Log.LogError(ex, errMess);
-			this.UIService.ShowError(errMess, Buttons: ShowMessageButtons.OK);
+			this.UserNotifier.ShowError(errMess, Buttons: ShowMessageButtons.OK);
 		}
 		return false;
 	}
@@ -369,7 +369,7 @@ public partial class GameFileService : IGameFileService
 			{
 				errMess += Environment.NewLine + errLog;
 				this.Log.LogError(errMess);
-				this.UIService.ShowError(errMess, Buttons: ShowMessageButtons.OK);
+				this.UserNotifier.ShowError(errMess, Buttons: ShowMessageButtons.OK);
 			}
 		}
 		return false;
@@ -378,10 +378,10 @@ public partial class GameFileService : IGameFileService
 	public bool DoYouWantToReplaceLocalCharacterSave()
 	{
 		bool replaceAnswerOk = false, sureAnswer = true, overrideFiles = false;
-		replaceAnswerOk = UIService.ShowWarning(Resources.GitCloneDoYouWantToReplaceLocalCharacterSave).IsOK;
+		replaceAnswerOk = UserNotifier.ShowWarning(Resources.GitCloneDoYouWantToReplaceLocalCharacterSave).IsOK;
 		sureAnswer = true;
 		if (replaceAnswerOk)
-			sureAnswer = UIService.ShowWarning(Resources.GlobalConfirm).IsOK;
+			sureAnswer = UserNotifier.ShowWarning(Resources.GlobalConfirm).IsOK;
 
 		overrideFiles = replaceAnswerOk && sureAnswer;
 		return overrideFiles;
@@ -390,10 +390,10 @@ public partial class GameFileService : IGameFileService
 	public bool DoYouWantToReplaceLocalVault()
 	{
 		bool replaceAnswerOk = false, sureAnswer = true, overrideFiles = false;
-		replaceAnswerOk = UIService.ShowWarning(Resources.GitCloneDoYouWantToReplaceLocalVault).IsOK;
+		replaceAnswerOk = UserNotifier.ShowWarning(Resources.GitCloneDoYouWantToReplaceLocalVault).IsOK;
 		sureAnswer = true;
 		if (replaceAnswerOk)
-			sureAnswer = UIService.ShowWarning(Resources.GlobalConfirm).IsOK;
+			sureAnswer = UserNotifier.ShowWarning(Resources.GlobalConfirm).IsOK;
 
 		overrideFiles = replaceAnswerOk && sureAnswer;
 		return overrideFiles;
@@ -575,7 +575,7 @@ public partial class GameFileService : IGameFileService
 			ex = exx;
 			var errMess = "Error during move directory!";
 			this.Log.LogError(ex, errMess);
-			this.UIService.ShowError(errMess, ex, Buttons: ShowMessageButtons.OK);
+			this.UserNotifier.ShowError(errMess, ex, Buttons: ShowMessageButtons.OK);
 		}
 		finally
 		{
@@ -633,7 +633,7 @@ public partial class GameFileService : IGameFileService
 			ex = exx;
 			var errMess = "Error during move directory!";
 			this.Log.LogError(ex, errMess);
-			this.UIService.ShowError(errMess, ex, Buttons: ShowMessageButtons.OK);
+			this.UserNotifier.ShowError(errMess, ex, Buttons: ShowMessageButtons.OK);
 		}
 		finally
 		{

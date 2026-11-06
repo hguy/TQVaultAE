@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.Presentation.Win32;
 

@@ -5,6 +5,7 @@ using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Models.Search;
+using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Tooltips;

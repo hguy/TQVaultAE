@@ -3,6 +3,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Forms;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.GUI.Tooltips;
 

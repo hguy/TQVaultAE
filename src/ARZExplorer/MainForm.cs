@@ -15,6 +15,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Logs;
+using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Services.Win32;
 
 namespace ArzExplorer;

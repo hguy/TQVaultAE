@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Drawing;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.Presentation.Win32;
 

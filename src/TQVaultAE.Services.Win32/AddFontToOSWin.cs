@@ -1,5 +1,6 @@
 ﻿using System.Drawing.Text;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.Services.Win32;
 

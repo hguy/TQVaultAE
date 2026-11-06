@@ -10,6 +10,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 using TQVaultAE.Data;
 using TQVaultAE.Domain.Exceptions;
+using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;

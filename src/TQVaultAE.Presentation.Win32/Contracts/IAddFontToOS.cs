@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace TQVaultAE.Application.Contracts.Services;
+namespace TQVaultAE.Presentation.Win32.Contracts;
 
 /// <summary>
 /// Abstract OS specific needs for loading a Font from resource file (hot load from memory)

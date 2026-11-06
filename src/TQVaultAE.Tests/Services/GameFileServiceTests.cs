@@ -15,7 +15,7 @@ public class GameFileServiceTests
 {
 	private readonly Mock<ILogger<GameFileService>> _mockLogger;
 	private readonly Mock<IGamePathService> _mockGamePathService;
-	private readonly Mock<IUIService> _mockUIService;
+	private readonly Mock<IUserNotifier> _mockUserNotifier;
 	private readonly Mock<IFileIO> _mockFileIO;
 	private readonly Mock<IPathIO> _mockPathIO;
 	private readonly Mock<IDirectoryIO> _mockDirectoryIO;
@@ -26,7 +26,7 @@ public class GameFileServiceTests
 	{
 		_mockLogger = new Mock<ILogger<GameFileService>>();
 		_mockGamePathService = new Mock<IGamePathService>();
-		_mockUIService = new Mock<IUIService>();
+		_mockUserNotifier = new Mock<IUserNotifier>();
 		_mockFileIO = new Mock<IFileIO>();
 		_mockPathIO = new Mock<IPathIO>();
 		_mockDirectoryIO = new Mock<IDirectoryIO>();
@@ -42,7 +42,7 @@ public class GameFileServiceTests
 		_gameFileService = new GameFileService(
 			_mockLogger.Object,
 			_mockGamePathService.Object,
-			_mockUIService.Object,
+			_mockUserNotifier.Object,
 			_mockFileIO.Object,
 			_mockPathIO.Object,
 			_mockDirectoryIO.Object,
@@ -273,7 +273,7 @@ public class GameFileServiceTests
 		// Assert
 		result.Should().BeFalse();
 		playerSave.IsArchived.Should().BeFalse();
-		_mockUIService.Verify(x => x.ShowError(It.IsAny<string>(), It.IsAny<Exception>(), It.IsAny<ShowMessageButtons>()), Times.Once);
+		_mockUserNotifier.Verify(x => x.ShowError(It.IsAny<string>(), It.IsAny<Exception>(), It.IsAny<ShowMessageButtons>()), Times.Once);
 	}
 
 	#endregion
@@ -344,7 +344,7 @@ public class GameFileServiceTests
 		// Assert
 		result.Should().BeFalse();
 		playerSave.IsArchived.Should().BeTrue(); // Should remain unchanged
-		_mockUIService.Verify(x => x.ShowError(It.IsAny<string>(), It.IsAny<Exception>(), It.IsAny<ShowMessageButtons>()), Times.Once);
+		_mockUserNotifier.Verify(x => x.ShowError(It.IsAny<string>(), It.IsAny<Exception>(), It.IsAny<ShowMessageButtons>()), Times.Once);
 	}
 
 	#endregion
@@ -361,7 +361,7 @@ public class GameFileServiceTests
 			Buttons = ShowMessageButtons.OK
 		};
 
-		_mockUIService.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
+		_mockUserNotifier.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
 			.Callback<string, Exception?, ShowMessageButtons>((msg, ex, btn) => warningArgs.Message = msg)
 			.Returns(warningArgs);
 
@@ -370,7 +370,7 @@ public class GameFileServiceTests
 
 		// Assert
 		result.Should().BeTrue();
-		_mockUIService.Verify(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel), Times.Exactly(2));
+		_mockUserNotifier.Verify(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel), Times.Exactly(2));
 	}
 
 	[Fact]
@@ -383,7 +383,7 @@ public class GameFileServiceTests
 			Buttons = ShowMessageButtons.OKCancel
 		};
 
-		_mockUIService.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
+		_mockUserNotifier.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
 			.Returns(warningArgs);
 
 		// Act
@@ -404,7 +404,7 @@ public class GameFileServiceTests
 			Buttons = ShowMessageButtons.OKCancel
 		};
 
-		_mockUIService.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
+		_mockUserNotifier.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
 			.Returns(() =>
 			{
 				if (firstCall)
@@ -436,7 +436,7 @@ public class GameFileServiceTests
 			Buttons = ShowMessageButtons.OK
 		};
 
-		_mockUIService.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
+		_mockUserNotifier.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
 			.Callback<string, Exception?, ShowMessageButtons>((msg, ex, btn) => warningArgs.Message = msg)
 			.Returns(warningArgs);
 
@@ -445,7 +445,7 @@ public class GameFileServiceTests
 
 		// Assert
 		result.Should().BeTrue();
-		_mockUIService.Verify(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel), Times.Exactly(2));
+		_mockUserNotifier.Verify(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel), Times.Exactly(2));
 	}
 
 	[Fact]
@@ -458,7 +458,7 @@ public class GameFileServiceTests
 			Buttons = ShowMessageButtons.OKCancel
 		};
 
-		_mockUIService.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
+		_mockUserNotifier.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
 			.Returns(warningArgs);
 
 		// Act
@@ -479,7 +479,7 @@ public class GameFileServiceTests
 			Buttons = ShowMessageButtons.OKCancel
 		};
 
-		_mockUIService.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
+		_mockUserNotifier.Setup(x => x.ShowWarning(It.IsAny<string>(), null, ShowMessageButtons.OKCancel))
 			.Returns(() =>
 			{
 				if (firstCall)
