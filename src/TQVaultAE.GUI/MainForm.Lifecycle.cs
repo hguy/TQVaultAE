@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using System.ComponentModel;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
@@ -35,9 +34,16 @@ public partial class MainForm
 	/// Handler for closing the main form
 	/// </summary>
 	/// <param name="sender">sender object</param>
-	/// <param name="e">CancelEventArgs data</param>
-	private void MainFormClosing(object sender, CancelEventArgs e)
-		=> e.Cancel = !this.DoCloseStuff();
+	/// <param name="e">FormClosingEventArgs data</param>
+	private void MainFormClosing(object sender, FormClosingEventArgs e)
+	{
+		// Application.Exit is only called when loading failed or after a fatal error: nothing to save then.
+		// The former Closing event was not raised in that case.
+		if (e.CloseReason == CloseReason.ApplicationExitCall)
+			return;
+
+		e.Cancel = !this.DoCloseStuff();
+	}
 
 	/// <summary>
 	/// Shows things that you may want to know before a close.

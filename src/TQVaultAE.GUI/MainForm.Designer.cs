@@ -619,7 +619,7 @@ namespace TQVaultAE.GUI
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Titan Quest Item Vault";
             this.TitleTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(44)))), ((int)(((byte)(28)))));
-            this.Closing += new System.ComponentModel.CancelEventHandler(this.MainFormClosing);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFormClosing);
             this.Load += new System.EventHandler(this.MainFormLoad);
             this.Shown += new System.EventHandler(this.MainFormShown);
             this.ResizeEnd += new System.EventHandler(this.ResizeEndCallback);
