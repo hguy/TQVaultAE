@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Globalization;
 using System.Reflection;
 using System.Resources;
-using System.Security.Permissions;
 using System.Text.Json;
 using TQVaultAE.Data;
 using TQVaultAE.Domain.Entities;
@@ -45,7 +44,6 @@ public static class Program
 	/// The main entry point for the application.
 	/// </summary>
 	[STAThread]
-	[SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
 	public static void Main()
 	{
 		try

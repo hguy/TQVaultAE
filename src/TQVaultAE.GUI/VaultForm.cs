@@ -14,7 +14,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Globalization;
-using System.Security.Permissions;
 using System.Windows.Forms;
 using TQVaultAE.Config;
 using TQVaultAE.GUI.Components;
@@ -428,7 +427,6 @@ public partial class VaultForm : Form, IScalingControl
 	/// Processes a Windows Message
 	/// </summary>
 	/// <param name="m">Message which needs to be processed</param>
-	[PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
 	protected override void WndProc(ref Message m)
 	{
 		if (this.WindowState == FormWindowState.Maximized)
@@ -882,7 +880,6 @@ public partial class VaultForm : Form, IScalingControl
 	/// <param name="msg">Message which is sent</param>
 	/// <param name="parameter1">Word Window paramters</param>
 	/// <param name="parameter2">Long Window paramets</param>
-	[PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
 	private void SendNCWinMessage(User32.WindowMessage msg, IntPtr parameter1, IntPtr parameter2)
 	{
 		Message message = Message.Create(this.Handle, (int)msg, parameter1, parameter2);
