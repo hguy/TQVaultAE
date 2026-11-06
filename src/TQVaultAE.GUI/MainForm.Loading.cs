@@ -309,6 +309,9 @@ public partial class MainForm
 			this.loadingComplete = true;
 			this.Enabled = true;
 
+			// Prepare the search data now, so the first search does not have to.
+			_ = this.Services.ItemDatabaseService.WarmUpAsync();
+
 			this.LoadTransferStash();
 			this.LoadRelicVaultStash();
 

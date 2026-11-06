@@ -28,7 +28,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] NavMap;
 	private readonly List<BoxItem> SelectedFilters = new();
 	private readonly HashSet<BoxItem> SelectedFiltersSet = new();
-	private readonly List<ScalingCheckedListBox> CachedCheckedListBoxes = new();
+	private readonly List<VirtualCheckedListBox> CachedCheckedListBoxes = new();
 	private readonly SearchQueries SQueries;
 
 	public SearchResult[] QueryResults { get; private set; } = new SearchResult[] { };
@@ -189,10 +189,10 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Remove design time fake elements
 		scalingComboBoxQueryList.Items.Clear();
 
-		// Cache all ScalingCheckedListBox references for performance
+		// Cache all VirtualCheckedListBox references for performance
 		this.flowLayoutPanelMain.ProcessAllControls(c =>
 		{
-			if (c is ScalingCheckedListBox lb)
+			if (c is VirtualCheckedListBox lb)
 				this.CachedCheckedListBoxes.Add(lb);
 		});
 
@@ -437,6 +437,9 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void SearchEngineReady()
 	{
 		// Fill and size the categories, one progress step each, so the bar covers everything until the dialog is usable.
+		var dataBuilt = this._openWatch.ElapsedMilliseconds;
+		var stepTimes = new List<long>(this.UiBuildSteps.Length + 1);
+		var stepWatch = System.Diagnostics.Stopwatch.StartNew();
 		this.flowLayoutPanelMain.SuspendLayout();
 		try
 		{
@@ -444,12 +447,20 @@ public partial class SearchDialogAdvanced : VaultForm
 			{
 				step();
 				this.ProgressStep();
+				stepTimes.Add(stepWatch.ElapsedMilliseconds);
+				stepWatch.Restart();
 			}
 		}
 		finally
 		{
 			this.flowLayoutPanelMain.ResumeLayout(true);
+			stepTimes.Add(stepWatch.ElapsedMilliseconds);
 		}
+		this.Log.LogInformation(
+			"Search dialog build: data {DataMs} ms, UI steps [{Steps}] ms (last is ResumeLayout), list items [{Items}]"
+			, dataBuilt
+			, string.Join(", ", stepTimes)
+			, string.Join(", ", this.CachedCheckedListBoxes.Select(lb => $"{lb.Name.Replace("scalingCheckedListBox", string.Empty)}={lb.Items.Count}")));
 
 		this._builtDatabase = this.ItemDatabaseService.ItemDatabase;
 		this._builtCount = this.ItemDatabaseService.ItemDatabase.Count;
@@ -580,7 +591,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		PopulateInit(clb, WithRelic);
 	}
 
-	private static void PopulateInit(ScalingCheckedListBox clb, IEnumerable<BoxItem> items)
+	private static void PopulateInit(VirtualCheckedListBox clb, IEnumerable<BoxItem> items)
 	{
 		var (_, tag) = clb.GetBoxTag();
 		tag.DataSource = items.ToArray();
@@ -975,7 +986,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			// Individual Expand/Collapse
 			flowpanel.ProcessAllControls(c =>
 			{
-				if (c is ScalingCheckedListBox lb)
+				if (c is VirtualCheckedListBox lb)
 					lb.Visible = !lb.Visible;
 			});
 		}
@@ -1012,7 +1023,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			// Individual category panel - traverse
 			flowpanel.ProcessAllControls(c =>
 			{
-				if (c is ScalingCheckedListBox lb)
+				if (c is VirtualCheckedListBox lb)
 				{
 					lb.BeginUpdate();
 					foreach (var idx in lb.CheckedIndices.Cast<int>().ToList()) lb.SetItemChecked(idx, false);
@@ -1199,6 +1210,13 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	private void ReduceCheckBoxesToQueryResult()
 	{
+		// Nothing selected: there is nothing to reduce to, show every category entry.
+		if (!this.SelectedFilters.Any())
+		{
+			ResetCheckBoxesToFirstLoad();
+			return;
+		}
+
 		if (this.QueryResults.Any())
 		{
 			CleanAllCheckBoxes();
@@ -1246,14 +1264,40 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void scalingButtonReset_Click(object sender, EventArgs e)
 		=> ResetSelectedFilters();
 
+	/// <summary>
+	/// Clears the selection, the search term and the category filter, and shows every category entry again
+	/// (also when the categories were reduced to the previous results).
+	/// </summary>
 	private void ResetSelectedFilters()
 	{
-		this.scalingComboBoxQueryList.ResetText();
-		ResetQuickFilters();
-		ResetRequirements();
-		UncheckCategories(flowLayoutPanelMain);
-		TextBoxSearchTerm_UpdateText_Notrigger(string.Empty);
+		this._Apply_SelectedFiltersDisabled = true;
+		try
+		{
+			this.scalingComboBoxQueryList.ResetText();
+			ResetQuickFilters();
+			ResetRequirements();
+			UncheckCategories(flowLayoutPanelMain);
+			TextBoxSearchTerm_UpdateText_Notrigger(string.Empty);
+			ClearFilterCategories();
+		}
+		finally
+		{
+			this._Apply_SelectedFiltersDisabled = false;
+		}
+
+		// Recompute the (now empty) selection; with nothing selected the categories return to their full content.
 		TextBoxSearchTerm_TextChanged_Logic();
+		ResetCheckBoxesToFirstLoad();
+	}
+
+	/// <summary>Empties the category filter box and its state without waiting for the typing delay.</summary>
+	private void ClearFilterCategories()
+	{
+		var f = this.FilterCategories;
+		f.SearchRawPrevious = f.SearchRaw;
+		f.SearchRaw = string.Empty;
+		f.HasFilterCategory = false;
+		this.scalingTextBoxFilterCategories.Text = string.Empty;
 	}
 
 	internal void ResetQuickFilters()
@@ -1755,9 +1799,9 @@ public partial class SearchDialogAdvanced : VaultForm
 public static class SearchDialogAdvancedExtension
 {
 
-	public static (ScalingCheckedListBox, BoxTag) GetBoxTag(this Control obj)
+	public static (VirtualCheckedListBox, BoxTag) GetBoxTag(this Control obj)
 	{
-		var ctr = obj as ScalingCheckedListBox;
+		var ctr = obj as VirtualCheckedListBox;
 
 		if (ctr is null) return (null, null);
 

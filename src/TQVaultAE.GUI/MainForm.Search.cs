@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Logging;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
@@ -31,7 +31,9 @@ public partial class MainForm
 	{
 		if (this._searchDialog is null || this._searchDialog.IsDisposed)
 		{
+			var watch = System.Diagnostics.Stopwatch.StartNew();
 			this._searchDialog = this.Services.Forms.Create<SearchDialogAdvanced>();
+			this.Log.LogInformation("Search dialog created in {Elapsed} ms", watch.ElapsedMilliseconds);
 			this.FormClosed += (_, _) => this._searchDialog?.Dispose();
 		}
 

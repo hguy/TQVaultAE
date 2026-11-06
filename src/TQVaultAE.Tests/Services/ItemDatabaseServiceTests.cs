@@ -43,6 +43,29 @@ public class ItemDatabaseServiceTests
 	}
 
 	[Fact]
+	public async Task WarmUpAsync_LoadsEveryItem_EvenWhenOneFails()
+	{
+		// Arrange: one item whose display data cannot be built, two that can
+		var broken = CreateTestItem();
+		var good = new[] { CreateTestItem(), CreateTestItem() };
+		_mockItemProvider.Setup(x => x.GetFriendlyNames(broken, It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
+			.Throws(new InvalidOperationException("broken record"));
+		foreach (var item in good)
+			_mockItemProvider.Setup(x => x.GetFriendlyNames(item, It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
+				.Returns(new ToFriendlyNameResult(item) { RequirementVariables = new SortedList<string, Variable>() });
+		_service.TryAddItemToDatabase(broken);
+		foreach (var item in good)
+			_service.TryAddItemToDatabase(item);
+
+		// Act
+		await _service.WarmUpAsync();
+
+		// Assert
+		_service.ItemDatabase.Where(r => r.Item != broken).Should().OnlyContain(r => r.FriendlyNames != null);
+		_service.ItemDatabase.Single(r => r.Item == broken).FriendlyNames.Should().BeNull();
+	}
+
+	[Fact]
 	public void TryAddItemToDatabase_WithNullItem_ReturnsFalse()
 	{
 		// Act
