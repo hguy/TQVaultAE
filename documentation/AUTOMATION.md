@@ -52,6 +52,8 @@ Cells are grid coordinates, as reported by `get_state`.
 |---|---|
 | `list_windows` | The process' visible top-level windows: WinForms forms and native message boxes, with title, class, modal state, message text and buttons. |
 | `close_dialog(title, button)` | Presses a dialog button by its text, for example `("Default Vault Path", "OK")`. It works for message boxes and WinForms forms, even when they are not in the foreground. |
+| `list_forms` | The form and dialog types registered in the container. |
+| `open_form(name, show)` | Creates a form or dialog from the container, as `FormFactory` does, so its `InitializeComponent` and resources run. It reports the title, size and control count. With `show=false` (the default) the form is then disposed; with `show=true` it opens modeless over the main window, for `capture` and `close_dialog`. Singletons (`MainForm`, `BagButtonSettings`) are only reported. Dialogs that need data first may fail when shown; the error goes to `recent_log`. |
 | `get_state(panel?)` | The selected vault and character, the available characters and vaults, `PlayerReadonly`, the save guard, the drag state, every panel (shown, sack type, bag, item count, modified). With `panel`, it adds the items of that panel's current sack: name, base name, record id, cell location and size. For `equipment` it also lists the slot rectangles. |
 | `select_character(name)` / `select_vault(name)` | Select an entry in the drop-downs, as listed by `get_state`. |
 | `select_bag(panel, bag)` | Clicks a bag button. `stash` bag 0 shows the equipment panel. |
@@ -68,9 +70,9 @@ Cells are grid coordinates, as reported by `get_state`.
 | `forge_drop(slot)` | Drops the dragged item on a forge slot. The rules of the current mode decide. A refusal is reported in `newMessages`, and the item stays dragged. |
 | `forge_select_part(slot, part)` | God mode: chooses which part of a material item is merged, like its combo box. |
 | `forge_reset` / `forge_cancel` / `forge_forge` | Like the Reset, Cancel and Forge buttons. `forge_forge` merges in memory only, since the save guard keeps it from being written, and reports the forged item and the sounds played. |
+| `set_save_guard(enabled)` | Turns the save guard on or off. |
 
 Every forge tool returns the forge state, with the `newMessages` and `sounds` that the call produced.
-| `set_save_guard(enabled)` | Turns the save guard on or off. |
 
 ### How drags are simulated
 
