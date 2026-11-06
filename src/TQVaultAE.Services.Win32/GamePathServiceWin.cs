@@ -5,7 +5,6 @@ using TQVaultAE.Domain.Exceptions;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
-using System.Reflection;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
@@ -66,10 +65,7 @@ public class GamePathServiceWin : IGamePathService
 		get
 		{
 			if (string.IsNullOrWhiteSpace(_ResolveTQVaultPath))
-			{
-				var currentPath = new System.Uri(Assembly.GetExecutingAssembly().EscapedCodeBase).LocalPath;
-				_ResolveTQVaultPath = this.PathIO.GetDirectoryName(currentPath);
-			}
+				_ResolveTQVaultPath = Path.TrimEndingDirectorySeparator(AppContext.BaseDirectory);
 			return _ResolveTQVaultPath;
 		}
 	}

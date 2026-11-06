@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Xml.Serialization;
+﻿using System.Xml.Serialization;
 
 namespace TQVaultAE.Config;
 
@@ -228,10 +227,7 @@ public class UserSettings
 
 	private static string ResolveUserSettingsFilePath()
 	{
-		var currentPath = new System.Uri(Assembly.GetExecutingAssembly().EscapedCodeBase).LocalPath;
-		currentPath = Path.GetDirectoryName(currentPath);
-		var xmlPath = Path.Combine(currentPath, "UserConfig.xml");
-		return xmlPath;
+		return Path.Combine(AppContext.BaseDirectory, "UserConfig.xml");
 	}
 
 	public static UserSettings Read()
