@@ -20,7 +20,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Enums.NET" />
-		<PackageReference Include="NAudio" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" />
 		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
 		<PackageReference Include="System.Resources.Extensions" />
