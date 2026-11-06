@@ -63,7 +63,7 @@ public class LazyConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey,
 		IncrementVersion();
 	}
 
-	public new bool TryRemove(TKey key, out TValue value)
+	public bool TryRemove(TKey key, out TValue value)
 	{
 		// For reference types: use base.TryRemove and extract value from Lazy
 		// For value types: the Lazy wrapper behavior is complex
