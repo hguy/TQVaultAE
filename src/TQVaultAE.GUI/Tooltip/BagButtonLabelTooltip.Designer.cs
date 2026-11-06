@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-            this.scalingLabel = new TQVaultAE.GUI.Components.ScalingLabel();
+            this.scalingLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.SuspendLayout();
             // 
             // scalingLabel
@@ -74,6 +74,6 @@
 
 		#endregion
 
-		private Components.ScalingLabel scalingLabel;
+		private Components.Scaling.ScalingLabel scalingLabel;
 	}
 }

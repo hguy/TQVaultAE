@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
 using Microsoft.Extensions.Logging;

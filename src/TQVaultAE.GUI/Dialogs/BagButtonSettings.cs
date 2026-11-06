@@ -1,4 +1,7 @@
 ﻿﻿using Microsoft.Extensions.Logging;
+using TQVaultAE.GUI.Components.Buttons;
+using TQVaultAE.GUI.Components.Icons;
+using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Helpers;
 using TQVaultAE.Presentation;
@@ -7,7 +10,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components;
 using System.Diagnostics;
 using TQVaultAE.Application.Contracts.Services;
-using Cell = TQVaultAE.GUI.Components.IconGrid.Cell;
+using Cell = TQVaultAE.GUI.Components.Icons.IconGrid.Cell;
 
 namespace TQVaultAE.GUI.Dialogs;
 

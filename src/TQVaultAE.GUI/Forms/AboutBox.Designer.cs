@@ -3,6 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
 
@@ -78,11 +79,11 @@ namespace TQVaultAE.GUI.Forms
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AboutBox));
             this.tableLayoutPanel = new System.Windows.Forms.TableLayoutPanel();
             this.logoPictureBox = new System.Windows.Forms.PictureBox();
-            this.labelProductName = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.labelVersion = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.labelCopyright = new TQVaultAE.GUI.Components.ScalingLabel();
-            this.textBoxDescription = new TQVaultAE.GUI.Components.ScalingTextBox();
-            this.buttonOK = new TQVaultAE.GUI.Components.ScalingButton();
+            this.labelProductName = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.labelVersion = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.labelCopyright = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
+            this.textBoxDescription = new TQVaultAE.GUI.Components.Scaling.ScalingTextBox();
+            this.buttonOK = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
             this.tableLayoutPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.logoPictureBox)).BeginInit();
             this.SuspendLayout();

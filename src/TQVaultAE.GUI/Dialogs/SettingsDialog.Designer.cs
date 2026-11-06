@@ -4,6 +4,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 using System.Drawing;
+using TQVaultAE.GUI.Components.Layout;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
 

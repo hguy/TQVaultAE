@@ -1,4 +1,6 @@
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.GUI.Components.Layout;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Helpers;

@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 
 using System.Globalization;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
