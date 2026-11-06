@@ -9,7 +9,7 @@ using TQVaultAE.GUI.Models;
 using TQVaultAE.Logs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Config;
 

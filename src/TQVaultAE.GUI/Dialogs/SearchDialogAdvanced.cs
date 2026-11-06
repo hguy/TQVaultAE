@@ -3,19 +3,19 @@ using TQVaultAE.GUI.Components.Layout;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Forms;
-using TQVaultAE.GUI.Helpers;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.Presentation;
 using TQVaultAE.Domain.Helpers;
 using Microsoft.Extensions.Logging;
-using TQVaultAE.GUI.Models.SearchDialogAdvanced;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Models.Search;
+using TQVaultAE.GUI.Tooltips;
 using System.Text.RegularExpressions;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.GUI.Models;
-using VisibilityItem = TQVaultAE.GUI.Models.SearchDialogAdvanced.SearchQuery.VisibilityItem;
+using VisibilityItem = TQVaultAE.GUI.Models.Search.SearchQuery.VisibilityItem;
 
 namespace TQVaultAE.GUI.Dialogs;
 

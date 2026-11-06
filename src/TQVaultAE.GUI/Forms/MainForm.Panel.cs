@@ -3,7 +3,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Forms;

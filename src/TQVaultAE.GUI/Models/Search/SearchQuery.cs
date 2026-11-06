@@ -1,6 +1,6 @@
 using TQVaultAE.Application.DTOs;
 
-namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
+namespace TQVaultAE.GUI.Models.Search;
 
 public class SearchQuery
 {

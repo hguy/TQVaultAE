@@ -10,7 +10,7 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;

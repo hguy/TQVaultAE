@@ -7,6 +7,7 @@
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Interop;
 
 namespace TQVaultAE.GUI.Forms;
 

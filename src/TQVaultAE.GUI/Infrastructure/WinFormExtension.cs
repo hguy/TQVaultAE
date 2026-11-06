@@ -1,4 +1,4 @@
-﻿namespace TQVaultAE.GUI.Helpers;
+﻿namespace TQVaultAE.GUI.Infrastructure;
 
 public static class WinFormExtension
 {

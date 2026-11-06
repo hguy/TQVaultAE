@@ -1,7 +1,7 @@
 using System.Text.Json;
 using TQVaultAE.Application.Contracts.Services;
 
-namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
+namespace TQVaultAE.GUI.Models.Search;
 
 public class SearchQueries : List<SearchQuery>
 {

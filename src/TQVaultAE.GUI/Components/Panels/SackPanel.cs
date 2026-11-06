@@ -17,7 +17,7 @@ using TQVaultAE.GUI.Components.Rendering;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
 

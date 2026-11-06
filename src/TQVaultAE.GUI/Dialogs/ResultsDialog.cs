@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------
 
 using TQVaultAE.GUI.Forms;
-using TQVaultAE.GUI.Tooltip;
+using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;

@@ -11,7 +11,7 @@ using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using EnumsNET;
 using TQVaultAE.GUI.Components;
-using TQVaultAE.GUI.Helpers;
+using TQVaultAE.GUI.Infrastructure;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;

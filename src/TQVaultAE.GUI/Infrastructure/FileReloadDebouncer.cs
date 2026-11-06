@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Timer = System.Windows.Forms.Timer;
 
-namespace TQVaultAE.GUI.Components;
+namespace TQVaultAE.GUI.Infrastructure;
 
 /// <summary>
 /// Coalesces <see cref="FileSystemWatcher"/> change notifications for game save files and reloads each file once

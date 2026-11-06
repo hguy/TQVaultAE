@@ -10,7 +10,7 @@ using TQVaultAE.GUI.Forms;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;
 
-namespace TQVaultAE.GUI.Tooltip;
+namespace TQVaultAE.GUI.Tooltips;
 
 public partial class ItemTooltip : BaseTooltip
 {

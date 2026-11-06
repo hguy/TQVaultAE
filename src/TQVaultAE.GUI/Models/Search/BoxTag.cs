@@ -1,4 +1,4 @@
-﻿namespace TQVaultAE.GUI.Models.SearchDialogAdvanced;
+﻿namespace TQVaultAE.GUI.Models.Search;
 
 public class BoxTag
 {

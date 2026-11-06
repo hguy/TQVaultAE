@@ -1,6 +1,6 @@
-﻿namespace TQVaultAE.GUI.Tooltip
+﻿namespace TQVaultAE.GUI.Tooltips
 {
-	partial class ItemTooltip
+	partial class BagButtonTooltip
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -35,18 +35,18 @@
             // 
             this.flowLayoutPanelFriendlyNames.AutoSize = true;
             this.flowLayoutPanelFriendlyNames.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.flowLayoutPanelFriendlyNames.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(10)))), ((int)(((byte)(10)))), ((int)(((byte)(10)))));
+            this.flowLayoutPanelFriendlyNames.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
+            this.flowLayoutPanelFriendlyNames.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
             this.flowLayoutPanelFriendlyNames.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.flowLayoutPanelFriendlyNames.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanelFriendlyNames.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
             this.flowLayoutPanelFriendlyNames.Location = new System.Drawing.Point(1, 1);
-            this.flowLayoutPanelFriendlyNames.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.flowLayoutPanelFriendlyNames.Margin = new System.Windows.Forms.Padding(2);
             this.flowLayoutPanelFriendlyNames.Name = "flowLayoutPanelFriendlyNames";
-            this.flowLayoutPanelFriendlyNames.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.flowLayoutPanelFriendlyNames.Size = new System.Drawing.Size(207, 302);
+            this.flowLayoutPanelFriendlyNames.Size = new System.Drawing.Size(263, 204);
             this.flowLayoutPanelFriendlyNames.TabIndex = 0;
             // 
-            // ItemTooltip
+            // BagButtonTooltip
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -54,21 +54,22 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.DarkGray;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ClientSize = new System.Drawing.Size(209, 304);
+            this.ClientSize = new System.Drawing.Size(265, 206);
             this.ControlBox = false;
             this.Controls.Add(this.flowLayoutPanelFriendlyNames);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "ItemTooltip";
+            this.Name = "BagButtonTooltip";
             this.Opacity = 0.9D;
             this.Padding = new System.Windows.Forms.Padding(1);
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "BagButtonTooltip";
-            this.Load += new System.EventHandler(this.ItemTooltip_Load);
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.BagButtonTooltip_FormClosing);
+            this.Load += new System.EventHandler(this.BagButtonTooltip_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

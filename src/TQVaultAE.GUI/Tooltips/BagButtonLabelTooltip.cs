@@ -4,7 +4,7 @@ using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Forms;
 
-namespace TQVaultAE.GUI.Tooltip;
+namespace TQVaultAE.GUI.Tooltips;
 
 public partial class BagButtonLabelTooltip : BaseTooltip
 {

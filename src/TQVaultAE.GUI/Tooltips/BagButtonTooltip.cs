@@ -7,7 +7,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 
-namespace TQVaultAE.GUI.Tooltip;
+namespace TQVaultAE.GUI.Tooltips;
 
 public partial class BagButtonTooltip : BaseTooltip
 {

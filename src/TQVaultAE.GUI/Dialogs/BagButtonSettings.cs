@@ -3,7 +3,7 @@ using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components.Icons;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Forms;
-using TQVaultAE.GUI.Helpers;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.Presentation;
 using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
