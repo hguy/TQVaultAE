@@ -4,6 +4,8 @@ using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Dialogs;
+using TQVaultAE.GUI.Forms;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;
 

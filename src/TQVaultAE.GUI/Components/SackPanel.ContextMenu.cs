@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GUI.Forms;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components;

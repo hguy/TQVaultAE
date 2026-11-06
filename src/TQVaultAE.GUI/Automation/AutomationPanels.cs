@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 using ModelContextProtocol;
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Forms;
 
 namespace TQVaultAE.GUI.Automation;
 

@@ -16,6 +16,7 @@ using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Forms;
 
 namespace TQVaultAE.GUI.Automation;
 
