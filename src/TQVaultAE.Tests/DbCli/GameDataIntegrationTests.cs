@@ -58,7 +58,7 @@ public sealed class GameDataIntegrationTests(ITestOutputHelper output)
 		output.WriteLine($"arz open+index: {sw.ElapsedMilliseconds} ms ({db.Records.Count} records)");
 
 		sw.Restart();
-		long variables = db.ReadMany(db.Records).Sum(r => (long)r.Variables.Count);
+		long variables = db.ReadMany(db.Records, cancellationToken: TestContext.Current.CancellationToken).Sum(r => (long)r.Variables.Count);
 		output.WriteLine($"ReadMany all records: {sw.ElapsedMilliseconds} ms ({variables} variables)");
 
 		sw.Restart();

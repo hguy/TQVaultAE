@@ -8,14 +8,14 @@ public class StringHelperTests
 	#region IsTQVaultSearchRegEx Tests
 
 	[Theory]
-	[InlineData("", false, "", null, false)]
-	[InlineData("   ", false, "", null, false)]
-	[InlineData("sword", false, "sword", null, false)]
-	[InlineData("/sword", true, "sword", null, true)]
-	[InlineData("/s+w?rd", true, "s+w?rd", null, true)]
-	[InlineData("/invalid[regex", true, "invalid[regex", null, false)] // Invalid regex
+	[InlineData("", false, "", false)]
+	[InlineData("   ", false, "", false)]
+	[InlineData("sword", false, "sword", false)]
+	[InlineData("/sword", true, "sword", true)]
+	[InlineData("/s+w?rd", true, "s+w?rd", true)]
+	[InlineData("/invalid[regex", true, "invalid[regex", false)] // Invalid regex
 	public void IsTQVaultSearchRegEx_VariousInputs_ReturnsExpectedResult(
-		string input, bool expectedIsRegex, string expectedPattern, object _, bool expectedIsValid)
+		string input, bool expectedIsRegex, string expectedPattern, bool expectedIsValid)
 	{
 		// Act
 		var result = StringHelper.IsTQVaultSearchRegEx(input);
