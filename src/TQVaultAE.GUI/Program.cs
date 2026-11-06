@@ -65,6 +65,12 @@ public static class Program
 			LoggerFactory.AddLog4Net();
 			Log = LoggerFactory.CreateLogger(typeof(Program));// Make static level logger
 
+#if DEBUG
+			// In-app MCP automation endpoint, started early so that startup dialogs can be answered. See documentation/AUTOMATION.md
+			LoggerFactory.AddProvider(TQVaultAE.GUI.Automation.AutomationHost.RecentLog);
+			TQVaultAE.GUI.Automation.AutomationHost.Start(LoggerFactory);
+#endif
+
 		restart:
 			// Configure DI
 			var scol = new ServiceCollection()
@@ -170,6 +176,9 @@ public static class Program
 			var filterMouseButtons = new FormFilterMouseButtonGlobally(mainform);
 			System.Windows.Forms.Application.AddMessageFilter(filterMouseWheel);
 			System.Windows.Forms.Application.AddMessageFilter(filterMouseButtons);
+#if DEBUG
+			TQVaultAE.GUI.Automation.AutomationHost.AttachMainForm(mainform);
+#endif
 			System.Windows.Forms.Application.Run(mainform);
 		}
 		catch (Exception ex)

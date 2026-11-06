@@ -149,6 +149,10 @@ public partial class MainForm
 	/// <returns>true if players have been modified</returns>
 	private bool SaveAllModifiedFiles()
 	{
+#if DEBUG
+		if (Automation.AutomationHost.IsSaveBlocked("save players, vaults and stashes"))
+			return false;
+#endif
 		bool playersModified = this.SaveAllModifiedPlayers();
 		bool vaultsModified = this.SaveAllModifiedVaults();
 		bool stashesModified = this.SaveAllModifiedStashes();
@@ -416,6 +420,10 @@ public partial class MainForm
 	/// </summary>
 	private void SaveConfiguration()
 	{
+#if DEBUG
+		if (Automation.AutomationHost.IsSaveBlocked("save configuration"))
+			return;
+#endif
 		// Update last loaded vault
 		if (USettings.LoadLastVault)
 		{
