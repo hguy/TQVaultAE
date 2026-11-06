@@ -2186,4 +2186,67 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SettingShowInGameValuesTT" xml:space="preserve">
     <value>Apply the game's stat jitter (item seed) to equipment tooltips. With the detailed view, also lists each rolled value.</value>
   </data>
+	<data name="ForgeCapSectionBase" xml:space="preserve">
+    <value>Base item</value>
+  </data>
+	<data name="ForgeCapSectionAffixes" xml:space="preserve">
+    <value>Prefix &amp; suffix</value>
+  </data>
+	<data name="ForgeCapSectionRelics" xml:space="preserve">
+    <value>Relics</value>
+  </data>
+	<data name="ForgeCapBaseGear" xml:space="preserve">
+    <value>Weapon, shield, armor or jewellery only</value>
+  </data>
+	<data name="ForgeCapAnyItem" xml:space="preserve">
+    <value>Any item, including relics, charms and artifacts</value>
+  </data>
+	<data name="ForgeCapNoEpicLegendary" xml:space="preserve">
+    <value>No Epic or Legendary item</value>
+  </data>
+	<data name="ForgeCapEpicLegendary" xml:space="preserve">
+    <value>Epic and Legendary items allowed</value>
+  </data>
+	<data name="ForgeCapSameBaseItem" xml:space="preserve">
+    <value>Taken from the same base item only</value>
+  </data>
+	<data name="ForgeCapLevelRequirement" xml:space="preserve">
+    <value>Level requirement not above the base item</value>
+  </data>
+	<data name="ForgeCapSameGearType" xml:space="preserve">
+    <value>Taken from the same gear type only</value>
+  </data>
+	<data name="ForgeCapAnyGearType" xml:space="preserve">
+    <value>Taken from any gear type</value>
+  </data>
+	<data name="ForgeCapNotRarerThanBase" xml:space="preserve">
+    <value>Not rarer than the base item</value>
+  </data>
+	<data name="ForgeCapNeedsAffix" xml:space="preserve">
+    <value>The material item must have that prefix or suffix</value>
+  </data>
+	<data name="ForgeCapAnyPart" xml:space="preserve">
+    <value>Use any part of a material item: base, prefix, suffix or relics</value>
+  </data>
+	<data name="ForgeCapRelicOnly" xml:space="preserve">
+    <value>Relics and charms only</value>
+  </data>
+	<data name="ForgeCapRelicOrSocketed" xml:space="preserve">
+    <value>Relics, charms, or an item with a socketed relic</value>
+  </data>
+	<data name="ForgeCapRelicGear" xml:space="preserve">
+    <value>Must be allowed on the base item gear</value>
+  </data>
+	<data name="ForgeCapAnyRelicSlot" xml:space="preserve">
+    <value>Any item or part in any relic slot</value>
+  </data>
+	<data name="ForgeCapSecondRelicTinkerer" xml:space="preserve">
+    <value>Second relic only with the "{0}" suffix</value>
+  </data>
+	<data name="ForgeCapSecondRelicFree" xml:space="preserve">
+    <value>Second relic on any item</value>
+  </data>
+	<data name="ForgeCapResetOnStricter" xml:space="preserve">
+    <value>Switching to a stricter mode empties the slots</value>
+  </data>
 </root>
