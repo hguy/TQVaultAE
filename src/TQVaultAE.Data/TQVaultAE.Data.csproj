@@ -14,7 +14,6 @@
 	<ItemGroup>
 		<PackageReference Include="Enums.NET" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -10,7 +10,6 @@
 		<PackageReference Include="Enums.NET" />
 		<PackageReference Include="Magick.NET-Q8-AnyCPU" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" />
 		<PackageReference Include="System.Drawing.Common" />
 		<PackageReference Include="System.Resources.Extensions" />
 	</ItemGroup>
