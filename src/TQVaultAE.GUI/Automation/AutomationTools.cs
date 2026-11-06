@@ -1,0 +1,520 @@
+//-----------------------------------------------------------------------
+// <copyright file="AutomationTools.cs" company="None">
+//     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using System.ComponentModel;
+using System.Drawing.Imaging;
+using System.Globalization;
+using System.Reflection;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GUI.Components;
+
+namespace TQVaultAE.GUI.Automation;
+
+/// <summary>
+/// MCP tools that inspect and drive the running TQVault UI.
+/// Every UI access is marshalled to the UI thread through <see cref="AutomationHost.OnUi{T}"/>.
+/// </summary>
+[McpServerToolType]
+internal static class AutomationTools
+{
+	private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
+	private static readonly MethodInfo OnMouseDownMethod
+		= typeof(Control).GetMethod("OnMouseDown", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+	#region Windows
+
+	[McpServerTool(Name = "list_windows", ReadOnly = true)]
+	[Description("Lists TQVault's visible top-level windows (forms and native message boxes) with title, class, modal state and buttons.")]
+	public static string ListWindows()
+	{
+		var forms = new Dictionary<IntPtr, (string Type, bool Modal)>();
+		if (AutomationHost.MainForm is { IsHandleCreated: true })
+		{
+			AutomationHost.OnUi(_ =>
+			{
+				foreach (Form form in System.Windows.Forms.Application.OpenForms)
+				{
+					if (form.IsHandleCreated)
+						forms[form.Handle] = (form.GetType().Name, form.Modal);
+				}
+				return 0;
+			});
+		}
+
+		var windows = NativeWindows.GetProcessTopLevelWindows().Select(w =>
+		{
+			var isForm = forms.TryGetValue(w.Handle, out var info);
+			return new
+			{
+				handle = $"0x{w.Handle.ToInt64():X}",
+				title = w.Title,
+				className = w.ClassName,
+				formType = isForm ? info.Type : null,
+				// A native dialog (#32770) shown by MessageBox/TaskDialog is always modal.
+				modal = isForm ? info.Modal : w.IsDialogClass,
+				enabled = w.Enabled,
+				text = w.IsDialogClass ? NativeWindows.GetStaticTexts(w.Handle) : null,
+				buttons = NativeWindows.GetButtons(w.Handle).Select(b => b.Text).Where(t => t.Length > 0).ToList(),
+			};
+		});
+
+		return Serialize(new { endpoint = AutomationHost.Address, windows });
+	}
+
+	[McpServerTool(Name = "close_dialog", Destructive = true)]
+	[Description("Answers a modal dialog by pressing one of its buttons, e.g. title 'Default Vault Path', button 'OK'. Works for message boxes and WinForms dialogs, even when they are not in the foreground.")]
+	public static string CloseDialog(
+		[Description("Part of the dialog title (case-insensitive). Empty picks the only dialog that is open.")] string title,
+		[Description("Button text, e.g. OK, Cancel, Yes, No.")] string button)
+	{
+		var candidates = NativeWindows.GetProcessTopLevelWindows()
+			.Where(w => w.Enabled && (string.IsNullOrEmpty(title) || w.Title.Contains(title, StringComparison.OrdinalIgnoreCase)))
+			.Where(w => w.IsDialogClass || NativeWindows.GetButtons(w.Handle).Count > 0)
+			.ToList();
+
+		if (candidates.Count == 0)
+			throw new McpException($"No enabled dialog with title containing '{title}'. Call list_windows to see what is open.");
+
+		if (candidates.Count > 1 && string.IsNullOrEmpty(title))
+			throw new McpException($"Several dialogs are open: {string.Join(", ", candidates.Select(c => $"'{c.Title}'"))}. Pass a title.");
+
+		AutomationHost.MarkDriving();
+
+		foreach (var dialog in candidates)
+		{
+			var pressed = NativeWindows.PressButton(dialog.Handle, button);
+			if (pressed is not null)
+				return Serialize(new { dialog = dialog.Title, pressed });
+		}
+
+		var available = candidates.SelectMany(c => NativeWindows.GetButtons(c.Handle)).Select(b => b.Text);
+		throw new McpException($"No button '{button}' found. Buttons: {string.Join(", ", available)}");
+	}
+
+	#endregion
+
+	#region State
+
+	[McpServerTool(Name = "get_state", ReadOnly = true)]
+	[Description("Returns the selected vault and character, the item panels shown, the drag state and, when 'panel' is given, the items in that panel's current sack (name, base name, cell location and size). Panels: vault, secondaryVault, player, playerBag, stash, equipment.")]
+	public static string GetState(
+		[Description("Panel whose items to list. Empty lists no items.")] string? panel = null)
+		=> AutomationHost.OnUi(form =>
+		{
+			var drag = form.AutomationDragInfo;
+			var panels = AutomationPanels.List(form);
+			object? items = null;
+			object? equipmentSlots = null;
+
+			if (!string.IsNullOrEmpty(panel))
+			{
+				var named = AutomationPanels.Resolve(form, panel);
+				items = named.Panel.Sack?.Select(i => DescribeItem(i, named.Panel.Sack)).Where(i => i is not null).ToList();
+				if (named.Panel is EquipmentPanel)
+					equipmentSlots = DescribeEquipmentSlots(named.Panel.Sack);
+			}
+
+			return Serialize(new
+			{
+				endpoint = AutomationHost.Address,
+				loadingComplete = form.AutomationLoadingComplete,
+				vault = form.AutomationSelectedVault,
+				secondaryVault = form.AutomationSelectedSecondaryVault,
+				character = form.AutomationSelectedCharacter,
+				characterFile = form.AutomationCurrentPlayerFile,
+				characters = form.AutomationCharacters,
+				vaults = form.AutomationVaults,
+				playerReadonly = form.AutomationSettings.PlayerReadonly,
+				saveGuard = new { blockSavesWhileDriving = AutomationHost.BlockSavesWhileDriving, driving = AutomationHost.IsDriving },
+				drag = drag.IsActive
+					? new
+					{
+						item = DescribeItem(drag.Item, null),
+						sourcePanel = AutomationPanels.IdOf(form, drag.SrcSackPanel),
+						canBeCanceled = drag.CanBeCanceled,
+						isModified = drag.IsModifiedItem,
+						mouseOffset = new { x = drag.MouseOffset.X, y = drag.MouseOffset.Y },
+					}
+					: null,
+				virtualCursor = VirtualCursor.Target is SackPanel cursorPanel
+					? new { panel = AutomationPanels.IdOf(form, cursorPanel), x = VirtualCursor.ClientLocation.X, y = VirtualCursor.ClientLocation.Y }
+					: null,
+				panels = panels.Select(p => new
+				{
+					id = p.Id,
+					shown = AutomationPanels.IsShown(p.Panel),
+					type = p.Panel.GetType().Name,
+					sackType = p.Panel.SackType.ToString(),
+					hasSack = p.Panel.Sack is not null,
+					currentBag = p.Container?.CurrentBag,
+					bagCount = p.Container?.BagButtons?.Count,
+					gridSize = new { width = p.Panel.SackSize.Width, height = p.Panel.SackSize.Height },
+					itemCount = p.Panel.Sack?.Count(i => !RecordId.IsNullOrEmpty(i.BaseItemId)),
+					isModified = p.Panel.Sack?.IsModified,
+				}),
+				items,
+				equipmentSlots,
+			});
+		});
+
+	[McpServerTool(Name = "recent_log", ReadOnly = true)]
+	[Description("Returns the last log lines written by TQVault, oldest first.")]
+	public static string RecentLog([Description("Number of lines (default 50).")] int n = 50)
+		=> string.Join(Environment.NewLine, AutomationHost.RecentLog.GetLast(Math.Clamp(n, 1, 2000)));
+
+	[McpServerTool(Name = "set_save_guard", Destructive = true)]
+	[Description("Turns the save guard on or off. When on (the default), TQVault refuses to save players, vaults and stashes, to save its configuration on exit, to duplicate characters, to import vaults and to git push once automation has driven the UI.")]
+	public static string SetSaveGuard([Description("true to refuse saves while automation drives the app.")] bool enabled)
+	{
+		AutomationHost.BlockSavesWhileDriving = enabled;
+		return Serialize(new { blockSavesWhileDriving = enabled, driving = AutomationHost.IsDriving });
+	}
+
+	#endregion
+
+	#region Selection
+
+	[McpServerTool(Name = "select_character", Destructive = true)]
+	[Description("Selects a character in the character drop down, which loads the player, its equipment and its stashes. Names are listed by get_state.")]
+	public static string SelectCharacter([Description("Character entry as listed in get_state 'characters'.")] string name)
+		=> AutomationHost.OnUi(form =>
+		{
+			AutomationHost.MarkDriving();
+			if (!form.AutomationSelectCharacter(name))
+				throw new McpException($"Unknown character '{name}'. Characters: {string.Join(", ", form.AutomationCharacters)}");
+			return Serialize(new { character = form.AutomationSelectedCharacter, characterFile = form.AutomationCurrentPlayerFile });
+		});
+
+	[McpServerTool(Name = "select_vault", Destructive = true)]
+	[Description("Selects a vault in the main vault drop down, which loads it. Names are listed by get_state.")]
+	public static string SelectVault([Description("Vault name as listed in get_state 'vaults'.")] string name)
+		=> AutomationHost.OnUi(form =>
+		{
+			AutomationHost.MarkDriving();
+			if (!form.AutomationSelectVault(name))
+				throw new McpException($"Unknown vault '{name}'. Vaults: {string.Join(", ", form.AutomationVaults)}");
+			return Serialize(new { vault = form.AutomationSelectedVault });
+		});
+
+	#endregion
+
+	#region Drag & drop
+
+	[McpServerTool(Name = "select_bag", Destructive = true)]
+	[Description("Clicks a bag button of a panel, e.g. panel 'stash' bag 0 shows the equipment panel, 'vault' bag 3 shows the 4th vault bag.")]
+	public static string SelectBag(
+		[Description("Panel id: vault, secondaryVault, playerBag, stash (or equipment).")] string panel,
+		[Description("Zero-based bag button index.")] int bag)
+		=> AutomationHost.OnUi(form =>
+		{
+			var container = AutomationPanels.Resolve(form, panel).Container
+				?? throw new McpException($"Panel '{panel}' has no bag buttons.");
+
+			if (bag < 0 || bag >= container.BagButtons.Count)
+				throw new McpException($"Bag {bag} is out of range 0..{container.BagButtons.Count - 1}.");
+
+			AutomationHost.MarkDriving();
+			var button = container.BagButtons[bag];
+			OnMouseDownMethod.Invoke(button, [new MouseEventArgs(MouseButtons.Left, 1, button.Width / 2, button.Height / 2, 0)]);
+			container.Refresh();
+			return Serialize(new { panel, currentBag = container.CurrentBag });
+		});
+
+	[McpServerTool(Name = "pick_item", Destructive = true)]
+	[Description("Picks up the item at a cell of a panel, exactly like a left click there. Cells are those reported by get_state.")]
+	public static string PickItem(
+		[Description("Panel id.")] string panel,
+		[Description("Cell column.")] int x,
+		[Description("Cell row.")] int y)
+		=> AutomationHost.OnUi(form =>
+		{
+			var named = ResolveShownPanel(form, panel);
+			var drag = form.AutomationDragInfo;
+			if (drag.IsActive)
+				throw new McpException("An item is already being dragged. Use drop_item or cancel_drag first.");
+
+			EnsureWritable(form, named.Panel, "pick up");
+
+			var cell = new Point(x, y);
+			var item = named.Panel.AutomationFindItem(cell)
+				?? throw new McpException($"No item at cell ({x},{y}) of '{panel}'.");
+
+			AutomationHost.MarkDriving();
+			named.Panel.AutomationMouseDown(named.Panel.AutomationCellCenter(cell), MouseButtons.Left);
+
+			if (!drag.IsActive)
+				throw new McpException($"TQVault did not pick up '{ItemName(item)}'. See recent_log.");
+
+			return DragStatus(form);
+		});
+
+	[McpServerTool(Name = "move_drag", Destructive = true)]
+	[Description("Moves the dragged item over a panel so that its top left corner lands on cell (x, y), like hovering with the mouse. The real cursor does not move.")]
+	public static string MoveDrag(
+		[Description("Panel id.")] string panel,
+		[Description("Target cell column of the item's top left corner.")] int x,
+		[Description("Target cell row of the item's top left corner.")] int y)
+		=> AutomationHost.OnUi(form =>
+		{
+			var named = ResolveShownPanel(form, panel);
+			RequireDrag(form);
+			AutomationHost.MarkDriving();
+			named.Panel.AutomationMouseMove(DragCursorFor(form, named.Panel, new Point(x, y)));
+			return DragStatus(form);
+		});
+
+	[McpServerTool(Name = "drop_item", Destructive = true)]
+	[Description("Drops the dragged item so that its top left corner lands on cell (x, y) of a panel, like a left click there. Dropping on an occupied cell swaps items (the other item is then dragged). Like a real drop, dropping it back on its own cells re-places it and marks the sack modified; use cancel_drag to put it back untouched.")]
+	public static string DropItem(
+		[Description("Panel id.")] string panel,
+		[Description("Target cell column of the item's top left corner.")] int x,
+		[Description("Target cell row of the item's top left corner.")] int y)
+		=> AutomationHost.OnUi(form =>
+		{
+			var named = ResolveShownPanel(form, panel);
+			var drag = RequireDrag(form);
+			EnsureWritable(form, named.Panel, "drop into");
+
+			AutomationHost.MarkDriving();
+			var dropped = drag.Item;
+			var cursor = DragCursorFor(form, named.Panel, new Point(x, y));
+			named.Panel.AutomationMouseMove(cursor);
+			var target = named.Panel.AutomationCellsUnderDragItem;
+			named.Panel.AutomationMouseDown(cursor, MouseButtons.Left);
+
+			var stillHeld = drag.IsActive && ReferenceEquals(drag.Item, dropped);
+			if (!drag.IsActive)
+				ReleaseCursor(named.Panel);
+
+			return Serialize(new
+			{
+				accepted = !stillHeld,
+				targetCells = target.Size.IsEmpty ? null : new { x = target.X, y = target.Y, width = target.Width, height = target.Height },
+				droppedItem = DescribeItem(dropped, null),
+				status = JsonDocument.Parse(DragStatus(form)).RootElement,
+				hint = stillHeld ? "The panel refused the drop (cell out of range, occupied by several items, wrong slot or requirements). The item is still dragged." : null,
+			});
+		});
+
+	[McpServerTool(Name = "cancel_drag", Destructive = true)]
+	[Description("Cancels the current drag and returns the item to where it was picked up, like a right click.")]
+	public static string CancelDrag()
+		=> AutomationHost.OnUi(form =>
+		{
+			var drag = RequireDrag(form);
+			if (!drag.CanBeCanceled)
+				throw new McpException("This drag cannot be canceled (the item was split or modified). Drop it somewhere instead.");
+
+			AutomationHost.MarkDriving();
+			var source = drag.SrcSackPanel;
+			drag.Cancel();
+			source?.Refresh();
+			ReleaseCursor(VirtualCursor.Target as SackPanel);
+			return DragStatus(form);
+		});
+
+	#endregion
+
+	#region Capture
+
+	[McpServerTool(Name = "capture", ReadOnly = true)]
+	[Description("Renders a control to PNG with Control.DrawToBitmap, so it works when the window is hidden behind others. Target: a panel id (vault, player, equipment...), '<panel>.container' for the panel with its bag buttons, 'main' for the main window, or part of a form title.")]
+	public static IEnumerable<ContentBlock> Capture(
+		[Description("What to capture.")] string control = "main")
+	{
+		var (png, size) = AutomationHost.OnUi(form =>
+		{
+			var target = ResolveCaptureTarget(form, control);
+			if (target.Width <= 0 || target.Height <= 0)
+				throw new McpException($"'{control}' has no size (is it shown?).");
+
+			using var bitmap = new Bitmap(target.Width, target.Height);
+			target.DrawToBitmap(bitmap, new Rectangle(Point.Empty, target.Size));
+			using var stream = new MemoryStream();
+			bitmap.Save(stream, ImageFormat.Png);
+			return (stream.ToArray(), target.Size);
+		});
+
+		var path = Path.Combine(Path.GetTempPath(), $"tqvault-capture-{control.Replace('.', '-')}-{DateTime.Now:yyyyMMdd-HHmmss-fff}.png");
+		File.WriteAllBytes(path, png);
+
+		return
+		[
+			ImageContentBlock.FromBytes(png, "image/png"),
+			new TextContentBlock { Text = $"{control}: {size.Width}x{size.Height} px, saved to {path}" },
+		];
+	}
+
+	#endregion
+
+	#region Helpers
+
+	private static string Serialize(object value) => JsonSerializer.Serialize(value, JsonOptions);
+
+	private static AutomationPanels.NamedPanel ResolveShownPanel(MainForm form, string panel)
+	{
+		var named = AutomationPanels.Resolve(form, panel);
+		if (!AutomationPanels.IsShown(named.Panel) || named.Panel.Sack is null)
+			throw new McpException($"Panel '{named.Id}' is not shown or has no sack. Use select_bag (stash bag 0 shows the equipment).");
+		return named;
+	}
+
+	private static Models.ItemDragInfo RequireDrag(MainForm form)
+	{
+		var drag = form.AutomationDragInfo;
+		if (!drag.IsActive)
+			throw new McpException("No item is being dragged. Use pick_item first.");
+		return drag;
+	}
+
+	/// <summary>
+	/// Respects the PlayerReadonly setting, which the equipment panel enforces for real mouse clicks too.
+	/// </summary>
+	private static void EnsureWritable(MainForm form, SackPanel panel, string action)
+	{
+		if (form.AutomationSettings.PlayerReadonly && panel.SackType == SackType.Equipment)
+			throw new McpException($"Cannot {action} the equipment panel: the PlayerReadonly setting is on.");
+	}
+
+	/// <summary>
+	/// Client location of the cursor that puts the dragged item's top left corner on <paramref name="cell"/>.
+	/// </summary>
+	private static Point DragCursorFor(MainForm form, SackPanel panel, Point cell)
+	{
+		var topLeft = panel.AutomationCellTopLeft(cell);
+		var offset = form.AutomationDragInfo.MouseOffset;
+		return new Point(topLeft.X + offset.X, topLeft.Y + offset.Y);
+	}
+
+	private static void ReleaseCursor(SackPanel? panel)
+	{
+		VirtualCursor.Release();
+		panel?.AutomationMouseLeave();
+	}
+
+	private static string DragStatus(MainForm form)
+	{
+		var drag = form.AutomationDragInfo;
+		var hovered = VirtualCursor.Target as SackPanel;
+		var cells = hovered?.AutomationCellsUnderDragItem ?? Rectangle.Empty;
+		return Serialize(new
+		{
+			dragging = drag.IsActive,
+			item = drag.IsActive ? DescribeItem(drag.Item, null) : null,
+			sourcePanel = drag.IsActive ? AutomationPanels.IdOf(form, drag.SrcSackPanel) : null,
+			hoveredPanel = AutomationPanels.IdOf(form, hovered),
+			cellsUnderItem = cells.Size.IsEmpty ? null : new { x = cells.X, y = cells.Y, width = cells.Width, height = cells.Height },
+		});
+	}
+
+	private static Control ResolveCaptureTarget(MainForm form, string control)
+	{
+		if (string.Equals(control, "main", StringComparison.OrdinalIgnoreCase))
+			return form;
+
+		const string containerSuffix = ".container";
+		if (control.EndsWith(containerSuffix, StringComparison.OrdinalIgnoreCase))
+		{
+			var id = control[..^containerSuffix.Length];
+			return (Control?)AutomationPanels.Resolve(form, id).Container
+				?? throw new McpException($"Panel '{id}' has no container.");
+		}
+
+		var panel = AutomationPanels.List(form).FirstOrDefault(p => string.Equals(p.Id, control, StringComparison.OrdinalIgnoreCase));
+		if (panel is not null)
+			return panel.Panel;
+
+		foreach (Form open in System.Windows.Forms.Application.OpenForms)
+		{
+			if (open.Text.Contains(control, StringComparison.OrdinalIgnoreCase))
+				return open;
+		}
+
+		throw new McpException($"Unknown capture target '{control}'. Use 'main', a panel id ({string.Join(", ", AutomationPanels.List(form).Select(p => p.Id))}), '<panel>.container' or a form title.");
+	}
+
+	private static string ItemName(Item item)
+	{
+		try
+		{
+			var provider = Program.ServiceProvider.GetRequiredService<IItemProvider>();
+			return provider.GetFriendlyNames(item).FullNameClean;
+		}
+		catch (Exception)
+		{
+			// Unknown records (mods, corrupted items) must not break the state dump.
+			return item.BaseItemId.ToString();
+		}
+	}
+
+	private static object? DescribeItem(Item? item, SackCollection? sack)
+	{
+		if (item is null || RecordId.IsNullOrEmpty(item.BaseItemId))
+			return null;
+
+		string name = item.BaseItemId.ToString();
+		string? baseName = null;
+		try
+		{
+			var names = Program.ServiceProvider.GetRequiredService<IItemProvider>().GetFriendlyNames(item);
+			name = names.FullNameClean;
+			baseName = names.BaseItemInfoDescription?.RemoveAllTQTags();
+		}
+		catch (Exception)
+		{
+			// Unknown records (mods, corrupted items) must not break the state dump.
+		}
+
+		return new
+		{
+			name,
+			baseName,
+			baseItemId = item.BaseItemId.ToString(),
+			x = item.PositionX,
+			y = item.PositionY,
+			width = item.Width,
+			height = item.Height,
+			quantity = item.DoesStack ? item.Number : (int?)null,
+			equipmentSlot = sack?.SackType == SackType.Equipment ? EquipmentPanel.FindEquipmentSlot(sack, item) : (int?)null,
+		};
+	}
+
+	private static object? DescribeEquipmentSlots(SackCollection? sack)
+	{
+		if (sack is null)
+			return null;
+
+		return Enumerable.Range(0, sack.NumberOfSlots).Select(slot =>
+		{
+			var upperLeft = SackCollection.GetEquipmentLocationOffset(slot);
+			var size = SackCollection.GetEquipmentLocationSize(slot);
+			if (SackCollection.IsWeaponSlot(slot))
+			{
+				size = SackCollection.WeaponLocationSize;
+				upperLeft = SackCollection.GetWeaponLocationOffset(upperLeft.Y);
+			}
+
+			return new
+			{
+				slot,
+				x = upperLeft.X,
+				y = upperLeft.Y,
+				width = size.Width,
+				height = size.Height,
+				weapon = SackCollection.IsWeaponSlot(slot),
+			};
+		}).ToList();
+	}
+
+	#endregion
+}
