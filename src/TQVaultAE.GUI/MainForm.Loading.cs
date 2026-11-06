@@ -309,8 +309,11 @@ public partial class MainForm
 			this.loadingComplete = true;
 			this.Enabled = true;
 
-			// Prepare the search data now, so the first search does not have to.
-			_ = this.Services.ItemDatabaseService.WarmUpAsync();
+			// Prepare the search data now, so the first search does not have to,
+			// then the bag button icons, so the bag button settings open at once.
+			var iconService = this.Services.IconService;
+			_ = this.Services.ItemDatabaseService.WarmUpAsync()
+				.ContinueWith(_ => iconService.GetIconDatabaseAsync(), TaskScheduler.Default);
 
 			this.LoadTransferStash();
 			this.LoadRelicVaultStash();
