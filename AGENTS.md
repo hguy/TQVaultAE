@@ -140,8 +140,33 @@ Application (DTOs, Results, Search)
 3. Follow Arrange-Act-Assert pattern
 4. Verify actual behavior, not property assignments
 
+## Verifying GUI Changes (`tqvault` MCP)
+
+Debug builds of `TQVaultAE.GUI` host an MCP server inside the app at `http://127.0.0.1:47017/mcp`. It is registered for Claude Code in `.mcp.json`. Use it to check UI changes on the running app, instead of screenshots and real mouse clicks.
+
+1. Build Debug: `dotnet build TQVaultAE.slnx`.
+2. Run `src/TQVaultAE.GUI/bin/Debug/net10.0-windows/TQVaultAE.exe`.
+3. Use the `mcp__tqvault__*` tools:
+
+| Purpose | Tools |
+|---|---|
+| Windows and dialogs | `list_windows`, `close_dialog` (for example "Default Vault Path" → OK) |
+| Read the state from the app's models | `get_state(panel?)`, which returns characters, vaults, panels and items with their cells |
+| Navigation | `select_character`, `select_vault`, `select_bag` |
+| Drag and drop through the panels' own handlers | `pick_item`, `move_drag`, `drop_item`, `cancel_drag` |
+| Evidence | `capture(control)`, a PNG made with `DrawToBitmap` that works even when the window is hidden; `recent_log(n)` |
+
+Rules:
+- The save guard refuses player, vault and configuration saves, and the git push, once automation has driven the app. Leave it on.
+- Put items back with `cancel_drag`.
+- `PlayerReadonly` blocks picking from and dropping on the equipment panel.
+- Release builds contain none of this. Keep any new hook inside `#if DEBUG`.
+
+Full reference: `documentation/AUTOMATION.md`.
+
 ## Resources
 - Game file formats (ARC, ARZ, text, TEX, item stat jitter): `documentation/tq-file-formats.md`
 - DB CLI (`tqdb`) usage: `documentation/DBCLI.md`
+- In-app automation endpoint (`tqvault` MCP, Debug only): `documentation/AUTOMATION.md`
 - GitHub: https://github.com/EtienneLamoureux/TQVaultAE
 - Issues: https://github.com/EtienneLamoureux/TQVaultAE/issues

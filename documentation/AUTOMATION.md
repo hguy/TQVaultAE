@@ -29,15 +29,18 @@ in existing code is inside `#if DEBUG`.
 
 ## Register it in Claude Code
 
-Start a Debug build (`dotnet build TQVaultAE.slnx`, then run
-`src/TQVaultAE.GUI/bin/Debug/net10.0-windows/TQVaultAE.exe`), then:
+The repository's `.mcp.json` already registers it as `tqvault`. Follow these steps:
+
+1. Start a Debug build: run `dotnet build TQVaultAE.slnx`, then `src/TQVaultAE.GUI/bin/Debug/net10.0-windows/TQVaultAE.exe`.
+2. Open Claude Code at the repository root, and approve the project server when you are asked.
+
+The tools show up as `mcp__tqvault__*` in sessions started at the repository root. A local registration counts only for the folder the command runs in, not the whole repository. To register the server by hand from another folder, use:
 
 ```bash
 claude mcp add --transport http tqvault http://127.0.0.1:47017/mcp
 ```
 
-Add `--scope project` to share the registration through `.mcp.json`. The tools show up as `mcp__tqvault__*`
-once the app is running.
+If you use another port (`TQVAULT_MCP_PORT`), update the URL in `.mcp.json` too.
 
 ## Tools
 
