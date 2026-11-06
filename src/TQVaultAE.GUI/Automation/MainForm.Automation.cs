@@ -76,6 +76,9 @@ public partial class MainForm
 
 	internal bool AutomationForgeShown => this.forgePanel?.Visible == true;
 
+	/// <summary>Text of the notification bar, which shows the name of the item under the cursor.</summary>
+	internal string AutomationNotificationText => this.NotificationText.Text;
+
 	/// <summary>
 	/// Shows or hides the forge like the Forge button does, which also hides or restores the other panels.
 	/// </summary>

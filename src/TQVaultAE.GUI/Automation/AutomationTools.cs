@@ -308,6 +308,58 @@ internal static partial class AutomationTools
 			});
 		});
 
+	[McpServerTool(Name = "hover_item", Destructive = true)]
+	[Description("Hovers a cell of a panel without dragging, like resting the mouse there: TQVault shows the item's tooltip and its name in the notification bar. Returns the item, the tooltips shown and a PNG of the tooltip, taken right away since the tooltip may close on its own. End the hover with hover_end.")]
+	public static IEnumerable<ContentBlock> HoverItem(
+		[Description("Panel id.")] string panel,
+		[Description("Cell column.")] int x,
+		[Description("Cell row.")] int y)
+	{
+		var (json, png) = AutomationHost.OnUi(form =>
+		{
+			var named = ResolveShownPanel(form, panel);
+			if (form.AutomationDragInfo.IsActive)
+				throw new McpException("An item is being dragged: use move_drag to hover with it, or cancel_drag first.");
+
+			var cell = new Point(x, y);
+			var item = named.Panel.AutomationFindItem(cell);
+			AutomationHost.MarkDriving();
+			named.Panel.AutomationMouseMove(named.Panel.AutomationCellCenter(cell));
+
+			var tooltip = OpenTooltips().LastOrDefault();
+			byte[]? image = null;
+			if (tooltip is { Width: > 0, Height: > 0 })
+			{
+				using var bitmap = new Bitmap(tooltip.Width, tooltip.Height);
+				tooltip.DrawToBitmap(bitmap, new Rectangle(Point.Empty, tooltip.Size));
+				using var stream = new MemoryStream();
+				bitmap.Save(stream, ImageFormat.Png);
+				image = stream.ToArray();
+			}
+
+			return (Serialize(new
+			{
+				item = item is null ? null : DescribeItem(item, null),
+				notification = form.AutomationNotificationText,
+				tooltips = DescribeTooltips(),
+			}), image);
+		});
+
+		var blocks = new List<ContentBlock> { new TextContentBlock { Text = json } };
+		if (png is not null)
+			blocks.Add(ImageContentBlock.FromBytes(png, "image/png"));
+		return blocks;
+	}
+
+	[McpServerTool(Name = "hover_end", Destructive = true)]
+	[Description("Ends a hover_item: the virtual cursor leaves the panel and the tooltip closes.")]
+	public static string HoverEnd()
+		=> AutomationHost.OnUi(form =>
+		{
+			ReleaseCursor(VirtualCursor.Target as SackPanel);
+			return Serialize(new { tooltips = DescribeTooltips() });
+		});
+
 	[McpServerTool(Name = "cancel_drag", Destructive = true)]
 	[Description("Cancels the current drag and returns the item to where it was picked up, like a right click.")]
 	public static string CancelDrag()
@@ -398,6 +450,13 @@ internal static partial class AutomationTools
 		return new Point(topLeft.X + offset.X, topLeft.Y + offset.Y);
 	}
 
+	/// <summary>The tooltip windows shown, oldest first.</summary>
+	private static List<Tooltips.BaseTooltip> OpenTooltips()
+		=> System.Windows.Forms.Application.OpenForms.OfType<Tooltips.BaseTooltip>().Where(t => t.Visible).ToList();
+
+	private static object DescribeTooltips()
+		=> OpenTooltips().Select(t => new { type = t.GetType().Name, width = t.Width, height = t.Height }).ToList();
+
 	private static void ReleaseCursor(SackPanel? panel)
 	{
 		VirtualCursor.Release();
@@ -432,6 +491,10 @@ internal static partial class AutomationTools
 				?? throw new McpException($"Panel '{id}' has no container.");
 		}
 
+		if (string.Equals(control, "tooltip", StringComparison.OrdinalIgnoreCase))
+			return OpenTooltips().LastOrDefault()
+				?? throw new McpException("No tooltip is shown. Use hover_item first.");
+
 		var panel = AutomationPanels.List(form).FirstOrDefault(p => string.Equals(p.Id, control, StringComparison.OrdinalIgnoreCase));
 		if (panel is not null)
 			return panel.Panel;
@@ -442,7 +505,7 @@ internal static partial class AutomationTools
 				return open;
 		}
 
-		throw new McpException($"Unknown capture target '{control}'. Use 'main', a panel id ({string.Join(", ", AutomationPanels.List(form).Select(p => p.Id))}), '<panel>.container' or a form title.");
+		throw new McpException($"Unknown capture target '{control}'. Use 'main', 'tooltip', a panel id ({string.Join(", ", AutomationPanels.List(form).Select(p => p.Id))}), '<panel>.container' or a form title.");
 	}
 
 	private static string ItemName(Item item)
