@@ -6,7 +6,6 @@
 
 using System.Globalization;
 using System.Reflection;
-using System.Security.Permissions;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
@@ -144,14 +143,12 @@ public partial class MainForm : VaultForm
 
 #if DEBUG
 	// For Design Mode
-	[PermissionSet(SecurityAction.LinkDemand, Unrestricted = true)]
 	public MainForm() => InitForm();
 #endif
 
 	/// <summary>
 	/// Initializes a new instance of the MainForm class.
 	/// </summary>
-	[PermissionSet(SecurityAction.LinkDemand, Unrestricted = true)]
 	public MainForm(
 			GuiServices services
 			, ILogger<MainForm> log
