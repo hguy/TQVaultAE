@@ -1,5 +1,45 @@
 # top-most EditorConfig file
 root = true
 
+# Line endings and BOM are left to git (core.autocrlf) and to each file:
+# the sources mix them, so no end_of_line or charset is set here.
+
 [*.cs]
 indent_style = tab
+insert_final_newline = true
+
+# Layout: Allman braces, as in the existing code.
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# Namespaces and usings
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_using_directive_placement = outside_namespace:suggestion
+dotnet_sort_system_directives_first = true
+
+# Braces are mandatory for multi-line statements (CONTRIBUTING.md).
+csharp_prefer_braces = when_multiline:suggestion
+
+# Naming
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_style.prefix_i.required_prefix = I
+dotnet_naming_style.prefix_i.capitalization = pascal_case
+dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces
+dotnet_naming_rule.interfaces_start_with_i.style = prefix_i
+dotnet_naming_rule.interfaces_start_with_i.severity = suggestion
+
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_style.pascal.capitalization = pascal_case
+dotnet_naming_rule.types_are_pascal.symbols = types
+dotnet_naming_rule.types_are_pascal.style = pascal
+dotnet_naming_rule.types_are_pascal.severity = suggestion
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+dotnet_naming_rule.private_fields_underscore.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore.style = underscore_camel
+dotnet_naming_rule.private_fields_underscore.severity = suggestion

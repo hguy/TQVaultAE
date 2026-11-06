@@ -40,7 +40,7 @@ dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --no-build
 
 ### Formatting
 - **Indentation**: Tabs
-- **Braces**: K&R style (opening brace on same line)
+- **Braces**: Allman style (opening brace on its own line), as in the existing code
 - **Namespaces**: File-scoped
 - **This Prefix**: Use `this.` for all instance members
 
