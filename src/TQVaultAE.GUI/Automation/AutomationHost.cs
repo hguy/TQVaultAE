@@ -1,0 +1,157 @@
+//-----------------------------------------------------------------------
+// <copyright file="AutomationHost.cs" company="None">
+//     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+using System.Net;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ModelContextProtocol;
+
+namespace TQVaultAE.GUI.Automation;
+
+/// <summary>
+/// Debug-only MCP server hosted inside TQVault, listening on http://127.0.0.1:{port}/mcp (streamable HTTP).
+/// </summary>
+/// <remarks>
+/// Environment variables:
+/// <list type="bullet">
+/// <item><c>TQVAULT_MCP_PORT</c>: listening port (default <see cref="DefaultPort"/>).</item>
+/// <item><c>TQVAULT_MCP_DISABLED=1</c>: do not start the endpoint.</item>
+/// <item><c>TQVAULT_MCP_ALLOW_SAVES=1</c>: let TQVault save files after automation has driven the UI.</item>
+/// </list>
+/// </remarks>
+internal static class AutomationHost
+{
+	public const int DefaultPort = 47017;
+
+	private static ILogger? _log;
+	private static WebApplication? _app;
+	private static MainForm? _mainForm;
+	private static volatile bool _isDriving;
+
+	/// <summary>
+	/// Gets the in-memory log buffer served by <c>recent_log</c>.
+	/// </summary>
+	public static RecentLogProvider RecentLog { get; } = new();
+
+	/// <summary>
+	/// Gets the endpoint address, or null when the endpoint is not running.
+	/// </summary>
+	public static string? Address { get; private set; }
+
+	/// <summary>
+	/// Gets or sets a value indicating whether saving is refused once automation has driven the UI.
+	/// </summary>
+	public static bool BlockSavesWhileDriving { get; set; } = Environment.GetEnvironmentVariable("TQVAULT_MCP_ALLOW_SAVES") != "1";
+
+	/// <summary>
+	/// Gets a value indicating whether an automation client has performed an action on the UI.
+	/// </summary>
+	public static bool IsDriving => _isDriving;
+
+	/// <summary>
+	/// Gets the main form once it has been created.
+	/// </summary>
+	public static MainForm? MainForm => _mainForm;
+
+	/// <summary>
+	/// Starts the endpoint in the background. Safe to call before the main form exists,
+	/// so that startup dialogs can already be listed and answered.
+	/// </summary>
+	public static void Start(ILoggerFactory loggerFactory)
+	{
+		_log = loggerFactory.CreateLogger(typeof(AutomationHost));
+
+		if (Environment.GetEnvironmentVariable("TQVAULT_MCP_DISABLED") == "1")
+		{
+			_log.LogInformation("Automation MCP endpoint disabled by TQVAULT_MCP_DISABLED");
+			return;
+		}
+
+		var port = int.TryParse(Environment.GetEnvironmentVariable("TQVAULT_MCP_PORT"), out var p) ? p : DefaultPort;
+
+		_ = Task.Run(() => StartServerAsync(port));
+	}
+
+	/// <summary>
+	/// Gives the tools access to the main form.
+	/// </summary>
+	public static void AttachMainForm(MainForm mainForm) => _mainForm = mainForm;
+
+	/// <summary>
+	/// Marks the session as driven by automation, which arms the save guard.
+	/// </summary>
+	public static void MarkDriving()
+	{
+		if (_isDriving)
+			return;
+
+		_isDriving = true;
+		if (BlockSavesWhileDriving)
+			_log?.LogWarning("Automation is driving TQVault: saving is refused until the application is restarted (set TQVAULT_MCP_ALLOW_SAVES=1 or call set_save_guard to change)");
+	}
+
+	/// <summary>
+	/// Returns true, and logs it, when <paramref name="operation"/> must not write anything to disk.
+	/// </summary>
+	public static bool IsSaveBlocked(string operation)
+	{
+		if (!_isDriving || !BlockSavesWhileDriving)
+			return false;
+
+		_log?.LogWarning("Save refused while automation is driving TQVault: {Operation}", operation);
+		return true;
+	}
+
+	/// <summary>
+	/// Runs <paramref name="action"/> on the UI thread and returns its result.
+	/// </summary>
+	public static T OnUi<T>(Func<MainForm, T> action)
+	{
+		var form = _mainForm;
+		if (form is null || form.IsDisposed || !form.IsHandleCreated)
+			throw new McpException("The TQVault main window is not ready yet. Use list_windows / close_dialog to answer startup dialogs.");
+
+		if (!form.InvokeRequired)
+			return action(form);
+
+		return (T)form.Invoke(() => action(form))!;
+	}
+
+	private static async Task StartServerAsync(int port)
+	{
+		try
+		{
+			var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions
+			{
+				ContentRootPath = AppContext.BaseDirectory,
+				Args = [],
+			});
+
+			builder.WebHost.ConfigureKestrel(options => options.Listen(IPAddress.Loopback, port));
+			builder.Logging.ClearProviders();
+			builder.Logging.SetMinimumLevel(LogLevel.Warning);
+			builder.Logging.AddProvider(RecentLog);
+
+			builder.Services
+				.AddMcpServer(options => options.ServerInfo = new() { Name = "tqvault", Version = "1.0.0" })
+				.WithHttpTransport(options => options.Stateless = true)
+				.WithTools([typeof(AutomationTools)]);
+
+			var app = builder.Build();
+			app.MapMcp("/mcp");
+
+			await app.StartAsync().ConfigureAwait(false);
+			_app = app;
+			Address = $"http://127.0.0.1:{port}/mcp";
+			_log?.LogInformation("Automation MCP endpoint listening on {Address}", Address);
+		}
+		catch (Exception ex)
+		{
+			_log?.LogError(ex, "Failed to start the automation MCP endpoint on port {Port}", port);
+		}
+	}
+}
