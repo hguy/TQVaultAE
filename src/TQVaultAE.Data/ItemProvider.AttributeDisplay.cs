@@ -150,7 +150,7 @@ public partial class ItemProvider
 		// Now we have all our attributes grouped by effect.  Now lets sort them
 		List<Variable?>[] attrArray = new List<Variable?>[attrByEffect.Count];
 		attrByEffect.Values.CopyTo(attrArray, 0);
-		Array.Sort(attrArray, new ItemAttributeListCompare(itm.IsArmor || itm.IsShield, this.ItemAttributeProvider));
+		Array.Sort(attrArray, itm.IsArmor || itm.IsShield ? this.SortArmorAttributeGroups : this.SortOtherAttributeGroups);
 
 		// Now for the global params, we need to check to see if they are XOR or all.
 		// We do itm by checking the effect just after the global param.
@@ -197,7 +197,7 @@ public partial class ItemProvider
 		{
 			// Used to sort out the Damage Qualifier effects.
 			if (ItemAttributeProvider.AttributeGroupIs(new Collection<Variable?>(attrList), ItemAttributesEffectType.DamageQualifierEffect))
-				attrList.Sort(new ItemAttributeSubListCompare(this.ItemAttributeProvider));
+				attrList.Sort(this.SortDamageQualifiers);
 
 			if (!convertStrings)
 				ConvertBareAttributeListToString(attrList, results);

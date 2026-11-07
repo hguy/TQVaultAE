@@ -56,7 +56,17 @@ public partial class ItemProvider : IItemProvider
 		this.TranslationService = translationService;
 		PathIO = pathIO;
 		USettings = uSettings;
+
+		this.SortArmorAttributeGroups = ((IComparer<List<Variable?>>)new ItemAttributeListCompare(true, itemAttributeProvider)).Compare;
+		this.SortOtherAttributeGroups = ((IComparer<List<Variable?>>)new ItemAttributeListCompare(false, itemAttributeProvider)).Compare;
+		this.SortDamageQualifiers = ((IComparer<Variable?>)new ItemAttributeSubListCompare(itemAttributeProvider)).Compare;
 	}
+
+	// Sort delegates made once: Array.Sort and List.Sort given an IComparer build a Comparison from it on every call,
+	// and building that delegate was the most contended step of the parallel search warm-up.
+	private readonly Comparison<List<Variable?>> SortArmorAttributeGroups;
+	private readonly Comparison<List<Variable?>> SortOtherAttributeGroups;
+	private readonly Comparison<Variable?> SortDamageQualifiers;
 
 
 	/// <summary>
