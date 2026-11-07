@@ -195,6 +195,9 @@ public partial class VaultForm : Form, IScalingControl
 		ScaleControl(this.UIService, this.buttonMinimize);
 		ScaleControl(this.UIService, this.buttonClose);
 
+		// Caption buttons are pictures: their text only names them (it used to be hidden by shrinking the font to fit).
+		this.buttonMaximize.ImageOnly = this.ButtonScaleTo1.ImageOnly = this.buttonMinimize.ImageOnly = this.buttonClose.ImageOnly = true;
+
 		#endregion
 
 		this.CreateBorderRects();

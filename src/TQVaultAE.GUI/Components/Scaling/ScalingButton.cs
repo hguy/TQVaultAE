@@ -98,6 +98,12 @@ public class ScalingButton : Button, IScalingControl
 	/// <summary>
 	/// Gets or sets a value indicating whether the button size is forced to be the same as the custom graphic.
 	/// </summary>
+	/// <summary>
+	/// Gets or sets a value indicating whether only the picture is drawn, not the text. The text stays the button's name
+	/// for accessibility and automation (window caption buttons: Close, Maximize...).
+	/// </summary>
+	public bool ImageOnly { get; set; }
+
 	public bool SizeToGraphic
 	{
 		get => this.sizeToGraphic;
@@ -154,6 +160,13 @@ public class ScalingButton : Button, IScalingControl
 
 			if (this.Image is { } source && this.Size != source.Size)
 				this.Image = this.ScaledImage(source);
+		}
+
+		if (this.ImageOnly && this.Image is { } picture)
+		{
+			// The background (and the parent behind a transparent one) is painted by OnPaintBackground.
+			pevent.Graphics.DrawImage(picture, this.ClientRectangle);
+			return;
 		}
 
 		base.OnPaint(pevent);
