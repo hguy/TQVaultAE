@@ -489,6 +489,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	{
 		"skillManaCost",
 		"skillActiveManaCost",
+		"skillActiveLifeCost",
 		"skillChanceWeight",
 		"skillActiveDuration",
 		"skillTargetRadius",
