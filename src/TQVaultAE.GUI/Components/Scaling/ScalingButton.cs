@@ -8,6 +8,7 @@
 namespace TQVaultAE.GUI.Components.Scaling;
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.Presentation;
@@ -146,35 +147,81 @@ public class ScalingButton : Button, IScalingControl
 	{
 		if (this.UseCustomGraphic && this.Image != null && this.Size != this.Image.Size)
 		{
-			// Scaling smaller can make the outside border disappear.
-			// To avoid this we scale the image and then copy a 3 pixel strip from each edge to restore the border.
-			if (this.Width < this.Image.Width)
-			{
-				int width = 4;
-				Bitmap newImage = new Bitmap(this.Width, this.Height);
-				Graphics graphics = Graphics.FromImage(newImage);
+			// The copies were made for another size: drop them (this can put the source image back).
+			if (this.scaledSize != this.Size)
+				this.ReleaseScaledImages();
 
-				// First draw the new image scaled to the size of the button.
-				graphics.DrawImage(this.Image, new Rectangle(new Point(0, 0), this.Size));
-
-				// Grab the left border from the source image and paint it onto the new image.
-				graphics.DrawImage(this.Image, new Rectangle(0, 0, width, this.Height), new Rectangle(0, 0, width, this.Image.Height), GraphicsUnit.Pixel);
-
-				// Now grab the right border from the source image and paint it onto the new image.
-				graphics.DrawImage(
-					this.Image,
-					new Rectangle(this.Width - width, 0, width, this.Height),
-					new Rectangle(this.Image.Width - width, 0, width, this.Image.Height),
-					GraphicsUnit.Pixel);
-
-				this.Image = newImage;
-			}
-			else
-				// Just scale the image normally.
-				this.Image = new Bitmap(this.Image, this.Size);
+			if (this.Image is { } source && this.Size != source.Size)
+				this.Image = this.ScaledImage(source);
 		}
 
 		base.OnPaint(pevent);
+	}
+
+	/// <summary>
+	/// Copies of the up, over and down pictures at the button size, by source picture. The mouse and focus handlers put the
+	/// source back on each change, so without them every hover made a new bitmap.
+	/// </summary>
+	private readonly Dictionary<Image, Bitmap> scaledImages = new();
+
+	/// <summary>Size the <see cref="scaledImages"/> were made for.</summary>
+	private Size scaledSize;
+
+	private Bitmap ScaledImage(Image source)
+	{
+		if (this.scaledImages.TryGetValue(source, out var scaled))
+			return scaled;
+
+		// Scaling smaller can make the outside border disappear.
+		// To avoid this we scale the image and then copy a 4 pixel strip from each edge to restore the border.
+		if (this.Width < source.Width)
+		{
+			int width = 4;
+			scaled = new Bitmap(this.Width, this.Height);
+			using Graphics graphics = Graphics.FromImage(scaled);
+
+			// First draw the new image scaled to the size of the button.
+			graphics.DrawImage(source, new Rectangle(new Point(0, 0), this.Size));
+
+			// Grab the left border from the source image and paint it onto the new image.
+			graphics.DrawImage(source, new Rectangle(0, 0, width, this.Height), new Rectangle(0, 0, width, source.Height), GraphicsUnit.Pixel);
+
+			// Now grab the right border from the source image and paint it onto the new image.
+			graphics.DrawImage(
+				source,
+				new Rectangle(this.Width - width, 0, width, this.Height),
+				new Rectangle(source.Width - width, 0, width, source.Height),
+				GraphicsUnit.Pixel);
+		}
+		else
+			// Just scale the image normally.
+			scaled = new Bitmap(source, this.Size);
+
+		this.scaledImages[source] = scaled;
+		return scaled;
+	}
+
+	/// <summary>Disposes the scaled copies, giving the button its source picture back if it shows one of them.</summary>
+	private void ReleaseScaledImages()
+	{
+		foreach (var (source, scaled) in this.scaledImages)
+		{
+			if (ReferenceEquals(this.Image, scaled))
+				this.Image = source;
+
+			scaled.Dispose();
+		}
+
+		this.scaledImages.Clear();
+		this.scaledSize = this.Size;
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+			this.ReleaseScaledImages();
+
+		base.Dispose(disposing);
 	}
 
 	/// <summary>
