@@ -15,7 +15,7 @@ public class TextExceptionFormatter
 	// Fields
 	private int innerDepth;
 	private readonly Exception exception;
-	private NameValueCollection additionalInfo;
+	private NameValueCollection? additionalInfo;
 	private StringBuilder stringBuilder = new StringBuilder(1024);
 	private static readonly List<string> IgnoredProperties = new List<string>() { "Source", "Message", "HelpLink", "InnerException", "StackTrace" };
 
@@ -62,7 +62,7 @@ public class TextExceptionFormatter
 		}
 	}
 
-	private void WriteException(Exception exceptionToFormat, Exception outerException)
+	private void WriteException(Exception exceptionToFormat, Exception? outerException)
 	{
 		if (outerException != null)
 		{
@@ -79,7 +79,7 @@ public class TextExceptionFormatter
 		}
 	}
 
-	private void WriteException2(Exception exceptionToFormat, Exception outerException)
+	private void WriteException2(Exception exceptionToFormat, Exception? outerException)
 	{
 		if (exceptionToFormat == null)
 		{
@@ -95,7 +95,7 @@ public class TextExceptionFormatter
 		{
 			this.WriteAdditionalInfo(this.AdditionalInfo);
 		}
-		Exception innerException = exceptionToFormat.InnerException;
+		Exception? innerException = exceptionToFormat.InnerException;
 		if (innerException != null)
 		{
 			this.WriteException(innerException, exceptionToFormat);
@@ -112,19 +112,19 @@ public class TextExceptionFormatter
 		this.IndentAndWriteLine("Message: {0}", message);
 	}
 
-	private void WriteSource(string source)
+	private void WriteSource(string? source)
 	{
 		this.IndentAndWriteLine("Source: {0}", source);
 	}
 
-	private void WriteHelpLink(string helpLink)
+	private void WriteHelpLink(string? helpLink)
 	{
 		this.IndentAndWriteLine("HelpLink: {0}", helpLink);
 	}
 
 	private void WriteReflectionInfo(Exception exceptionToFormat)
 	{
-		object propertyAccessFailed;
+		object? propertyAccessFailed;
 		if (exceptionToFormat == null)
 			throw new ArgumentNullException("exceptionToFormat");
 
@@ -160,7 +160,7 @@ public class TextExceptionFormatter
 		}
 	}
 
-	private void WritePropertyInfo(PropertyInfo propertyInfo, object value)
+	private void WritePropertyInfo(PropertyInfo propertyInfo, object? value)
 	{
 		this.Indent();
 		this.stringBuilder.Append(propertyInfo.Name);
@@ -175,7 +175,7 @@ public class TextExceptionFormatter
 		}
 	}
 
-	private void WriteFieldInfo(FieldInfo fieldInfo, object value)
+	private void WriteFieldInfo(FieldInfo fieldInfo, object? value)
 	{
 		this.Indent();
 		this.stringBuilder.Append(fieldInfo.Name);
@@ -190,7 +190,7 @@ public class TextExceptionFormatter
 		}
 	}
 
-	private void WriteStackTrace(string stackTrace)
+	private void WriteStackTrace(string? stackTrace)
 	{
 		this.Indent();
 		this.stringBuilder.Append("StackTrace: ");
@@ -210,7 +210,7 @@ public class TextExceptionFormatter
 	{
 		this.stringBuilder.AppendLine("Additional Info:");
 		this.stringBuilder.AppendLine();
-		foreach (string str in additionalInformation.AllKeys)
+		foreach (string? str in additionalInformation.AllKeys)
 		{
 			this.stringBuilder.Append(str);
 			this.stringBuilder.Append(" : ");
@@ -219,7 +219,7 @@ public class TextExceptionFormatter
 		}
 	}
 
-	private void IndentAndWriteLine(string format, params object[] arg)
+	private void IndentAndWriteLine(string format, params object?[] arg)
 	{
 		this.Indent();
 		this.stringBuilder.AppendLine(string.Format(CultureInfo.CurrentCulture, format, arg));
