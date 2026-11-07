@@ -20,7 +20,7 @@ namespace TQVaultAE.GUI.Components.Panels;
 /// </summary>
 public class EquipmentPanel : SackPanel, IScalingControl
 {
-	private readonly ILogger Log = null;
+	private readonly ILogger Log;
 	private readonly UserSettings USettings;
 
 	/// <summary>
@@ -49,7 +49,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the equipment changed event handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnEquipmentChanged { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnEquipmentChanged { get; set; }
 
 	#endregion EquipmentPanel Properties
 
@@ -64,12 +64,12 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		base.CancelDrag(dragInfo);
 
 		// Check to see if we need to restore the shadow slot.
-		if (this.Sack == dragInfo.SrcSack && dragInfo.Item.Is2HWeapon)
+		if (this.Sack == dragInfo.SrcSack && dragInfo.Item is { Is2HWeapon: true } dragged)
 		{
 			try
 			{
-				Item new2HItem = this.GetItemFromShadowSlot(dragInfo.Item.PositionY);
-				this.Invalidate(this.FindSlotRect(new2HItem.Location.X, new2HItem.Location.Y));
+				if (this.GetItemFromShadowSlot(dragged.PositionY) is { } new2HItem)
+					this.Invalidate(this.FindSlotRect(new2HItem.Location.X, new2HItem.Location.Y));
 			}
 			catch (NullReferenceException exception)
 			{
@@ -176,7 +176,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// </summary>
 	/// <param name="cellLocation">Point of the cell location we are interested in</param>
 	/// <returns>Item at that cell location</returns>
-	protected override Item FindItem(Point cellLocation)
+	protected override Item? FindItem(Point cellLocation)
 	{
 		if (this.Sack == null)
 			return null;
@@ -205,9 +205,9 @@ public class EquipmentPanel : SackPanel, IScalingControl
 					// Otherwise we just skip the empty item.
 					if (RecordId.IsNullOrEmpty(item.BaseItemId))
 					{
-						Item item2H = this.GetItemFromShadowSlot(itemSlot - 7);
+						Item? item2H = this.GetItemFromShadowSlot(itemSlot - 7);
 
-						if (!RecordId.IsNullOrEmpty(item2H.BaseItemId) && item2H.Is2HWeapon)
+						if (item2H is not null && !RecordId.IsNullOrEmpty(item2H.BaseItemId) && item2H.Is2HWeapon)
 							// Make sure we got something and it's a 2 Handed weapon
 							return item2H;
 						else
@@ -278,7 +278,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			{
 				// We need to adjust, just in case we clicked on the shadow item of a 2H item.
 				int focusSlot = FindEquipmentSlot(this.FindCell(location));
-				int itemSlot = FindEquipmentSlot(this.Sack, item);
+				int itemSlot = FindEquipmentSlot(this.ShownSack, item);
 				if (focusSlot != itemSlot)
 					itemOffset = SackCollection.GetEquipmentLocationOffset(focusSlot).Y;
 			}
@@ -298,7 +298,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected override void PickupItem(object sender, MouseEventArgs e)
+	protected override void PickupItem(object? sender, MouseEventArgs e)
 	{
 		base.PickupItem(sender, e);
 
@@ -311,7 +311,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected override void TryToPutdownItem(object sender, MouseEventArgs e)
+	protected override void TryToPutdownItem(object? sender, MouseEventArgs e)
 	{
 		// process mouse moving to this location
 		this.MouseMoveCallback(sender, e);
@@ -320,9 +320,10 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		// we do this by making sure that:
 		// (a) there are cells under us
 		// (b) there is <= 1 items under us
-		if (!this.CellsUnderDragItem.Size.IsEmpty && (this.ItemsUnderDragItem == null || this.ItemsUnderDragItem.Count <= 1))
+		if (!this.CellsUnderDragItem.Size.IsEmpty && this.ItemsUnderDragItem.Count <= 1)
 		{
-			Item dragItem = this.DragInfo.Item;
+			if (this.DragInfo.Item is not { } dragItem)
+				return;
 
 			// Check that the item is being dropped into the proper slot.
 			int slot = FindEquipmentSlot(this.CellsUnderDragItem);
@@ -341,8 +342,8 @@ public class EquipmentPanel : SackPanel, IScalingControl
 
 			// Yes we can drop it here!
 			// First take the item that is under us
-			Item itemUnderUs = null;
-			if (this.ItemsUnderDragItem != null && this.ItemsUnderDragItem.Count == 1)
+			Item? itemUnderUs = null;
+			if (this.ItemsUnderDragItem.Count == 1)
 				itemUnderUs = this.ItemsUnderDragItem[0];
 
 			// Maybe we are putting the item back or dropping on an equipment shadow slot.
@@ -379,31 +380,31 @@ public class EquipmentPanel : SackPanel, IScalingControl
 							{
 								if (itemUnderUs.Is2HWeapon)
 									// For 2H weapons itemUnderUs points to the real item in the RH slot.
-									this.Sack.AddItem(this.Sack.GetItem(slotRH).Duplicate(true));
+									this.ShownSack.AddItem(this.ShownSack.GetItem(slotRH).Duplicate(true));
 								else
-									this.Sack.AddItem(this.Sack.GetItem(slot).Duplicate(true));
+									this.ShownSack.AddItem(this.ShownSack.GetItem(slot).Duplicate(true));
 
-								itemUnderUs = this.Sack.GetItem(this.Sack.Count - 1);
+								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
 
 								// Clear the item in the LH slot.
 								// Put a dummy item in it's place
 								Item newItem = dragItem.MakeEmptyItem();
 								newItem.Location = SackCollection.GetEquipmentLocationOffset(slot);
-								this.Sack.RemoveAtItem(slot);
-								this.Sack.InsertItem(slot, newItem);
+								this.ShownSack.RemoveAtItem(slot);
+								this.ShownSack.InsertItem(slot, newItem);
 							}
-							else if (!RecordId.IsNullOrEmpty(this.Sack.GetItem(slotRH).BaseItemId))
+							else if (!RecordId.IsNullOrEmpty(this.ShownSack.GetItem(slotRH).BaseItemId))
 							{
 								// There might be something in the other slot so we pick it up.
 								// Move the original item to the end of the sack temporarily
-								this.Sack.AddItem(this.Sack.GetItem(slotRH).Duplicate(true));
-								itemUnderUs = this.Sack.GetItem(this.Sack.Count - 1);
+								this.ShownSack.AddItem(this.ShownSack.GetItem(slotRH).Duplicate(true));
+								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
 
 								// Clear the item in the RH slot and put a dummy item in it's place
 								Item newItem = dragItem.MakeEmptyItem();
 								newItem.Location = SackCollection.GetEquipmentLocationOffset(slotRH);
-								this.Sack.RemoveAtItem(slotRH);
-								this.Sack.InsertItem(slotRH, newItem);
+								this.ShownSack.RemoveAtItem(slotRH);
+								this.ShownSack.InsertItem(slotRH, newItem);
 							}
 
 							slot = slotRH;
@@ -414,28 +415,28 @@ public class EquipmentPanel : SackPanel, IScalingControl
 							int slotLH = slotRH - 1;
 							if (itemUnderUs != null && !RecordId.IsNullOrEmpty(itemUnderUs.BaseItemId))
 							{
-								this.Sack.AddItem(this.Sack.GetItem(slot).Duplicate(true));
-								itemUnderUs = this.Sack.GetItem(this.Sack.Count - 1);
+								this.ShownSack.AddItem(this.ShownSack.GetItem(slot).Duplicate(true));
+								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
 
 								// Clear the item in the RH slot.
 								// Put a dummy item in it's place
 								Item newItem = dragItem.MakeEmptyItem();
 								newItem.Location = SackCollection.GetEquipmentLocationOffset(slot);
-								this.Sack.RemoveAtItem(slot);
-								this.Sack.InsertItem(slot, newItem);
+								this.ShownSack.RemoveAtItem(slot);
+								this.ShownSack.InsertItem(slot, newItem);
 							}
-							else if (!RecordId.IsNullOrEmpty(this.Sack.GetItem(slotLH).BaseItemId))
+							else if (!RecordId.IsNullOrEmpty(this.ShownSack.GetItem(slotLH).BaseItemId))
 							{
 								// There might be something in the other slot so we pick it up.
 								// Move the original item to the end of the sack temporarily
-								this.Sack.AddItem(this.Sack.GetItem(slotLH).Duplicate(true));
-								itemUnderUs = this.Sack.GetItem(this.Sack.Count - 1);
+								this.ShownSack.AddItem(this.ShownSack.GetItem(slotLH).Duplicate(true));
+								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
 
 								// Clear the item in the LH slot and put a dummy item in it's place
 								Item newItem = dragItem.MakeEmptyItem();
 								newItem.Location = SackCollection.GetEquipmentLocationOffset(slotLH);
-								this.Sack.RemoveAtItem(slotLH);
-								this.Sack.InsertItem(slotLH, newItem);
+								this.ShownSack.RemoveAtItem(slotLH);
+								this.ShownSack.InsertItem(slotLH, newItem);
 							}
 						}
 					}
@@ -444,16 +445,16 @@ public class EquipmentPanel : SackPanel, IScalingControl
 					// Assume that the real 2H weapon is in the right hand slot.
 					if (IsWeaponSlot(slot) && slot != slotRH)
 					{
-						if (this.Sack.GetItem(slotRH).Is2HWeapon)
+						if (this.ShownSack.GetItem(slotRH).Is2HWeapon)
 						{
-							this.Sack.AddItem(this.Sack.GetItem(slotRH).Duplicate(true));
-							itemUnderUs = this.Sack.GetItem(this.Sack.Count - 1);
+							this.ShownSack.AddItem(this.ShownSack.GetItem(slotRH).Duplicate(true));
+							itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
 
 							// Clear the item in the LH slot and put a dummy item in it's place
 							Item newItem = dragItem.MakeEmptyItem();
 							newItem.Location = SackCollection.GetEquipmentLocationOffset(slotRH);
-							this.Sack.RemoveAtItem(slotRH);
-							this.Sack.InsertItem(slotRH, newItem);
+							this.ShownSack.RemoveAtItem(slotRH);
+							this.ShownSack.InsertItem(slotRH, newItem);
 						}
 					}
 
@@ -461,8 +462,8 @@ public class EquipmentPanel : SackPanel, IScalingControl
 
 					// The equipment sack always contains a fixed number of items (12)
 					// so we always remove and insert.
-					this.Sack.RemoveAtItem(slot);
-					this.Sack.InsertItem(slot, dragItem);
+					this.ShownSack.RemoveAtItem(slot);
+					this.ShownSack.InsertItem(slot, dragItem);
 
 					// Update item location properties to reflect new position
 					this.UpdateItemLocation(dragItem);
@@ -485,21 +486,21 @@ public class EquipmentPanel : SackPanel, IScalingControl
 				Point mouseOffset = new Point(
 					itemUnderUs.Width * UIService.HalfUnitSize,
 					itemUnderUs.Height * UIService.HalfUnitSize);
-				this.DragInfo.Set(this, this.Sack, itemUnderUs, mouseOffset);
+				this.DragInfo.Set(this, this.ShownSack, itemUnderUs, mouseOffset);
 
 				// since we have dropped something in this location, we can no longer put this item here.
 				// mark its location as invalid to prevent that from happening.
 				itemUnderUs.Location = InvalidDragLocation;
 
 				// set the info to this item
-				this.OnNewItemHighlighted(this, new SackPanelEventArgs(this.Sack, itemUnderUs));
+				this.OnNewItemHighlighted?.Invoke(this, new SackPanelEventArgs(this.Sack, itemUnderUs));
 			}
 
 			// clear the "last focus variables"
 			this.LastCellWithFocus = InvalidDragLocation;
 
 			// Clear any selections.
-			this.OnClearAllItemsSelected(this, new SackPanelEventArgs(null, null));
+			this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 
 			// Repaint everything to clear up any graphical issues
 			this.Refresh();
@@ -527,16 +528,16 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		if (cell != this.LastCellWithFocus || redrawSelection)
 		{
 			// We have moved to a different cell
-			Item lastItem = this.FindItem(LastCellWithFocus);
-			Item newItem = this.FindItem(cell);
+			Item? lastItem = this.FindItem(LastCellWithFocus);
+			Item? newItem = this.FindItem(cell);
 
 			if (newItem != lastItem || redrawSelection)
 			{
 				// We have moved to a different item
 				if (lastItem != null && lastItem.Is2HWeapon)
 				{
-					Item last2HItem = this.GetItemFromShadowSlot(lastItem.PositionY);
-					this.Invalidate(this.FindSlotRect(last2HItem.Location.X, last2HItem.Location.Y));
+					if (this.GetItemFromShadowSlot(lastItem.PositionY) is { } last2HItem)
+						this.Invalidate(this.FindSlotRect(last2HItem.Location.X, last2HItem.Location.Y));
 				}
 
 				if (newItem != lastItem)
@@ -545,8 +546,8 @@ public class EquipmentPanel : SackPanel, IScalingControl
 					{
 						// Now we need to highlight the current item
 						// Check if the item is selected and use a different background
-						Item new2HItem = this.GetItemFromShadowSlot(newItem.PositionY);
-						this.Invalidate(this.FindSlotRect(new2HItem.Location.X, new2HItem.Location.Y));
+						if (this.GetItemFromShadowSlot(newItem.PositionY) is { } new2HItem)
+							this.Invalidate(this.FindSlotRect(new2HItem.Location.X, new2HItem.Location.Y));
 					}
 				}
 			}
@@ -586,7 +587,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// </summary>
 	/// <param name="item">Item that needs screen coordinates</param>
 	/// <returns>Rectangle containing the screen coordinates occupied by the item.</returns>
-	protected override Rectangle GetItemScreenRectangle(Item item)
+	protected override Rectangle GetItemScreenRectangle(Item? item)
 	{
 		if (item == null)
 			return Rectangle.Empty;
@@ -603,7 +604,9 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		// Figure out the rectangle that needs to be redrawn
 		int x = this.LastDragLocation.X;
 		int y = this.LastDragLocation.Y;
-		var ibmp = this.UIService.GetBitmap(this.DragInfo.Item);
+		if (this.DragInfo.Item is not { } dragged || this.UIService.GetBitmap(dragged) is not { } ibmp)
+			return Rectangle.Empty;
+
 		int width = Convert.ToInt32(ibmp.Width * UIService.Scale);
 		int height = Convert.ToInt32(ibmp.Height * UIService.Scale);
 
@@ -742,8 +745,8 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <param name="e">PaintEventArgs data</param>
 	protected override void PaintAreaUnderItem(PaintEventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.LastCellWithFocus);
-		foreach (Item item in this.Sack)
+		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
+		foreach (Item item in this.ShownSack)
 		{
 			// Do not draw the item being dragged.
 			if (item == this.DragInfo.Item)
@@ -786,7 +789,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			}
 
 			// See if this item is under the drag item
-			if (this.DragInfo.IsActive && this.ItemsUnderDragItem != null && this.ItemsUnderDragItem.Contains(item))
+			if (this.DragInfo.IsActive && this.ItemsUnderDragItem.Contains(item))
 			{
 				// Use highlight color if it is the only item under the drag point, else use invalid
 				alpha = AdjustAlpha(alpha);
@@ -794,7 +797,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 
 				if (this.ItemsUnderDragItem.Count == 1)
 				{
-					int slot = FindEquipmentSlot(this.Sack, this.ItemsUnderDragItem[0]);
+					int slot = FindEquipmentSlot(this.ShownSack, this.ItemsUnderDragItem[0]);
 					if (slot != -1 && this.CheckItemType(this.DragInfo.Item, slot))
 					{
 						backgroundColor = this.HighlightValidItemColor;
@@ -820,8 +823,8 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			// Check to see if we need to shade a 2H weapon slot
 			if (item.IsInWeaponSlot && item.Is2HWeapon)
 			{
-				Item item2H = this.GetItemFromShadowSlot(item.PositionY);
-				if (RecordId.IsNullOrEmpty(item2H.BaseItemId))
+				Item? item2H = this.GetItemFromShadowSlot(item.PositionY);
+				if (item2H is not null && RecordId.IsNullOrEmpty(item2H.BaseItemId))
 				{
 					Rectangle rect = this.FindSlotRect(item2H.PositionX, item2H.PositionY);
 					this.ShadeAreaUnderItem(e.Graphics, rect, backgroundColor, alpha, highlight);
@@ -844,7 +847,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		if (!this.DragInfo.IsActive || this.CellsUnderDragItem.Size.IsEmpty)
 			return;
 
-		if (this.ItemsUnderDragItem == null || this.ItemsUnderDragItem.Count <= 1)
+		if (this.ItemsUnderDragItem.Count <= 1)
 		{
 			Point tl = Point.Empty;
 			Point br = Point.Empty;
@@ -907,7 +910,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	protected override void PaintItems(PaintEventArgs e)
 	{
 		// Now draw all the sack items
-		foreach (Item item in this.Sack)
+		foreach (Item item in this.ShownSack)
 		{
 			if (item != this.DragInfo.Item)
 			{
@@ -1148,7 +1151,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <returns>Rectangle containing the coordinates of the equipment slot</returns>
 	private Rectangle FindSlotRect(int slot)
 	{
-		if (slot == -1 || slot > this.Sack.NumberOfSlots)
+		if (slot == -1 || slot > this.ShownSack.NumberOfSlots)
 			return Rectangle.Empty;
 
 		bool weaponSlot = false;
@@ -1187,7 +1190,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// </summary>
 	/// <param name="weaponSlot">weapon slot that we are checking</param>
 	/// <returns>Base item instance</returns>
-	private Item GetItemFromShadowSlot(int weaponSlot)
+	private Item? GetItemFromShadowSlot(int weaponSlot)
 	{
 		// Convert from weapon slot (0-3) to equipment slot (7-10).
 		int offset = weaponSlot + 7;
@@ -1202,7 +1205,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		else
 			offset--;
 
-		return this.Sack.GetItem(offset);
+		return this.ShownSack.GetItem(offset);
 	}
 
 	/// <summary>
@@ -1257,11 +1260,11 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			return;
 		}
 
-		Item item2H = this.GetItemFromShadowSlot(item.PositionY);
+		Item? item2H = this.GetItemFromShadowSlot(item.PositionY);
 
 		// TODO: Update logic to draw the shadow slot if the item was cancelled.
 		// otherwise it is skipped because this.m_dragInfo.Item == item2H will be true.
-		if (!item2H.Is2HWeapon || (this.DragInfo.Item == item2H && !this.DragInfo.IsBeingCancelled) || RecordId.IsNullOrEmpty(item2H.BaseItemId))
+		if (item2H is null || !item2H.Is2HWeapon || (this.DragInfo.Item == item2H && !this.DragInfo.IsBeingCancelled) || RecordId.IsNullOrEmpty(item2H.BaseItemId))
 		{
 			// Skip if the item is being dragged.
 			// Also, only 2 Handed weapons get drawn this way
@@ -1307,7 +1310,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	private int FindEquipmentSlot(Point cell)
 	{
 		// Iterate through the equipment slots
-		for (int slot = 0; slot < this.Sack.NumberOfSlots; ++slot)
+		for (int slot = 0; slot < this.ShownSack.NumberOfSlots; ++slot)
 		{
 			Size size = SackCollection.GetEquipmentLocationSize(slot);
 			Point ul = SackCollection.GetEquipmentLocationOffset(slot);
@@ -1340,7 +1343,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		Point slotUL;
 		Size slotSize;
 		Rectangle slotRect;
-		for (int slot = 0; slot < this.Sack.NumberOfSlots; ++slot)
+		for (int slot = 0; slot < this.ShownSack.NumberOfSlots; ++slot)
 		{
 			slotUL = SackCollection.GetEquipmentLocationOffset(slot);
 			if (SackCollection.IsWeaponSlot(slot))
@@ -1380,7 +1383,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 		int height = cellsUnderMouse.Height;
 		bool foundCells = false;
 
-		for (int slot = 0; slot < this.Sack.NumberOfSlots; ++slot)
+		for (int slot = 0; slot < this.ShownSack.NumberOfSlots; ++slot)
 		{
 			slotUL = SackCollection.GetEquipmentLocationOffset(slot);
 			if (SackCollection.IsWeaponSlot(slot))
@@ -1397,7 +1400,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 			if (cellsUnderMouse.IntersectsWith(slotRect))
 			{
 				// Check to see if it's a 2H weapon over a weapon slot.
-				if (this.DragInfo.Item.Is2HWeapon && (slot > 6 && slot < 11))
+				if ((this.DragInfo.Item?.Is2HWeapon ?? false) && (slot > 6 && slot < 11))
 				{
 					// We need to redraw both items
 					int itemOffsetL = (((slot - 1) / 2) * 2) - 6;
@@ -1434,7 +1437,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 	/// <returns>true if the item is appropriate for the slot</returns>
 	private bool CheckItemType(Item item, int slot)
 	{
-		if (item == null || slot < 0 || slot > this.Sack.NumberOfSlots)
+		if (item == null || slot < 0 || slot > this.ShownSack.NumberOfSlots)
 			return false;
 
 		switch (slot)
@@ -1473,7 +1476,7 @@ public class EquipmentPanel : SackPanel, IScalingControl
 						else
 							itemOffset++;
 
-						return RecordId.IsNullOrEmpty(this.Sack.GetItem(itemOffset).BaseItemId) || RecordId.IsNullOrEmpty(this.Sack.GetItem(slot).BaseItemId);
+						return RecordId.IsNullOrEmpty(this.ShownSack.GetItem(itemOffset).BaseItemId) || RecordId.IsNullOrEmpty(this.ShownSack.GetItem(slot).BaseItemId);
 					}
 					else
 						return true;

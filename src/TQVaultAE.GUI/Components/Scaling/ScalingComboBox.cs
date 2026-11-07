@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+﻿﻿//-----------------------------------------------------------------------
 // <copyright file="ScalingComboBox.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -31,7 +31,7 @@ public class ScalingComboBox : ComboBox, IScalingControl
 		this.ResumeLayout(false);
 	}
 
-	private void ScalingComboBox_DrawItem(object sender, DrawItemEventArgs e)
+	private void ScalingComboBox_DrawItem(object? sender, DrawItemEventArgs e)
 	{
 		if (this.Items.Count == 0 || e.Index == -1) return;
 		var itemsValues = this.Items.Cast<object>().Select(o => o?.ToString() ?? string.Empty).ToArray();

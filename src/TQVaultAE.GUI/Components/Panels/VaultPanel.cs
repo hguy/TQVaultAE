@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
@@ -47,7 +48,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// player instance
 	/// </summary>
-	private PlayerCollection player;
+	private PlayerCollection? player;
 
 	/// <summary>
 	/// Array of Bag buttons for the panel
@@ -57,7 +58,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// Array of autosort buttons
 	/// </summary>
-	private Collection<AutoSortButton> autoSortButtons;
+	private Collection<AutoSortButton> autoSortButtons = new();
 
 	/// <summary>
 	/// Holds the currently selected bag.
@@ -72,11 +73,14 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	private ContextMenuStrip contextMenu;
 
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public VaultPanel()
 	{
 		InitializeComponent();
 	}
+#pragma warning restore CS8618
 
+	[MemberNotNull(nameof(components), nameof(contextMenu))]
 	private void InitializeComponent()
 	{
 		this.components = new System.ComponentModel.Container();
@@ -186,7 +190,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// Event for signaling that a property has changed.
 	/// </summary>
-	public event PropertyChangedEventHandler PropertyChanged;
+	public event PropertyChangedEventHandler? PropertyChanged;
 
 	#region VaultPanel Properties
 
@@ -225,32 +229,32 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// Gets or sets the Clear All Items Selected Event Handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnClearAllItemsSelected { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnClearAllItemsSelected { get; set; }
 
 	/// <summary>
 	/// Gets or sets the item selected Event Handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnItemSelected { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnItemSelected { get; set; }
 
 	/// <summary>
 	/// Gets or sets the activate search Event Handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnActivateSearch { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnActivateSearch { get; set; }
 
 	/// <summary>
 	/// Gets or sets the resize form Event Handler
 	/// </summary>
-	public EventHandler<ResizeEventArgs> OnResizeForm { get; set; }
+	public EventHandler<ResizeEventArgs>? OnResizeForm { get; set; }
 
 	/// <summary>
 	/// Gets or sets the Automove Item Event Handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnAutoMoveItem { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnAutoMoveItem { get; set; }
 
 	/// <summary>
 	/// Gets or sets the New Item Highlighted Event Handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnNewItemHighlighted { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnNewItemHighlighted { get; set; }
 
 	/// <summary>
 	/// Gets or sets the string used when no player is set.
@@ -285,13 +289,25 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// return the vault instance if it's a vault
 	/// </summary>
-	public PlayerCollection Vault
+	public PlayerCollection? Vault
 		=> (this.player?.IsVault ?? false) ? this.player : null;
 
 	/// <summary>
 	/// Gets or sets the player instance
 	/// </summary>
-	public PlayerCollection Player
+	/// <summary>
+	/// Player or vault shown by the panel, for the actions that need one.
+	/// </summary>
+	internal PlayerCollection ShownPlayer => this.Player
+		?? throw new InvalidOperationException("The panel shows no player or vault.");
+
+	/// <summary>
+	/// Vault shown by the panel, for the vault actions (export, tooltips).
+	/// </summary>
+	protected PlayerCollection ShownVault => this.Vault
+		?? throw new InvalidOperationException("The panel shows no vault.");
+
+	public PlayerCollection? Player
 	{
 		get => this.player;
 
@@ -344,7 +360,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				this.BagButtons[this.currentBag].IsOn = false;
 				this.BagButtons[value].IsOn = true;
 				this.currentBag = value;
-				this.BagSackPanel.Sack = this.Player.GetSack(this.currentBag + this.BagPanelOffset);
+				this.BagSackPanel.Sack = this.ShownPlayer.GetSack(this.currentBag + this.BagPanelOffset);
 				this.BagSackPanel.CurrentSack = this.currentBag;
 
 				// persistance of currentbag
@@ -353,13 +369,15 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 					if (this.AutoMoveLocation == AutoMoveLocation.Vault && this.Vault.currentlySelectedSackNumber != this.currentBag)
 					{
 						this.Vault.currentlySelectedSackNumber = this.currentBag;
-						this.Vault.Sacks.First().IsModified = true;
+						if (this.Vault.Sacks is { Length: > 0 } vaultSacks)
+							vaultSacks[0].IsModified = true;
 					}
 
 					if (this.AutoMoveLocation == AutoMoveLocation.SecondaryVault && this.Vault.currentlyFocusedSackNumber != this.currentBag)
 					{
 						this.Vault.currentlyFocusedSackNumber = this.currentBag;
-						this.Vault.Sacks.First().IsModified = true;
+						if (this.Vault.Sacks is { Length: > 0 } vaultSacks)
+							vaultSacks[0].IsModified = true;
 					}
 				}
 			}
@@ -375,7 +393,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">PropertyChangedEventArgs data</param>
-	public void PropertyChangedCallback(object sender, PropertyChangedEventArgs e)
+	public void PropertyChangedCallback(object? sender, PropertyChangedEventArgs e)
 	{
 		if (e.PropertyName == nameof(Player))
 		{
@@ -389,7 +407,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">PaintEventArgs data</param>
-	public void PaintCallback(object sender, PaintEventArgs e)
+	public void PaintCallback(object? sender, PaintEventArgs e)
 	{
 		if (this.DrawAsGroupBox)
 		{
@@ -524,9 +542,9 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </remarks>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected virtual void BagButtonClick(object sender, MouseEventArgs e)
+	protected virtual void BagButtonClick(object? sender, MouseEventArgs e)
 	{
-		BagButtonBase b = (BagButtonBase)sender;
+		BagButtonBase? b = (BagButtonBase)sender!;
 
 		int bagID = b.ButtonNumber;
 		if (bagID != this.CurrentBag)
@@ -536,7 +554,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			this.BagButtons[bagID].IsOn = true;
 			this.CurrentBag = bagID;
 			this.BagSackPanel.ClearSelectedItems();
-			this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
+			this.BagSackPanel.Sack = this.ShownPlayer.GetSack(this.CurrentBag + this.BagPanelOffset);
 			this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 		}
 
@@ -551,7 +569,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				this.AddSubMenu(Resources.PlayerPanelMenuMove, this.MoveBagClicked);
 
 				// Only show Copy, Merge and Empty if something is in the bag.
-				if (!this.BagSackPanel.Sack.IsEmpty)
+				if (!this.BagSackPanel.ShownSack.IsEmpty)
 				{
 					if (this.USettings.AllowItemCopy)
 					{
@@ -654,17 +672,17 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		if (!EnumsNET.Enums.TryParse<CsvDelimiter>(delimStr, out var delimEnum))
 			delimEnum = CsvDelimiter.Comma;
 
-		delim = EnumsNET.Enums.AsString(delimEnum, EnumsNET.EnumFormat.Description).First();
+		delim = (EnumsNET.Enums.AsString(delimEnum, EnumsNET.EnumFormat.Description) ?? ",").First();
 
 		return (delim, delimEnum);
 	}
 
-	private void ExportVaultCSVToClipboard(object sender, EventArgs e)
+	private void ExportVaultCSVToClipboard(object? sender, EventArgs e)
 	{
 		var (delim, _) = GetCSVDelimiter();
 
-		var csvRows = this.Vault.Sacks.SelectMany((sack, idx)
-				=> sack.Select(itm => (itm, bagid: idx + 1, vaultname: this.Vault.PlayerName))
+		var csvRows = (this.ShownVault.Sacks ?? []).SelectMany((sack, idx)
+				=> sack.Select(itm => (itm, bagid: idx + 1, vaultname: this.ShownVault.PlayerName))
 			)
 			.Select((vt, idx) =>
 			{
@@ -681,11 +699,11 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.UIService.NotifyUser(string.Format(Resources.CSVExportedToClipboardNotification, DateTime.Now));
 	}
 
-	private void ExportBagCSVToClipboard(object sender, EventArgs e)
+	private void ExportBagCSVToClipboard(object? sender, EventArgs e)
 	{
 		var (delim, _) = GetCSVDelimiter();
 
-		var csvRows = this.BagSackPanel.Sack.Select(itm => (itm, bagid: this.BagSackPanel.CurrentSack + 1, vaultname: this.Vault.PlayerName))
+		var csvRows = this.BagSackPanel.ShownSack.Select(itm => (itm, bagid: this.BagSackPanel.CurrentSack + 1, vaultname: this.ShownVault.PlayerName))
 			.Select((vt, idx) =>
 			{
 				var fnr = this.ItemProvider.GetFriendlyNames(vt.itm, FriendlyNamesExtraScopes.Requirements);
@@ -701,32 +719,32 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.UIService.NotifyUser(string.Format(Resources.CSVExportedToClipboardNotification, DateTime.Now));
 	}
 
-	private void DisableTooltipClicked(object sender, EventArgs e)
+	private void DisableTooltipClicked(object? sender, EventArgs e)
 	{
-		ToolStripMenuItem item = (ToolStripMenuItem)sender;
+		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 
 		if (item != null)
 		{
 			if (item.Text == Resources.PlayerPanelMenuEnableAllTooltip)
 			{
-				this.Vault.DisabledTooltipBagId.Clear();
+				this.ShownVault.DisabledTooltipBagId.Clear();
 			}
 
 			if (item.Text == Resources.PlayerPanelMenuDisableAllTooltip)
 			{
 				var all = this.BagButtons.Select(b => b.ButtonNumber).ToArray();
-				this.Vault.DisabledTooltipBagId.Clear();
-				this.Vault.DisabledTooltipBagId.AddRange(all);
+				this.ShownVault.DisabledTooltipBagId.Clear();
+				this.ShownVault.DisabledTooltipBagId.AddRange(all);
 			}
 
 			if (item.Text == Resources.PlayerPanelMenuEnableTooltip)
 			{
-				this.Vault.DisabledTooltipBagId.Remove(this.CurrentBag);
+				this.ShownVault.DisabledTooltipBagId.Remove(this.CurrentBag);
 			}
 
 			if (item.Text == Resources.PlayerPanelMenuDisableTooltip)
 			{
-				this.Vault.DisabledTooltipBagId.Add(this.CurrentBag);
+				this.ShownVault.DisabledTooltipBagId.Add(this.CurrentBag);
 			}
 		}
 	}
@@ -776,7 +794,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.contextMenu.Items.Add(exportTabMenu);
 	}
 
-	private void ExportTabToClipboardClicked(object sender, EventArgs e)
+	private void ExportTabToClipboardClicked(object? sender, EventArgs e)
 	{
 		var exchangeService = this.ExchangeService;
 		if (exchangeService != null && this.BagSackPanel?.Sack != null)
@@ -786,13 +804,13 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		}
 	}
 
-	private void ImportFromFileClicked(object sender, EventArgs e)
+	private void ImportFromFileClicked(object? sender, EventArgs e)
 	{
 		var mainForm = this.FindForm() as MainForm;
 		mainForm?.ImportFromFile();
 	}
 
-	private void ExportTabToFileClicked(object sender, EventArgs e)
+	private void ExportTabToFileClicked(object? sender, EventArgs e)
 	{
 		var exchangeService = this.ExchangeService;
 		if (exchangeService != null && this.BagSackPanel?.Sack != null)
@@ -810,7 +828,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		}
 	}
 
-	private async void ExportTabToPasteBinClicked(object sender, EventArgs e)
+	private async void ExportTabToPasteBinClicked(object? sender, EventArgs e)
 	{
 		var exchangeService = this.ExchangeService;
 		if (exchangeService != null && this.BagSackPanel?.Sack != null)
@@ -820,8 +838,8 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
 				var tabName = this.BagSackPanel.Sack.BagButtonIconInfo?.Label;
 				var pasteName = string.IsNullOrWhiteSpace(tabName)
-					? $"{this.Vault.PlayerName}/Tab {this.CurrentBag + 1}"
-					: $"{this.Vault.PlayerName}/{tabName}";
+					? $"{this.ShownVault.PlayerName}/Tab {this.CurrentBag + 1}"
+					: $"{this.ShownVault.PlayerName}/{tabName}";
 				var url = await exchangeService.ExportToPasteBinAsync(json, pasteName);
 				Clipboard.SetText(url);
 				this.UIService.NotifyUser($"Tab exported to PasteBin: {url}");
@@ -838,7 +856,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected virtual void AutoSortButtonClick(object sender, MouseEventArgs e)
+	protected virtual void AutoSortButtonClick(object? sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Left)
 		{
@@ -864,48 +882,48 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	protected void NewItemHighlightedCallback(object sender, SackPanelEventArgs e)
-		=> this.OnNewItemHighlighted(sender, e);
+	protected void NewItemHighlightedCallback(object? sender, SackPanelEventArgs e)
+		=> this.OnNewItemHighlighted?.Invoke(sender, e);
 
 	/// <summary>
 	/// Automove Item Callback
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	protected void AutoMoveItemCallback(object sender, SackPanelEventArgs e)
-		=> this.OnAutoMoveItem(sender, e);
+	protected void AutoMoveItemCallback(object? sender, SackPanelEventArgs e)
+		=> this.OnAutoMoveItem?.Invoke(sender, e);
 
 	/// <summary>
 	/// Activate Search Callback
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	protected void ActivateSearchCallback(object sender, SackPanelEventArgs e)
-		=> this.OnActivateSearch(sender, e);
+	protected void ActivateSearchCallback(object? sender, SackPanelEventArgs e)
+		=> this.OnActivateSearch?.Invoke(sender, e);
 
 	/// <summary>
 	/// Resize Form Callback
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ResizeEventArgs data</param>
-	protected void ResizeFormCallback(object sender, ResizeEventArgs e)
-		=> this.OnResizeForm(sender, e);
+	protected void ResizeFormCallback(object? sender, ResizeEventArgs e)
+		=> this.OnResizeForm?.Invoke(sender, e);
 
 	/// <summary>
 	/// Item Selected Callback
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	protected void ItemSelectedCallback(object sender, SackPanelEventArgs e)
-		=> this.OnItemSelected(sender, e);
+	protected void ItemSelectedCallback(object? sender, SackPanelEventArgs e)
+		=> this.OnItemSelected?.Invoke(sender, e);
 
 	/// <summary>
 	/// Clear all selected items Callback
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	protected void ClearAllItemsSelectedCallback(object sender, SackPanelEventArgs e)
-		=> this.OnClearAllItemsSelected(sender, e);
+	protected void ClearAllItemsSelectedCallback(object? sender, SackPanelEventArgs e)
+		=> this.OnClearAllItemsSelected?.Invoke(sender, e);
 
 	/// <summary>
 	/// Sets all of the autosort buttons to invisible.
@@ -932,7 +950,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 
 			if (this.autoSortButtons.Count == 2)
 			{
-				this.autoSortButtons[1].Visible = this.Player.NumberOfSacks - this.BagPanelOffset > 0;
+				this.autoSortButtons[1].Visible = this.ShownPlayer.NumberOfSacks - this.BagPanelOffset > 0;
 			}
 		}
 	}
@@ -971,7 +989,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="selectedItem">string of the item selected in the menu</param>
 	/// <returns>numeric index of the item selected.  -1 if it fails.</returns>
-	private static int GetDestinationSackIndex(string selectedItem)
+	private static int GetDestinationSackIndex(string? selectedItem)
 	{
 		if (string.IsNullOrEmpty(selectedItem))
 		{
@@ -1045,7 +1063,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <param name="name">Name of the property that has changed</param>
 	private void OnPropertyChanged(string name)
 	{
-		PropertyChangedEventHandler handler = this.PropertyChanged;
+		PropertyChangedEventHandler? handler = this.PropertyChanged;
 
 		if (handler != null)
 		{
@@ -1058,9 +1076,9 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">semder object</param>
 	/// <param name="e">ToolStripItemClickedEventArgs data</param>
-	private void ContextMenuItemClicked(object sender, ToolStripItemClickedEventArgs e)
+	private void ContextMenuItemClicked(object? sender, ToolStripItemClickedEventArgs e)
 	{
-		string selectedItem = e.ClickedItem.Text;
+		string? selectedItem = e.ClickedItem?.Text;
 		if (selectedItem == Resources.PlayerPanelMenuEmpty)
 		{
 			if (this.USettings.SuppressWarnings || MessageBox.Show(
@@ -1071,7 +1089,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				MessageBoxDefaultButton.Button1,
 				PlayerPanel.RightToLeftOptions) == DialogResult.Yes)
 			{
-				this.BagSackPanel.Sack.EmptySack();
+				this.BagSackPanel.ShownSack.EmptySack();
 				this.BagSackPanel.Refresh();
 				BagButtonTooltip.InvalidateCache(this.BagSackPanel.Sack);
 			}
@@ -1112,8 +1130,8 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				this.userContext.IconInfoCopy = null;
 			}
 
-			MainForm frm = this.FindForm() as MainForm;
-			frm.NotificationText.Text = Resources.GlobalCopied;
+			if (this.FindForm() is MainForm frm)
+				frm.NotificationText.Text = Resources.GlobalCopied;
 		}
 
 		if (selectedItem == Resources.PlayerPanelPasteIcon)
@@ -1124,6 +1142,9 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			var sourceInfo = this.userContext.IconInfoCopy;
 			if (sourceInfo is not null)
 			{
+				if (button.Sack is null)
+					return;
+
 				button.Sack.BagButtonIconInfo = new BagButtonIconInfo
 				{
 					DisplayMode = sourceInfo.DisplayMode,
@@ -1135,12 +1156,14 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			}
 			else
 			{
-				button.Sack.BagButtonIconInfo = null;
+				if (button.Sack is not null)
+					button.Sack.BagButtonIconInfo = null;
 			}
 
-			button.Sack.IsModified = true;
-			MainForm frm = this.FindForm() as MainForm;
-			frm.NotificationText.Text = Resources.GlobalPasted;
+			if (button.Sack is not null)
+				button.Sack.IsModified = true;
+			if (this.FindForm() is MainForm frm)
+				frm.NotificationText.Text = Resources.GlobalPasted;
 			button.ApplyIconInfo(button.Sack);
 			button.Refresh();
 		}
@@ -1152,19 +1175,19 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CopyBagClicked(object sender, EventArgs e)
+	private void CopyBagClicked(object? sender, EventArgs e)
 	{
-		ToolStripMenuItem item = (ToolStripMenuItem)sender;
+		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 		if (item != null)
 		{
 			int destinationIndex = GetDestinationSackIndex(item.Name);
 
-			if (destinationIndex > this.Player.NumberOfSacks)
+			if (destinationIndex > this.ShownPlayer.NumberOfSacks)
 			{
 				return;
 			}
 
-			if (!this.Player.GetSack(destinationIndex + this.BagPanelOffset).IsEmpty)
+			if (!(this.ShownPlayer.GetSack(destinationIndex + this.BagPanelOffset)?.IsEmpty ?? true))
 			{
 				if (this.USettings.SuppressWarnings || MessageBox.Show(
 					Resources.PlayerOverwriteSackMsg,
@@ -1178,7 +1201,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				}
 			}
 
-			if (this.Player.CopySack(this.CurrentBag, destinationIndex))
+			if (this.ShownPlayer.CopySack(this.CurrentBag, destinationIndex))
 			{
 				if (this.CurrentBag != destinationIndex)
 				{
@@ -1186,7 +1209,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 					this.BagButtons[this.CurrentBag].IsOn = false;
 					this.BagButtons[destinationIndex].IsOn = true;
 					this.CurrentBag = destinationIndex;
-					this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
+					this.BagSackPanel.Sack = this.ShownPlayer.GetSack(this.CurrentBag + this.BagPanelOffset);
 					this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 				}
 			}
@@ -1198,13 +1221,13 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MoveBagClicked(object sender, EventArgs e)
+	private void MoveBagClicked(object? sender, EventArgs e)
 	{
-		ToolStripMenuItem item = (ToolStripMenuItem)sender;
+		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 		if (item != null)
 		{
 			int destinationIndex = GetDestinationSackIndex(item.Name);
-			if (this.Player.MoveSack(this.CurrentBag, destinationIndex))
+			if (this.ShownPlayer.MoveSack(this.CurrentBag, destinationIndex))
 			{
 				if (this.CurrentBag != destinationIndex)
 				{
@@ -1212,7 +1235,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 					this.BagButtons[this.CurrentBag].IsOn = false;
 					this.BagButtons[destinationIndex].IsOn = true;
 					this.CurrentBag = destinationIndex;
-					this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
+					this.BagSackPanel.Sack = this.ShownPlayer.GetSack(this.CurrentBag + this.BagPanelOffset);
 					this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 				}
 
@@ -1227,14 +1250,14 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MergeBagClicked(object sender, EventArgs e)
+	private void MergeBagClicked(object? sender, EventArgs e)
 	{
-		ToolStripMenuItem item = (ToolStripMenuItem)sender;
+		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 		if (item != null)
 		{
 			int destinationIndex = GetDestinationSackIndex(item.Name);
 
-			if (destinationIndex < 0 || destinationIndex > this.Player.NumberOfSacks || this.CurrentBag == destinationIndex)
+			if (destinationIndex < 0 || destinationIndex > this.ShownPlayer.NumberOfSacks || this.CurrentBag == destinationIndex)
 			{
 				return;
 			}
@@ -1246,7 +1269,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 				this.BagButtons[this.CurrentBag].IsOn = false;
 				this.BagButtons[destinationIndex].IsOn = true;
 				this.CurrentBag = destinationIndex;
-				this.BagSackPanel.Sack = this.Player.GetSack(this.CurrentBag + this.BagPanelOffset);
+				this.BagSackPanel.Sack = this.ShownPlayer.GetSack(this.CurrentBag + this.BagPanelOffset);
 				this.BagSackPanel.CurrentSack = this.CurrentBag + this.BagPanelOffset;
 			}
 		}
@@ -1294,7 +1317,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	private void GetSackToolTip(BagButtonBase button)
 	{
 		// Get the list of items 
-		SackCollection sack = this.Player.GetSack(button.ButtonNumber + this.BagPanelOffset);
+		SackCollection? sack = this.ShownPlayer.GetSack(button.ButtonNumber + this.BagPanelOffset);
 
 		if (sack == null)
 		{

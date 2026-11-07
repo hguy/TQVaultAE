@@ -155,10 +155,10 @@ public class UIService : IUIService
 	/// </summary>
 	/// <param name="resourceId">Resource Id which we are looking up.</param>
 	/// <returns>Bitmap fetched from the database</returns>
-	public Bitmap? LoadBitmap(RecordId resourceId)
+	public Bitmap LoadBitmap(RecordId? resourceId)
 	{
 		if (RecordId.IsNullOrEmpty(resourceId))
-			return null;
+			return this.DefaultBitmap;
 
 		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.LoadBitmap({0})", resourceId);

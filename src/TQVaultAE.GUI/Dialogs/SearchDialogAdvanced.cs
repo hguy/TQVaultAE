@@ -239,7 +239,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ApplyButtonClicked(object sender, EventArgs e)
+	private void ApplyButtonClicked(object? sender, EventArgs e)
 	{
 		if (!SelectedFilters.Any())
 		{
@@ -257,7 +257,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CancelButtonClicked(object sender, EventArgs e)
+	private void CancelButtonClicked(object? sender, EventArgs e)
 	{
 		this.DialogResult = DialogResult.Cancel;
 		this.Close();
@@ -302,7 +302,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// The dialog is kept between openings (see <c>MainForm.OpenSearchDialog</c>), and <see cref="Form.Shown"/> is only
 	/// raised the first time, so each opening is detected here.
 	/// </summary>
-	private void SearchDialogVisibleChanged(object sender, EventArgs e)
+	private void SearchDialogVisibleChanged(object? sender, EventArgs e)
 	{
 		if (!this.Visible)
 			return;
@@ -378,7 +378,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	#region Load & Init
 
-	private void SearchDialogAdvanced_Load(object sender, EventArgs e)
+	private void SearchDialogAdvanced_Load(object? sender, EventArgs e)
 	{
 		// this.ItemDatabaseService.ItemDatabase is already populated during container loading via SessionContext
 		// No need to rebuild it here - just lazy-load the friendly names
@@ -416,14 +416,14 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	#region backgroundWorkerBuildDB
 
-	private void backgroundWorkerBuildDB_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
+	private void backgroundWorkerBuildDB_DoWork(object? sender, System.ComponentModel.DoWorkEventArgs e)
 		=> InitItemDatabase();
 
 	/// <summary>Items loaded by the worker; <see cref="ProgressChangedEventArgs.ProgressPercentage"/> carries the batch size.</summary>
-	private void backgroundWorkerBuildDB_ProgressChanged(object sender, System.ComponentModel.ProgressChangedEventArgs e)
+	private void backgroundWorkerBuildDB_ProgressChanged(object? sender, System.ComponentModel.ProgressChangedEventArgs e)
 		=> vaultProgressBar.Increment(e.ProgressPercentage);
 
-	private void backgroundWorkerBuildDB_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
+	private void backgroundWorkerBuildDB_RunWorkerCompleted(object? sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
 	{
 		if (e.Error is not null)
 		{
@@ -505,13 +505,20 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	#region Populate
 
+	/// <summary>
+	/// Label of the category that holds <paramref name="list"/>.
+	/// </summary>
+	private static ScalingLabel CategoryLabel(Control list)
+		=> (list.Parent ?? throw new InvalidOperationException($"{list.Name} has no category."))
+			.Controls.OfType<ScalingLabel>().First();
+
 	private void PopulateSetItems()
 	{
 		var clb = scalingCheckedListBoxSetItems;
 		var setitems =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let itm = id.FriendlyNames.Item
-			let set = id.FriendlyNames.ItemSet
+			let itm = id.LoadedFriendlyNames.Item
+			let set = id.LoadedFriendlyNames.ItemSet
 			where set is not null
 			let setName = set.Translations[set.setName].RemoveAllTQTags()
 			orderby setName
@@ -521,7 +528,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 
 		PopulateInit(clb, setitems);
@@ -556,7 +563,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		var originItems =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let itm = id.FriendlyNames.Item
+			let itm = id.LoadedFriendlyNames.Item
 			from org in originList
 			where itm.GameDlc == org.Value
 			orderby org.Value
@@ -566,7 +573,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 
 		PopulateInit(clb, originItems);
@@ -577,9 +584,9 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxWithRelic;
 		var WithRelic =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let itm = id.FriendlyNames.Item
+			let itm = id.LoadedFriendlyNames.Item
 			where itm.HasRelicOrCharmSlot1 && !itm.IsRelic1Charm || itm.HasRelicOrCharmSlot2 && !itm.IsRelic2Charm
-			from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
+			from reldesc in new[] { id.LoadedFriendlyNames.RelicInfo1Description, id.LoadedFriendlyNames.RelicInfo2Description }
 			where !string.IsNullOrWhiteSpace(reldesc)
 			let attClean = reldesc.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -589,7 +596,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, WithRelic);
 	}
@@ -608,9 +615,9 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxWithCharm;
 		var WithCharm =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let itm = id.FriendlyNames.Item
+			let itm = id.LoadedFriendlyNames.Item
 			where itm.HasRelicOrCharmSlot1 && itm.IsRelic1Charm || itm.HasRelicOrCharmSlot2 && itm.IsRelic2Charm
-			from reldesc in new[] { id.FriendlyNames.RelicInfo1Description, id.FriendlyNames.RelicInfo2Description }
+			from reldesc in new[] { id.LoadedFriendlyNames.RelicInfo1Description, id.LoadedFriendlyNames.RelicInfo2Description }
 			where !string.IsNullOrWhiteSpace(reldesc)
 			let attClean = reldesc.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -620,7 +627,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, WithCharm);
 	}
@@ -638,7 +645,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, Vaults);
 	}
@@ -648,7 +655,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxQuality;
 		var Quality =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let att = id.FriendlyNames.BaseItemInfoQuality
+			let att = id.LoadedFriendlyNames.BaseItemInfoQuality
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -658,7 +665,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, Quality);
 	}
@@ -668,7 +675,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxSuffixName;
 		var SuffixName =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let att = id.FriendlyNames.SuffixInfoDescription
+			let att = id.LoadedFriendlyNames.SuffixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -678,7 +685,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, SuffixName);
 	}
@@ -688,7 +695,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxSuffixAttributes;
 		var SuffixAttributes =
 			from id in this.ItemDatabaseService.ItemDatabase
-			from att in id.FriendlyNames.SuffixAttributes
+			from att in id.LoadedFriendlyNames.SuffixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -698,7 +705,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, SuffixAttributes);
 	}
@@ -708,7 +715,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxStyle;
 		var Style =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let att = id.FriendlyNames.BaseItemInfoStyle
+			let att = id.LoadedFriendlyNames.BaseItemInfoStyle
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -718,7 +725,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, Style);
 	}
@@ -737,7 +744,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var Rarity =
 			from id in this.ItemDatabaseService.ItemDatabase
 			where equipmentOnly.Contains(id.ItemStyle)
-			let att = id.FriendlyNames.BaseItemRarity
+			let att = id.LoadedFriendlyNames.BaseItemRarity
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -747,7 +754,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, Rarity);
 	}
@@ -757,7 +764,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxPrefixName;
 		var PrefixName =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let att = id.FriendlyNames.PrefixInfoDescription
+			let att = id.LoadedFriendlyNames.PrefixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.TQCleanup().Trim()
 			orderby attClean
@@ -767,7 +774,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, PrefixName);
 	}
@@ -777,7 +784,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxPrefixAttributes;
 		var PrefixAttributes =
 			from id in this.ItemDatabaseService.ItemDatabase
-			from att in id.FriendlyNames.PrefixAttributes
+			from att in id.LoadedFriendlyNames.PrefixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -787,7 +794,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, PrefixAttributes);
 	}
@@ -806,7 +813,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, Players);
 	}
@@ -816,7 +823,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxItemType;
 		var ItemType =
 			from id in this.ItemDatabaseService.ItemDatabase
-			let att = id.FriendlyNames.BaseItemInfoClass ?? id.FriendlyNames.Item.ItemClass
+			let att = id.LoadedFriendlyNames.BaseItemInfoClass ?? id.LoadedFriendlyNames.Item.ItemClass
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -826,7 +833,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, ItemType);
 	}
@@ -836,7 +843,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxItemAttributes;
 		var ItemAttributes =
 			from id in this.ItemDatabaseService.ItemDatabase
-			from att in id.FriendlyNames.AttributesAll
+			from att in id.LoadedFriendlyNames.AttributesAll
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -846,7 +853,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, ItemAttributes);
 	}
@@ -856,7 +863,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		var clb = scalingCheckedListBoxBaseAttributes;
 		var BaseAttributes =
 			from id in this.ItemDatabaseService.ItemDatabase
-			from att in id.FriendlyNames.BaseAttributes
+			from att in id.LoadedFriendlyNames.BaseAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
 			orderby attClean
@@ -866,19 +873,19 @@ public partial class SearchDialogAdvanced : VaultForm
 				DisplayValue = grp.Key,
 				MatchingResults = grp,
 				CheckedList = clb,
-				Category = clb.Parent.Controls.OfType<ScalingLabel>().First(),
+				Category = CategoryLabel(clb),
 			};
 		PopulateInit(clb, BaseAttributes);
 	}
 
 	#endregion
 
-	private void numericUpDownMaxElement_ValueChanged(object sender, EventArgs e)
+	private void numericUpDownMaxElement_ValueChanged(object? sender, EventArgs e)
 		=> AdjustCheckBoxesHeight();
 
-	private void scalingCheckedListBox_MouseMove(object sender, MouseEventArgs e)
+	private void scalingCheckedListBox_MouseMove(object? sender, MouseEventArgs e)
 	{
-		var ctr = sender as Control;
+		var ctr = (Control)sender!;
 		var (lstBox, tag) = ctr.GetBoxTag();
 
 		var focusedIdx = lstBox.IndexFromPoint(e.Location);
@@ -899,19 +906,19 @@ public partial class SearchDialogAdvanced : VaultForm
 		lstBox.Tag = tag;
 	}
 
-	private void buttonCollapseAll_Click(object sender, EventArgs e)
+	private void buttonCollapseAll_Click(object? sender, EventArgs e)
 	{
 		foreach (var lb in this.CachedCheckedListBoxes)
 			lb.Visible = false;
 	}
 
-	private void buttonExpandAll_Click(object sender, EventArgs e)
+	private void buttonExpandAll_Click(object? sender, EventArgs e)
 	{
 		foreach (var lb in this.CachedCheckedListBoxes)
 			lb.Visible = true;
 	}
 
-	private void scalingButtonMenu_Click(object sender, EventArgs e)
+	private void scalingButtonMenu_Click(object? sender, EventArgs e)
 	{
 		// Toggle
 		var (button, panel) = NavMap.First(m => object.ReferenceEquals(m.Button, sender));
@@ -951,7 +958,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			}
 		}
 	}
-	private void scalingCheckedListBox_SelectedValueChanged(object sender, EventArgs e)
+	private void scalingCheckedListBox_SelectedValueChanged(object? sender, EventArgs e)
 		=> Sync_SelectedFilters();
 
 	private void Sync_SelectedFilters()
@@ -980,10 +987,12 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.Apply_SelectedFilters();
 	}
 
-	private void scalingLabelCategory_MouseClick(object sender, MouseEventArgs e)
+	private void scalingLabelCategory_MouseClick(object? sender, MouseEventArgs e)
 	{
-		var label = sender as ScalingLabel;
-		var flowpanel = label.Parent;
+		var label = (ScalingLabel)sender!;
+		if (label.Parent is not { } flowpanel)
+			return;
+
 		if (e.Button == MouseButtons.Left)
 		{
 			// Individual Expand/Collapse
@@ -1036,13 +1045,13 @@ public partial class SearchDialogAdvanced : VaultForm
 		}
 	}
 
-	private void scalingLabelFiltersSelected_MouseEnter(object sender, EventArgs e)
+	private void scalingLabelFiltersSelected_MouseEnter(object? sender, EventArgs e)
 	{
-		var ctrl = sender as Control;
+		var ctrl = (Control)sender!;
 		SearchFiltersTooltip.ShowTooltip(this.Services, ctrl, this.SelectedFilters, (SearchOperator)scalingComboBoxOperator.SelectedIndex);
 	}
 
-	private void scalingLabelFiltersSelected_MouseLeave(object sender, EventArgs e)
+	private void scalingLabelFiltersSelected_MouseLeave(object? sender, EventArgs e)
 		=> SearchFiltersTooltip.HideTooltip();
 
 	bool _Apply_SelectedFiltersDisabled = false;
@@ -1062,7 +1071,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			MinStr = (int)numericUpDownMinStr.Value;
 		bool MaxRequierement = scalingCheckBoxMaxReq.Checked, MinRequierement = scalingCheckBoxMinReq.Checked;
 
-		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag.ToString(), SelectedFilters.Count());
+		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag?.ToString() ?? "{0}", SelectedFilters.Count());
 
 		// Combine selected filter results based on operator
 		IReadOnlyList<SearchResult> initialResults;
@@ -1119,7 +1128,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		ApplyCategoriesReducer();
 	}
 
-	private void scalingComboBoxOperator_SelectionChangeCommitted(object sender, EventArgs e)
+	private void scalingComboBoxOperator_SelectionChangeCommitted(object? sender, EventArgs e)
 	{
 		if (scalingCheckBoxReduceDuringSelection.Checked)
 			ResetCheckBoxesToFirstLoad();
@@ -1127,7 +1136,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		Apply_SelectedFilters();
 	}
 
-	private void scalingCheckBoxReduceDuringSelection_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxReduceDuringSelection_CheckedChanged(object? sender, EventArgs e)
 	{
 		scalingCheckBoxReduceDuringSelection_LastChecked = !scalingCheckBoxReduceDuringSelection.Checked;
 		ApplyCategoriesReducer();
@@ -1161,16 +1170,16 @@ public partial class SearchDialogAdvanced : VaultForm
 	{
 		internal bool HasFilterCategory;
 		internal bool IsRegex;
-		internal string Search;
-		internal Regex Regex;
+		internal string Search = string.Empty;
+		internal Regex? Regex;
 		internal bool RegexIsValid;
-		internal string SearchRaw;
-		internal string SearchRawPrevious;
+		internal string SearchRaw = string.Empty;
+		internal string SearchRawPrevious = string.Empty;
 
 		internal bool HasChanged => SearchRaw != SearchRawPrevious;
 		internal bool IsMatch(string attributeText)
 			=> (IsRegex && RegexIsValid)
-				? Regex.IsMatch(attributeText)
+				? Regex?.IsMatch(attributeText) ?? false
 				: attributeText.ContainsIgnoreCase(Search);
 
 		internal bool AvoidDisplayAttribute(string attributeText)
@@ -1264,7 +1273,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		}
 	}
 
-	private void scalingButtonReset_Click(object sender, EventArgs e)
+	private void scalingButtonReset_Click(object? sender, EventArgs e)
 		=> ResetSelectedFilters();
 
 	/// <summary>
@@ -1335,18 +1344,18 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.scalingTextBoxSearchTerm.TextChanged += scalingTextBoxSearchTerm_TextChanged;
 	}
 
-	private void scalingTextBoxSearchTerm_TextChanged(object sender, EventArgs e)
+	private void scalingTextBoxSearchTerm_TextChanged(object? sender, EventArgs e)
 		/// Wait for the end of typing by delaying the call to <see cref="scalingTextBoxSearchTerm_TextChanged_Idled"/>
 		=> this.typeAssistantSearchBox.TextChanged();
 
-	private void scalingTextBoxSearchTerm_TextChanged_Idled(object sender, EventArgs e)
+	private void scalingTextBoxSearchTerm_TextChanged_Idled(object? sender, EventArgs e)
 		=> TextBoxSearchTerm_TextChanged_Logic();
 
-	private void scalingTextBoxFilterCategories_TextChanged(object sender, EventArgs e)
+	private void scalingTextBoxFilterCategories_TextChanged(object? sender, EventArgs e)
 		/// Wait for the end of typing by delaying the call to <see cref="typeAssistantFilterCategories_Idled"/>
 		=> typeAssistantFilterCategories.TextChanged();
 
-	private void typeAssistantFilterCategories_Idled(object sender, EventArgs e)
+	private void typeAssistantFilterCategories_Idled(object? sender, EventArgs e)
 	{
 		var f = FilterCategories;
 
@@ -1376,7 +1385,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			this.Invoke(Sync_SelectedFilters);
 	}
 
-	private BoxItem MakeSearchTermBoxItem(string searchTerm = null)
+	private BoxItem MakeSearchTermBoxItem(string? searchTerm = null)
 	{
 		// Init a special BoxItem for the search term
 		var txt = searchTerm is null
@@ -1405,18 +1414,18 @@ public partial class SearchDialogAdvanced : VaultForm
 		return searchTermBoxItem;
 	}
 
-	private void scalingLabelProgress_MouseEnter(object sender, EventArgs e)
+	private void scalingLabelProgress_MouseEnter(object? sender, EventArgs e)
 	{
-		var ctrl = sender as Control;
+		var ctrl = (Control)sender!;
 		FoundResultsTooltip.ShowTooltip(this.Services, ctrl, this.QueryResults);
 	}
 
-	private void scalingLabelProgress_MouseLeave(object sender, EventArgs e)
+	private void scalingLabelProgress_MouseLeave(object? sender, EventArgs e)
 		=> FoundResultsTooltip.HideTooltip();
 
-	private void scalingLabelProgress_TextChanged(object sender, EventArgs e)
+	private void scalingLabelProgress_TextChanged(object? sender, EventArgs e)
 	{
-		var ctrl = sender as Control;
+		var ctrl = (Control)sender!;
 		ScalingLabelProgressAdjustSizeAndPosition(ctrl);
 	}
 
@@ -1425,14 +1434,15 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Adjust Control Size & position manualy because center align the control in it's container doesn't work with AutoSize = true
 		ctrl.Size = TextRenderer.MeasureText(ctrl.Text, ctrl.Font);
 		var loc = ctrl.Location;
-		loc.X = (ctrl.Parent.Size.Width / 2) - (ctrl.Width / 2);
+		if (ctrl.Parent is { } parent)
+			loc.X = (parent.Size.Width / 2) - (ctrl.Width / 2);
 		ctrl.Location = loc;
 	}
 
-	private void scalingLabelProgressPanelAlignText_SizeChanged(object sender, EventArgs e)
+	private void scalingLabelProgressPanelAlignText_SizeChanged(object? sender, EventArgs e)
 	{
 		// Prevent child text truncation during resize
-		var ctrl = sender as Control;
+		var ctrl = (Control)sender!;
 		var label = ctrl.Controls.OfType<ScalingLabel>().First();
 		ScalingLabelProgressAdjustSizeAndPosition(label);
 	}
@@ -1501,11 +1511,11 @@ public partial class SearchDialogAdvanced : VaultForm
 		SearchQueriesInit();
 	}
 
-	private void scalingButtonQuerySave_Click(object sender, EventArgs e)
+	private void scalingButtonQuerySave_Click(object? sender, EventArgs e)
 	{
 		var input = scalingComboBoxQueryList.Text.Trim();
 		DialogResult? overrideIt = null;
-		SearchQuery foundIt = null;
+		SearchQuery? foundIt = null;
 
 		#region Validation
 
@@ -1556,7 +1566,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		#endregion
 
-		if (overrideIt == DialogResult.Yes)
+		if (overrideIt == DialogResult.Yes && foundIt is not null)
 		{
 			UpdateQuery(input, foundIt);
 			SavePersonnalQueries();
@@ -1652,7 +1662,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		scalingComboBoxQueryList.EndUpdate();
 	}
 
-	private void scalingButtonQueryDelete_Click(object sender, EventArgs e)
+	private void scalingButtonQueryDelete_Click(object? sender, EventArgs e)
 	{
 		var idx = scalingComboBoxQueryList.SelectedIndex;
 		if (idx == -1) return;
@@ -1678,7 +1688,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		SavePersonnalQueries();
 	}
 
-	private void scalingComboBoxQueryList_SelectedIndexChanged(object sender, EventArgs e)
+	private void scalingComboBoxQueryList_SelectedIndexChanged(object? sender, EventArgs e)
 	{
 		var idx = scalingComboBoxQueryList.SelectedIndex;
 		Make_SelectedFilters(this.SQueries[idx]);
@@ -1751,14 +1761,14 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.Apply_SelectedFilters();
 	}
 
-	private void scalingCheckBoxMinMaxReq_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxMinMaxReq_CheckedChanged(object? sender, EventArgs e)
 	{
 		Apply_SelectedFilters();
 	}
 
-	private void numericUpDownMinMax_ValueChanged(object sender, EventArgs e)
+	private void numericUpDownMinMax_ValueChanged(object? sender, EventArgs e)
 	{
-		var num = sender as NumericUpDown;
+		var num = (NumericUpDown)sender!;
 
 		// Avoid absurd range
 		if (num == numericUpDownMinLvl && numericUpDownMaxLvl.Value < num.Value)
@@ -1793,7 +1803,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		Apply_SelectedFilters();
 	}
 
-	private void scalingCheckBoxQuickFilters_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxQuickFilters_CheckedChanged(object? sender, EventArgs e)
 	{
 		Apply_SelectedFilters();
 	}
@@ -1804,9 +1814,8 @@ public static class SearchDialogAdvancedExtension
 
 	public static (VirtualCheckedListBox, BoxTag) GetBoxTag(this Control obj)
 	{
-		var ctr = obj as VirtualCheckedListBox;
-
-		if (ctr is null) return (null, null);
+		if (obj is not VirtualCheckedListBox ctr)
+			throw new ArgumentException($"{obj.Name} is not a filter list.", nameof(obj));
 
 		var Tag = ctr.Tag as BoxTag ?? new BoxTag();
 		ctr.Tag = Tag;
@@ -1816,9 +1825,8 @@ public static class SearchDialogAdvancedExtension
 
 	public static (ScalingTextBox, BoxItem) GetBoxItem(this Control obj, bool newInstance)
 	{
-		var ctr = obj as ScalingTextBox;
-
-		if (ctr is null) return (null, null);
+		if (obj is not ScalingTextBox ctr)
+			throw new ArgumentException($"{obj.Name} is not a search box.", nameof(obj));
 
 		var Tag = newInstance
 			? new BoxItem()

@@ -26,12 +26,12 @@ public partial class ResultsDialog : VaultForm
 	/// <summary>
 	/// User selected result from the list
 	/// </summary>
-	private SearchResult selectedResult;
+	private SearchResult? selectedResult;
 
 	/// <summary>
 	/// Search string passed from user
 	/// </summary>
-	private string searchString;
+	private string searchString = string.Empty;
 
 	/// <summary>
 	/// Initializes a new instance of the ResultsDialog class.
@@ -78,12 +78,12 @@ public partial class ResultsDialog : VaultForm
 	/// <typeparam name="ResultChangedEventArgs">ResultChangedEventArgs type</typeparam>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ResultChangedEventArgs data</param>
-	public delegate void EventHandler<ResultChangedEventArgs>(object sender, ResultChangedEventArgs e);
+	public delegate void EventHandler<ResultChangedEventArgs>(object? sender, ResultChangedEventArgs e);
 
 	/// <summary>
 	/// Event for changing to a different highlighted result.
 	/// </summary>
-	public event EventHandler<ResultChangedEventArgs> ResultChanged;
+	public event EventHandler<ResultChangedEventArgs>? ResultChanged;
 
 	/// <summary>
 	/// Gets the list of results collection
@@ -135,7 +135,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ResultsDialogShown(object sender, EventArgs e)
+	private void ResultsDialogShown(object? sender, EventArgs e)
 	{
 		this.PopulateDataGridView();
 
@@ -154,9 +154,9 @@ public partial class ResultsDialog : VaultForm
 		if (totalHeight > this.Height)
 			totalWidth += SystemInformation.VerticalScrollBarWidth;
 
-		this.Width = Math.Min(Screen.PrimaryScreen.WorkingArea.Width, totalWidth + this.Padding.Horizontal);
-		this.Height = Math.Max(this.Height, Math.Min(Screen.PrimaryScreen.WorkingArea.Height - SystemInformation.HorizontalScrollBarHeight, totalHeight - SystemInformation.HorizontalScrollBarHeight));
-		this.Location = new Point(this.Location.X, (Screen.PrimaryScreen.WorkingArea.Height - this.Height) / 2);
+		this.Width = Math.Min((Screen.PrimaryScreen ?? Screen.FromControl(this)).WorkingArea.Width, totalWidth + this.Padding.Horizontal);
+		this.Height = Math.Max(this.Height, Math.Min((Screen.PrimaryScreen ?? Screen.FromControl(this)).WorkingArea.Height - SystemInformation.HorizontalScrollBarHeight, totalHeight - SystemInformation.HorizontalScrollBarHeight));
+		this.Location = new Point(this.Location.X, ((Screen.PrimaryScreen ?? Screen.FromControl(this)).WorkingArea.Height - this.Height) / 2);
 
 		this.selectedResult = null;
 
@@ -217,7 +217,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">DataGridViewCellEventArgs data</param>
-	private void ResultsDataGridViewCellDoubleClick(object sender, DataGridViewCellEventArgs e)
+	private void ResultsDataGridViewCellDoubleClick(object? sender, DataGridViewCellEventArgs e)
 	{
 		// Ignore double click on the header.
 		if (e.RowIndex < 0)
@@ -231,7 +231,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyPressEventArgs data</param>
-	private void ResultsDataGridViewKeyPress(object sender, KeyPressEventArgs e)
+	private void ResultsDataGridViewKeyPress(object? sender, KeyPressEventArgs e)
 	{
 		// Escape key
 		if (e.KeyChar == 27)
@@ -243,7 +243,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">DataGridViewCellEventArgs data</param>
-	private void ResultsDataGridViewRowEnter(object sender, DataGridViewCellEventArgs e)
+	private void ResultsDataGridViewRowEnter(object? sender, DataGridViewCellEventArgs e)
 	{
 		// Ignore click on the header.
 		if (e.RowIndex < 0)
@@ -262,7 +262,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void ResultsDataGridViewCellClick(object sender, DataGridViewCellEventArgs e)
+	private void ResultsDataGridViewCellClick(object? sender, DataGridViewCellEventArgs e)
 	{
 		// Ignore click on the header.
 		if (e.RowIndex < 0)
@@ -284,7 +284,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">DataGridViewCellEventArgs data</param>
-	private void ResultsDataGridViewRowLeave(object sender, DataGridViewCellEventArgs e)
+	private void ResultsDataGridViewRowLeave(object? sender, DataGridViewCellEventArgs e)
 	{
 		this.selectedResult = null;
 		ItemTooltip.HideTooltip();
@@ -295,7 +295,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ResultsDataGridViewMouseLeave(object sender, EventArgs e) => ItemTooltip.HideTooltip();
+	private void ResultsDataGridViewMouseLeave(object? sender, EventArgs e) => ItemTooltip.HideTooltip();
 
 	/// <summary>
 	/// Handler for entering a cell in the DataGridView.
@@ -303,7 +303,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">DataGridViewCellEventArgs data</param>
-	private void ResultsDataGridViewCellMouseEnter(object sender, DataGridViewCellEventArgs e)
+	private void ResultsDataGridViewCellMouseEnter(object? sender, DataGridViewCellEventArgs e)
 	{
 		// Ignore click on the header.
 		if (e.RowIndex < 0)
@@ -324,7 +324,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">DataGridViewCellEventArgs data</param>
-	private void ResultsDataGridViewCellMouseLeave(object sender, DataGridViewCellEventArgs e)
+	private void ResultsDataGridViewCellMouseLeave(object? sender, DataGridViewCellEventArgs e)
 	{
 		this.selectedResult = null;
 		ItemTooltip.HideTooltip();
@@ -335,7 +335,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ResultsDialog_Resize(object sender, EventArgs e)
+	private void ResultsDialog_Resize(object? sender, EventArgs e)
 	{
 		this.resultsDataGridView.Size = new Size(
 			Math.Max(this.Padding.Horizontal + 1, this.Width - this.Padding.Horizontal),

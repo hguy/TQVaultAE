@@ -17,21 +17,22 @@ public partial class ComboBoxCharacter : UserControl
 
 	#region Prop & Fields
 
-	private IUIService UIService;
-	private IFontService FontService;
-	private ITranslationService TranslationService;
-	private IDatabase Database;
-	private IGamePathService GamePathService;
-	private IGameFileService GameFileService;
-	private ITagService TagService;
-	private IPlayerService PlayerService;
-	private UserSettings USettings;
-	private Bitmap HUDCHARACTERBUTTONUP01;
-	private Bitmap HUDCHARACTERBUTTONOVER01;
-	private Bitmap HUDCHARACTERBUTTONDOWN01;
-	private Bitmap HUDMENUSKILLBUTTONUP01;
-	private Bitmap HUDMENUSKILLBUTTONDOWN01;
-	private Bitmap HUDMENUSKILLBUTTONOVER01;
+	// Set by Init: the designer creates the control without services.
+	private IUIService UIService = null!;
+	private IFontService FontService = null!;
+	private ITranslationService TranslationService = null!;
+	private IDatabase Database = null!;
+	private IGamePathService GamePathService = null!;
+	private IGameFileService GameFileService = null!;
+	private ITagService TagService = null!;
+	private IPlayerService PlayerService = null!;
+	private UserSettings USettings = null!;
+	private Bitmap HUDCHARACTERBUTTONUP01 = null!;
+	private Bitmap HUDCHARACTERBUTTONOVER01 = null!;
+	private Bitmap HUDCHARACTERBUTTONDOWN01 = null!;
+	private Bitmap HUDMENUSKILLBUTTONUP01 = null!;
+	private Bitmap HUDMENUSKILLBUTTONDOWN01 = null!;
+	private Bitmap HUDMENUSKILLBUTTONOVER01 = null!;
 
 	private int _MaxVisibleItems = 5;
 	public int MaxVisibleItems
@@ -44,29 +45,29 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private VaultForm Form;
+	private VaultForm? Form;
 	private Point? DropDownLoc;
-	private ComboBoxCharacterDropDown DropDown;
+	private ComboBoxCharacterDropDown DropDown = null!;
 
 	/// <summary>
 	/// a collection of <see cref="PlayerSave"/> or <see cref="string"/>
 	/// </summary>
 	public readonly BindingList<object> Items = new();
 
-	private object _SelectedItem = null;
+	private object? _SelectedItem = null;
 	private int _SelectedIndex = -1;
-	private Action DuplicateCharacterAction;
+	private Action DuplicateCharacterAction = null!;
 	private bool _DisableMenuTriggers;
 
 	/// <summary>
 	/// a <see cref="PlayerSave"/> or a <see cref="string"/>
 	/// </summary>
-	public object SelectedItem
+	public object? SelectedItem
 	{
 		get => _SelectedItem;
 		set
 		{
-			if (Items.Contains(value))
+			if (value is not null && Items.Contains(value))
 			{
 				_SelectedItem = value;
 				RefreshContent();
@@ -93,9 +94,9 @@ public partial class ComboBoxCharacter : UserControl
 
 	#region Events
 
-	public event EventHandler SelectedIndexChanged;
+	public event EventHandler? SelectedIndexChanged;
 
-	public event EventHandler SelectedItemChanged;
+	public event EventHandler? SelectedItemChanged;
 
 	private void RaiseSelectedItemsEvents()
 	{
@@ -136,7 +137,7 @@ public partial class ComboBoxCharacter : UserControl
 		for (int i = 0; i < Items.Count; i++)
 		{
 			var item = Items[i];
-			if (item.ToString().ContainsIgnoreCase(search))
+			if ((item.ToString() ?? string.Empty).ContainsIgnoreCase(search))
 				return i;
 		}
 		return -1;
@@ -144,6 +145,9 @@ public partial class ComboBoxCharacter : UserControl
 
 	private void AdjustLocation()
 	{
+		if (this.Form is null)
+			return;
+
 		this.DropDownLoc = this.Form.PointToClient(this.PointToScreen(Point.Empty));
 		this.DropDownLoc = new Point(this.DropDownLoc.Value.X, this.DropDownLoc.Value.Y + Height);
 		this.DropDown.Location = this.DropDownLoc.Value;
@@ -172,7 +176,8 @@ public partial class ComboBoxCharacter : UserControl
 		this.PlayerService = playerService;
 		this.USettings = userSettings;
 		this.Form = this.FindForm() as VaultForm;
-		this.Form.GlobalMouseButtonLeft += Form_GlobalMouseButtonLeft;
+		if (this.Form is not null)
+			this.Form.GlobalMouseButtonLeft += Form_GlobalMouseButtonLeft;
 		this.DuplicateCharacterAction = duplicateCharacterAction;
 
 		if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
@@ -276,7 +281,7 @@ public partial class ComboBoxCharacter : UserControl
 			};
 			ApplyHeight();
 
-			this.Form.Controls.Add(this.DropDown);
+			this.Form?.Controls.Add(this.DropDown);
 
 			RefreshMenuTagList();
 
@@ -320,7 +325,7 @@ public partial class ComboBoxCharacter : UserControl
 				if (tagItem is ToolStripSeparator)
 					continue;
 
-				if (tagItem is ToolStripMenuItem mi && tagItem.Name.StartsWith(TAGKEY))
+				if (tagItem is ToolStripMenuItem mi && (tagItem.Name?.StartsWith(TAGKEY) ?? false))
 				{
 					mi.Checked = false;
 					foreach (var tag in ps.Tags)
@@ -452,7 +457,7 @@ public partial class ComboBoxCharacter : UserControl
 
 	#region DropDown
 
-	private void OpenDropDown_Click(object sender, EventArgs e)
+	private void OpenDropDown_Click(object? sender, EventArgs e)
 	{
 		if (this.DropDownLoc is null)
 			AdjustLocation();
@@ -486,7 +491,7 @@ public partial class ComboBoxCharacter : UserControl
 		this.DropDown.Visible = false;
 	}
 
-	private void Saves_ListChanged(object sender, ListChangedEventArgs e)
+	private void Saves_ListChanged(object? sender, ListChangedEventArgs e)
 	{
 		switch (e.ListChangedType)
 		{
@@ -502,9 +507,9 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private void Item_SelectedItemChanged(object sender, EventArgs e)
+	private void Item_SelectedItemChanged(object? sender, EventArgs e)
 	{
-		var selected = sender as ComboBoxCharacterItem;
+		var selected = (ComboBoxCharacterItem)sender!;
 
 		if (this.SelectedItem != selected.Item)
 		{
@@ -513,7 +518,7 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private void Form_GlobalMouseButtonLeft(object sender, Point point)
+	private void Form_GlobalMouseButtonLeft(object? sender, Point point)
 	{
 		// Close dropdown if left click outside it's surface
 		var mp = MousePosition;
@@ -524,12 +529,12 @@ public partial class ComboBoxCharacter : UserControl
 
 	#endregion
 
-	private void ScalingButtonTools_Click(object sender, EventArgs e)
+	private void ScalingButtonTools_Click(object? sender, EventArgs e)
 	{
 		this.contextMenuStrip.Show(scalingButtonTools, new Point(0, scalingButtonTools.Height));
 	}
 
-	private void TagColorItem_Click(object sender, EventArgs e)
+	private void TagColorItem_Click(object? sender, EventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;
@@ -537,13 +542,13 @@ public partial class ComboBoxCharacter : UserControl
 		var colorItem = sender as ToolStripMenuItem;
 		if (colorItem is not null)
 		{
-			var tagItem = colorItem.OwnerItem as ToolStripMenuItem;
+			var tagName = colorItem.OwnerItem?.Text ?? string.Empty;
 			var result = this.colorDialog.ShowDialog();
 			if (result == DialogResult.OK)
 			{
 				var col = this.colorDialog.Color;
 
-				this.TagService.UpdateTag(tagItem.Text, tagItem.Text, col.R, col.G, col.B);
+				this.TagService.UpdateTag(tagName, tagName, col.R, col.G, col.B);
 
 				this.RefreshMenuTagList();
 				this.RefreshItems();
@@ -552,7 +557,7 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private void TagItem_CheckedChanged(object sender, EventArgs e)
+	private void TagItem_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;
@@ -563,10 +568,11 @@ public partial class ComboBoxCharacter : UserControl
 			var ps = this.SelectedItem as PlayerSave;
 			if (ps is not null)
 			{
+				var tagName = tagItem.Text ?? string.Empty;
 				if (tagItem.Checked)
-					this.TagService.AssignTag(ps, tagItem.Text);
+					this.TagService.AssignTag(ps, tagName);
 				else
-					this.TagService.UnassignTag(ps, tagItem.Text);
+					this.TagService.UnassignTag(ps, tagName);
 
 				RefreshItem(ps);
 				RefreshContent();
@@ -574,7 +580,7 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private void duplicateToolStripMenuItem_Click(object sender, EventArgs e)
+	private void duplicateToolStripMenuItem_Click(object? sender, EventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;
@@ -582,11 +588,11 @@ public partial class ComboBoxCharacter : UserControl
 		this.DuplicateCharacterAction();
 	}
 
-	private void TagRenameTextBoxItem_KeyDown(object sender, KeyEventArgs e)
+	private void TagRenameTextBoxItem_KeyDown(object? sender, KeyEventArgs e)
 	{
-		var textBox = sender as ToolStripTextBox;
-		var parentTagMenuItem = textBox.OwnerItem.OwnerItem as ToolStripMenuItem;
-		var oldTagName = parentTagMenuItem.Text;
+		var textBox = (ToolStripTextBox)sender!;
+		// The rename box sits in the menu of its tag.
+		var oldTagName = textBox.OwnerItem?.OwnerItem?.Text ?? string.Empty;
 
 		if (e.KeyCode == Keys.Escape)
 		{
@@ -631,14 +637,14 @@ public partial class ComboBoxCharacter : UserControl
 
 	}
 
-	private void TagDeleteItem_Click(object sender, EventArgs e)
+	private void TagDeleteItem_Click(object? sender, EventArgs e)
 	{
-		var deleteMenuItem = sender as ToolStripMenuItem;
-		var parentTagMenuItem = deleteMenuItem.OwnerItem as ToolStripMenuItem;
+		var deleteMenuItem = (ToolStripMenuItem)sender!;
+		var tagName = deleteMenuItem.OwnerItem?.Text ?? string.Empty;
 
 		if (UIService.ShowWarning(Resources.GlobalConfirm).IsOK)
 		{
-			this.TagService.DeleteTag(parentTagMenuItem.Text);
+			this.TagService.DeleteTag(tagName);
 
 			RefreshItems();
 			RefreshMenuTagList();
@@ -646,15 +652,15 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private void TagUnArchiveAllItem_Click(object sender, EventArgs e)
+	private void TagUnArchiveAllItem_Click(object? sender, EventArgs e)
 	{
-		var unArchiveAllMenuItem = sender as ToolStripMenuItem;
-		var parentTagMenuItem = unArchiveAllMenuItem.OwnerItem as ToolStripMenuItem;
+		var unArchiveAllMenuItem = (ToolStripMenuItem)sender!;
+		var tagName = unArchiveAllMenuItem.OwnerItem?.Text ?? string.Empty;
 
 		// Find Saves having the tag that are archived
 		var taggedSaves =
 			from ps in this.Items.OfType<PlayerSave>()
-			where ps.Tags.ContainsKey(parentTagMenuItem.Text) && ps.IsArchived
+			where ps.Tags.ContainsKey(tagName) && ps.IsArchived
 			select ps;
 
 		foreach (var taggedSave in taggedSaves)
@@ -664,15 +670,15 @@ public partial class ComboBoxCharacter : UserControl
 		RefreshContent();
 	}
 
-	private void TagArchiveAllItem_Click(object sender, EventArgs e)
+	private void TagArchiveAllItem_Click(object? sender, EventArgs e)
 	{
-		var archiveAllMenuItem = sender as ToolStripMenuItem;
-		var parentTagMenuItem = archiveAllMenuItem.OwnerItem as ToolStripMenuItem;
+		var archiveAllMenuItem = (ToolStripMenuItem)sender!;
+		var tagName = archiveAllMenuItem.OwnerItem?.Text ?? string.Empty;
 
 		// Find Saves having the tag that are not archived
 		var taggedSaves =
 			from ps in this.Items.OfType<PlayerSave>()
-			where ps.Tags.ContainsKey(parentTagMenuItem.Text) && !ps.IsArchived
+			where ps.Tags.ContainsKey(tagName) && !ps.IsArchived
 			select ps;
 
 		foreach (var taggedSave in taggedSaves)
@@ -690,9 +696,9 @@ public partial class ComboBoxCharacter : UserControl
 		RefreshContent();
 	}
 
-	private void ToolStripTextBoxAdd_KeyDown(object sender, KeyEventArgs e)
+	private void ToolStripTextBoxAdd_KeyDown(object? sender, KeyEventArgs e)
 	{
-		var textBox = sender as ToolStripTextBox;
+		var textBox = (ToolStripTextBox)sender!;
 
 		if (e.KeyCode == Keys.Escape)
 		{
@@ -736,16 +742,15 @@ public partial class ComboBoxCharacter : UserControl
 	void ClearInputAndCollapse(ToolStripTextBox textbox)
 	{
 		textbox.Clear();
-		var parent = textbox.OwnerItem as ToolStripMenuItem;
-		parent.HideDropDown();
+		(textbox.OwnerItem as ToolStripMenuItem)?.HideDropDown();
 	}
 
-	private void toolStripTextBox_KeyPress(object sender, KeyPressEventArgs e)
+	private void toolStripTextBox_KeyPress(object? sender, KeyPressEventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;
 
-		var texBox = sender as ToolStripTextBox;
+		var texBox = (ToolStripTextBox)sender!;
 		// Filter input ??
 		/*
 		if (!Regex.IsMatch(e.KeyChar.ToString(), @"[\w\. \-\[\]]"))
@@ -756,7 +761,7 @@ public partial class ComboBoxCharacter : UserControl
 		*/
 	}
 
-	private void archiveToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+	private void archiveToolStripMenuItem_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;
@@ -792,7 +797,7 @@ public partial class ComboBoxCharacter : UserControl
 		}
 	}
 
-	private void archiveAllToolStripMenuItemGlobal_Click(object sender, EventArgs e)
+	private void archiveAllToolStripMenuItemGlobal_Click(object? sender, EventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;
@@ -818,7 +823,7 @@ public partial class ComboBoxCharacter : UserControl
 		RefreshContent();
 	}
 
-	private void unarchiveAllToolStripMenuItemGlobal_Click(object sender, EventArgs e)
+	private void unarchiveAllToolStripMenuItemGlobal_Click(object? sender, EventArgs e)
 	{
 		if (this._DisableMenuTriggers)
 			return;

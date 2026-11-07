@@ -162,7 +162,7 @@ public class PlayerService : IPlayerService
 	/// <param name="playerOnError">If save fails, this will contain the player that failed.</param>
 	/// <returns>True if there were any modified player files.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
-	public bool SaveAllModifiedPlayers(ref PlayerCollection playerOnError)
+	public bool SaveAllModifiedPlayers(ref PlayerCollection? playerOnError)
 	{
 		int numModified = 0;
 

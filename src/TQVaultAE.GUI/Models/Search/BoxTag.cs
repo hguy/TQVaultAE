@@ -6,5 +6,5 @@ public class BoxTag
 	/// <summary>
 	/// Original Datasource no need to make it again
 	/// </summary>
-	public BoxItem[] DataSource;
+	public BoxItem[] DataSource = [];
 }

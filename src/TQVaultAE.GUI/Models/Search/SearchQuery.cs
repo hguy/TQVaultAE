@@ -6,10 +6,10 @@ public class SearchQuery
 {
 	public record VisibilityItem(string Name, bool Visible);
 
-	public IEnumerable<BoxItem> CheckedItems;
+	public IEnumerable<BoxItem> CheckedItems = [];
 	public string QueryName = string.Empty;
-	public string Filter;
-	public List<VisibilityItem> Visible;
+	public string Filter = string.Empty;
+	public List<VisibilityItem> Visible = new();
 	public decimal MaxElement;
 	public bool Reduce;
 	public SearchOperator Logic;

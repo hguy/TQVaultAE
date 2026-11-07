@@ -324,7 +324,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="recordId"></param>
 	/// <returns></returns>
-	public static RecordId ToRecordId(this string recordId)
+	public static RecordId ToRecordId(this string? recordId)
 		=> RecordId.Create(recordId);
 
 	/// <summary>

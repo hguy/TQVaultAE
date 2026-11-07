@@ -17,7 +17,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	protected override void ResizeEndCallback(object sender, EventArgs e)
+	protected override void ResizeEndCallback(object? sender, EventArgs e)
 		// That override Look dumb but needed by Visual Studio WInform Designer
 		=> base.ResizeEndCallback(sender, e);
 
@@ -26,7 +26,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	protected override void ResizeBeginCallback(object sender, EventArgs e)
+	protected override void ResizeBeginCallback(object? sender, EventArgs e)
 		// That override Look dumb but needed by Visual Studio WInform Designer
 		=> base.ResizeBeginCallback(sender, e);
 
@@ -35,7 +35,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">FormClosingEventArgs data</param>
-	private void MainFormClosing(object sender, FormClosingEventArgs e)
+	private void MainFormClosing(object? sender, FormClosingEventArgs e)
 	{
 		// Application.Exit is only called when loading failed or after a fatal error: nothing to save then.
 		// The former Closing event was not raised in that case.
@@ -92,7 +92,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MainFormLoad(object sender, EventArgs e)
+	private void MainFormLoad(object? sender, EventArgs e)
 	{
 		// Sync git local repo first
 		this.GameFileService.GitRepositorySetup();
@@ -116,7 +116,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyPressEventArgs data</param>
-	private void MainFormKeyPress(object sender, KeyPressEventArgs e)
+	private void MainFormKeyPress(object? sender, KeyPressEventArgs e)
 	{
 		// Don't handle this here since we handle key presses within each component.
 		////if (e.KeyChar != (char)27)
@@ -129,7 +129,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MainFormShown(object sender, EventArgs e)
+	private void MainFormShown(object? sender, EventArgs e)
 	{
 		this.scalingTextBoxHighlight.Dock = DockStyle.Fill;
 		this.scalingTextBoxHighlight.Focus();
@@ -141,7 +141,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	private void MainFormMouseWheel(object sender, MouseEventArgs e)
+	private void MainFormMouseWheel(object? sender, MouseEventArgs e)
 	{
 		// Force a single line regardless of the delta value.
 		int numberOfTextLinesToMove = ((e.Delta > 0) ? 1 : 0) - ((e.Delta < 0) ? 1 : 0);
@@ -164,7 +164,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyEventArgs data</param>
-	private void MainFormKeyDown(object sender, KeyEventArgs e)
+	private void MainFormKeyDown(object? sender, KeyEventArgs e)
 	{
 		if (e.KeyData == (Keys.Control | Keys.C))
 		{
@@ -197,7 +197,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void FadeInTimerTick(object sender, EventArgs e)
+	private void FadeInTimerTick(object? sender, EventArgs e)
 	{
 		if (this.Opacity < 1)
 			this.Opacity = Math.Min(1.0F, this.Opacity + this.fadeInterval);
@@ -211,7 +211,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ExitButtonClick(object sender, EventArgs e) => this.Close();
+	private void ExitButtonClick(object? sender, EventArgs e) => this.Close();
 
 	#endregion
 
@@ -223,7 +223,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void AboutButtonClick(object sender, EventArgs e)
+	private void AboutButtonClick(object? sender, EventArgs e)
 	{
 		AboutBox dlg = this.Services.Forms.Create<AboutBox>();
 		dlg.Scale(new SizeF(UIService.Scale, UIService.Scale));

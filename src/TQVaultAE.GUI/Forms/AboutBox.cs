@@ -54,7 +54,7 @@ internal partial class AboutBox : VaultForm
 	/// <summary>
 	/// Gets Assembly Title.
 	/// </summary>
-	public static string AssemblyTitle
+	public static string? AssemblyTitle
 	{
 		get
 		{
@@ -86,7 +86,7 @@ internal partial class AboutBox : VaultForm
 	{
 		get
 		{
-			return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+			return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
 		}
 	}
 

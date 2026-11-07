@@ -195,7 +195,7 @@ public class StashService : IStashService
 	/// <param name="stashOnError">If save fails, this will contain the stash that failed.</param>
 	/// <returns>Number of stash saved.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
-	public int SaveAllModifiedStashes(ref Stash stashOnError)
+	public int SaveAllModifiedStashes(ref Stash? stashOnError)
 	{
 		// Save each stash as necessary
 		int saved = 0;

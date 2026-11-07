@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿﻿﻿using System.Text.RegularExpressions;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
@@ -14,19 +14,21 @@ public partial class SearchFiltersTooltip : BaseTooltip
 {
 	private static object syncObj = new object();
 
-	private static SearchFiltersTooltip _Current = null;
+	private static SearchFiltersTooltip? _Current = null;
 	private int LeftSide;
 	private int RightSide;
 	private readonly Rectangle CurrentWorkingArea;
 
 	internal Control AnchorControl { get; private set; }
-	internal List<BoxItem> Filters { get; private set; }
+	internal List<BoxItem> Filters { get; private set; } = new();
 	internal SearchOperator Operator { get; private set; }
 
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public SearchFiltersTooltip() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
 	private SearchFiltersTooltip(
@@ -35,9 +37,11 @@ public partial class SearchFiltersTooltip : BaseTooltip
 		, IFontService fontService
 		, IUIService uiService
 		, ITranslationService translationService
+		, Control anchorControl
 	) : base(itemProvider, fontService, uiService, translationService)
 	{
 		this.Owner = instance;
+		this.AnchorControl = anchorControl;
 
 		InitializeComponent();
 
@@ -65,7 +69,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 	#region Factory
 
-	public static SearchFiltersTooltip ShowTooltip(GuiServices services, Control anchorControl, List<BoxItem> filters, SearchOperator ope)
+	public static SearchFiltersTooltip? ShowTooltip(GuiServices services, Control anchorControl, List<BoxItem> filters, SearchOperator ope)
 	{
 		if (anchorControl is null) return null;
 		if (!(filters?.Any() ?? false)) return null;
@@ -75,14 +79,14 @@ public partial class SearchFiltersTooltip : BaseTooltip
 		{
 			HideTooltip();
 			newTT = new SearchFiltersTooltip(
-				(SearchDialogAdvanced)anchorControl.FindForm()
+				(SearchDialogAdvanced)anchorControl.FindForm()!
 				, services.ItemProvider
 				, services.FontService
 				, services.UIService
 				, services.TranslationService
+				, anchorControl
 			)
 			{
-				AnchorControl = anchorControl,
 				Filters = filters,
 				Operator = ope
 			};
@@ -119,7 +123,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 		var searchTermsGroup = // TODO Maybe multiple in the future using old notation
 			from f in this.Filters
 			where f.CheckedList is null && f.Category is not null
-			let cleanName = FillToolTipRegEx().Replace(f.Category.Text, string.Empty)
+			let cleanName = FillToolTipRegEx().Replace(f.Category!.Text, string.Empty)
 			group f by cleanName into grp
 			orderby grp.Key
 			select grp;
@@ -153,20 +157,20 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 			AddRow(category.Key.Text, FGColor: category.Key.ForeColor, style: FontStyle.Bold);
 			foreach (var filter in category)
-				AddRow(filter.DisplayValue, FGColor: filter.CheckedList.ForeColor, style: FontStyle.Regular);
+				AddRow(filter.DisplayValue, FGColor: filter.CheckedList?.ForeColor, style: FontStyle.Regular);
 		}
 
 		this.flowLayoutPanelFriendlyNames.ResumeLayout();
 		this.ResumeLayout();
 	}
 
-	private void AddRow(string friendlyName = TOOLTIPSPACER, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
+	private void AddRow(string? friendlyName = TOOLTIPSPACER, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
 	{
-		Control row = MakeRow(this.UIService, this.FontService, friendlyName, FGColor, fontSize, style, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
+		Control? row = MakeRow(this.UIService, this.FontService, friendlyName, FGColor, fontSize, style, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
 		this.flowLayoutPanelFriendlyNames.Controls.Add(row);
 	}
 
-	private void ItemTooltip_Load(object sender, EventArgs e)
+	private void ItemTooltip_Load(object? sender, EventArgs e)
 	{
 		this.FillToolTip();
 
@@ -200,7 +204,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 	}
 
 
-	private void AnchorControl_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
+	private void AnchorControl_MouseMove(object? sender, System.Windows.Forms.MouseEventArgs e)
 	{
 		var loc = this.Location;
 
@@ -211,6 +215,6 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 		this.Location = loc;
 	}
-	private void ItemTooltip_FormClosing(object sender, FormClosingEventArgs e) => this.AnchorControl.MouseMove -= AnchorControl_MouseMove;
+	private void ItemTooltip_FormClosing(object? sender, FormClosingEventArgs e) => this.AnchorControl.MouseMove -= AnchorControl_MouseMove;
 
 }

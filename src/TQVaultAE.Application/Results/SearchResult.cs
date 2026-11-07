@@ -46,6 +46,12 @@ public class SearchResult
 
 	private readonly Lazy<ToFriendlyNameResult> FriendlyNamesLazyLoader;
 	public ToFriendlyNameResult? FriendlyNames { get; private set; }
+
+	/// <summary>
+	/// <see cref="FriendlyNames"/> of a result already loaded by <see cref="LazyLoad"/>.
+	/// </summary>
+	public ToFriendlyNameResult LoadedFriendlyNames => this.FriendlyNames
+		?? throw new InvalidOperationException("The search result is not loaded yet.");
 	public string ItemName { get; private set; } = string.Empty;
 	public ItemStyle ItemStyle { get; private set; }
 	public TQColor TQColor { get; private set; }

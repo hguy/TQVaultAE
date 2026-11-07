@@ -101,7 +101,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 	/// <summary>
 	/// Event handler for system events.
 	/// </summary>
-	public event EventHandler<WindowMenuEventArgs> SystemEvent;
+	public event EventHandler<WindowMenuEventArgs>? SystemEvent;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the Maximize menu item is enabled.
@@ -167,9 +167,9 @@ internal sealed class WindowMenu : ContextMenuStrip
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void OnWindowMenuClick(object sender, EventArgs e)
+	private void OnWindowMenuClick(object? sender, EventArgs e)
 	{
-		int index = this.Items.IndexOf((ToolStripItem)sender);
+		int? index = sender is ToolStripItem item ? this.Items.IndexOf(item) : null;
 		switch (index)
 		{
 			case 0:

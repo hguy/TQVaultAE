@@ -61,12 +61,12 @@ public class CommandLineArgs
 	/// <summary>
 	/// Gets the name of the player specified on the command line.
 	/// </summary>
-	public string Player { get; private set; }
+	public string? Player { get; private set; }
 
 	/// <summary>
 	/// Gets the name of the custom map specified on the command line.
 	/// </summary>
-	public string MapName { get; private set; }
+	public string? MapName { get; private set; }
 
 	/// <summary>
 	/// Gets a value indicating whether to bypass the starts screen.

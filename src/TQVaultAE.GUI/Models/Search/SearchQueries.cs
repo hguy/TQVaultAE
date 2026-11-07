@@ -20,8 +20,10 @@ public class SearchQueries : List<SearchQuery>
 	/// <summary>
 	/// Empty ctor for deserialisation
 	/// </summary>
+#pragma warning disable CS8618 // Deserialization only: the loaded queries are copied into the instance built by the container.
 	public SearchQueries()
 	{ }
+#pragma warning restore CS8618
 
 	/// <summary>
 	/// For DI
@@ -57,7 +59,7 @@ public class SearchQueries : List<SearchQuery>
 			var content = FileIO.ReadAllText(SearchQueriesFilePath);
 			var searchQueries = JsonSerializer.Deserialize<SearchQueries>(content, JsonOptions);
 			this.Clear();
-			this.AddRange(searchQueries);
+			this.AddRange(searchQueries ?? []);
 		}
 	}
 

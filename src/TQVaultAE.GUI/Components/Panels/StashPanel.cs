@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
@@ -44,22 +45,22 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Stash file instance
 	/// </summary>
-	private Stash stash;
+	private Stash? stash;
 
 	/// <summary>
 	/// Transfer stash file instance
 	/// </summary>
-	private Stash transferStash;
+	private Stash? transferStash;
 
 	/// <summary>
 	/// Relic Vault stash file instance
 	/// </summary>
-	private Stash relicVaultStash;
+	private Stash? relicVaultStash;
 
 	/// <summary>
 	/// background bitmap
 	/// </summary>
-	private Bitmap background;
+	private Bitmap? background;
 
 	/// <summary>
 	/// Currently selected bag
@@ -84,16 +85,16 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Background image for the equipment panel
 	/// </summary>
-	private Bitmap equipmentBackground;
+	private Bitmap? equipmentBackground;
 
 	/// <summary>
 	/// Background image for the stash vault panels
 	/// </summary>
-	private Bitmap stashBackground;
+	private Bitmap? stashBackground;
 
 	private BufferedTableLayoutPanel PlayerPanel;
 
-	string DisplayPlayerInfoLastName;
+	string? DisplayPlayerInfoLastName;
 	private const int NORMAL_PLAYERINFO_HEIGHT = 480;//BGImage = 490
 	private const int NORMAL_PLAYERINFO_WIDTH = 186;//BGImage = 186
 	private const int NORMAL_PLAYERINFO_TOPRIGHT_ORIGIN_WIDTH = 17;
@@ -117,7 +118,9 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	#endregion StashPanel Fields
 
 #if DEBUG
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public StashPanel() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
 	/// <summary>
@@ -227,7 +230,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the player instance
 	/// </summary>
-	public new PlayerCollection Player
+	public new PlayerCollection? Player
 	{
 		get => base.Player;
 		set
@@ -247,7 +250,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		PlayerPanel.Invalidate();
 	}
 
-	private void EquipmentPanel_VisibleChanged(object sender, EventArgs e)
+	private void EquipmentPanel_VisibleChanged(object? sender, EventArgs e)
 		=> DisplayPlayerInfo();
 
 	/// <summary>
@@ -255,7 +258,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs object</param>
-	private void EquipmentChangedCallback(object sender, SackPanelEventArgs e)
+	private void EquipmentChangedCallback(object? sender, SackPanelEventArgs e)
 	{
 		// Force an update of the Player Info Panel.
 		DisplayPlayerInfoLastName = null;
@@ -271,6 +274,9 @@ public partial class StashPanel : VaultPanel, IScalingControl
 			return;
 
 		SortedList<string, int> statBonuses = new SortedList<string, int>();
+
+		if (Player.PlayerInfo is null)
+			return;
 
 		foreach (SkillRecord skill in Player.PlayerInfo.SkillRecordList)
 			ItemProvider.GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(skill.skillName), skill.skillLevel);
@@ -301,8 +307,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		if (this.Player?.PlayerInfo != null)
 		{
 			DisplayPlayerInfoLastName = this.Player.PlayerName;
-			var pclass = TranslationService.TranslateXTag(this.Player.PlayerInfo.Class, true, true) ?? string.Empty;
-			var mclass = TranslationService.TranslateMastery(this.Player.PlayerInfo.Class) ?? string.Empty;
+			var pclass = TranslationService.TranslateXTag(this.Player.PlayerInfo.Class ?? string.Empty, true, true) ?? string.Empty;
+			var mclass = TranslationService.TranslateMastery(this.Player.PlayerInfo.Class ?? string.Empty) ?? string.Empty;
 			mclass = mclass == Resources.Masteries ? string.Empty : mclass;
 
 			var pi = new Dictionary<string, string>
@@ -413,10 +419,10 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		this.PlayerPanel.Visible = true;
 	}
 
-	private void EditButton_Click(object sender, EventArgs e)
+	private void EditButton_Click(object? sender, EventArgs e)
 	{
 		var dlg = this.Services.Forms.Create<CharacterEditDialog>();
-		dlg.PlayerCollection = this.Player;
+		dlg.PlayerCollection = this.ShownPlayer;
 		dlg.ShowDialog();
 		this.GetSkillStatBonus();
 		this.DisplayPlayerInfoLastName = null;
@@ -428,7 +434,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the stash instance
 	/// </summary>
-	public Stash Stash
+	public Stash? Stash
 	{
 		get => this.stash;
 
@@ -443,7 +449,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the transfer stash instance
 	/// </summary>
-	public Stash TransferStash
+	public Stash? TransferStash
 	{
 		get => this.transferStash;
 
@@ -458,7 +464,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the relic vault stash instance
 	/// </summary>
-	public Stash RelicVaultStash
+	public Stash? RelicVaultStash
 	{
 		get => this.relicVaultStash;
 
@@ -487,11 +493,11 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the background image for the equipment panel scaled by the panel size
 	/// </summary>
-	public Bitmap EquipmentBackground
+	public Bitmap? EquipmentBackground
 	{
 		get
 		{
-			if (UIService.Scale != 1.0F)
+			if (UIService.Scale != 1.0F && this.equipmentBackground is not null)
 			{
 				// We need to scale this since we use it to redraw the background.
 				return new Bitmap(
@@ -509,11 +515,11 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <summary>
 	/// Gets or sets the bitmap for the stash panel background scaled by the panel size.
 	/// </summary>
-	public Bitmap StashBackground
+	public Bitmap? StashBackground
 	{
 		get
 		{
-			if (UIService.Scale != 1.0F)
+			if (UIService.Scale != 1.0F && this.stashBackground is not null)
 			{
 				// We need to scale this since we use it to redraw the background.
 				return new Bitmap(
@@ -569,13 +575,14 @@ public partial class StashPanel : VaultPanel, IScalingControl
 					this.BagSackPanel.Visible = false;
 					this.BagSackPanel.Enabled = false;
 				}
-			else if (this.currentBag == BagIdConstants.BAGID_TRANSFERSTASH)
+			else if (this.currentBag == BagIdConstants.BAGID_TRANSFERSTASH && this.transferStash is not null)
 			{
 				// Transfer Stash
 				this.background = this.StashBackground;
 				this.BagSackPanel.Sack = this.transferStash.Sack;
 				this.BagSackPanel.SackType = SackType.Stash;
-				this.transferStash.Sack.StashType = Domain.Entities.StashType.TransferStash;
+				if (this.transferStash.Sack is not null)
+					this.transferStash.Sack.StashType = Domain.Entities.StashType.TransferStash;
 				this.BagSackPanel.ResizeSackPanel(this.transferStash.Width, this.transferStash.Height);
 
 					// Adjust location based on size.
@@ -588,13 +595,14 @@ public partial class StashPanel : VaultPanel, IScalingControl
 					this.BagSackPanel.Visible = true;
 					this.BagSackPanel.Enabled = true;
 				}
-			else if (this.currentBag == BagIdConstants.BAGID_PLAYERSTASH)
+			else if (this.currentBag == BagIdConstants.BAGID_PLAYERSTASH && this.stash is not null)
 			{
 				// Stash
 				this.background = this.StashBackground;
 				this.BagSackPanel.Sack = this.stash.Sack;
 				this.BagSackPanel.SackType = SackType.Stash;
-				this.stash.Sack.StashType = Domain.Entities.StashType.PlayerStash;
+				if (this.stash.Sack is not null)
+					this.stash.Sack.StashType = Domain.Entities.StashType.PlayerStash;
 				this.BagSackPanel.ResizeSackPanel(this.stash.Width, this.stash.Height);
 
 					// Adjust location based on size so it will be centered.
@@ -607,13 +615,14 @@ public partial class StashPanel : VaultPanel, IScalingControl
 					this.BagSackPanel.Visible = true;
 					this.BagSackPanel.Enabled = true;
 				}
-			else if (this.currentBag == BagIdConstants.BAGID_RELICVAULTSTASH)
+			else if (this.currentBag == BagIdConstants.BAGID_RELICVAULTSTASH && this.relicVaultStash is not null)
 			{
 				// Relic Vault Stash
 				this.background = this.StashBackground;
 				this.BagSackPanel.Sack = this.relicVaultStash.Sack;
 				this.BagSackPanel.SackType = SackType.Stash;
-				this.relicVaultStash.Sack.StashType = Domain.Entities.StashType.RelicVaultStash;
+				if (this.relicVaultStash.Sack is not null)
+					this.relicVaultStash.Sack.StashType = Domain.Entities.StashType.RelicVaultStash;
 				this.BagSackPanel.ResizeSackPanel(this.relicVaultStash.Width, this.relicVaultStash.Height);
 
 					// Adjust location based on size.
@@ -808,9 +817,9 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	protected override void BagButtonClick(object sender, MouseEventArgs e)
+	protected override void BagButtonClick(object? sender, MouseEventArgs e)
 	{
-		BagButtonBase button = (BagButtonBase)sender;
+		BagButtonBase? button = (BagButtonBase)sender!;
 
 		int bagID = button.ButtonNumber;
 
@@ -842,10 +851,11 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">PaintEventArgs data</param>
-	protected new void PaintCallback(object sender, PaintEventArgs e)
+	protected new void PaintCallback(object? sender, PaintEventArgs e)
 	{
 		var rect = this.GetBackgroundRect();
-		e.Graphics.DrawImage(this.background, rect);
+		if (this.background is not null)
+			e.Graphics.DrawImage(this.background, rect);
 		base.PaintCallback(sender, e);
 
 		// Update the player info panel
@@ -866,21 +876,16 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	{
 		// Get the list of items and return them as a string
 		int bagID = button.ButtonNumber;
-		SackCollection sack;
+		SackCollection? sack;
 
 		if (bagID == BagIdConstants.BAGID_EQUIPMENTPANEL)
-		{
-			if (this.Player == null)
-				sack = null;
-			else
-				sack = this.Player.EquipmentSack;
-		}
+			sack = this.Player?.EquipmentSack;
 		else if (bagID == BagIdConstants.BAGID_TRANSFERSTASH)
-			sack = this.transferStash.Sack;
+			sack = this.transferStash?.Sack;
 		else if (bagID == BagIdConstants.BAGID_PLAYERSTASH)
-			sack = this.stash.Sack;
+			sack = this.stash?.Sack;
 		else
-			sack = this.relicVaultStash.Sack;
+			sack = this.relicVaultStash?.Sack;
 
 		button.Sack = sack;
 	}
@@ -904,6 +909,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 	#endregion StashPanel Private Methods
 
+	[MemberNotNull(nameof(components), nameof(buttonContextMenuStrip), nameof(toolStripMenuItemEnableTooltip), nameof(toolStripMenuItemDisableTooltip))]
 	private void InitializeComponent()
 	{
 		this.components = new System.ComponentModel.Container();
@@ -945,7 +951,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 	}
 
-	private void contextMenuStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+	private void contextMenuStrip_ItemClicked(object? sender, ToolStripItemClickedEventArgs e)
 	{
 		if (e.ClickedItem == this.toolStripMenuItemDisableTooltip)
 		{
@@ -988,7 +994,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		this.USettings.Save();
 	}
 
-	private void buttonContextMenuStrip_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+	private void buttonContextMenuStrip_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
 	{
 		void SetMenuItemDisableTooltip(bool disabled)
 		{
@@ -1002,7 +1008,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 			this.toolStripMenuItemEnableTooltip.Visible = false;
 		}
 
-		var sourceButton = ((ContextMenuStrip)sender).SourceControl as StashButton;
+		if (((ContextMenuStrip)sender!).SourceControl is not StashButton sourceButton)
+			return;
 
 		// Adjust menu items display
 		switch (sourceButton.ButtonNumber)

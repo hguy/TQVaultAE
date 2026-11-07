@@ -15,7 +15,7 @@ namespace TQVaultAE.GUI.Forms;
 
 public partial class MainForm
 {
-	private IReadOnlyCollection<string> _watchedPlayerFiles = null;
+	private IReadOnlyCollection<string>? _watchedPlayerFiles = null;
 	private IEnumerable<string> WatchedPlayerFiles
 	{
 		get
@@ -32,12 +32,12 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">Sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CharacterComboBoxSelectedIndexChanged(object sender, EventArgs e)
+	private void CharacterComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		// Hmm. We can load a character now!
 		var selected = this.comboBoxCharacter.SelectedItem;
 		var selectedSave = selected as PlayerSave;
-		var selectedText = selected.ToString();
+		var selectedText = selected?.ToString() ?? string.Empty;
 
 		// See if they actually changed their selection and ignore "No TQ characters detected"
 		if (selectedText.Equals(Resources.MainFormSelectCharacter) || selectedText.Equals(Resources.MainFormNoCharacters)
@@ -46,7 +46,7 @@ public partial class MainForm
 			// no char selected
 			this.ClearPlayer();
 		}
-		else
+		else if (selectedSave is not null)
 		{
 			this.LoadPlayerAndStashes(selectedSave);
 		}
@@ -89,17 +89,17 @@ public partial class MainForm
 	/// <summary>
 	/// Coalesces the change events of the game save files (player, player stash, caravan and relic stash).
 	/// </summary>
-	private FileReloadDebouncer _fileReloadDebouncer;
+	private FileReloadDebouncer? _fileReloadDebouncer;
 	private FileReloadDebouncer FileReloadDebouncer => this._fileReloadDebouncer ??= new FileReloadDebouncer(this.Log);
 
 	// Raised on the UI thread (SynchronizingObject = this)
-	private void PlayerSaveFile_Changed(object sender, FileSystemEventArgs e)
+	private void PlayerSaveFile_Changed(object? sender, FileSystemEventArgs e)
 	{
 		if (e.ChangeType != WatcherChangeTypes.Changed
 			|| !this.WatchedPlayerFiles.Any(f => f.Equals(e.Name, StringComparison.OrdinalIgnoreCase))
 		) return;
 
-		var fw = sender as FileSystemWatcher;
+		var fw = (FileSystemWatcher)sender!;
 		var folder = fw.Path;
 		var fileName = e.Name;
 
@@ -110,12 +110,12 @@ public partial class MainForm
 			if (playerSave is null) return;
 
 			// Reload player file
-			PlayerLoadResult playerResult = null;
-			if (fileName.Equals(this.GamePathResolver.PlayerSaveFileName, StringComparison.OrdinalIgnoreCase))
+			PlayerLoadResult? playerResult = null;
+			if (string.Equals(fileName, this.GamePathResolver.PlayerSaveFileName, StringComparison.OrdinalIgnoreCase))
 				playerResult = this.LoadPlayer(playerSave, true);
 
-			StashLoadResult stashResult = null;
-			if (fileName.Equals(this.GamePathResolver.PlayerStashFileNameB, StringComparison.OrdinalIgnoreCase))
+			StashLoadResult? stashResult = null;
+			if (string.Equals(fileName, this.GamePathResolver.PlayerStashFileNameB, StringComparison.OrdinalIgnoreCase))
 				stashResult = this.LoadPlayerStash(playerSave, true);
 
 			// Refresh if is current displayed character
@@ -198,7 +198,7 @@ public partial class MainForm
 	/// <param name="selectedSave">Player string from the drop down list.</param>
 	/// <param name="fromFileWatcher">When <code>true</code> called from <see cref="FileSystemWatcher.Changed"/></param>
 	/// <returns></returns>
-	private (PlayerLoadResult PlayerResult, StashLoadResult StashResult) LoadPlayerAndStashes(PlayerSave selectedSave, bool fromFileWatcher = false)
+	private (PlayerLoadResult PlayerResult, StashLoadResult? StashResult) LoadPlayerAndStashes(PlayerSave selectedSave, bool fromFileWatcher = false)
 	{
 		var result = LoadPlayer(selectedSave, fromFileWatcher);
 
@@ -255,7 +255,7 @@ public partial class MainForm
 		return resultDTO;
 	}
 
-	private StashLoadResult LoadPlayerStash(PlayerSave selectedSave, bool fromFileWatcher = false)
+	private StashLoadResult? LoadPlayerStash(PlayerSave selectedSave, bool fromFileWatcher = false)
 	{
 		// Get the player's stash - use management service
 
@@ -270,13 +270,13 @@ public partial class MainForm
 		try
 		{
 			// Throw a message if the stash is not present.
-			if (resultStash.Stash.StashFound.HasValue && !resultStash.Stash.StashFound.Value)
+			if (resultStash.Stash is { StashFound: false })
 			{
 				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nCharacter : ", selectedSave);
 				MessageBox.Show(msg, Resources.StashNotFound, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 			}
 
-			if (resultStash.Stash.ArgumentException != null)
+			if (resultStash.Stash?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, resultStash.StashFile, resultStash.Stash.ArgumentException.Message);
 				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
@@ -303,14 +303,14 @@ public partial class MainForm
 	{
 	retry:
 		bool saved = false;
-		PlayerCollection playerIfError = null;
+		PlayerCollection? playerIfError = null;
 		try
 		{
 			saved = this.playerService.SaveAllModifiedPlayers(ref playerIfError);
 		}
 		catch (IOException exception)
 		{
-			string title = string.Format(CultureInfo.InvariantCulture, Resources.MainFormSaveError, playerIfError.PlayerName);
+			string title = string.Format(CultureInfo.InvariantCulture, Resources.MainFormSaveError, playerIfError?.PlayerName);
 			Log.LogError(exception, title);
 			switch (MessageBox.Show(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1, RightToLeftOptions))
 			{
@@ -358,7 +358,7 @@ public partial class MainForm
 				goto askAgain;
 			}
 
-			string newFolder = null;
+			string? newFolder = null;
 			try
 			{
 				// Duplicate File

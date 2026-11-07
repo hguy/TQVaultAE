@@ -1,10 +1,11 @@
-﻿using System.ComponentModel;
+﻿﻿using System.ComponentModel;
 
 namespace TQVaultAE.GUI.Components.Character;
 
 public partial class ComboBoxCharacterDropDown : UserControl
 {
-	private ComboBoxCharacter _ComboBox;
+	// Set by the combo box that creates the drop down.
+	private ComboBoxCharacter _ComboBox = null!;
 	internal ComboBoxCharacter ComboBox
 	{
 		get => _ComboBox;
@@ -15,7 +16,7 @@ public partial class ComboBoxCharacterDropDown : UserControl
 		}
 	}
 
-	private void ComboBox_Resize(object sender, EventArgs e)
+	private void ComboBox_Resize(object? sender, EventArgs e)
 	{
 		this.Width = ComboBox.Width;
 		ResizeAllItems();
@@ -36,7 +37,7 @@ public partial class ComboBoxCharacterDropDown : UserControl
 		Items.ListChanged += Items_ListChanged;
 	}
 
-	private void Items_ListChanged(object sender, ListChangedEventArgs e)
+	private void Items_ListChanged(object? sender, ListChangedEventArgs e)
 	{
 		switch (e.ListChangedType)
 		{

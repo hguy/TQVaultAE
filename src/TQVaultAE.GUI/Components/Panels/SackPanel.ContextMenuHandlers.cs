@@ -38,11 +38,11 @@ public partial class SackPanel
 				RightToLeftOptions) == DialogResult.Yes)
 			{
 				// remove item
-				this.Sack.RemoveItem(focusedItem);
+				this.ShownSack.RemoveItem(focusedItem);
 				// Remove from search database
 				this.ItemDatabaseService.RemoveItemFromDatabase(focusedItem);
 				this.Refresh();
-				BagButtonTooltip.InvalidateCache(this.Sack);
+				BagButtonTooltip.InvalidateCache(this.ShownSack);
 			}
 		}
 	}
@@ -52,14 +52,14 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	private void AddFocusedItemToSelectedItems(object sender, MouseEventArgs e)
+	private void AddFocusedItemToSelectedItems(object? sender, MouseEventArgs e)
 	{
 		if (this.DisableMultipleSelection)
 			return;
 
 		this.MouseMoveCallback(sender, e); // process the mouse moving to this location...just in case
 
-		Item focusedItem = this.FindItem(this.LastCellWithFocus);
+		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 		if (focusedItem != null)
 		{
 			// Allocate the List if not already done.
@@ -78,7 +78,7 @@ public partial class SackPanel
 			this.Invalidate(this.GetItemScreenRectangle(focusedItem));
 		}
 
-		this.OnItemSelected(this, new SackPanelEventArgs(null, null));
+		this.OnItemSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 		this.MouseMoveCallback(sender, e); // process mouse move again to apply the graphical effects of dragging an item.
 	}
 
@@ -87,7 +87,7 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	private void SelectItemsInMouseDraw(object sender, MouseEventArgs e)
+	private void SelectItemsInMouseDraw(object? sender, MouseEventArgs e)
 	{
 		if (!this.mouseDraw)
 			return;
@@ -108,7 +108,7 @@ public partial class SackPanel
 				}
 			}
 
-			this.OnItemSelected(this, new SackPanelEventArgs(null, null));
+			this.OnItemSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 		}
 	}
 
@@ -143,16 +143,16 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MoveItemClicked(object sender, EventArgs e)
+	private void MoveItemClicked(object? sender, EventArgs e)
 	{
 		if (!this.DragInfo.IsActive)
 		{
-			Item focusedItem;
+			Item? focusedItem;
 			AutoMoveLocation automoveDestination = AutoMoveLocation.NotSet;
 			int destIndex = -1;
 
 			// Find out what was selected
-			ToolStripMenuItem toolStripItem = (ToolStripMenuItem)sender;
+			ToolStripMenuItem? toolStripItem = (ToolStripMenuItem)sender!;
 			if (toolStripItem != null)
 			{
 				if (toolStripItem.Tag is MenuItemTagBagIndex mit)
@@ -185,10 +185,10 @@ public partial class SackPanel
 					if (!this.DragInfo.IsActive)
 					{
 						// Check to make sure the last item got placed.
-						this.DragInfo.Set(this, this.Sack, item, new Point(1, 1));
+						this.DragInfo.Set(this, this.ShownSack, item, new Point(1, 1));
 						this.DragInfo.AutoMoveDestination = automoveDestination;
 						this.DragInfo.DestIndex = destIndex;
-						this.OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
+						this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
 					}
 				}
 
@@ -200,19 +200,19 @@ public partial class SackPanel
 				focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 				if (focusedItem != null)
 				{
-					this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+					this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 					this.DragInfo.AutoMoveDestination = automoveDestination;
 					this.DragInfo.DestIndex = destIndex;
-					this.OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
+					this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
 				}
 			}
 
 			ItemTooltip.HideTooltip();
-			BagButtonTooltip.InvalidateCache(this.Sack);
+			BagButtonTooltip.InvalidateCache(this.ShownSack);
 		}
 	}
 
-	private void ExportItemToClipboardClicked(object sender, EventArgs e)
+	private void ExportItemToClipboardClicked(object? sender, EventArgs e)
 	{
 		try
 		{
@@ -226,7 +226,7 @@ public partial class SackPanel
 				return;
 			}
 
-			Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+			Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 			if (focusedItem == null)
 				return;
 
@@ -239,7 +239,7 @@ public partial class SackPanel
 		}
 	}
 
-	private void ExportItemToFileClicked(object sender, EventArgs e)
+	private void ExportItemToFileClicked(object? sender, EventArgs e)
 	{
 		try
 		{
@@ -262,7 +262,7 @@ public partial class SackPanel
 				return;
 			}
 
-			Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+			Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 			if (focusedItem == null)
 				return;
 
@@ -283,7 +283,7 @@ public partial class SackPanel
 		}
 	}
 
-	private async void ExportItemToPasteBinClicked(object sender, EventArgs e)
+	private async void ExportItemToPasteBinClicked(object? sender, EventArgs e)
 	{
 		try
 		{
@@ -299,7 +299,7 @@ public partial class SackPanel
 				return;
 			}
 
-			Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+			Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 			if (focusedItem == null)
 				return;
 
@@ -323,12 +323,12 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void NewSetItemClicked(object sender, EventArgs e)
+	private void NewSetItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem != null)
 		{
-			ToolStripMenuItem item = (ToolStripMenuItem)sender;
+			ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 			if (item != null)
 			{
 				// Create the item
@@ -337,42 +337,42 @@ public partial class SackPanel
 				ItemProvider.GetDBData(newItem);
 
 				// Set DragInfo to focused item.
-				this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// now drag the new item
 				this.DragInfo.MarkModified(newItem);
 				Refresh();
 
 				ItemTooltip.HideTooltip();
-				BagButtonTooltip.InvalidateCache(this.Sack);
+				BagButtonTooltip.InvalidateCache(this.ShownSack);
 			}
 		}
 	}
 
-	private void RemoveSuffixItemClicked(object sender, EventArgs e)
+	private void RemoveSuffixItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
 			// change the item
 			focusedItem.suffixID = RecordId.Empty;
 			focusedItem.suffixInfo = null;
 			// mark the sack as modified also
-			this.Sack.IsModified = focusedItem.IsModified = true;
+			this.ShownSack.IsModified = focusedItem.IsModified = true;
 			this.InvalidateItemCacheAll(focusedItem);
 		}
 	}
 
-	private void RemovePrefixItemClicked(object sender, EventArgs e)
+	private void RemovePrefixItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
 			// change the item
 			focusedItem.prefixID = RecordId.Empty;
 			focusedItem.prefixInfo = null;
 			// mark the sack as modified also
-			this.Sack.IsModified = focusedItem.IsModified = true;
+			this.ShownSack.IsModified = focusedItem.IsModified = true;
 			this.InvalidateItemCacheAll(focusedItem);
 		}
 	}
@@ -382,15 +382,15 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void ChangeSuffixItemClicked(object sender, EventArgs e)
+	private void ChangeSuffixItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
-			ToolStripMenuItem menuItem = sender as ToolStripMenuItem;
+			ToolStripMenuItem? menuItem = sender as ToolStripMenuItem;
 			if (menuItem is not null)
 			{
-				string newAffix = menuItem.Name;
+				string? newAffix = menuItem.Name;
 				var newAffixId = newAffix.ToRecordId();
 
 				// See if the bonus is different
@@ -400,7 +400,7 @@ public partial class SackPanel
 					focusedItem.suffixID = newAffixId;
 					focusedItem.suffixInfo = Database.GetInfo(newAffixId);
 					// mark the sack as modified also
-					this.Sack.IsModified = focusedItem.IsModified = true;
+					this.ShownSack.IsModified = focusedItem.IsModified = true;
 					this.InvalidateItemCacheAll(focusedItem);
 				}
 			}
@@ -412,15 +412,15 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender"></param>
 	/// <param name="e"></param>
-	private void ChangePrefixItemClicked(object sender, EventArgs e)
+	private void ChangePrefixItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
-			ToolStripMenuItem menuItem = sender as ToolStripMenuItem;
+			ToolStripMenuItem? menuItem = sender as ToolStripMenuItem;
 			if (menuItem is not null)
 			{
-				string newAffix = menuItem.Name;
+				string? newAffix = menuItem.Name;
 				var newAffixId = newAffix.ToRecordId();
 
 				// See if the bonus is different
@@ -430,7 +430,7 @@ public partial class SackPanel
 					focusedItem.prefixID = newAffixId;
 					focusedItem.prefixInfo = Database.GetInfo(newAffixId);
 					// mark the sack as modified also
-					this.Sack.IsModified = focusedItem.IsModified = true;
+					this.ShownSack.IsModified = focusedItem.IsModified = true;
 					this.InvalidateItemCacheAll(focusedItem);
 				}
 			}
@@ -443,18 +443,18 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ChangeSocketedBonusItemClicked(object sender, EventArgs e)
+	private void ChangeSocketedBonusItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
-			ToolStripMenuItem menuItem = sender as ToolStripMenuItem;
+			ToolStripMenuItem? menuItem = sender as ToolStripMenuItem;
 
-			var isRelic1 = (menuItem.Tag as bool?) ?? false;
+			var isRelic1 = (menuItem?.Tag as bool?) ?? false;
 
 			if (menuItem is not null)
 			{
-				string newBonus = menuItem.Name;
+				string? newBonus = menuItem.Name;
 				var newBonusId = newBonus.ToRecordId();
 
 				// See if the bonus is different
@@ -473,7 +473,7 @@ public partial class SackPanel
 						focusedItem.RelicBonus2Info = Database.GetInfo(newBonusId);
 					}
 					// mark the sack as modified also
-					this.Sack.IsModified = focusedItem.IsModified = true;
+					this.ShownSack.IsModified = focusedItem.IsModified = true;
 					this.InvalidateItemCacheAll(focusedItem);
 				}
 			}
@@ -486,15 +486,15 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ChangeBonusItemClicked(object sender, EventArgs e)
+	private void ChangeBonusItemClicked(object? sender, EventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem != null)
 		{
-			ToolStripMenuItem item = (ToolStripMenuItem)sender;
+			ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 			if (item != null)
 			{
-				string newBonus = item.Name;
+				string? newBonus = item.Name;
 				var newBonusId = newBonus.ToRecordId();
 
 				// See if the bonus is different
@@ -506,7 +506,7 @@ public partial class SackPanel
 					focusedItem.IsModified = true;
 
 					// mark the sack as modified also
-					this.Sack.IsModified = true;
+					this.ShownSack.IsModified = true;
 					this.InvalidateItemCacheAll(focusedItem);
 				}
 			}
@@ -518,12 +518,12 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ToolStripItemClickedEventArgs data</param>
-	private void ContextMenuItemClicked(object sender, ToolStripItemClickedEventArgs e)
+	private void ContextMenuItemClicked(object? sender, ToolStripItemClickedEventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.contextMenuCellWithFocus);
+		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem != null || this.selectedItems != null)
 		{
-			string selectedMenuItem = e.ClickedItem.Text;
+			string? selectedMenuItem = e.ClickedItem?.Text;
 			if (selectedMenuItem == Resources.SackPanelMenuDelete)
 			{
 				if (this.selectedItems != null)
@@ -542,10 +542,14 @@ public partial class SackPanel
 						this.ClearSelection();
 					}
 				}
-				else
+				else if (focusedItem is not null)
 				{
 					this.DeleteItem(focusedItem, false);
 				}
+			}
+			else if (focusedItem is null)
+			{
+				// The other entries apply to the focused item.
 			}
 			else if (selectedMenuItem == Resources.SackPanelMenuRemoveRelic
 				|| selectedMenuItem == Resources.SackPanelMenuRemoveRelic2)
@@ -559,10 +563,10 @@ public partial class SackPanel
 					RightToLeftOptions) == DialogResult.Yes)
 				{
 					// Set DragInfo to focused item.
-					this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+					this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 					// pull out the relic
-					Item relic = selectedMenuItem == Resources.SackPanelMenuRemoveRelic
+					Item? relic = selectedMenuItem == Resources.SackPanelMenuRemoveRelic
 						? ItemProvider.RemoveRelic1(focusedItem)
 						: ItemProvider.RemoveRelic2(focusedItem);
 
@@ -571,7 +575,7 @@ public partial class SackPanel
 						// God mode in the Forge can socket anything (a weapon, an affix...). Only relics and charms
 						// come back to be placed; anything else is simply removed with the slot.
 						this.DragInfo.Cancel();
-						this.Sack.IsModified = true;
+						this.ShownSack.IsModified = true;
 						this.UIService.NotifyUser(Resources.SackPanelSocketedNotAnItem, TQColor.Yellow);
 					}
 					else
@@ -587,7 +591,7 @@ public partial class SackPanel
 			else if (selectedMenuItem == Resources.SackPanelMenuCopy)
 			{
 				// Set DragInfo to focused item.
-				this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// copy the item
 				Item newItem = focusedItem.Duplicate(false);
@@ -599,7 +603,7 @@ public partial class SackPanel
 			else if (selectedMenuItem == Resources.SackPanelMenuDuplicate)
 			{
 				// Set DragInfo to focused item.
-				this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// copy the item
 				Item newItem = focusedItem.Duplicate(true);
@@ -625,7 +629,7 @@ public partial class SackPanel
 				if (focusedItem.Seed != origSeed)
 				{
 					// Tell the sack that it has been modified
-					this.Sack.IsModified = true;
+					this.ShownSack.IsModified = true;
 					this.InvalidateItemCacheItemTooltip(focusedItem);
 				}
 			}
@@ -639,7 +643,7 @@ public partial class SackPanel
 				if (focusedItem.Seed != origSeed)
 				{
 					// Tell the sack that it has been modified
-					this.Sack.IsModified = true;
+					this.ShownSack.IsModified = true;
 					this.InvalidateItemCacheItemTooltip(focusedItem);
 				}
 			}
@@ -648,7 +652,7 @@ public partial class SackPanel
 				focusedItem.Number = 10;
 
 				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
-				LootTableCollection table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
+				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
 
 				if (table != null && table.Length > 0)
 				{
@@ -669,21 +673,23 @@ public partial class SackPanel
 				ItemProvider.GetDBData(focusedItem);
 
 				focusedItem.IsModified = true;
-				this.Sack.IsModified = true;
+				this.ShownSack.IsModified = true;
 				InvalidateItemCacheItemTooltip(focusedItem);
 				Refresh();
 			}
 			else if (selectedMenuItem == Resources.SackPanelMenuFormulae)
 			{
 				// Set DragInfo to focused item.
-				this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// create artifact
-				Item artifact = ItemProvider.CraftArtifact(focusedItem);
+				Item? artifact = ItemProvider.CraftArtifact(focusedItem);
+				if (artifact is null)
+					return;
 
 				// generate bonus
 				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
-				LootTableCollection table = ItemProvider.BonusTableRelicOrArtifact(artifact);
+				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(artifact);
 
 				if (table != null && table.Length > 0)
 				{
@@ -713,13 +719,14 @@ public partial class SackPanel
 			else if (selectedMenuItem == Resources.SackPanelMenuSplit)
 			{
 				// Set DragInfo to focused item.
-				this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
+				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// pull out all but one item
-				Item newItem = focusedItem.PopAllButOneItem();
+				Item? newItem = focusedItem.PopAllButOneItem();
 
 				// Put the item in DragInfo
-				this.DragInfo.MarkModified(newItem);
+				if (newItem is not null)
+					this.DragInfo.MarkModified(newItem);
 
 				InvalidateItemCacheItemTooltip(focusedItem);
 
@@ -732,7 +739,7 @@ public partial class SackPanel
 			}
 
 			ItemTooltip.HideTooltip();
-			BagButtonTooltip.InvalidateCache(this.Sack);
+			BagButtonTooltip.InvalidateCache(this.ShownSack);
 
 		}
 	}

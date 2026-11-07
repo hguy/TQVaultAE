@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+﻿﻿using Microsoft.Extensions.Logging;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Dialogs;
@@ -14,7 +14,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void SearchButtonClick(object sender, EventArgs e)
+	private void SearchButtonClick(object? sender, EventArgs e)
 	{
 		this.OpenSearchDialog();
 	}
@@ -51,7 +51,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyEventArgs data</param>
-	private void SearchTextBoxKeyDown(object sender, KeyEventArgs e)
+	private void SearchTextBoxKeyDown(object? sender, KeyEventArgs e)
 	{
 		if (e.KeyData == (Keys.Control | Keys.Add) || e.KeyData == (Keys.Control | Keys.Oemplus))
 		{
@@ -69,7 +69,7 @@ public partial class MainForm
 		}
 	}
 
-	private void DisplayResults(string searchString, IEnumerable<SearchResult> results)
+	private void DisplayResults(string? searchString, IEnumerable<SearchResult> results)
 	{
 		if (results is null || !results.Any())
 		{
@@ -89,7 +89,7 @@ public partial class MainForm
 		dlg.ResultChanged += new ResultsDialog.EventHandler<ResultChangedEventArgs>(this.SelectResult);
 		dlg.ResultsList.Clear();
 		dlg.ResultsList.AddRange(results);
-		dlg.SearchString = searchString;
+		dlg.SearchString = searchString ?? string.Empty;
 		dlg.Show();
 	}
 
@@ -98,7 +98,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ResultChangedEventArgs data</param>
-	private void SelectResult(object sender, ResultChangedEventArgs e)
+	private void SelectResult(object? sender, ResultChangedEventArgs e)
 	{
 		SearchResult selectedResult = e.Result;
 		if (selectedResult == null || selectedResult.FriendlyNames == null) return;
@@ -125,7 +125,7 @@ public partial class MainForm
 			this.comboBoxCharacter.SelectedIndex = this.comboBoxCharacter.FindString(selectedResult.ContainerName);
 
 			// Bail if we are attempting to highlight something in the stash panel and the stash does not exist.
-			if ((this.stashPanel == null || this.stashPanel.SackPanel == null) && selectedResult.SackType != SackType.Player)
+			if (this.stashPanel.SackPanel == null && selectedResult.SackType != SackType.Player)
 				return;
 
 			if (selectedResult.SackType == SackType.Player)
@@ -142,7 +142,7 @@ public partial class MainForm
 			else
 			{
 				this.stashPanel.CurrentBag = selectedResult.SackNumber;
-				this.stashPanel.SackPanel.SelectItem(selectedResult.FriendlyNames.Item.Location);
+				this.stashPanel.SackPanel?.SelectItem(selectedResult.FriendlyNames.Item.Location);
 			}
 		}
 		else if (selectedResult.StashType.HasValue)

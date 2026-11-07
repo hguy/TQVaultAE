@@ -20,7 +20,7 @@ public partial class SackPanel
 	/// <param name="location">location coordinates of the item we are highlighting</param>
 	public void SelectItem(Point location)
 	{
-		Item item = this.FindItem(location);
+		Item? item = this.FindItem(location);
 
 		if (item != null)
 		{

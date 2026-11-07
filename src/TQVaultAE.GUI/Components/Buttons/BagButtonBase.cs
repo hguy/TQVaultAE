@@ -32,7 +32,7 @@ public class BagButtonBase : Panel
 	protected readonly IHighlightService HighlightService;
 	private readonly SessionContext userContext;
 	private readonly UserSettings USettings;
-	internal SackCollection Sack;
+	internal SackCollection? Sack;
 
 	private BagButtonIconInfo _DefaultIconInfo = new BagButtonIconInfo()
 	{
@@ -52,7 +52,7 @@ public class BagButtonBase : Panel
 	/// <summary>
 	/// Apply custom bitmap from config file
 	/// </summary>
-	internal void ApplyIconInfo(SackCollection sack)
+	internal void ApplyIconInfo(SackCollection? sack)
 	{
 		this.Sack = sack;
 		var info = this.CurrentIconInfo;
@@ -92,7 +92,7 @@ public class BagButtonBase : Panel
 	/// <summary>
 	/// Tooltip delegate used to display summary of bag contents.
 	/// </summary>
-	private GetToolTip getToolTip;
+	private GetToolTip? getToolTip;
 
 
 	/// <summary>
@@ -101,10 +101,12 @@ public class BagButtonBase : Panel
 	public Pen HighlightSearchItemBorder { get; protected set; }
 
 
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public BagButtonBase()
 	{
 		InitializeComponent();
 	}
+#pragma warning restore CS8618
 
 	private void InitializeComponent()
 	{
@@ -125,7 +127,7 @@ public class BagButtonBase : Panel
 	/// </summary>
 	/// <param name="bagNumber">number of the bag for display</param>
 	/// <param name="getToolTip">Tooltip delegate</param>
-	public BagButtonBase(int bagNumber, GetToolTip getToolTip, GuiServices services)
+	public BagButtonBase(int bagNumber, GetToolTip? getToolTip, GuiServices services)
 	{
 		InitializeComponent();
 
@@ -159,22 +161,22 @@ public class BagButtonBase : Panel
 	/// <summary>
 	/// Gets or sets the text displayed on the BagButton.
 	/// </summary>
-	public string ButtonText { get; set; }
+	public string ButtonText { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the background bitmap when this is the active bag button.
 	/// </summary>
-	public Bitmap OnBitmap { get; set; }
+	public Bitmap? OnBitmap { get; set; }
 
 	/// <summary>
 	/// Gets or sets the background bitmap when this is not the active bag button.
 	/// </summary>
-	public Bitmap OffBitmap { get; set; }
+	public Bitmap? OffBitmap { get; set; }
 
 	/// <summary>
 	/// Gets or sets the background bitmap when this is the bag button under the mouse.
 	/// </summary>
-	public Bitmap OverBitmap { get; set; }
+	public Bitmap? OverBitmap { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the mouse is hovering over this button.
@@ -230,7 +232,7 @@ public class BagButtonBase : Panel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MouseEnterCallback(object sender, EventArgs e)
+	private void MouseEnterCallback(object? sender, EventArgs e)
 	{
 		BagButtonLabelTooltip.ShowTooltip(this.Services, this);
 
@@ -270,7 +272,7 @@ public class BagButtonBase : Panel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MouseLeaveCallback(object sender, EventArgs e)
+	private void MouseLeaveCallback(object? sender, EventArgs e)
 	{
 		this.IsOver = false;
 		Refresh();
@@ -298,12 +300,12 @@ public class BagButtonBase : Panel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">PaintEventArgs data</param>
-	private void PaintCallback(object sender, PaintEventArgs e)
+	private void PaintCallback(object? sender, PaintEventArgs e)
 	{
 		if (this.OffBitmap is null)
 			this.CreateBackgroundGraphics();
 
-		Bitmap bitmap = this.OffBitmap;
+		Bitmap? bitmap = this.OffBitmap;
 
 		if (this.IsOn)
 		{
@@ -326,6 +328,9 @@ public class BagButtonBase : Panel
 
 		if (highlight) PaintHighlightAreaUnderButton(e);
 
+		if (bitmap is null)
+			return;
+
 		// Draw the icon
 		Image bmp;
 		if (this.Parent is VaultPanel vp && vp.Vault is not null)
@@ -344,7 +349,7 @@ public class BagButtonBase : Panel
 			// Display the text overlay if we have one.
 			if (!string.IsNullOrEmpty(this.ButtonText))// ButtonText is a number for Vault
 			{
-				Font font = this.GetScaledButtonTextFont(e.Graphics, FontService.GetFontLight(20.0F * UIService.Scale, GraphicsUnit.Pixel));
+				Font? font = this.GetScaledButtonTextFont(e.Graphics, FontService.GetFontLight(20.0F * UIService.Scale, GraphicsUnit.Pixel));
 
 				if (font != null)
 				{
@@ -378,7 +383,7 @@ public class BagButtonBase : Panel
 	/// <param name="graphics">Current graphics instance</param>
 	/// <param name="font">Font that we attempting to scale</param>
 	/// <returns>Scaled font</returns>
-	private Font GetScaledButtonTextFont(Graphics graphics, Font font)
+	private Font? GetScaledButtonTextFont(Graphics graphics, Font font)
 	{
 		// Make sure we have something to test.
 		if (graphics == null || font == null)

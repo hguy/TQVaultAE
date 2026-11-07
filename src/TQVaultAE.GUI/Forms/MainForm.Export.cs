@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
@@ -18,8 +19,8 @@ public partial class MainForm
 {
 	#region Vault Export/Import
 
-	private ScalingButton vaultExportButton;
-	private ContextMenuStrip vaultExportContextMenu;
+	private ScalingButton vaultExportButton = null!; // Created while the form loads.
+	private ContextMenuStrip vaultExportContextMenu = null!; // Created while the form loads.
 
 	private void SetupVaultExportButton()
 	{
@@ -50,8 +51,8 @@ public partial class MainForm
 		if (up != null)
 		{
 			vaultExportButton.UpBitmap = up;
-			vaultExportButton.OverBitmap = over;
-			vaultExportButton.DownBitmap = down;
+			vaultExportButton.OverBitmap = over ?? up;
+			vaultExportButton.DownBitmap = down ?? up;
 			vaultExportButton.UseCustomGraphic = true;
 			vaultExportButton.Text = string.Empty;
 		}
@@ -93,9 +94,9 @@ public partial class MainForm
 		ScaleControl(this.UIService, vaultExportButton);
 	}
 
-	private void ExportVaultToFileClicked(object sender, EventArgs e)
+	private void ExportVaultToFileClicked(object? sender, EventArgs e)
 	{
-		var vault = this.vaultPanel?.Player;
+		var vault = this.vaultPanel.Player;
 		if (vault == null)
 		{
 			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
@@ -125,9 +126,9 @@ public partial class MainForm
 		}
 	}
 
-	private void ExportVaultToClipboardClicked(object sender, EventArgs e)
+	private void ExportVaultToClipboardClicked(object? sender, EventArgs e)
 	{
-		var vault = this.vaultPanel?.Player;
+		var vault = this.vaultPanel.Player;
 		if (vault == null)
 		{
 			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
@@ -147,9 +148,9 @@ public partial class MainForm
 		}
 	}
 
-	private async void ExportVaultToPasteBinClicked(object sender, EventArgs e)
+	private async void ExportVaultToPasteBinClicked(object? sender, EventArgs e)
 	{
-		var vault = this.vaultPanel?.Player;
+		var vault = this.vaultPanel.Player;
 		if (vault == null)
 		{
 			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
@@ -170,7 +171,7 @@ public partial class MainForm
 		}
 	}
 
-	private void ImportFromFileClicked(object sender, EventArgs e)
+	private void ImportFromFileClicked(object? sender, EventArgs e)
 	{
 		ImportFromFile();
 	}
@@ -194,7 +195,7 @@ public partial class MainForm
 
 			if (!result.Success)
 			{
-				this.UIService.NotifyUser(result.ErrorMessage);
+				this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
 				return;
 			}
 
@@ -212,7 +213,7 @@ public partial class MainForm
 
 	private void HandleNonVaultImport(ImportResult importResult)
 	{
-		if (this.vaultPanel?.Player == null)
+		if (this.vaultPanel.Player == null)
 		{
 			this.UIService.ShowError(Resources.GlobalNoVaultImportTarget);
 			return;
@@ -226,9 +227,9 @@ public partial class MainForm
 			return;
 		}
 
-		var items = importResult.Scope == ExportScope.Item
-			? new[] { importResult.Item }
-			: importResult.Items ?? [];
+		IReadOnlyList<Item> items = importResult.Scope == ExportScope.Item
+			? (importResult.Item is { } single ? [single] : [])
+			: importResult.Items;
 
 		var imported = 0;
 
@@ -276,7 +277,7 @@ public partial class MainForm
 		if (Automation.AutomationHost.IsSaveBlocked("import vault"))
 			return;
 #endif
-		var targetVault = this.vaultPanel?.Player;
+		var targetVault = this.vaultPanel.Player;
 		if (targetVault == null)
 		{
 			this.UIService.ShowError(Resources.GlobalNoVaultImportTarget);

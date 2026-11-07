@@ -8,8 +8,8 @@ public class ItemOrigin : ItemValue<GameDlc> { }
 
 public class ItemValue<TValue>
 {
-	public TValue Value { get; set; }
-	public string DisplayName { get; set; }
+	public required TValue Value { get; set; }
+	public required string DisplayName { get; set; }
 	public override string ToString()
 		=> DisplayName;
 }

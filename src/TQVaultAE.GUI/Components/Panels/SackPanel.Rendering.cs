@@ -23,7 +23,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">PaintEventArgs data</param>
-	protected void PaintCallback(object sender, PaintEventArgs e)
+	protected void PaintCallback(object? sender, PaintEventArgs e)
 	{
 		// Assign the clipping to the rectangle
 		Region oldClip = e.Graphics.Clip;
@@ -105,7 +105,7 @@ public partial class SackPanel : Panel, IScalingControl
 	protected virtual void PaintItems(PaintEventArgs e)
 	{
 		// Now draw all the sack items
-		foreach (Item item in this.Sack)
+		foreach (Item item in this.ShownSack)
 		{
 			// Skip over empty and dragged items.
 			if (item != this.DragInfo.Item && !RecordId.IsNullOrEmpty(item.BaseItemId))
@@ -135,8 +135,8 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="e">PaintEventArgs data</param>
 	protected virtual void PaintAreaUnderItem(PaintEventArgs e)
 	{
-		Item focusedItem = this.FindItem(this.LastCellWithFocus);
-		foreach (Item item in this.Sack)
+		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
+		foreach (Item item in this.ShownSack)
 		{
 			// Do not draw the item being dragged.
 			if (item == this.DragInfo.Item)
@@ -258,10 +258,8 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="imageAttributes">ImageAttributes used for drawing the image.</param>
 	protected void DrawItem(Graphics graphics, Item item, Point screenLocation, System.Drawing.Imaging.ImageAttributes imageAttributes)
 	{
-		if (item == null || graphics == null || this.UIService.GetBitmap(item) == null)
+		if (item == null || graphics == null || this.UIService.GetBitmap(item) is not { } ibmp)
 			return;
-
-		var ibmp = this.UIService.GetBitmap(item);
 
 		Rectangle itemRect = new Rectangle(
 			screenLocation.X
@@ -275,7 +273,7 @@ public partial class SackPanel : Panel, IScalingControl
 		// Add the relic overlay if this item has a relic in it.
 		if (item.HasRelicOrCharmSlot1 || item.HasRelicOrCharmSlot2)
 		{
-			Bitmap relicOverlay = UIService.LoadRelicOverlayBitmap();
+			Bitmap? relicOverlay = UIService.LoadRelicOverlayBitmap();
 			if (relicOverlay != null)
 			{
 				// draw it in the bottom-right most cell of this item
@@ -399,6 +397,9 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="location">screen coordinates where we will be drawing</param>
 	private void RedrawDragItem(Graphics graphics, Point location)
 	{
+		if (this.DragInfo.Item is not { } dragged)
+			return;
+
 		try
 		{
 			// Identify all the cells and items under the drag item.  We want the actual cells that we will
@@ -412,7 +413,7 @@ public partial class SackPanel : Panel, IScalingControl
 			}
 			else
 			{
-				this.CellsUnderDragItem = new Rectangle(topLeftCell, this.DragInfo.Item.Size);
+				this.CellsUnderDragItem = new Rectangle(topLeftCell, dragged.Size);
 
 				// See if the area is big enough to hold the item (ie the item does not go off the panel)
 				int right = this.CellsUnderDragItem.Right - 1;
@@ -434,7 +435,7 @@ public partial class SackPanel : Panel, IScalingControl
 			foreach (Item item in this.ItemsUnderDragItem)
 				this.ItemsUnderOldDragLocation.Add(item);
 
-			this.DrawItem(graphics, this.DragInfo.Item, this.LastDragLocation);
+			this.DrawItem(graphics, dragged, this.LastDragLocation);
 		}
 		catch (NullReferenceException exception)
 		{

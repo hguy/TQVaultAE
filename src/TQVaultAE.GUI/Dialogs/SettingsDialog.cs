@@ -28,7 +28,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 {
 	#region Properties & Fields
 
-	public string BaseFont { get; private set; }
+	public string BaseFont { get; private set; } = string.Empty;
 
 	/// <summary>
 	/// Indicates whether the last opened vault will be loaded at startup
@@ -53,7 +53,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// Save path for the vault files
 	/// </summary>
-	public string VaultPath { get; private set; }
+	public string VaultPath { get; private set; } = string.Empty;
 
 	/// <summary>
 	/// Indicates whether item copying is allowed
@@ -99,7 +99,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// The language we will be using.
 	/// </summary>
-	private string titanQuestLanguage;
+	private string titanQuestLanguage = string.Empty;
 
 	/// <summary>
 	/// Indicates whether the game paths will be auto detected
@@ -109,12 +109,12 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// Titan Quest game path
 	/// </summary>
-	private string titanQuestPath;
+	private string titanQuestPath = string.Empty;
 
 	/// <summary>
 	/// Immortal Throne game path
 	/// </summary>
-	private string immortalThronePath;
+	private string immortalThronePath = string.Empty;
 
 	/// <summary>
 	/// Indicates whether custom maps have been enabled
@@ -124,7 +124,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// Current custom map
 	/// </summary>
-	private string customMap;
+	private string customMap = string.Empty;
 
 	/// <summary>
 	/// Indicates whether we are loading all data files on startup
@@ -243,7 +243,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// gitBackupRepository last value
 	/// </summary>
-	private string gitBackupRepository;
+	private string gitBackupRepository = string.Empty;
 	/// <summary>
 	/// Indicates that the <see cref="Config.UserSettings.GitBackupRepository"/> setting has been changed
 	/// </summary>
@@ -280,12 +280,12 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// PasteBin API Key
 	/// </summary>
-	private string pasteBinApiKey;
+	private string pasteBinApiKey = string.Empty;
 
 	/// <summary>
 	/// PasteBin paste expiration
 	/// </summary>
-	private string pasteBinExpiration;
+	private string pasteBinExpiration = string.Empty;
 
 	/// <summary>
 	/// Indicates that the PasteBin settings have been changed
@@ -485,7 +485,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void VaultPathBrowseButtonClick(object sender, EventArgs e)
+	private void VaultPathBrowseButtonClick(object? sender, EventArgs e)
 	{
 		this.folderBrowserDialog.Description = Resources.SettingsBrowseVault;
 		this.folderBrowserDialog.RootFolder = Environment.SpecialFolder.Desktop;
@@ -506,7 +506,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ResetButtonClick(object sender, EventArgs e)
+	private void ResetButtonClick(object? sender, EventArgs e)
 	{
 		if (this.ConfigurationChanged)
 		{
@@ -521,7 +521,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void SkipTitleCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void SkipTitleCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.skipTitleCheckBox.Checked)
 		{
@@ -545,7 +545,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void SettingsDialogLoad(object sender, EventArgs e)
+	private void SettingsDialogLoad(object? sender, EventArgs e)
 	{
 		this.settingsLoaded = false;
 
@@ -696,8 +696,8 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		var listItem = Enums.GetMembers<FontFamilyList>()
 			.Select(m => new ComboBoxItem()
 			{
-				Value = m.AsString(EnumFormat.Name),
-				DisplayName = m.AsString(EnumFormat.Description, EnumFormat.Name)
+				Value = m.AsString(EnumFormat.Name) ?? string.Empty,
+				DisplayName = m.AsString(EnumFormat.Description, EnumFormat.Name) ?? string.Empty
 			}).ToArray();
 		this.baseFontComboBox.Items.AddRange(listItem);
 		this.baseFontComboBox.SelectedItem = listItem.Where(i => i.Value == this.BaseFont).FirstOrDefault() ?? listItem.First();
@@ -708,7 +708,8 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			.Select(m =>
 			{
 				var name = m.AsString(EnumFormat.Name);
-				var desc = m.AsString(EnumFormat.Description);
+				// Each delimiter has its character as description.
+				var desc = m.AsString(EnumFormat.Description)!;
 				return new ComboBoxItem<CsvDelimiter, char>()
 				{
 					ComboValue = m.Value,
@@ -733,7 +734,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void OkayButtonClick(object sender, EventArgs e)
+	private void OkayButtonClick(object? sender, EventArgs e)
 	{
 		// Validation
 		if (enableGitBackup)
@@ -786,8 +787,8 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			USettings.EnableEpicLegendaryAffixes =
 				this.scalingCheckBoxEnableEpicLegendaryAffixes.Enabled && this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked;
 
-			var delim = (ComboBoxItem<CsvDelimiter, char>)this.scalingComboBoxCSVDelim.SelectedItem;
-			USettings.CSVDelimiter = delim.ComboValue.ToString();
+			if (this.scalingComboBoxCSVDelim.SelectedItem is ComboBoxItem<CsvDelimiter, char> delim)
+				USettings.CSVDelimiter = delim.ComboValue.ToString();
 		}
 
 		this.DialogResult = DialogResult.OK;
@@ -798,7 +799,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void AllowItemEditCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void AllowItemEditCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.allowItemEditCheckBox.Checked)
 		{
@@ -828,7 +829,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void AllowItemCopyCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void AllowItemCopyCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.allowItemCopyCheckBox.Checked)
 		{
@@ -852,7 +853,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void LoadLastCharacterCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void LoadLastCharacterCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.loadLastCharacterCheckBox.Checked)
 		{
@@ -876,7 +877,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void LoadLastVaultCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void LoadLastVaultCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.loadLastVaultCheckBox.Checked)
 		{
@@ -900,7 +901,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void DetectLanguageCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void DetectLanguageCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.detectLanguageCheckBox.Checked)
 		{
@@ -928,7 +929,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void DetectGamePathsCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void DetectGamePathsCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.detectGamePathsCheckBox.Checked)
 		{
@@ -957,14 +958,14 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void LanguageComboBoxSelectedIndexChanged(object sender, EventArgs e)
+	private void LanguageComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		// There was some problem getting the game language so we ignore changing it.
 		var gl = Database.GameLanguage;
 		if (gl == null)
 			return;
 
-		this.titanQuestLanguage = ((ComboBoxItem)this.languageComboBox.SelectedItem).Value;
+		this.titanQuestLanguage = (this.languageComboBox.SelectedItem as ComboBoxItem)?.Value ?? string.Empty;
 		if (this.titanQuestLanguage.ToUpperInvariant() != gl.ToUpperInvariant())
 			this.LanguageChanged = true;
 
@@ -976,7 +977,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void VaultPathTextBoxLeave(object sender, EventArgs e)
+	private void VaultPathTextBoxLeave(object? sender, EventArgs e)
 	{
 		if (this.VaultPath.ToUpperInvariant() != this.vaultPathTextBox.Text.Trim().ToUpperInvariant())
 		{
@@ -991,7 +992,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void TitanQuestPathTextBoxLeave(object sender, EventArgs e)
+	private void TitanQuestPathTextBoxLeave(object? sender, EventArgs e)
 	{
 		if (this.titanQuestPath.ToUpperInvariant() != this.titanQuestPathTextBox.Text.Trim().ToUpperInvariant())
 		{
@@ -1006,7 +1007,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ImmortalThronePathTextBoxLeave(object sender, EventArgs e)
+	private void ImmortalThronePathTextBoxLeave(object? sender, EventArgs e)
 	{
 		if (this.immortalThronePath.ToUpperInvariant() != this.immortalThronePathTextBox.Text.Trim().ToUpperInvariant())
 		{
@@ -1021,7 +1022,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void TitanQuestPathBrowseButtonClick(object sender, EventArgs e)
+	private void TitanQuestPathBrowseButtonClick(object? sender, EventArgs e)
 	{
 		this.folderBrowserDialog.Description = Resources.SettingsBrowseTQ;
 		this.folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
@@ -1041,7 +1042,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ImmortalThronePathBrowseButtonClick(object sender, EventArgs e)
+	private void ImmortalThronePathBrowseButtonClick(object? sender, EventArgs e)
 	{
 		this.folderBrowserDialog.Description = Resources.SettingsBrowseIT;
 		this.folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
@@ -1061,7 +1062,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void EnableCustomMapsCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void EnableCustomMapsCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.enableCustomMapsCheckBox.Checked)
 		{
@@ -1086,7 +1087,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MapListComboBoxSelectedIndexChanged(object sender, EventArgs e)
+	private void MapListComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		if (!this.settingsLoaded)
 			return;
@@ -1104,7 +1105,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void LoadAllFilesCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void LoadAllFilesCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.loadAllFilesCheckBox.Checked)
 		{
@@ -1128,7 +1129,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void SuppressWarningsCheckBoxCheckedChanged(object sender, EventArgs e)
+	private void SuppressWarningsCheckBoxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.suppressWarningsCheckBox.Checked)
 		{
@@ -1147,7 +1148,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void PlayerReadonlyCheckboxCheckedChanged(object sender, EventArgs e)
+	private void PlayerReadonlyCheckboxCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.playerReadonlyCheckbox.Checked)
 		{
@@ -1167,7 +1168,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 
 	}
 
-	private void CharacterEditCheckBox_CheckedChanged(object sender, EventArgs e)
+	private void CharacterEditCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.characterEditCheckBox.Checked)
 		{
@@ -1186,7 +1187,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void FontComboBoxBase_SelectedIndexChanged(object sender, EventArgs e)
+	private void FontComboBoxBase_SelectedIndexChanged(object? sender, EventArgs e)
 	{
 		var font = this.baseFontComboBox.SelectedItem as ComboBoxItem;
 		if (font == null)
@@ -1199,7 +1200,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void EnableDetailedTooltipViewCheckBox_CheckedChanged(object sender, EventArgs e)
+	private void EnableDetailedTooltipViewCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.EnableDetailedTooltipViewCheckBox.Checked)
 		{
@@ -1216,7 +1217,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void ShowInGameValuesCheckBox_CheckedChanged(object sender, EventArgs e)
+	private void ShowInGameValuesCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.ShowInGameValuesCheckBox.Checked != this.showInGameValues)
 		{
@@ -1225,13 +1226,13 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void ItemBGColorOpacityTrackBar_Scroll(object sender, EventArgs e)
+	private void ItemBGColorOpacityTrackBar_Scroll(object? sender, EventArgs e)
 	{
 		this.itemBGColorOpacity = this.ItemBGColorOpacityTrackBar.Value;
 		this.ConfigurationChanged = this.ItemBGColorOpacityChanged = true;
 	}
 
-	private void EnableItemRequirementRestrictionCheckBox_CheckedChanged(object sender, EventArgs e)
+	private void EnableItemRequirementRestrictionCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.EnableItemRequirementRestrictionCheckBox.Checked)
 		{
@@ -1248,7 +1249,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void hotReloadCheckBox_CheckedChanged(object sender, EventArgs e)
+	private void hotReloadCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.hotReloadCheckBox.Checked && !this.enableHotReload)
 		{
@@ -1262,7 +1263,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			this.ConfigurationChanged = this.EnableHotReloadChanged = this.UISettingChanged = true;// Force restart
 		}
 	}
-	private void scalingCheckBoxEnableEpicLegendaryAffixes_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxEnableEpicLegendaryAffixes_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked && !this.EnableEpicLegendaryAffixes)
 		{
@@ -1277,7 +1278,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void scalingCheckBoxEnableSounds_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxEnableSounds_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.scalingCheckBoxEnableSounds.Checked)
 		{
@@ -1294,12 +1295,12 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void scalingComboBoxCSVDelim_SelectedIndexChanged(object sender, EventArgs e)
+	private void scalingComboBoxCSVDelim_SelectedIndexChanged(object? sender, EventArgs e)
 	{
 		this.ConfigurationChanged = true;
 	}
 
-	private void scalingCheckBoxDisableAutoStacking_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxDisableAutoStacking_CheckedChanged(object? sender, EventArgs e)
 	{
 
 		if (this.scalingCheckBoxDisableAutoStacking.Checked)
@@ -1316,13 +1317,13 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void SettingsDialog_Shown(object sender, EventArgs e)
+	private void SettingsDialog_Shown(object? sender, EventArgs e)
 	{
 		//Adjust width to inner table
 		this.Width = this.bufferedTableLayoutPanelSkeleton.Location.X + this.bufferedTableLayoutPanelSkeleton.Width + this.Padding.Right + 5;
 	}
 
-	private void checkGroupBoxCheats_CheckedChanged(object sender, EventArgs e)
+	private void checkGroupBoxCheats_CheckedChanged(object? sender, EventArgs e)
 	{
 
 		if (this.checkGroupBoxAllowCheats.Checked)
@@ -1347,7 +1348,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		//this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked = false;// Triggered by allowItemEditCheckBox
 	}
 
-	private void checkGroupBoxGitBackup_CheckedChanged(object sender, EventArgs e)
+	private void checkGroupBoxGitBackup_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (checkGroupBoxGitBackup.Checked)
 		{
@@ -1366,7 +1367,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.scalingCheckBoxDisableLegacyBackup.Checked = false;// Restore legacy backup
 	}
 
-	private void scalingTextBoxGitRepository_TextChanged(object sender, EventArgs e)
+	private void scalingTextBoxGitRepository_TextChanged(object? sender, EventArgs e)
 	{
 		// Changed
 		if (this.gitBackupRepository != scalingTextBoxGitRepository.Text)
@@ -1376,7 +1377,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void scalingCheckBoxDisableLegacyBackup_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxDisableLegacyBackup_CheckedChanged(object? sender, EventArgs e)
 	{
 
 		if (scalingCheckBoxDisableLegacyBackup.Checked)
@@ -1394,7 +1395,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void scalingCheckBoxBackupPlayerSaves_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxBackupPlayerSaves_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (scalingCheckBoxBackupPlayerSaves.Checked)
 		{
@@ -1411,7 +1412,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}
 	}
 
-	private void linkLabelTQOriginalSupport_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+	private void linkLabelTQOriginalSupport_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
 	{
 		ProcessStartInfo psInfo = new ProcessStartInfo
 		{
@@ -1421,7 +1422,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		Process.Start(psInfo);
 	}
 
-	private void checkGroupBoxOriginalTQSupport_CheckedChanged(object sender, EventArgs e)
+	private void checkGroupBoxOriginalTQSupport_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (checkGroupBoxOriginalTQSupport.Checked)
 		{

@@ -93,7 +93,7 @@ public class InputDialog : Form
 		this.PerformLayout();
 	}
 
-	private void OkButton_Click(object sender, EventArgs e)
+	private void OkButton_Click(object? sender, EventArgs e)
 	{
 		this.DialogResult = DialogResult.OK;
 		this.Close();

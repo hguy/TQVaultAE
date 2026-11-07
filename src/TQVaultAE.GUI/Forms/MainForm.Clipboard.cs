@@ -65,7 +65,7 @@ public partial class MainForm
 							HandleNonVaultImport(result);
 					}
 					else
-						this.UIService.NotifyUser(result.ErrorMessage);
+						this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
 
 					return;
 				}
@@ -80,7 +80,7 @@ public partial class MainForm
 			result = this.itemExchangeService.ImportFromJson(text);
 			if (!result.Success)
 			{
-				this.UIService.NotifyUser(result.ErrorMessage);
+				this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
 				return;
 			}
 
@@ -96,7 +96,7 @@ public partial class MainForm
 		}
 	}
 
-	private IReadOnlyList<Item> GetActivePanelSelectedItems()
+	private IReadOnlyList<Item>? GetActivePanelSelectedItems()
 	{
 		if (this.vaultPanel?.SackPanel?.SelectionActive == true)
 			return this.vaultPanel.SackPanel.GetSelectedItems();

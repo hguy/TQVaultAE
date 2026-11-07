@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Domain.Entities;
+﻿﻿﻿using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components;
@@ -17,7 +17,7 @@ public partial class BagButtonTooltip : BaseTooltip
 	/// <summary>Rendered sack summaries, up to 16 MB.</summary>
 	private static readonly TooltipImageCache<(SackCollection Sack, float Scale), object?> ToImage = new(16L << 20);
 
-	public BagButtonBase ButtonSack;
+	public required BagButtonBase ButtonSack;
 
 	private Rectangle CurrentWorkingArea;
 	private int RightSide;
@@ -25,7 +25,9 @@ public partial class BagButtonTooltip : BaseTooltip
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public BagButtonTooltip() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
 	private BagButtonTooltip(MainForm instance, IItemProvider itemProvider, IFontService fontService, IUIService uiService, ITranslationService translationService) : base(itemProvider, fontService, uiService, translationService)
@@ -47,16 +49,16 @@ public partial class BagButtonTooltip : BaseTooltip
 	// to avoid Mainform lost focus with this.TopMost = false
 	protected override bool ShowWithoutActivation => true;
 	
-	public static void InvalidateCache(params SackCollection[] sack)
+	public static void InvalidateCache(params SackCollection?[] sack)
 	{
-		sack = sack.Where(s => s != null).ToArray();
-		ToImage.RemoveWhere(k => sack.Contains(k.Sack));
+		var sacks = sack.OfType<SackCollection>().ToArray();
+		ToImage.RemoveWhere(k => sacks.Contains(k.Sack));
 	}
 
-	public static void InvalidateCache(params Item[] items)
+	public static void InvalidateCache(params Item?[] items)
 	{
-		items = items.Where(i => i != null).ToArray();
-		ToImage.RemoveWhere(k => k.Sack.Intersect(items).Any());
+		var existing = items.OfType<Item>().ToArray();
+		ToImage.RemoveWhere(k => k.Sack.Intersect(existing).Any());
 	}
 
 	public static void HideTooltip()
@@ -71,7 +73,7 @@ public partial class BagButtonTooltip : BaseTooltip
 		}
 	}
 
-	public static BagButtonTooltip ShowTooltip(GuiServices services, BagButtonBase button)
+	public static BagButtonTooltip? ShowTooltip(GuiServices services, BagButtonBase button)
 	{
 		BagButtonTooltip _Current;
 		if (button?.Sack is null) return null;
@@ -102,7 +104,10 @@ public partial class BagButtonTooltip : BaseTooltip
 	/// <returns>string to be displayed in the tooltip</returns>
 	public void FillSackToolTip()
 	{
-		var key = (this.ButtonSack.Sack, UIService.Scale);
+		if (this.ButtonSack.Sack is not { } sack)
+			return;
+
+		var key = (sack, UIService.Scale);
 
 		// Redraw
 		if (ToImage.TryGetCopy(key, out var cached, out _))
@@ -115,7 +120,7 @@ public partial class BagButtonTooltip : BaseTooltip
 
 		this.flowLayoutPanelFriendlyNames.SuspendLayout();
 
-		if (ButtonSack.Sack.IsEmpty)
+		if (sack.IsEmpty)
 			AddRow(Resources.VaultGroupBoxEmpty, ItemStyle.Broken.Color());
 		else
 		{
@@ -152,12 +157,12 @@ public partial class BagButtonTooltip : BaseTooltip
 
 	private void AddRow(string friendlyName, Color color)
 	{
-		Control row = MakeRow(this.UIService, this.FontService, friendlyName, color, 10F, FontStyle.Regular, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
+		Control? row = MakeRow(this.UIService, this.FontService, friendlyName, color, 10F, FontStyle.Regular, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
 
 		this.flowLayoutPanelFriendlyNames.Controls.Add(row);
 	}
 
-	private void BagButtonTooltip_Load(object sender, EventArgs e)
+	private void BagButtonTooltip_Load(object? sender, EventArgs e)
 	{
 		this.FillSackToolTip();
 
@@ -190,7 +195,7 @@ public partial class BagButtonTooltip : BaseTooltip
 		this.Location = loc;
 	}
 
-	private void ButtonSack_MouseMove(object sender, MouseEventArgs e)
+	private void ButtonSack_MouseMove(object? sender, MouseEventArgs e)
 	{
 		var loc = this.Location;
 
@@ -202,5 +207,5 @@ public partial class BagButtonTooltip : BaseTooltip
 		this.Location = loc;
 	}
 
-	private void BagButtonTooltip_FormClosing(object sender, FormClosingEventArgs e) => this.ButtonSack.MouseMove -= ButtonSack_MouseMove;
+	private void BagButtonTooltip_FormClosing(object? sender, FormClosingEventArgs e) => this.ButtonSack.MouseMove -= ButtonSack_MouseMove;
 }

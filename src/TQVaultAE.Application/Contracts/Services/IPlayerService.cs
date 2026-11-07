@@ -26,7 +26,7 @@ public interface IPlayerService
 	/// <param name="playerOnError">If save fails, this will contain the player that failed.</param>
 	/// <returns>True if there were any modified player files.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
-	bool SaveAllModifiedPlayers(ref PlayerCollection playerOnError);
+	bool SaveAllModifiedPlayers(ref PlayerCollection? playerOnError);
 
 	/// <summary>
 	/// Gets a list of all of the character files in the save folder.

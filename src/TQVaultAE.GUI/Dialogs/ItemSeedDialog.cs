@@ -26,7 +26,8 @@ internal partial class ItemSeedDialog : VaultForm
 	/// <summary>
 	/// Selected Item
 	/// </summary>
-	private Item selectedItem;
+	// Set before the dialog is shown.
+	private Item selectedItem = null!;
 
 	/// <summary>
 	/// Initializes a new instance of the ItemSeedDialog class.
@@ -85,7 +86,7 @@ internal partial class ItemSeedDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void RandomButtonClicked(object sender, EventArgs e)
+	private void RandomButtonClicked(object? sender, EventArgs e)
 	{
 		int newSeed = Item.GenerateSeed();
 		this.itemSeedBox.Text = newSeed.ToString(CultureInfo.CurrentCulture);
@@ -96,7 +97,7 @@ internal partial class ItemSeedDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CancelButton_Click(object sender, EventArgs e)
+	private void CancelButton_Click(object? sender, EventArgs e)
 	{
 		this.Close();
 	}
@@ -106,7 +107,7 @@ internal partial class ItemSeedDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void OKButton_Click(object sender, EventArgs e)
+	private void OKButton_Click(object? sender, EventArgs e)
 	{
 		// Get the seed value in the textbox
 		int newSeed;
@@ -127,7 +128,7 @@ internal partial class ItemSeedDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ItemSeedDlg_Load(object sender, EventArgs e)
+	private void ItemSeedDlg_Load(object? sender, EventArgs e)
 	{
 		this.itemSeedBox.Text = this.selectedItem.Seed.ToString(CultureInfo.CurrentCulture);
 		this.itemSeedBox.SelectAll();

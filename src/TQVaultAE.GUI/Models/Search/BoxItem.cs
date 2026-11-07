@@ -8,26 +8,26 @@ namespace TQVaultAE.GUI.Models.Search;
 
 public class BoxItem
 {
-	VirtualCheckedListBox _CheckedList;
+	VirtualCheckedListBox? _CheckedList;
 	[JsonIgnore]
-	public VirtualCheckedListBox CheckedList
+	public VirtualCheckedListBox? CheckedList
 	{
 		get => _CheckedList;
 		set
 		{
-			CheckedListName = value.Name;
+			CheckedListName = value?.Name ?? string.Empty;
 			_CheckedList = value;
 		}
 	}
 
-	ScalingLabel _Category;
+	ScalingLabel? _Category;
 	[JsonIgnore]
-	public ScalingLabel Category
+	public ScalingLabel? Category
 	{
 		get => _Category; 
 		set
 		{
-			CategoryName = value.Name;
+			CategoryName = value?.Name ?? string.Empty;
 			_Category = value;
 		}
 	}
@@ -35,9 +35,9 @@ public class BoxItem
 	[JsonIgnore]
 	public IEnumerable<SearchResult> MatchingResults { get; set; } = [];
 
-	public string CheckedListName { get; set; }
-	public string CategoryName { get; set; }
-	public string DisplayValue { get; set; }
+	public string CheckedListName { get; set; } = string.Empty;
+	public string CategoryName { get; set; } = string.Empty;
+	public string DisplayValue { get; set; } = string.Empty;
 	public override string ToString()
 		=> this.DisplayValue;
 }

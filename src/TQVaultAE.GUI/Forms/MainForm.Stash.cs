@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+﻿﻿using System.Globalization;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
@@ -43,7 +43,7 @@ public partial class MainForm
 	/// Loads the transfer stash for immortal throne
 	/// </summary>
 	/// <param name="fromFileWatcher">When <code>true</code> called from <see cref="FileSystemWatcher.Changed"/></param>
-	private StashLoadResult LoadTransferStash(bool fromFileWatcher = false)
+	private StashLoadResult? LoadTransferStash(bool fromFileWatcher = false)
 	{
 		// Only if it's IT, TQ doesn't have one
 		var selectedSave = this.comboBoxCharacter.SelectedItem as PlayerSave;
@@ -58,13 +58,13 @@ public partial class MainForm
 		// Get the transfer stash
 		try
 		{
-			if (result.Stash.StashFound.HasValue && !result.Stash.StashFound.Value)
+			if (result.Stash is { StashFound: false })
 			{
 				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nTransfer Stash\n\n", result.StashFile);
 				MessageBox.Show(msg, Resources.StashNotFound, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 			}
 
-			if (result.Stash.ArgumentException != null)
+			if (result.Stash?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
 				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
@@ -88,7 +88,7 @@ public partial class MainForm
 	/// Loads the relic vault stash
 	/// </summary>
 	/// <param name="fromFileWatcher">When <code>true</code> called from <see cref="FileSystemWatcher.Changed"/></param>
-	private StashLoadResult LoadRelicVaultStash(bool fromFileWatcher = false)
+	private StashLoadResult? LoadRelicVaultStash(bool fromFileWatcher = false)
 	{
 		// Only if it's IT, TQ doesn't have one
 		var selectedSave = this.comboBoxCharacter.SelectedItem as PlayerSave;
@@ -103,13 +103,13 @@ public partial class MainForm
 		// Get the relic vault stash
 		try
 		{
-			if (result.Stash.StashFound.HasValue && !result.Stash.StashFound.Value)
+			if (result.Stash is { StashFound: false })
 			{
 				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nRelic Stash\n\n", result.StashFile);
 				MessageBox.Show(msg, Resources.StashNotFound, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 			}
 
-			if (result.Stash.ArgumentException != null)
+			if (result.Stash?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
 				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
@@ -130,7 +130,7 @@ public partial class MainForm
 	}
 
 	// Raised on the UI thread (SynchronizingObject = this)
-	private void fileSystemWatcherRelicStash_Changed(object sender, FileSystemEventArgs e)
+	private void fileSystemWatcherRelicStash_Changed(object? sender, FileSystemEventArgs e)
 	{
 		if (e.ChangeType != WatcherChangeTypes.Changed) return;
 
@@ -143,7 +143,7 @@ public partial class MainForm
 	}
 
 	// Raised on the UI thread (SynchronizingObject = this)
-	private void fileSystemWatcherTransferStash_Changed(object sender, FileSystemEventArgs e)
+	private void fileSystemWatcherTransferStash_Changed(object? sender, FileSystemEventArgs e)
 	{
 		if (e.ChangeType != WatcherChangeTypes.Changed) return;
 
@@ -160,7 +160,7 @@ public partial class MainForm
 	private bool SaveAllModifiedStashes()
 	{
 		// Use service with ref parameter
-		Stash stashOnError = null;
+		Stash? stashOnError = null;
 		return this.stashService.SaveAllModifiedStashes(ref stashOnError) > 0;
 	}
 }

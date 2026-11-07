@@ -29,7 +29,7 @@ public partial class SackPanel
 			for (int k = 0; k < this.SackSize.Height; ++k)
 			{
 				foundItems = this.FindAllItems(new Rectangle(j, k, width, height));
-				if ((foundItems == null || foundItems.Count == 0) && width + j <= this.SackSize.Width)
+				if (foundItems.Count == 0 && width + j <= this.SackSize.Width)
 				{
 					if (k + height <= this.SackSize.Height)
 						return new Point(j, k);
@@ -68,5 +68,5 @@ public partial class SackPanel
 	/// <param name="itemToCheck">Item instance</param>
 	/// <returns>true if valid</returns>
 	public bool IsItemValidForPlacement(Item itemToCheck)
-		=> this.sack.StashType != Domain.Entities.StashType.RelicVaultStash || itemToCheck.IsArtifact || itemToCheck.IsRelicOrCharm || itemToCheck.IsFormulae;
+		=> this.sack?.StashType != Domain.Entities.StashType.RelicVaultStash || itemToCheck.IsArtifact || itemToCheck.IsRelicOrCharm || itemToCheck.IsFormulae;
 }
