@@ -54,37 +54,37 @@ public class Item
 	/// <summary>
 	/// Prefix database record ID
 	/// </summary>
-	public RecordId prefixID;
+	public RecordId prefixID = RecordId.Empty;
 
 	/// <summary>
 	/// Suffix database record ID
 	/// </summary>
-	public RecordId suffixID;
+	public RecordId suffixID = RecordId.Empty;
 
 	/// <summary>
 	/// Relic database record ID
 	/// </summary>
-	public RecordId relicID;
+	public RecordId relicID = RecordId.Empty;
 
 	/// <summary>
 	/// Relic database record ID
 	/// </summary>
-	public RecordId relic2ID;
+	public RecordId relic2ID = RecordId.Empty;
 
 	/// <summary>
 	/// Info structure for the base item
 	/// </summary>
-	public Info baseItemInfo;
+	public Info? baseItemInfo;
 
 	/// <summary>
 	/// Info structure for the item's prefix
 	/// </summary>
-	public Info prefixInfo;
+	public Info? prefixInfo;
 
 	/// <summary>
 	/// Info structure for the item's suffix
 	/// </summary>
-	public Info suffixInfo;
+	public Info? suffixInfo;
 
 	/// <summary>
 	/// Used for level calculation
@@ -143,17 +143,17 @@ public class Item
 	/// <summary>
 	/// Gets the base item id
 	/// </summary>
-	public RecordId BaseItemId { get; set; }
+	public RecordId BaseItemId { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the relic bonus id
 	/// </summary>
-	public RecordId RelicBonusId { get; set; }
+	public RecordId RelicBonusId { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the relic bonus2 id
 	/// </summary>
-	public RecordId RelicBonus2Id { get; set; }
+	public RecordId RelicBonus2Id { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the item seed
@@ -168,7 +168,7 @@ public class Item
 	/// <summary>
 	/// Last <see cref="ToFriendlyNameResult"/> queried for this item.
 	/// </summary>
-	public ToFriendlyNameResult CurrentFriendlyNameResult;
+	public ToFriendlyNameResult? CurrentFriendlyNameResult;
 
 	public int Var1
 	{
@@ -223,32 +223,32 @@ public class Item
 	/// <summary>
 	/// Gets the relic info
 	/// </summary>
-	public Info RelicInfo { get; set; }
+	public Info? RelicInfo { get; set; }
 
 	/// <summary>
 	/// Gets or sets the relic bonus info
 	/// </summary>
-	public Info RelicBonusInfo { get; set; }
+	public Info? RelicBonusInfo { get; set; }
 
 	/// <summary>
 	/// Gets the second relic info
 	/// </summary>
-	public Info Relic2Info { get; set; }
+	public Info? Relic2Info { get; set; }
 
 	/// <summary>
 	/// Gets or sets the second relic bonus info
 	/// </summary>
-	public Info RelicBonus2Info { get; set; }
+	public Info? RelicBonus2Info { get; set; }
 
 	/// <summary>
 	/// Raw image data from game resource file
 	/// </summary>
-	public byte[] TexImage { get; set; }
+	public byte[]? TexImage { get; set; }
 
 	/// <summary>
 	/// ResourceId related to <see cref="TexImage"/>
 	/// </summary>
-	public RecordId TexImageResourceId { get; set; }
+	public RecordId? TexImageResourceId { get; set; }
 
 	/// <summary>
 	/// Gets the item's width in cells
@@ -631,8 +631,8 @@ public class Item
 			else if (this.IsRelicOrCharm)
 			{
 				// Limit value to complete Relic level
-				if (value >= this.baseItemInfo.CompletedRelicLevel)
-					this.Var1 = this.baseItemInfo.CompletedRelicLevel;
+				if (this.baseItemInfo is { } info && value >= info.CompletedRelicLevel)
+					this.Var1 = info.CompletedRelicLevel;
 				else
 					this.Var1 = value;
 			}
@@ -861,7 +861,7 @@ public class Item
 	/// Get the tagName assigned to the <see cref="ItemClass"/>
 	/// </summary>
 	public string ItemClassTagName
-		=> GetClassTagName(this.baseItemInfo.ItemClass);
+		=> GetClassTagName(this.baseItemInfo?.ItemClass ?? string.Empty);
 
 	/// <summary>
 	/// Get the tagName assigned to the <see cref="ItemClass"/>
@@ -995,7 +995,7 @@ public class Item
 	/// Pops all but one item from the stack.
 	/// </summary>
 	/// <returns>Returns popped items as a new Item stack</returns>
-	public Item PopAllButOneItem()
+	public Item? PopAllButOneItem()
 	{
 		if (!this.DoesStack || this.StackSize < 2)
 			return null;

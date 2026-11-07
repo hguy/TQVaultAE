@@ -53,7 +53,7 @@ public enum GearType
 
 public static class GearTypeExtension
 {
-	private static Dictionary<GearType, GearTypeDescriptionAttribute> _GearTypeMap;
+	private static Dictionary<GearType, GearTypeDescriptionAttribute>? _GearTypeMap;
 	public static Dictionary<GearType, GearTypeDescriptionAttribute> GearTypeMap
 	{
 		get
@@ -62,7 +62,7 @@ public static class GearTypeExtension
 			{
 				_GearTypeMap = Enums.GetMembers<GearType>().Select(m => (m.Value, Attrib: m.Attributes.Get<GearTypeDescriptionAttribute>()))
 					.Where(m => m.Attrib is not null)
-					.ToDictionary(m => m.Value, m => m.Attrib);
+					.ToDictionary(m => m.Value, m => m.Attrib!);
 			}
 			return _GearTypeMap;
 		}

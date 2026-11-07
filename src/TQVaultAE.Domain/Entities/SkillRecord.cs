@@ -20,7 +20,7 @@ public class SkillRecord
 	/// </summary>
 	internal static Encoding Encoding1252 => _encoding1252.Value;
 
-	public string skillName { get; set; }
+	public string skillName { get; set; } = string.Empty;
 	public int skillLevel { get; set; }
 	public int skillEnabled { get; set; }
 	public int skillSubLevel { get; set; }

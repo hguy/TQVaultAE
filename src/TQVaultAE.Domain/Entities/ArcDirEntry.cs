@@ -15,7 +15,7 @@ public class ArcDirEntry
 	/// <summary>
 	/// Gets or sets the filename.
 	/// </summary>
-	public RecordId FileName { get; set; }
+	public RecordId FileName { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the storage type.
