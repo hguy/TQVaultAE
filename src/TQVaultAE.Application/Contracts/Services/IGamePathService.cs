@@ -59,7 +59,7 @@ public interface IGamePathService
 	/// </summary>
 	/// <param name="filename">filename of the character file</param>
 	/// <returns>string containing the character name</returns>
-	string GetNameFromFile(string filename);
+	string? GetNameFromFile(string filename);
 
 	/// <summary>
 	/// Gets or sets the Immortal Throne game path.
@@ -222,7 +222,7 @@ public interface IGamePathService
 	/// </summary>
 	/// <param name="vaultFilePath"></param>
 	/// <returns>name stripted from path and extension</returns>
-	string GetVaultNameFromPath(string vaultFilePath);
+	string? GetVaultNameFromPath(string vaultFilePath);
 
 	/// <summary>
 	/// Return ARC filename from <paramref name="resourceIdOrPrefix"/>
