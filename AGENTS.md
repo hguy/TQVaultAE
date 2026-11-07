@@ -18,22 +18,25 @@ dotnet restore
 
 ## Test Commands
 
+The tests use xunit v3 on Microsoft.Testing.Platform (selected in `global.json`): `dotnet test` takes `--solution` or `--project`, and filters are xunit options.
+
 ```bash
 # Run all tests
-dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj
+dotnet test --solution TQVaultAE.slnx
+dotnet test --project src/TQVaultAE.Tests
 
 # Run single test class
-dotnet test --filter "FullyQualifiedName~TagServiceTests"
+dotnet test --project src/TQVaultAE.Tests --filter-class "*TagServiceTests"
 
 # Run single test method
-dotnet test --filter "FullyQualifiedName~TagServiceTests.AddTag_WithNewTagName_ReturnsTrue"
+dotnet test --project src/TQVaultAE.Tests --filter-method "*TagServiceTests.AddTag_WithNewTagName_ReturnsTrue"
 
-# Run with coverage
-dotnet test --collect:"XPlat Code Coverage;Format=opencover"
+# Run with coverage (coverlet.MTP, written to TestResults/)
+dotnet test --project src/TQVaultAE.Tests --coverlet --coverlet-output-format opencover
 
 # Build before testing
 dotnet build src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --configuration Debug
-dotnet test src/TQVaultAE.Tests/TQVaultAE.Tests.csproj --no-build
+dotnet test --project src/TQVaultAE.Tests --no-build
 ```
 
 ## Code Style

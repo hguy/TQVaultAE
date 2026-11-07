@@ -182,21 +182,26 @@ dotnet build TQVaultAE.slnx --configuration Release --no-restore
 
 #### Test Options
 
+The tests run on Microsoft.Testing.Platform (xunit v3, selected in `global.json`), so `dotnet test` takes `--solution` or `--project`, and the filters and reports are xunit options.
+
 ```yaml
 # Run all tests (Release configuration for production CI/CD)
-dotnet test TQVaultAE.slnx --configuration Release
+dotnet test --solution TQVaultAE.slnx --configuration Release
 
 # Run specific test class
-dotnet test TQVaultAE.slnx --filter "FullyQualifiedName~GameFileServiceTests"
+dotnet test --solution TQVaultAE.slnx --filter-class "*GameFileServiceTests"
 
 # Run specific test
-dotnet test TQVaultAE.slnx --filter "FullyQualifiedName~GameFileServiceTests.GetGamePath_ReturnsExpected"
+dotnet test --solution TQVaultAE.slnx --filter-method "*GameFileServiceTests.GetGamePath_ReturnsExpected"
 
-# Run tests with coverage
-dotnet test TQVaultAE.slnx --configuration Release --collect:"XPlat Code Coverage;Format=opencover"
+# Run tests with coverage (coverlet.MTP), written to TestResults/
+dotnet test --solution TQVaultAE.slnx --configuration Release --coverlet --coverlet-output-format opencover
+
+# Write a TRX report per test project, in TestResults/
+dotnet test --solution TQVaultAE.slnx --configuration Release --report-xunit-trx
 
 # Note: Use Debug configuration locally for debugging with full symbols
-dotnet test TQVaultAE.slnx --configuration Debug
+dotnet test --solution TQVaultAE.slnx --configuration Debug
 ```
 
 ## Advanced Workflow Features
