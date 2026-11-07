@@ -5,7 +5,7 @@ using TQVaultAE.Presentation;
 namespace TQVaultAE.GUI.Tooltips;
 
 /// <summary>
-/// The panel of the granted skills, drawn on the right of the item panel as a second tooltip.
+/// The relic column and the granted skills, drawn on the right of the item panel as more tooltips.
 /// </summary>
 public partial class ItemTooltip
 {
@@ -18,11 +18,56 @@ public partial class ItemTooltip
 	/// <summary>Size of a skill icon, in design pixels (the game icons are 32 x 32).</summary>
 	private const int SkillIconSize = 32;
 
+	/// <summary>Height a panel may take on the screen of the main window, frame and padding included.</summary>
+	private int MaxPanelHeight()
+	{
+		var screen = Screen.FromControl(this.Owner as Control ?? this).WorkingArea;
+		return Math.Max(screen.Height - 2, 1);
+	}
+
 	/// <summary>
-	/// Draws the skills next to the item panel, in columns no taller than the screen, then shows them with the item panel
-	/// as one image with transparent gaps, and caches that image under <paramref name="key"/>.
+	/// Moves the rows <paramref name="start"/> to <paramref name="end"/> (excluded) of the item panel to a new panel,
+	/// without the separator that opened them.
 	/// </summary>
-	private void ShowWithGrantedSkills((Item Item, float Scale, bool AltView, bool InGameValues) key, GrantedSkill[] skills)
+	private FlowLayoutPanel MoveRowsToColumn(int start, int end)
+	{
+		var source = this.flowLayoutPanelFriendlyNames;
+		var rows = source.Controls.Cast<Control>().Skip(start).Take(end - start).ToList();
+		var column = new FlowLayoutPanel()
+		{
+			AutoSize = true,
+			AutoSizeMode = AutoSizeMode.GrowAndShrink,
+			BackColor = source.BackColor,
+			BorderStyle = source.BorderStyle,
+			FlowDirection = FlowDirection.TopDown,
+			WrapContents = false,
+			Padding = source.Padding,
+			Margin = new Padding(0),
+		};
+
+		source.SuspendLayout();
+		column.SuspendLayout();
+		for (int i = 0; i < rows.Count; i++)
+		{
+			source.Controls.Remove(rows[i]);
+			bool leadingSeparator = i == 0 && (rows[i].Anchor & AnchorStyles.Right) == AnchorStyles.Right;
+			if (leadingSeparator)
+				rows[i].Dispose();
+			else
+				column.Controls.Add(rows[i]);
+		}
+		column.ResumeLayout();
+		source.ResumeLayout();
+		this.PerformLayout();
+
+		return column;
+	}
+
+	/// <summary>
+	/// Shows the item panel with, on its right, the relic column if any and the granted skills in columns no taller than
+	/// the screen, as one image with transparent gaps; caches that image under <paramref name="key"/>.
+	/// </summary>
+	private void ShowComposite((Item Item, float Scale, bool AltView, bool InGameValues) key, FlowLayoutPanel? relicColumn, GrantedSkill[] skills)
 	{
 		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
 		var scale = this.UIService.Scale;
@@ -30,61 +75,66 @@ public partial class ItemTooltip
 		var pad = this.flowLayoutPanelFriendlyNames.Padding.Left + 1;
 		var separator = (int)(9 * scale);
 
-		using var itemImage = Rasterize(this.flowLayoutPanelFriendlyNames);
-
-		// A window cannot be taller than the screen: the skills that do not fit go in another column.
-		var screen = Screen.FromControl(this.Owner as Control ?? this).WorkingArea;
-		var maxHeight = Math.Max(screen.Height - 2 - (2 * pad), 1);
-
-		var blocks = skills.Select(skill => this.RasterizeSkill(skill, bg)).ToList();
+		var panels = new List<Bitmap> { Rasterize(this.flowLayoutPanelFriendlyNames) };
 		try
 		{
-			var columns = new List<List<Bitmap>>();
-			int height = 0;
-			foreach (var block in blocks)
+			if (relicColumn is not null)
 			{
-				if (columns.Count == 0 || height + separator + block.Height > maxHeight)
-				{
-					columns.Add([]);
-					height = -separator;
-				}
-				columns[^1].Add(block);
-				height += separator + block.Height;
+				this.Controls.Add(relicColumn);
+				relicColumn.PerformLayout();
+				panels.Add(Rasterize(relicColumn));
+				this.Controls.Remove(relicColumn);
+				relicColumn.Dispose();
 			}
 
-			var columnImages = columns.Select(column => DrawColumn(column, bg, pad, separator)).ToList();
+			// A window cannot be taller than the screen: the skills that do not fit go in another column.
+			var maxHeight = Math.Max(this.MaxPanelHeight() - (2 * pad), 1);
+			var blocks = skills.Select(skill => this.RasterizeSkill(skill, bg)).ToList();
 			try
 			{
-				var border = TQColor.DarkGray.Color();
-				var width = itemImage.Width + 2 + columnImages.Sum(c => gap + c.Width + 2);
-				var composite = new Bitmap(width, Math.Max(itemImage.Height, columnImages.Max(c => c.Height)) + 2);
-				using (var g = Graphics.FromImage(composite))
+				var columns = new List<List<Bitmap>>();
+				int height = 0;
+				foreach (var block in blocks)
 				{
-					g.Clear(SkillsTransparencyKey);
-					DrawFramed(g, itemImage, 0, border);
-					int x = itemImage.Width + 2;
-					foreach (var column in columnImages)
+					if (columns.Count == 0 || height + separator + block.Height > maxHeight)
 					{
-						x += gap;
-						DrawFramed(g, column, x, border);
-						x += column.Width + 2;
+						columns.Add([]);
+						height = -separator;
 					}
+					columns[^1].Add(block);
+					height += separator + block.Height;
 				}
 
-				ToImage.Add(key, composite, this.Data!);
+				panels.AddRange(columns.Select(column => DrawColumn(column, bg, pad, separator)));
 			}
 			finally
 			{
-				columnImages.ForEach(c => c.Dispose());
+				blocks.ForEach(b => b.Dispose());
 			}
+
+			var border = TQColor.DarkGray.Color();
+			var width = panels.Sum(p => p.Width + 2) + (gap * (panels.Count - 1));
+			var composite = new Bitmap(width, panels.Max(p => p.Height) + 2);
+			using (var g = Graphics.FromImage(composite))
+			{
+				g.Clear(SkillsTransparencyKey);
+				int x = 0;
+				foreach (var panel in panels)
+				{
+					DrawFramed(g, panel, x, border);
+					x += panel.Width + 2 + gap;
+				}
+			}
+
+			ToImage.Add(key, composite, this.Data!);
 		}
 		finally
 		{
-			blocks.ForEach(b => b.Dispose());
+			panels.ForEach(p => p.Dispose());
 		}
 
 		if (ToImage.TryGetCopy(key, out var shown, out _))
-			this.ShowSkillsImage(shown);
+			this.ShowCompositeImage(shown);
 	}
 
 	/// <summary>Lays out the rows of one skill on the form and draws them.</summary>
@@ -146,8 +196,8 @@ public partial class ItemTooltip
 		return image;
 	}
 
-	/// <summary>Shows an image of the item and skills panels, with the space around them transparent.</summary>
-	private void ShowSkillsImage(Bitmap image)
+	/// <summary>Shows a cached tooltip image; around composite panels, the transparency key color is transparent.</summary>
+	private void ShowCompositeImage(Bitmap image)
 	{
 		this.BackColor = SkillsTransparencyKey;
 		this.TransparencyKey = SkillsTransparencyKey;
