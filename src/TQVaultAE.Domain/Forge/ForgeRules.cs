@@ -257,5 +257,5 @@ public sealed class ForgeRules
 	private static bool RelicDoesNotFit(Item target, Item? relicSource)
 		=> relicSource is not null
 			&& ((relicSource.IsRelicOrCharm && !target.IsRelicAllowed(relicSource))
-				|| (relicSource.HasRelicOrCharmSlot1 && !target.IsRelicAllowed(relicSource.relicID)));
+				|| (relicSource.HasRelicOrCharmSlot1 && !target.IsRelicAllowed(relicSource.relicID, relicSource.RelicInfo)));
 }
