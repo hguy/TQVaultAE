@@ -26,6 +26,7 @@ in existing code is inside `#if DEBUG`.
 | `TQVAULT_MCP_PORT` | Listen on another port. |
 | `TQVAULT_MCP_DISABLED=1` | Do not start the endpoint. |
 | `TQVAULT_MCP_ALLOW_SAVES=1` | Turn the save guard off by default (see below). |
+| `TQVAULT_SKIP_STARTUP_NOTICES=1` | Skip the startup notice about the default vault path, so a profiler or a script can start TQVault unattended. Works in Release builds too. |
 
 ## Register it in Claude Code
 
