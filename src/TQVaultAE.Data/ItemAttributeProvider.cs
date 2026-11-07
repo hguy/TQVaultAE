@@ -6,6 +6,7 @@
 
 using TQVaultAE.Application.Contracts.Providers;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using TQVaultAE.Domain.Entities;
@@ -567,6 +568,16 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="formatValue">format string to be parsed</param>
 	/// <returns>updated format string</returns>
 	public string ConvertFormat(string formatValue)
+		=> this._convertedFormats.GetOrAdd(formatValue, ConvertFormatUncached);
+
+	/// <summary>
+	/// <see cref="ConvertFormat"/> results by TQ format. The formats come from the game translations, so there are few of
+	/// them, while each displayed attribute converted its own with two regular expressions: most of the allocations of the
+	/// search warm-up.
+	/// </summary>
+	private readonly ConcurrentDictionary<string, string> _convertedFormats = new(StringComparer.Ordinal);
+
+	private static string ConvertFormatUncached(string formatValue)
 	{
 		// Local func
 		string replaceMatch(Match m)
