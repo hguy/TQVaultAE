@@ -157,6 +157,9 @@ public partial class BagButtonSettings : VaultForm
 		ScaleControl(this.UIService, this.cancelButton);
 		ScaleControl(this.UIService, this.applyButton);
 
+		this.FitExitButtons();
+		this.PlaceAvailablePictures();
+
 		#endregion
 
 #if DEBUG
@@ -621,5 +624,54 @@ public partial class BagButtonSettings : VaultForm
 		}
 
 		this.ShowSelection();
+	}
+
+	/// <summary>
+	/// Gives the apply and cancel buttons one width that holds the longer of their translated texts ("Appliquer" did
+	/// not fit the 80 pixels designed for "Apply"); the cancel button keeps its right edge.
+	/// </summary>
+	private void FitExitButtons()
+	{
+		// The margin ScalingButton keeps around its text.
+		const int textMargin = 16;
+		int width = new[] { this.applyButton, this.cancelButton }
+			.Select(b => TextRenderer.MeasureText(b.Text, b.Font).Width + textMargin)
+			.Append(this.applyButton.Width)
+			.Append(this.cancelButton.Width)
+			.Max();
+
+		this.applyButton.Width = width;
+
+		int right = this.cancelButton.Right;
+		this.cancelButton.Width = width;
+		this.cancelButton.Left = right - width;
+	}
+
+	/// <summary>
+	/// Lays out the available pictures group: it starts under the upper panel, which overlapped and hid the lower half
+	/// of its title; the drag and drop notice goes under the title and the picture tabs under the notice. Bottoms stay.
+	/// </summary>
+	private void PlaceAvailablePictures()
+	{
+		var group = this.groupBoxAvailablePictures;
+		int groupTop = this.flowLayoutPanelUpperParts.Bottom + this.flowLayoutPanelUpperParts.Margin.Bottom;
+		if (group.Top < groupTop)
+		{
+			int groupBottom = group.Bottom;
+			group.Top = groupTop;
+			group.Height = groupBottom - groupTop;
+		}
+
+		int top = group.DisplayRectangle.Top;
+		if (this.scalingLabelDragDropNotice.Top < top)
+			this.scalingLabelDragDropNotice.Top = top;
+
+		int tabsTop = this.scalingLabelDragDropNotice.Bottom + this.scalingLabelDragDropNotice.Margin.Bottom + 3;
+		if (this.tabControlPics.Top < tabsTop)
+		{
+			int bottom = this.tabControlPics.Bottom;
+			this.tabControlPics.Top = tabsTop;
+			this.tabControlPics.Height = bottom - tabsTop;
+		}
 	}
 }
