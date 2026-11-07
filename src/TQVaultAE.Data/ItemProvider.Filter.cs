@@ -252,7 +252,7 @@ public partial class ItemProvider
 	/// <param name="statBonuses">SortedList of stat bonuses</param>
 	/// <param name="record">database record</param>
 	/// <param name="statLevel">optional level if there can be multiple values</param>
-	public void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection record, int statLevel = 0)
+	public void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection? record, int statLevel = 0)
 	{
 		if (record == null || statBonuses == null)
 			return;
@@ -302,7 +302,7 @@ public partial class ItemProvider
 	/// </summary>
 	/// <param name="requirements">SortedList of requirements</param>
 	/// <param name="record">database record</param>
-	private void GetRequirementsFromRecord(SortedList<string, Variable> requirements, DBRecordCollection record)
+	private void GetRequirementsFromRecord(SortedList<string, Variable> requirements, DBRecordCollection? record)
 	{
 		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, record);
@@ -384,12 +384,12 @@ public partial class ItemProvider
 		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, itemInfo);
 
-		DBRecordCollection record = Database.GetRecordFromFile(itemInfo.ItemId);
+		DBRecordCollection? record = Database.GetRecordFromFile(itemInfo.ItemId);
 		if (record == null)
 			return;
 
 		string itemLevelTag = "itemLevel";
-		Variable lvl = record[itemLevelTag];
+		Variable? lvl = record[itemLevelTag];
 		if (lvl == null)
 			return;
 

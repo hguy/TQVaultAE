@@ -154,7 +154,7 @@ public class SackCollectionProvider : ISackCollectionProvider
 
 			sc.items = new List<Item>(sc.size);
 
-			Item prevItem = null;
+			Item? prevItem = null;
 			for (int i = 0; i < sc.size; ++i)
 			{
 				// Additional logic to decode the weapon slots in the equipment section

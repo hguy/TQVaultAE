@@ -46,7 +46,7 @@ public partial class Database : IDatabase
 	/// <summary>
 	/// Dictionary of all database info records
 	/// </summary>
-	protected readonly LazyConcurrentDictionary<RecordId, Info> infoDB = new();
+	protected readonly LazyConcurrentDictionary<RecordId, Info?> infoDB = new();
 
 	/// <summary>
 	/// Dictionary of all text database entries
@@ -66,12 +66,12 @@ public partial class Database : IDatabase
 	/// <summary>
 	/// Dictionary of all record collections loaded from the database.
 	/// </summary>
-	protected readonly LazyConcurrentDictionary<RecordId, DBRecordCollection> dbRecordCollections = new();
+	protected readonly LazyConcurrentDictionary<RecordId, DBRecordCollection?> dbRecordCollections = new();
 
 	/// <summary>
 	/// Game language to support setting language in UI
 	/// </summary>
-	protected string gameLanguage;
+	protected string? gameLanguage;
 
 	protected readonly IArcFileProvider arcProv;
 	protected readonly IArzFileProvider arzProv;
@@ -113,7 +113,7 @@ public partial class Database : IDatabase
 
 	#region Database Properties
 
-	ReadOnlyDictionary<RecordId, DBRecordCollection> _LootRandomizerTableList;
+	ReadOnlyDictionary<RecordId, DBRecordCollection>? _LootRandomizerTableList;
 	public ReadOnlyDictionary<RecordId, DBRecordCollection> AllLootRandomizerTable
 	{
 		get
@@ -125,7 +125,7 @@ public partial class Database : IDatabase
 		}
 	}
 
-	ReadOnlyDictionary<RecordId, LootRandomizerItem> _LootRandomizerList;
+	ReadOnlyDictionary<RecordId, LootRandomizerItem>? _LootRandomizerList;
 	public ReadOnlyDictionary<RecordId, LootRandomizerItem> AllLootRandomizer
 	{
 		get
@@ -141,7 +141,7 @@ public partial class Database : IDatabase
 	/// <summary>
 	/// Mapping between ItemId and Affixes LootTable
 	/// </summary>
-	private static ReadOnlyDictionary<RecordId, ReadOnlyCollection<AffixTableMapItem>> ItemAffixTableMap;
+	private static ReadOnlyDictionary<RecordId, ReadOnlyCollection<AffixTableMapItem>>? ItemAffixTableMap;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the game language is being auto detected.
@@ -157,17 +157,17 @@ public partial class Database : IDatabase
 	/// <summary>
 	/// Gets the instance of the Titan Quest Database ArzFile.
 	/// </summary>
-	public ArzFile ArzFile { get; private set; }
+	public ArzFile? ArzFile { get; private set; }
 
 	/// <summary>
 	/// Gets the instance of the Immortal Throne Database ArzFile.
 	/// </summary>
-	public ArzFile ArzFileIT { get; private set; }
+	public ArzFile? ArzFileIT { get; private set; }
 
 	/// <summary>
 	/// Gets the instance of a custom map Database ArzFile.
 	/// </summary>
-	public ArzFile ArzFileMod { get; private set; }
+	public ArzFile? ArzFileMod { get; private set; }
 
 	[GeneratedRegex(@"(?i)language\s*=\s*(""(?<Language>[^""]+)""|(?<Language>[^\r\n]*))[\r\n]")]
 	private static partial Regex GameLanguageRegEx();
@@ -176,7 +176,7 @@ public partial class Database : IDatabase
 	/// Gets the game language setting as a an English DisplayName.
 	/// </summary>
 	/// <remarks>Changed to property by VillageIdiot to support changing of Language in UI</remarks>
-	public string GameLanguage
+	public string? GameLanguage
 	{
 		get
 		{
@@ -278,14 +278,14 @@ public partial class Database : IDatabase
 	/// </summary>
 	/// <param name="itemId">Item ID which we are looking up.  Will be normalized privately.</param>
 	/// <returns>Returns Infor for item ID and NULL if not found.</returns>
-	public Info GetInfo(RecordId itemId)
+	public Info? GetInfo(RecordId itemId)
 	{
 		if (itemId is null)
 			return null;
 
 		return this.infoDB.GetOrAddAtomic(itemId, k =>
 		{
-			DBRecordCollection record = GetRecordFromFile(k);
+			DBRecordCollection? record = GetRecordFromFile(k);
 
 			if (record == null)
 				return null;
@@ -319,7 +319,7 @@ public partial class Database : IDatabase
 	/// <returns>Returns localized item attribute</returns>
 	public string GetItemAttributeFriendlyText(string itemAttribute, bool addVariable = true)
 	{
-		ItemAttributesData data = ItemAttributeProvider.GetAttributeData(itemAttribute);
+		ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(itemAttribute);
 		if (data == null)
 		{
 			this.Log.LogDebug($"Attribute unknown : {itemAttribute}");
@@ -370,7 +370,7 @@ public partial class Database : IDatabase
 		}
 		.Where(db => db.ArzFile is not null)
 		.SelectMany(db =>
-			db.ArzFile.RecordInfo.Where(r =>
+			db.ArzFile!.RecordInfo.Where(r =>
 				r.Value.RecordType.Equals(RCLASS_LOOTRANDOMIZERTABLE, noCase)
 				&& !r.Key.IsOld // Remove old loot table
 			).Select(ri => (RecordInfo: ri, db.Priority))
@@ -388,7 +388,8 @@ public partial class Database : IDatabase
 				grp.OrderBy(v => v.Priority).First().DBRecords // Promote Mod records over base game
 			)
 		)
-		.ToDictionary(r => r.RecordInfoKey, r => r.DBRecords);
+		.Where(r => r.DBRecords is not null)
+		.ToDictionary(r => r.RecordInfoKey, r => r.DBRecords!);
 
 		return new ReadOnlyDictionary<RecordId, DBRecordCollection>(lootRandomizerTableList);
 	}
@@ -408,12 +409,13 @@ public partial class Database : IDatabase
 		}
 		.Where(db => db.ArzFile is not null)
 		.SelectMany(db =>
-			db.ArzFile.RecordInfo.Where(r => r.Value.RecordType.Equals(RCLASS_LOOTRANDOMIZER, noCase))
+			db.ArzFile!.RecordInfo.Where(r => r.Value.RecordType.Equals(RCLASS_LOOTRANDOMIZER, noCase))
 			.Select(ri => (RecordInfo: ri, db.Priority))
 		)
 		.Select(r =>
 			{
-				var rec = GetRecordFromFile(r.RecordInfo.Key);
+				// Listed in the record table, so it can be read.
+				var rec = GetRecordFromFile(r.RecordInfo.Key)!;
 
 				string Tag = rec.GetString(Variable.KEY_LOOTRANDNAME, 0);
 				int Cost = rec.GetInt32(Variable.KEY_LOOTRANDCOST, 0);
@@ -462,7 +464,7 @@ public partial class Database : IDatabase
 				this.ArzFile
 			}
 			.Where(db => db is not null)
-			.SelectMany(db => db.RecordInfo
+			.SelectMany(db => db!.RecordInfo
 				.Where(r =>
 					r.Value.RecordType.Equals(RCLASS_LOOTITEMTABLE_FIXEDWEIGHT, noCase)
 					|| r.Value.RecordType.Equals(RCLASS_LOOTITEMTABLE_DYNWEIGHT, noCase)
@@ -470,7 +472,8 @@ public partial class Database : IDatabase
 			)
 			.Select(r =>
 			{
-				var rec = GetRecordFromFile(r.Key);
+				// Listed in the record table, so it can be read.
+				var rec = GetRecordFromFile(r.Key)!;
 				var lootNames = new List<RecordId>();
 				var records = new List<(RecordId brokenTable, RecordId prefixTable, RecordId suffixTable, List<RecordId> lootNames)>();
 
@@ -596,12 +599,9 @@ public partial class Database : IDatabase
 		ItemAffixTableMap = new ReadOnlyDictionary<RecordId, ReadOnlyCollection<AffixTableMapItem>>(data);
 	}
 
-	public ReadOnlyCollection<AffixTableMapItem> GetItemAffixTableMap(RecordId itemId)
+	public ReadOnlyCollection<AffixTableMapItem>? GetItemAffixTableMap(RecordId itemId)
 	{
-		var affixmap = ItemAffixTableMap.SingleOrDefault(i => i.Key == itemId);
-		if (affixmap.Key is null) return null;
-
-		return affixmap.Value;
+		return ItemAffixTableMap is not null && ItemAffixTableMap.TryGetValue(itemId, out var affixmap) ? affixmap : null;
 	}
 
 	#endregion
@@ -616,14 +616,14 @@ public partial class Database : IDatabase
 	/// </remarks>
 	/// <param name="itemId">Item Id which we are looking up</param>
 	/// <returns>Returns the DBRecord for the item Id</returns>
-	public DBRecordCollection GetRecordFromFile(RecordId itemId)
+	public DBRecordCollection? GetRecordFromFile(RecordId itemId)
 	{
 		var cachedDBRecordCollection = this.dbRecordCollections.GetOrAddAtomic(itemId, key =>
 		{
 
 			if (this.ArzFileMod != null)
 			{
-				DBRecordCollection recordMod = arzProv.GetItem(this.ArzFileMod, key);
+				DBRecordCollection? recordMod = arzProv.GetItem(this.ArzFileMod, key);
 				if (recordMod != null)
 				{
 					// Custom Map records have highest precedence.
@@ -634,7 +634,7 @@ public partial class Database : IDatabase
 			if (this.ArzFileIT != null)
 			{
 				// see if it's in IT ARZ file
-				DBRecordCollection recordIT = arzProv.GetItem(this.ArzFileIT, key);
+				DBRecordCollection? recordIT = arzProv.GetItem(this.ArzFileIT, key);
 				if (recordIT != null)
 				{
 					// IT file takes precedence over TQ.
@@ -642,7 +642,7 @@ public partial class Database : IDatabase
 				}
 			}
 
-			return arzProv.GetItem(ArzFile, key);
+			return this.ArzFile is null ? null : arzProv.GetItem(this.ArzFile, key);
 		});
 
 		return cachedDBRecordCollection;
@@ -822,7 +822,7 @@ public partial class Database : IDatabase
 	/// <param name="arcFileName">Name of the arc file.</param>
 	/// <param name="dataId">Id of data which we are getting from the arc file</param>
 	/// <returns>Byte array of the data from the arc file.</returns>
-	private byte[] ReadARCFile(string arcFileName, RecordId dataId)
+	private byte[]? ReadARCFile(string arcFileName, RecordId dataId)
 	{
 		// See if we have this arcfile already and if not create it.
 		try
@@ -830,13 +830,13 @@ public partial class Database : IDatabase
 			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Database.ReadARCFile('{0}', '{1}')", arcFileName, dataId);
 
-			ArcFile arcFile = ReadARCFile(arcFileName);
+			ArcFile? arcFile = ReadARCFile(arcFileName);
 
 			if (arcFile is null)
 				return null;
 
 			// Now retrieve the data
-			byte[] ans = arcProv.GetData(arcFile, dataId);
+			byte[]? ans = arcProv.GetData(arcFile, dataId);
 
 			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Exiting Database.ReadARCFile()");
@@ -878,19 +878,19 @@ public partial class Database : IDatabase
 	/// </summary>
 	/// <param name="isImmortalThrone">Signals whether we are looking for Immortal Throne files or vanilla Titan Quest files.</param>
 	/// <returns>Path to the text db file</returns>
-	private string FigureDBFileToUse(string rootFolder)
+	private string? FigureDBFileToUse(string rootFolder)
 	{
 		string baseFile = this.PathIO.Combine(rootFolder, "Text_");
 		string suffix = ".arc";
 
 		// Added explicit set to null though may not be needed
-		string cultureID = null;
+		string? cultureID = null;
 
 		// Moved this declaration since the first use is inside of the loop.
-		string filename = null;
+		string? filename = null;
 
 		// First see if we can use the game setting
-		string gameLanguage = this.GameLanguage;
+		string? gameLanguage = this.GameLanguage;
 		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("gameLanguage = {0}", gameLanguage == null ? "NULL" : gameLanguage);
@@ -1041,7 +1041,8 @@ public partial class Database : IDatabase
 		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.LoadTextDB()");
 
-		string rootFolder, databaseFile;
+		string rootFolder;
+		string? databaseFile;
 		if (GamePathResolver.GameType == GameType.TQAE)
 		{
 			rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Text");
@@ -1214,7 +1215,7 @@ public partial class Database : IDatabase
 		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Database.ParseTextDB({0}, {1})", databaseFile, filename);
 
-		byte[] data = this.ReadARCFile(databaseFile, filename);
+		byte[]? data = this.ReadARCFile(databaseFile, filename);
 
 		if (data == null)
 		{
@@ -1230,7 +1231,7 @@ public partial class Database : IDatabase
 		using (StreamReader reader = new StreamReader(new MemoryStream(data), Encoding.Default))
 		{
 			char delimiter = '=';
-			string line;
+			string? line;
 			while ((line = reader.ReadLine()) != null)
 			{
 				line = line.Trim();

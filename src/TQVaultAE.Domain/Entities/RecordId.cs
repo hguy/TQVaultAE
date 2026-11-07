@@ -11,7 +11,7 @@ public partial class RecordId : IEquatable<RecordId>, IComparable, IComparable<R
 
 	#region Ctor
 
-	private RecordId(string rawRecordId)
+	private RecordId(string? rawRecordId)
 	{
 		rawRecordId ??= string.Empty;
 		rawRecordId = rawRecordId.Trim();
@@ -28,7 +28,7 @@ public partial class RecordId : IEquatable<RecordId>, IComparable, IComparable<R
 	/// </summary>
 	/// <param name="rawRecordId"></param>
 	/// <returns></returns>
-	public static RecordId Create(string rawRecordId) => new RecordId(rawRecordId);
+	public static RecordId Create(string? rawRecordId) => new RecordId(rawRecordId);
 
 	#endregion
 

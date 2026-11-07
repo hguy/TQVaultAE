@@ -59,7 +59,7 @@ public class ArcFileProvider : IArcFileProvider
 				this.ReadARCToC(file);
 
 			string dataID = string.Concat(this.PathIO.GetFileNameWithoutExtension(file.FileName), "\\", record.Raw);
-			byte[] data = this.GetData(file, dataID);
+			byte[]? data = this.GetData(file, dataID);
 			if (data == null)
 				return;
 
@@ -91,7 +91,7 @@ public class ArcFileProvider : IArcFileProvider
 	/// </summary>
 	/// <param name="dataId">The string ID for the data which we are retieving.</param>
 	/// <returns>Returns byte array of the data corresponding to the string ID.</returns>
-	public byte[] GetData(ArcFile file, RecordId dataId)
+	public byte[]? GetData(ArcFile file, RecordId dataId)
 	{
 		if (USettings.ARCFileDebugLevel > 0)
 			Log.LogDebug("ARCFile.GetData({0})", dataId);
@@ -162,7 +162,9 @@ public class ArcFileProvider : IArcFileProvider
 					Log.LogDebug($"dataID = {dataID}");
 				}
 
-				byte[] data = this.GetData(file, dataID);
+				byte[]? data = this.GetData(file, dataID);
+				if (data is null)
+					continue;
 
 				string filename = destination;
 				if (!filename.EndsWith("\\", StringComparison.Ordinal))

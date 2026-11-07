@@ -152,6 +152,7 @@ public class StashProvider : IStashProvider
 				writer.Write(sta.Height);
 
 				// SackType should already be set at sta point
+				ArgumentNullException.ThrowIfNull(sta.Sack);
 				SackCollectionProvider.Encode(sta.Sack, writer);
 				dataLength = (int)writeStream.Length;
 			}

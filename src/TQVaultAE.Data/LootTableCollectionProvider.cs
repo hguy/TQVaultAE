@@ -19,7 +19,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 
 	private Dictionary<RecordId, LootTableCollection> LootTableCache = new();
 
-	ReadOnlyDictionary<RecordId, LootTableCollection> _AllLootRandomizerTable;
+	ReadOnlyDictionary<RecordId, LootTableCollection>? _AllLootRandomizerTable;
 	public ReadOnlyDictionary<RecordId, LootTableCollection> AllLootRandomizerTable
 	{
 		get
@@ -36,7 +36,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 		}
 	}
 
-	private ReadOnlyDictionary<RecordId, LootRandomizerItem> _AllLootRandomizerTranslated;
+	private ReadOnlyDictionary<RecordId, LootRandomizerItem>? _AllLootRandomizerTranslated;
 	/// <summary>
 	/// Return all loot randomizer (Affix effect infos)
 	/// </summary>
@@ -49,7 +49,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 			{
 				var dico = Database.AllLootRandomizer.Select(r =>
 				{
-					string translation = null;
+					string? translation = null;
 
 					if (r.Value.TranslationTagIsEmpty)
 					{
@@ -169,7 +169,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 	/// <summary>
 	/// Builds the table from the database using the passed table Id.
 	/// </summary>
-	public LootTableCollection LoadTable(RecordId tableId)
+	public LootTableCollection? LoadTable(RecordId tableId)
 	{
 		if (RecordId.IsNullOrEmpty(tableId))
 			return null;

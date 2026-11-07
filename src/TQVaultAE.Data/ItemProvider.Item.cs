@@ -74,7 +74,7 @@ public partial class ItemProvider
 	/// Gets the itemID's of all the items in the set.
 	/// </summary>
 	/// <returns>Returns <see cref="SetItemInfo"/> containing the remaining set items or null if the item is not part of a set.</returns>
-	public SetItemInfo GetSetItems(Item itm)
+	public SetItemInfo? GetSetItems(Item itm)
 	{
 		if (itm.baseItemInfo == null)
 			return null;
@@ -84,11 +84,11 @@ public partial class ItemProvider
 			return null;
 
 		// Get the set record
-		DBRecordCollection setRecords = Database.GetRecordFromFile(itemSetName);
+		DBRecordCollection? setRecords = Database.GetRecordFromFile(itemSetName);
 		if (setRecords == null)
 			return null;
 
-		string[] setMembers = setRecords.GetAllStrings("setMembers");
+		string[]? setMembers = setRecords.GetAllStrings("setMembers");
 		if (setMembers == null || setMembers.Length == 0)
 			return null;
 
@@ -97,7 +97,10 @@ public partial class ItemProvider
 		var dico = new Dictionary<string, Info>();
 
 		foreach (var item in setMembers)
-			dico.Add(item, Database.GetInfo(item));
+		{
+			if (Database.GetInfo(item) is { } info)
+				dico.Add(item, info);
+		}
 
 		return new SetItemInfo(itemSetName, setName, dico, setRecords);
 	}
@@ -185,10 +188,13 @@ public partial class ItemProvider
 	/// <returns>int containing the skill level</returns>
 	public int GetTriggeredSkillLevel(Item itm, DBRecordCollection record, RecordId recordId, int varNum)
 	{
-		DBRecordCollection baseItem = Database.GetRecordFromFile(itm.baseItemInfo.ItemId);
+		if (itm.baseItemInfo is null)
+			return varNum;
+
+		DBRecordCollection? baseItem = Database.GetRecordFromFile(itm.baseItemInfo.ItemId);
 
 		// Check to see if it's a Buff Skill
-		if (baseItem.GetString("itemSkillAutoController", 0) != null)
+		if (baseItem is not null && baseItem.GetString("itemSkillAutoController", 0) != null)
 		{
 			int level = baseItem.GetInt32("itemSkillLevel", 0);
 			string itemSkillName = baseItem.GetString("itemSkillName", 0);
@@ -196,7 +202,7 @@ public partial class ItemProvider
 			if (record.GetString("Class", 0).StartsWith("SKILLBUFF", noCase))
 			{
 				itemSkillName = itm.baseItemInfo.GetString("itemSkillName");
-				DBRecordCollection skill = Database.GetRecordFromFile(itemSkillName);
+				DBRecordCollection? skill = Database.GetRecordFromFile(itemSkillName);
 
 				if (skill != null)
 				{
@@ -229,13 +235,13 @@ public partial class ItemProvider
 		if (record.GetString("Class", 0).StartsWith("SKILL_ATTACK", noCase))
 		{
 			// Check to see if itm item creates a pet
-			var skillName = itm.baseItemInfo.GetString("skillName");
-			var petSkill = Database.GetRecordFromFile(skillName);
+			var skillName = itm.baseItemInfo?.GetString("skillName");
+			var petSkill = string.IsNullOrEmpty(skillName) ? null : Database.GetRecordFromFile(skillName);
 
-			string petID = petSkill.GetString("spawnObjects", 0);
-			if (!string.IsNullOrWhiteSpace(petID))
+			string? petID = petSkill?.GetString("spawnObjects", 0);
+			DBRecordCollection? petRecord = string.IsNullOrWhiteSpace(petID) ? null : Database.GetRecordFromFile(petID);
+			if (petRecord is not null)
 			{
-				DBRecordCollection petRecord = Database.GetRecordFromFile(petID);
 				int foundSkillOffset = 0;
 				for (int skillOffset = 0; skillOffset < 17; skillOffset++)
 				{
@@ -297,7 +303,7 @@ public partial class ItemProvider
 	/// Get the translations for this set item
 	/// </summary>-
 	/// <returns>string containing the set items</returns>
-	public SetItemInfo GetItemSetTranslations(Item itm)
+	public SetItemInfo? GetItemSetTranslations(Item itm)
 	{
 		var setMembers = this.GetSetItems(itm);
 		if (setMembers != null)

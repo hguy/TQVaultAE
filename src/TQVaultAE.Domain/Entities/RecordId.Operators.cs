@@ -73,7 +73,7 @@ public partial class RecordId
 	#region implicit
 
 	public static implicit operator string(RecordId recordId) => recordId.Raw;
-	public static implicit operator RecordId(string recordId) => Create(recordId);
+	public static implicit operator RecordId(string? recordId) => Create(recordId);
 
 	#endregion
 }

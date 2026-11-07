@@ -8,7 +8,7 @@ public class VaultDto
 	/// <summary>
 	/// Persisted disabled tooltip ids
 	/// </summary>
-	public List<int> disabledtooltip { get; set; }
+	public List<int>? disabledtooltip { get; set; }
 	/// <summary>
 	/// Holds the currently focused sack
 	/// </summary>
@@ -24,5 +24,5 @@ public class VaultDto
 	/// <summary>
 	/// List of vault tabs
 	/// </summary>
-	public List<SackDto> sacks { get; set; }
+	public List<SackDto> sacks { get; set; } = new();
 }

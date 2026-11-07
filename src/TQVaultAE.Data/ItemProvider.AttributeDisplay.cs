@@ -29,7 +29,7 @@ public partial class ItemProvider
 	/// <param name="recordId">string containing the database record id</param>
 	/// <param name="results">List for the results</param>
 	/// <param name="convertStrings">flag on whether we convert attributes to strings.</param>
-	private void GetAttributesFromRecord(Item itm, DBRecordCollection record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true
+	private void GetAttributesFromRecord(Item itm, DBRecordCollection? record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true
 		, IReadOnlyDictionary<string, ValueRange>? valueRanges = null, List<string?>? lineRanges = null)
 	{
 		if (USettings.ItemDebugLevel > 0)
@@ -40,7 +40,7 @@ public partial class ItemProvider
 		}
 
 		// First get a list of attributes, grouped by effect.
-		Dictionary<string, List<Variable>> attrByEffect = new();
+		Dictionary<string, List<Variable?>> attrByEffect = new();
 		if (record == null)
 		{
 			if (USettings.ItemDebugLevel > 0)
@@ -72,7 +72,7 @@ public partial class ItemProvider
 			if (filtering && this.FilterRequirements(variable.Name))
 				continue;
 
-			ItemAttributesData data = ItemAttributeProvider.GetAttributeData(variable.Name);
+			ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(variable.Name);
 			if (data == null)
 			{
 				// unknown attribute
@@ -91,10 +91,10 @@ public partial class ItemProvider
 				effectGroup = string.Concat(data.EffectType.ToString(), ":", data.Effect);
 
 			// Find or create the attrList for itm effect
-			List<Variable> attrList;
+			List<Variable?>? attrList;
 			if (!attrByEffect.TryGetValue(effectGroup, out attrList))
 			{
-				attrList = new List<Variable>();
+				attrList = new List<Variable?>();
 				attrByEffect[effectGroup] = attrList;
 			}
 
@@ -148,7 +148,7 @@ public partial class ItemProvider
 			itm.isAttributeCounted = true;
 
 		// Now we have all our attributes grouped by effect.  Now lets sort them
-		List<Variable>[] attrArray = new List<Variable>[attrByEffect.Count];
+		List<Variable?>[] attrArray = new List<Variable?>[attrByEffect.Count];
 		attrByEffect.Values.CopyTo(attrArray, 0);
 		Array.Sort(attrArray, new ItemAttributeListCompare(itm.IsArmor || itm.IsShield, this.ItemAttributeProvider));
 
@@ -156,23 +156,23 @@ public partial class ItemProvider
 		// We do itm by checking the effect just after the global param.
 		for (int i = 0; i < attrArray.Length; ++i)
 		{
-			List<Variable> attrList = attrArray[i];
+			List<Variable?> attrList = attrArray[i];
 
-			if (ItemAttributeProvider.AttributeGroupIs(new Collection<Variable>(attrList), "offensiveGlobalChance") ||
-				ItemAttributeProvider.AttributeGroupIs(new Collection<Variable>(attrList), "retaliationGlobalChance"))
+			if (ItemAttributeProvider.AttributeGroupIs(new Collection<Variable?>(attrList), "offensiveGlobalChance") ||
+				ItemAttributeProvider.AttributeGroupIs(new Collection<Variable?>(attrList), "retaliationGlobalChance"))
 			{
 				// check the next effect group
 				int j = i + 1;
 				if (j < attrArray.Length)
 				{
-					List<Variable> next = attrArray[j];
-					if (!ItemAttributeProvider.AttributeGroupHas(new Collection<Variable>(next), "Global"))
+					List<Variable?> next = attrArray[j];
+					if (!ItemAttributeProvider.AttributeGroupHas(new Collection<Variable?>(next), "Global"))
 					{
 						// itm is a spurious globalChance entry.  Let's add 2 null entries to signal it should be ignored
 						attrList.Add(null);
 						attrList.Add(null);
 					}
-					else if (ItemAttributeProvider.AttributeGroupHas(new Collection<Variable>(next), "XOR"))
+					else if (ItemAttributeProvider.AttributeGroupHas(new Collection<Variable?>(next), "XOR"))
 					{
 						// Yes it is global and is also XOR
 						// flag our current attribute as XOR
@@ -193,10 +193,10 @@ public partial class ItemProvider
 		while (lineRanges is not null && lineRanges.Count < results.Count)
 			lineRanges.Add(null);
 
-		foreach (List<Variable> attrList in attrArray)
+		foreach (List<Variable?> attrList in attrArray)
 		{
 			// Used to sort out the Damage Qualifier effects.
-			if (ItemAttributeProvider.AttributeGroupIs(new Collection<Variable>(attrList), ItemAttributesEffectType.DamageQualifierEffect))
+			if (ItemAttributeProvider.AttributeGroupIs(new Collection<Variable?>(attrList), ItemAttributesEffectType.DamageQualifierEffect))
 				attrList.Sort(new ItemAttributeSubListCompare(this.ItemAttributeProvider));
 
 			if (!convertStrings)
@@ -222,7 +222,7 @@ public partial class ItemProvider
 	/// e.g. "(90 - 126)", or "(9 - 12 / 26 - 36)" for a damage min/max pair.
 	/// </summary>
 	/// <returns><see langword="null"/> when no variable of the group is randomized.</returns>
-	private string? FormatValueRanges(List<Variable> attributeList, IReadOnlyDictionary<string, ValueRange> valueRanges)
+	private string? FormatValueRanges(List<Variable?> attributeList, IReadOnlyDictionary<string, ValueRange> valueRanges)
 	{
 		// Same multiplier as GetAmountSingle/GetAmountRange: damage over time is shown as value x duration.
 		float durationFactor = 1f;
@@ -265,7 +265,7 @@ public partial class ItemProvider
 	/// <param name="attributeList">ArrayList containing the attributes list</param>
 	/// <param name="recordId">string containing the record id</param>
 	/// <param name="results">List containing the results</param>
-	private void ConvertAttributeListToString(Item itm, DBRecordCollection record, List<Variable> attributeList, RecordId recordId, List<string> results)
+	private void ConvertAttributeListToString(Item itm, DBRecordCollection record, List<Variable?> attributeList, RecordId recordId, List<string> results)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -275,8 +275,10 @@ public partial class ItemProvider
 		}
 
 		// see what kind of effects are in this list
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = ItemAttributeProvider.GetAttributeData(variable.Name);
+		if (attributeList[0] is not { } variable)
+			return;
+
+		ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(variable.Name);
 		if (data == null)
 		{
 			// unknown attribute
@@ -313,20 +315,14 @@ public partial class ItemProvider
 	/// <param name="label">label string</param>
 	/// <param name="labelColor">label color</param>
 	/// <returns>formatted range string</returns>
-	private string GetAmountRange(Item itm, ItemAttributesData data, int varNum, Variable minVar, Variable maxVar, ref string label, TQColor? labelColor, Variable minDurVar = null)
+	private string GetAmountRange(Item itm, ItemAttributesData data, int varNum, Variable minVar, Variable maxVar, ref string? label, TQColor? labelColor, Variable? minDurVar = null)
 	{
 		// Added by VillageIdiot : check to see if min and max are the same
 		TQColor? color = null;
-		string amount = null;
+		string? amount = null;
 
-		Variable min = null;
-		Variable max = null;
-
-		if (minVar != null)
-			min = minVar.Clone();
-
-		if (maxVar != null)
-			max = maxVar.Clone();
+		Variable min = minVar.Clone();
+		Variable max = maxVar.Clone();
 
 		// sweet we have a range
 		string tag = "DamageRangeFormat";
@@ -358,7 +354,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		if (label.IndexOf('{') >= 0)
+		if (label != null && label.IndexOf('{') >= 0)
 		{
 			// the label has formatting codes.  Use it to format the amount
 			formatSpec = label;
@@ -397,10 +393,10 @@ public partial class ItemProvider
 	/// <param name="labelColor">label color</param>
 	/// <param name="minDurVar">Duration of Damage</param>
 	/// <returns>formatted single amount string</returns>
-	private string GetAmountSingle(Item itm, ItemAttributesData data, int varNum, Variable minVar, Variable maxVar, ref string label, TQColor? labelColor, Variable minDurVar = null)
+	private string? GetAmountSingle(Item itm, ItemAttributesData data, int varNum, Variable? minVar, Variable? maxVar, ref string? label, TQColor? labelColor, Variable? minDurVar = null)
 	{
 		TQColor? color = null;
-		string amount = null;
+		string? amount = null;
 
 		string tag = "DamageSingleFormat";
 		if (data.Effect.EndsWith("Stun", noCase)
@@ -429,7 +425,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		if (label.IndexOf('{') >= 0)
+		if (label != null && label.IndexOf('{') >= 0)
 		{
 			// the label has formatting codes.  Use it to format the amount
 			formatSpec = label;
@@ -437,7 +433,7 @@ public partial class ItemProvider
 			color = labelColor;
 		}
 
-		Variable currentVariable = null;
+		Variable? currentVariable = null;
 
 		if (minVar != null)
 			currentVariable = minVar.Clone();
@@ -494,7 +490,7 @@ public partial class ItemProvider
 	/// <returns>formatted duration string</returns>
 	private string GetDurationRange(int varNum, Variable minDurVar, Variable maxDurVar)
 	{
-		string duration = null;
+		string? duration = null;
 		TQColor? color = null;
 
 		if (!TranslationService.TryTranslateXTag("DamageRangeFormatTime", out var formatSpec))
@@ -522,9 +518,9 @@ public partial class ItemProvider
 	/// <param name="minDurVar">minimum duration variable</param>
 	/// <param name="maxDurVar">maximum duration variable</param>
 	/// <returns>formatted duration string</returns>
-	private string GetDurationSingle(int varNum, Variable minDurVar, Variable maxDurVar)
+	private string? GetDurationSingle(int varNum, Variable? minDurVar, Variable? maxDurVar)
 	{
-		string duration = null;
+		string? duration = null;
 		TQColor? color = null;
 
 		if (!TranslationService.TryTranslateXTag("DamageSingleFormatTime", out var formatSpec))
@@ -540,9 +536,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		Variable durationVariable = minDurVar;
-		if (durationVariable == null)
-			durationVariable = maxDurVar;
+		Variable? durationVariable = minDurVar ?? maxDurVar;
 
 		if (durationVariable != null)
 		{
@@ -562,9 +556,9 @@ public partial class ItemProvider
 	/// <returns>formatted damage ratio string</returns>
 	private string GetDamageRatio(int varNum, ItemAttributesData damageRatioData, Variable damageRatioVar)
 	{
-		string damageRatio = null;
+		string? damageRatio = null;
 		TQColor? color = null;
-		string formatSpec = null;
+		string? formatSpec = null;
 
 		// Original: concatenating with substring (already optimized by compiler)
 		string tag = string.Concat("Damage", damageRatioData.FullAttribute.Substring(9, damageRatioData.FullAttribute.Length - 20), "Ratio");
@@ -593,9 +587,9 @@ public partial class ItemProvider
 	/// <param name="varNum">offset number of the variable value that we are using</param>
 	/// <param name="chanceVar">chance variable</param>
 	/// <returns>formatted chance string.</returns>
-	private string GetChance(int varNum, Variable chanceVar)
+	private string? GetChance(int varNum, Variable chanceVar)
 	{
-		string chance = null;
+		string? chance = null;
 		TQColor? color = null;
 
 		if (!TranslationService.TryTranslateXTag("ChanceOfTag", out var formatSpec))
@@ -628,9 +622,9 @@ public partial class ItemProvider
 	/// <returns>formatted modifier string</returns>
 	private string GetModifier(ItemAttributesData data, int varNum, ItemAttributesData modifierData, Variable modifierVar)
 	{
-		string modifier = null;
+		string? modifier = null;
 		TQColor? color = null;
-		string formatSpec = null;
+		string? formatSpec = null;
 
 		string tag = ItemAttributeProvider.GetAttributeTextTag(data);
 		if (string.IsNullOrEmpty(tag))
@@ -668,7 +662,7 @@ public partial class ItemProvider
 	/// <returns>formatted duration modifier string</returns>
 	private string GetDurationModifier(int varNum, Variable durationModifierVar)
 	{
-		string durationModifier = null;
+		string? durationModifier = null;
 		TQColor? color = null;
 
 		if (!TranslationService.TryTranslateXTag("ImprovedTimeFormat", out var formatSpec))
@@ -697,7 +691,7 @@ public partial class ItemProvider
 	/// <returns>formatted chance modifier string</returns>
 	private string GetChanceModifier(int varNum, Variable modifierChanceVar)
 	{
-		string modifierChance = null;
+		string? modifierChance = null;
 		TQColor? color = null;
 
 		if (!TranslationService.TryTranslateXTag("ChanceOfTag", out var formatSpec))
@@ -726,7 +720,7 @@ public partial class ItemProvider
 	/// <param name="v">variable structure</param>
 	/// <param name="font">font string</param>
 	/// <returns>formatted global chance string</returns>
-	private string GetGlobalChance(List<Variable> attributeList, int varNum, Variable v, ref TQColor? font)
+	private string GetGlobalChance(List<Variable?> attributeList, int varNum, Variable v, ref TQColor? font)
 	{
 		string line;
 		string tag = "GlobalPercentChanceOfAllTag";
@@ -776,11 +770,11 @@ public partial class ItemProvider
 	/// <param name="line">line string</param>
 	/// <param name="color">display font string</param>
 	/// <returns>formatted string of racial bonus(es)  adds to the results if there are multiple.</returns>
-	private string GetRacialBonus(DBRecordCollection record, Item itm, List<string> results, int varNum, bool isGlobal, string globalIndent, Variable v, ItemAttributesData d, string line, ref TQColor? color)
+	private string? GetRacialBonus(DBRecordCollection record, Item itm, List<string> results, int varNum, bool isGlobal, string globalIndent, Variable v, ItemAttributesData d, string? line, ref TQColor? color)
 	{
 		// Added by VillageIdiot
 		// Updated to accept multiple racial bonuses in record
-		string[] races = record.GetAllStrings("racialBonusRace");
+		string[]? races = record.GetAllStrings("racialBonusRace");
 		if (races != null)
 		{
 			for (int j = 0; j < races.Length; ++j)
@@ -826,7 +820,7 @@ public partial class ItemProvider
 						line = string.Concat(globalIndent, line);
 
 					results.Add(line);
-					itm.CurrentFriendlyNameResult.TmpAttrib.Add(line);
+					itm.CurrentFriendlyNameResult?.TmpAttrib.Add(line);
 				}
 
 				line = Format(formatSpec, v[Math.Min(v.NumberOfValues - 1, varNum)], finalRace);
@@ -885,8 +879,8 @@ public partial class ItemProvider
 		if (string.IsNullOrEmpty(augmentMasteryValue))
 			augmentMasteryValue = augmentMasteryName;
 
-		string skillName = null;
-		DBRecordCollection skillRecord = Database.GetRecordFromFile(augmentMasteryValue);
+		string? skillName = null;
+		DBRecordCollection? skillRecord = Database.GetRecordFromFile(augmentMasteryValue);
 
 		if (skillRecord != null)
 		{
@@ -932,7 +926,7 @@ public partial class ItemProvider
 	/// <param name="line">line of text</param>
 	/// <param name="font">display font string</param>
 	/// <returns>formatted string containing + to skill</returns>
-	private string GetAugmentSkillLevel(DBRecordCollection record, Variable variable, ItemAttributesData attributeData, string line, ref TQColor? font)
+	private string? GetAugmentSkillLevel(DBRecordCollection record, Variable variable, ItemAttributesData attributeData, string? line, ref TQColor? font)
 	{
 		// Optimized: use span to get single char
 		string augmentSkillNumber = attributeData.FullAttribute.AsSpan().Slice(17, 1).ToString();
@@ -941,9 +935,9 @@ public partial class ItemProvider
 
 		if (!string.IsNullOrEmpty(skillRecordID))
 		{
-			string skillName = null;
-			string nameTag = null;
-			DBRecordCollection skillRecord = Database.GetRecordFromFile(skillRecordID);
+			string? skillName = null;
+			string? nameTag = null;
+			DBRecordCollection? skillRecord = Database.GetRecordFromFile(skillRecordID);
 			if (skillRecord != null)
 			{
 				// Changed by VillageIdiot
@@ -963,7 +957,7 @@ public partial class ItemProvider
 						if (nameTag.Contains("PetModifier"))
 						{
 							string petSkillID = skillRecord.GetString("petSkillName", 0);
-							DBRecordCollection petSkillRecord = Database.GetRecordFromFile(petSkillID);
+							DBRecordCollection? petSkillRecord = Database.GetRecordFromFile(petSkillID);
 							if (petSkillRecord != null)
 							{
 								// Try to get display name
@@ -993,7 +987,7 @@ public partial class ItemProvider
 				else
 				{
 					// This is a buff skill
-					DBRecordCollection buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
+					DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
 					if (buffSkillRecord != null)
 					{
 						nameTag = buffSkillRecord.GetString("skillDisplayName", 0);
@@ -1036,13 +1030,13 @@ public partial class ItemProvider
 	/// <param name="line">line of text</param>
 	/// <param name="font">display font string</param>
 	/// <returns>formatted formulae string</returns>
-	private string GetFormulae(List<string> results, Variable variable, ItemAttributesData attributeData, string line, ref TQColor? font)
+	private string? GetFormulae(List<string> results, Variable variable, ItemAttributesData attributeData, string? line, ref TQColor? font)
 	{
 		// Special case for formulae reagents
 		if (attributeData.FullAttribute.StartsWith("reagent", noCase))
 		{
 			var reagentId = variable.GetString(0);
-			DBRecordCollection reagentRecord = Database.GetRecordFromFile(reagentId);
+			DBRecordCollection? reagentRecord = Database.GetRecordFromFile(reagentId);
 			if (reagentRecord != null)
 			{
 				string nameTag = reagentRecord.GetString("description", 0);
@@ -1082,12 +1076,12 @@ public partial class ItemProvider
 	/// <param name="line">line of text</param>
 	/// <param name="font">display font string</param>
 	/// <returns>formatted granted skill string.</returns>
-	private string GetGrantedSkill(DBRecordCollection record, Item itm, List<string> results, Variable variable, string line, ref TQColor? font)
+	private string? GetGrantedSkill(DBRecordCollection record, Item itm, List<string> results, Variable variable, string? line, ref TQColor? font)
 	{
 		// Added by VillageIdiot
 		// Special case for granted skills
 		var grantedSkillId = variable.GetString(0);
-		DBRecordCollection skillRecord = Database.GetRecordFromFile(grantedSkillId);
+		DBRecordCollection? skillRecord = Database.GetRecordFromFile(grantedSkillId);
 		if (skillRecord != null)
 		{
 			// Add a blank line and then the Grants Skill text
@@ -1099,10 +1093,10 @@ public partial class ItemProvider
 
 			var value = $"{font?.ColorTag()}{skillTag}";
 			results.Add(value);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(value);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
 
-			string skillName = null;
-			string nameTag = null;
+			string? skillName = null;
+			string? nameTag = null;
 
 			// Changed by VillageIdiot
 			// Let's actually test if there is a buff skill
@@ -1119,7 +1113,7 @@ public partial class ItemProvider
 			else
 			{
 				// This is a buff skill
-				DBRecordCollection buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
+				DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
 				if (buffSkillRecord != null)
 				{
 					nameTag = buffSkillRecord.GetString("skillDisplayName", 0);
@@ -1132,13 +1126,13 @@ public partial class ItemProvider
 			}
 
 			// Added by VillageIdiot to support skill activation text
-			string triggerType = null;
-			string activationTag = null;
-			string activationText = null;
+			string? triggerType = null;
+			string? activationTag = null;
+			string? activationText = null;
 			string autoController = record.GetString("itemSkillAutoController", 0);
 			if (!string.IsNullOrEmpty(autoController))
 			{
-				DBRecordCollection autoControllerRecord = Database.GetRecordFromFile(autoController);
+				DBRecordCollection? autoControllerRecord = Database.GetRecordFromFile(autoController);
 				if (autoControllerRecord != null)
 					triggerType = autoControllerRecord.GetString("triggerType", 0);
 			}
@@ -1247,7 +1241,7 @@ public partial class ItemProvider
 	/// <param name="line">line of text</param>
 	/// <param name="color">display font string</param>
 	/// <returns>formatted skill effect string</returns>
-	private string GetSkillEffect(ItemAttributesData baseAttributeData, int variableNumber, Variable variable, ItemAttributesData currentAttributeData, string line, ref TQColor? color)
+	private string? GetSkillEffect(ItemAttributesData baseAttributeData, int variableNumber, Variable variable, ItemAttributesData currentAttributeData, string? line, ref TQColor? color)
 	{
 		string labelTag = ItemAttributeProvider.GetAttributeTextTag(baseAttributeData);
 		if (string.IsNullOrEmpty(labelTag))
@@ -1268,8 +1262,8 @@ public partial class ItemProvider
 		label = ItemAttributeProvider.ConvertFormat(label);
 
 		// Find the extra format tag for those that take 2 parameters.
-		string formatSpecTag = null;
-		string formatSpec = null;
+		string? formatSpecTag = null;
+		string? formatSpec = null;
 		if (currentAttributeData.FullAttribute.EndsWith("Cost", noCase))
 			formatSpecTag = "SkillIntFormat";
 		else if (currentAttributeData.FullAttribute.EndsWith("Level", noCase))
@@ -1319,7 +1313,7 @@ public partial class ItemProvider
 	/// <returns>formatted raw attribute string</returns>
 	private string GetRawAttribute(ItemAttributesData attributeData, int variableNumber, Variable variable, ref TQColor? color)
 	{
-		string line = null;
+		string? line = null;
 
 		string labelTag = ItemAttributeProvider.GetAttributeTextTag(attributeData);
 		if (string.IsNullOrWhiteSpace(labelTag))
@@ -1335,7 +1329,7 @@ public partial class ItemProvider
 		}
 
 		label = ItemAttributeProvider.ConvertFormat(label);
-		if (label.IndexOf('{') >= 0)
+		if (label != null && label.IndexOf('{') >= 0)
 		{
 			// we have a format string.  try using it.
 			line = Format(label, variable[Math.Min(variable.NumberOfValues - 1, variableNumber)]);
@@ -1362,7 +1356,7 @@ public partial class ItemProvider
 	/// <param name="data">ItemAttributesData for the item</param>
 	/// <param name="recordId">string containing the record id</param>
 	/// <param name="results">List containing the results</param>
-	private void ConvertOffenseAttributesToString(Item itm, DBRecordCollection record, List<Variable> attributeList, ItemAttributesData data, RecordId recordId, List<string> results)
+	private void ConvertOffenseAttributesToString(Item itm, DBRecordCollection record, List<Variable?> attributeList, ItemAttributesData data, RecordId recordId, List<string> results)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -1390,35 +1384,35 @@ public partial class ItemProvider
 			variableNumber = GetTriggeredSkillLevel(itm, record, recordId, variableNumber);
 
 		// See what variables we have
-		ItemAttributesData minData = null;
-		ItemAttributesData maxData = null;
-		ItemAttributesData minDurData = null;
-		ItemAttributesData maxDurData = null;
-		ItemAttributesData chanceData = null;
-		ItemAttributesData modifierData = null;
-		ItemAttributesData durationModifierData = null;
-		ItemAttributesData modifierChanceData = null;
-		ItemAttributesData damageRatioData = null;  // Added by VillageIdiot
+		ItemAttributesData? minData = null;
+		ItemAttributesData? maxData = null;
+		ItemAttributesData? minDurData = null;
+		ItemAttributesData? maxDurData = null;
+		ItemAttributesData? chanceData = null;
+		ItemAttributesData? modifierData = null;
+		ItemAttributesData? durationModifierData = null;
+		ItemAttributesData? modifierChanceData = null;
+		ItemAttributesData? damageRatioData = null;  // Added by VillageIdiot
 
-		Variable minVar = null;
-		Variable maxVar = null;
-		Variable minDurVar = null;
-		Variable maxDurVar = null;
-		Variable chanceVar = null;
-		Variable modifierVar = null;
-		Variable durationModifierVar = null;
-		Variable modifierChanceVar = null;
-		Variable damageRatioVar = null;  // Added by VillageIdiot
+		Variable? minVar = null;
+		Variable? maxVar = null;
+		Variable? minDurVar = null;
+		Variable? maxDurVar = null;
+		Variable? chanceVar = null;
+		Variable? modifierVar = null;
+		Variable? durationModifierVar = null;
+		Variable? modifierChanceVar = null;
+		Variable? damageRatioVar = null;  // Added by VillageIdiot
 
-		bool isGlobal = ItemAttributeProvider.AttributeGroupHas(new Collection<Variable>(attributeList), "Global");
+		bool isGlobal = ItemAttributeProvider.AttributeGroupHas(new Collection<Variable?>(attributeList), "Global");
 		string globalIndent = new string(' ', 4);
 
-		foreach (Variable variable in attributeList)
+		foreach (Variable? variable in attributeList)
 		{
 			if (variable == null)
 				continue;
 
-			ItemAttributesData attributeData = ItemAttributeProvider.GetAttributeData(variable.Name);
+			ItemAttributesData? attributeData = ItemAttributeProvider.GetAttributeData(variable.Name);
 			if (attributeData == null)
 			{
 				// unknown attribute
@@ -1499,9 +1493,9 @@ public partial class ItemProvider
 		}
 
 		// Figure out the label string
-		string labelTag = null;
+		string? labelTag = null;
 		TQColor? labelColor = null;
-		string label = GetLabelAndColorFromTag(itm, data, recordId, ref labelTag, ref labelColor);
+		string? label = GetLabelAndColorFromTag(itm, data, recordId, ref labelTag, ref labelColor);
 
 		if (USettings.ItemDebugLevel > 1)
 		{
@@ -1509,12 +1503,13 @@ public partial class ItemProvider
 			Log.LogDebug("Item.label = " + label);
 		}
 
-		label = ItemAttributeProvider.ConvertFormat(label);
+		if (label is not null)
+			label = ItemAttributeProvider.ConvertFormat(label);
 
 		// Figure out the Amount string
-		string amount = null;
-		if (minData != null
-			&& maxData != null
+		string? amount = null;
+		if (minVar != null
+			&& maxVar != null
 			&& minVar.GetSingle(Math.Min(minVar.NumberOfValues - 1, variableNumber)) != maxVar.GetSingle(Math.Min(maxVar.NumberOfValues - 1, variableNumber))
 		)
 		{
@@ -1532,29 +1527,29 @@ public partial class ItemProvider
 		}
 
 		// Figure out the duration string
-		string duration = null;
+		string? duration = null;
 		//If we have both minDurData and maxDurData we also need to check if the actual Values of minDurVar and maxDurVar are actually different
 		float minDurVarValue = -1;
 		float maxDurVarValue = -1;
 
-		if (minDurData != null)
+		if (minDurVar != null)
 			minDurVarValue = (float)minDurVar[minDurVar.NumberOfValues - 1];
 
-		if (maxDurData != null)
+		if (maxDurVar != null)
 			maxDurVarValue = (float)maxDurVar[maxDurVar.NumberOfValues - 1];
-		if (minDurData != null && maxDurData != null && minDurVarValue != maxDurVarValue)
+		if (minDurVar != null && maxDurVar != null && minDurVarValue != maxDurVarValue)
 			duration = GetDurationRange(variableNumber, minDurVar, maxDurVar);
 		else
 			duration = GetDurationSingle(variableNumber, minDurVar, maxDurVar);
 
 		// Figure out the Damage Ratio string
-		string damageRatio = null;
-		if (damageRatioData != null)
+		string? damageRatio = null;
+		if (damageRatioData != null && damageRatioVar != null)
 			damageRatio = GetDamageRatio(variableNumber, damageRatioData, damageRatioVar);
 
 		// Figure out the chance string
-		string chance = null;
-		if (chanceData != null)
+		string? chance = null;
+		if (chanceVar != null)
 			chance = GetChance(variableNumber, chanceVar);
 
 		// Display the chance + label + Amount + Duration + DamageRatio
@@ -1633,7 +1628,7 @@ public partial class ItemProvider
 				amountOrDurationText = amountOrDurationText.InsertAfterColorPrefix(globalIndent);
 
 			results.Add(amountOrDurationText);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(amountOrDurationText);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(amountOrDurationText);
 		}
 		else
 		{
@@ -1644,16 +1639,16 @@ public partial class ItemProvider
 		}
 
 		// now see if we have a modifier
-		string modifier = null;
-		if (modifierData != null)
+		string? modifier = null;
+		if (modifierData != null && modifierVar != null)
 			modifier = GetModifier(data, variableNumber, modifierData, modifierVar);
 
-		string durationModifier = null;
-		if (durationModifierData != null)
+		string? durationModifier = null;
+		if (durationModifierVar != null)
 			durationModifier = GetDurationModifier(variableNumber, durationModifierVar);
 
-		string modifierChance = null;
-		if (modifierChanceData != null)
+		string? modifierChance = null;
+		if (modifierChanceVar != null)
 			modifierChance = GetChanceModifier(variableNumber, modifierChanceVar);
 
 		numberOfStrings = 0;
@@ -1677,7 +1672,7 @@ public partial class ItemProvider
 				modifierText = $"{ItemStyle.Epic.TQColor().ColorTag()}{modifierText}";
 
 			results.Add(modifierText);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(modifierText);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(modifierText);
 		}
 		else
 		{
@@ -1690,12 +1685,12 @@ public partial class ItemProvider
 		bool displayDamageQualifierTitle = true;
 
 		// Now display any other variables we did not see here.
-		foreach (Variable variable in attributeList)
+		foreach (Variable? variable in attributeList)
 		{
 			if (variable == null)
 				continue;
 
-			ItemAttributesData attributeData = ItemAttributeProvider.GetAttributeData(variable.Name);
+			ItemAttributesData? attributeData = ItemAttributeProvider.GetAttributeData(variable.Name);
 
 			if (attributeData == null)
 				// unknown attribute
@@ -1721,7 +1716,7 @@ public partial class ItemProvider
 				&& !(normalizedAttributeVariable == "XOR" && isGlobal)
 			)
 			{
-				string line = null;
+				string? line = null;
 				TQColor? color = null;
 				string normalizedFullAttribute = attributeData.FullAttribute.ToUpperInvariant();
 				if (normalizedFullAttribute == "CHARACTERBASEATTACKSPEEDTAG")
@@ -1791,7 +1786,7 @@ public partial class ItemProvider
 					if (displayDamageQualifierTitle)
 					{
 						results.Add(title);
-						itm.CurrentFriendlyNameResult.TmpAttrib.Add(title);
+						itm.CurrentFriendlyNameResult?.TmpAttrib.Add(title);
 						displayDamageQualifierTitle = false;
 					}
 
@@ -1819,7 +1814,7 @@ public partial class ItemProvider
 					line = GetRawAttribute(data, variableNumber, variable, ref color);
 
 				// Start finalizing the line of text
-				string itemSkillAutoController = null;
+				string? itemSkillAutoController = null;
 				if (line.Length > 0)
 				{
 					if (attributeData.Variable.Length > 0)
@@ -1851,7 +1846,7 @@ public partial class ItemProvider
 						line = line.InsertAfterColorPrefix(globalIndent);
 
 					results.Add(line);
-					itm.CurrentFriendlyNameResult.TmpAttrib.Add(line);
+					itm.CurrentFriendlyNameResult?.TmpAttrib.Add(line);
 				}
 
 				// Added by VillageIdiot
@@ -1859,7 +1854,7 @@ public partial class ItemProvider
 				if (normalizedFullAttribute == "PETBONUSNAME")
 				{
 					string petBonusID = record.GetString("petBonusName", 0);
-					DBRecordCollection petBonusRecord = Database.GetRecordFromFile(petBonusID);
+					DBRecordCollection? petBonusRecord = Database.GetRecordFromFile(petBonusID);
 					if (petBonusRecord != null)
 					{
 						var tmp = new List<string>();
@@ -1894,7 +1889,7 @@ public partial class ItemProvider
 
 		if (!string.IsNullOrEmpty(autoController) || itm.IsScroll || itm.IsPotion)
 		{
-			DBRecordCollection skillRecord = Database.GetRecordFromFile(SkillDescriptionAndEffectsVar);
+			DBRecordCollection? skillRecord = Database.GetRecordFromFile(SkillDescriptionAndEffectsVar);
 
 			// Changed by VillageIdiot
 			// Get title from the last line
@@ -1936,7 +1931,7 @@ public partial class ItemProvider
 								{
 									var value = $"{ItemStyle.Mundane.TQColor().ColorTag()}    {skillDescriptionFromList}";
 									results.Add(value);
-									itm.CurrentFriendlyNameResult.TmpAttrib.Add(value);
+									itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
 								}
 
 								// Show granted skill level
@@ -1953,7 +1948,7 @@ public partial class ItemProvider
 										line = Format(formatSpec, skillLevel);
 										var value = $"{ItemStyle.Mundane.TQColor().ColorTag()}{line}";
 										results.Add(value);
-										itm.CurrentFriendlyNameResult.TmpAttrib.Add(value);
+										itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
 									}
 								}
 							}
@@ -1962,7 +1957,7 @@ public partial class ItemProvider
 					else
 					{
 						// itm skill is a buff
-						DBRecordCollection buffSkillRecord = Database.GetRecordFromFile(buffSkillNameId);
+						DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillNameId);
 						if (buffSkillRecord != null)
 						{
 							descriptionTag = buffSkillRecord.GetString("skillBaseDescription", 0);
@@ -1974,7 +1969,7 @@ public partial class ItemProvider
 								{
 									var value = $"{ItemStyle.Mundane.TQColor().ColorTag()}    {skillDescriptionFromList}";
 									results.Add(value);
-									itm.CurrentFriendlyNameResult.TmpAttrib.Add(value);
+									itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
 								}
 
 								// Show granted skill level
@@ -1991,7 +1986,7 @@ public partial class ItemProvider
 										line = Format(formatSpec, skillLevel);
 										var value = $"{ItemStyle.Mundane.TQColor().ColorTag()}    {line}";
 										results.Add(value);
-										itm.CurrentFriendlyNameResult.TmpAttrib.Add(value);
+										itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
 									}
 								}
 							}
@@ -2048,10 +2043,10 @@ public partial class ItemProvider
 			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, summonLimit.ToString(CultureInfo.CurrentCulture));
 			var value = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 			results.Add(value);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(value);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
 		}
 		var skillRecordspawnObjects = skillRecord.GetString("spawnObjects", 0);
-		DBRecordCollection petRecord = Database.GetRecordFromFile(skillRecordspawnObjects);
+		DBRecordCollection? petRecord = Database.GetRecordFromFile(skillRecordspawnObjects);
 		if (petRecord != null)
 		{
 			// Print out Pet attributes
@@ -2067,7 +2062,7 @@ public partial class ItemProvider
 			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, petName);
 			var valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 			results.Add(valueStr);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 
 			// Time to live
 			if (!TranslationService.TryTranslateXTag("tagSkillPetTimeToLive", out formatSpec))
@@ -2078,7 +2073,7 @@ public partial class ItemProvider
 			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, skillRecord.GetSingle("spawnObjectsTimeToLive", 0));
 			valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 			results.Add(valueStr);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 
 			// Health
 			value = petRecord.GetSingle("characterLife", 0);
@@ -2092,7 +2087,7 @@ public partial class ItemProvider
 				petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value);
 				valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 				results.Add(valueStr);
-				itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 			}
 
 			// Energy
@@ -2107,7 +2102,7 @@ public partial class ItemProvider
 				petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value);
 				valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 				results.Add(valueStr);
-				itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 			}
 
 			// Add abilities text
@@ -2120,7 +2115,7 @@ public partial class ItemProvider
 			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, petName);
 			valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 			results.Add(valueStr);
-			itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 
 			// Show Physical Damage
 			value = petRecord.GetSingle("handHitDamageMin", 0);
@@ -2138,7 +2133,7 @@ public partial class ItemProvider
 					petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value);
 					valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 					results.Add(valueStr);
-					itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+					itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 				}
 				else
 				{
@@ -2150,7 +2145,7 @@ public partial class ItemProvider
 					petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value, value2);
 					valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
 					results.Add(valueStr);
-					itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+					itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 				}
 			}
 
@@ -2182,17 +2177,17 @@ public partial class ItemProvider
 				if (recordID != null && !recordID.ToLower().StartsWith("records"))
 					continue;
 
-				DBRecordCollection skillRecord1 = Database.GetRecordFromFile(recordID);
-				DBRecordCollection record = null;
-				string skillClass = skillRecord1.GetString("Class", 0);
+				DBRecordCollection? skillRecord1 = Database.GetRecordFromFile(recordID);
+				DBRecordCollection? record = null;
+				string skillClass = skillRecord1?.GetString("Class", 0) ?? string.Empty;
 
 				// Skip passive skills
 				if (skillClass.Equals("SKILL_PASSIVE", noCase))
 					continue;
 
-				string skillNameTag = null;
-				string skillName = null;
-				string buffSkillName = skillRecord1.GetString("buffSkillName", 0);
+				string? skillNameTag = null;
+				string? skillName = null;
+				string buffSkillName = skillRecord1?.GetString("buffSkillName", 0) ?? string.Empty;
 
 				if (string.IsNullOrEmpty(buffSkillName))
 				{
@@ -2204,7 +2199,7 @@ public partial class ItemProvider
 				else
 				{
 					// This is a buff skill
-					DBRecordCollection buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
+					DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
 					if (buffSkillRecord != null)
 					{
 						record = buffSkillRecord;
@@ -2221,7 +2216,7 @@ public partial class ItemProvider
 					valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{skillName}";
 
 				results.Add(valueStr);
-				itm.CurrentFriendlyNameResult.TmpAttrib.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 
 				GetAttributesFromRecord(itm, record, true, recordID, results);
 				results.Add(string.Empty);
@@ -2238,7 +2233,7 @@ public partial class ItemProvider
 	/// <param name="labelTag">the label tag</param>
 	/// <param name="labelColor">the label color which gets modified here</param>
 	/// <returns>string containing the label.</returns>
-	private string GetLabelAndColorFromTag(Item itm, ItemAttributesData data, RecordId recordId, ref string labelTag, ref TQColor? labelColor)
+	private string? GetLabelAndColorFromTag(Item itm, ItemAttributesData data, RecordId recordId, ref string? labelTag, ref TQColor? labelColor)
 	{
 		labelTag = ItemAttributeProvider.GetAttributeTextTag(data);
 		string label, TrailingNL = string.Empty;
@@ -2262,7 +2257,7 @@ public partial class ItemProvider
 				// regular armor attribute is not magical
 				labelColor = ItemStyle.Mundane.TQColor();
 				// Add trailing '\n' + space for regular armor pieces to force empty row in tooltip (only if is first attribute)
-				if (!itm.CurrentFriendlyNameResult.TmpAttrib.Any())
+				if (!(itm.CurrentFriendlyNameResult?.TmpAttrib.Any() ?? false))
 					TrailingNL = StringHelper.TQNewLineTag + ' ';
 			}
 		}
@@ -2282,9 +2277,9 @@ public partial class ItemProvider
 	/// </summary>
 	/// <param name="attributeList">ArrayList containing the arributes</param>
 	/// <param name="results">List containing the attribute strings.</param>
-	private void ConvertBareAttributeListToString(List<Variable> attributeList, List<string> results)
+	private void ConvertBareAttributeListToString(List<Variable?> attributeList, List<string> results)
 	{
-		foreach (Variable variable in attributeList)
+		foreach (Variable? variable in attributeList)
 		{
 			if (variable != null)
 				results.Add(variable.ToString());

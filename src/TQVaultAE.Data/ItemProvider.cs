@@ -34,7 +34,7 @@ public partial class ItemProvider : IItemProvider
 	private readonly IPathIO PathIO;
 	private readonly UserSettings USettings;
 	private readonly LazyConcurrentDictionary<(Item Item, FriendlyNamesExtraScopes? Scope, bool FilterExtra), ToFriendlyNameResult> FriendlyNamesCache = new LazyConcurrentDictionary<(Item, FriendlyNamesExtraScopes?, bool), ToFriendlyNameResult>();
-	private readonly LazyConcurrentDictionary<RecordId, ItemAffixes> ItemAffixesCache = new();
+	private readonly LazyConcurrentDictionary<RecordId, ItemAffixes?> ItemAffixesCache = new();
 	private volatile bool _cachedShowInGameValues;
 
 
@@ -101,11 +101,12 @@ public partial class ItemProvider : IItemProvider
 	/// <param name="parameter2">second parameter</param>
 	/// <param name="parameter3">third parameter</param>
 	/// <returns>formatted string.</returns>
-	public string Format(string formatSpec, object parameter1, object parameter2 = null, object parameter3 = null)
+	public string Format(string? formatSpec, object? parameter1, object? parameter2 = null, object? parameter3 = null)
 	{
 		try
 		{
-			return string.Format(CultureInfo.CurrentCulture, formatSpec, parameter1, parameter2, parameter3);
+			// A null format throws ArgumentNullException, reported below like a bad format.
+			return string.Format(CultureInfo.CurrentCulture, formatSpec!, parameter1, parameter2, parameter3);
 		}
 		catch (ArgumentException)
 		{
@@ -224,12 +225,12 @@ public partial class ItemProvider : IItemProvider
 
 				var labelRelicPattern = "{0} - {1} / {2}";
 				if (this.TryTranslateXTag("tagAnimalPartRatio", v => res.AnimalPartRatio = v))
-					res.AnimalPartRatio = ItemAttributeProvider.ConvertFormat(res.AnimalPartRatio);
+					res.AnimalPartRatio = ItemAttributeProvider.ConvertFormat(res.AnimalPartRatio!);
 				else
 					res.AnimalPartRatio = labelRelicPattern;
 
 				if (this.TryTranslateXTag("tagRelicRatio", v => res.RelicRatio = v))
-					res.RelicRatio = ItemAttributeProvider.ConvertFormat(res.RelicRatio);
+					res.RelicRatio = ItemAttributeProvider.ConvertFormat(res.RelicRatio!);
 				else
 					res.RelicRatio = labelRelicPattern;
 			}
@@ -308,7 +309,7 @@ public partial class ItemProvider : IItemProvider
 							res.RelicPattern = res.RelicRatio;
 						}
 
-						res.RelicCompletionFormat = Format(res.RelicPattern, res.RelicClass, k.Item.Number, k.Item.baseItemInfo.CompletedRelicLevel);
+						res.RelicCompletionFormat = Format(res.RelicPattern, res.RelicClass, k.Item.Number, k.Item.baseItemInfo?.CompletedRelicLevel);
 						res.RelicBonusFormat = res.RelicCompletionFormat;
 					}
 
@@ -336,7 +337,7 @@ public partial class ItemProvider : IItemProvider
 
 					// Get Reagents format
 					if (this.TryTranslateXTag("xtagArtifactReagents", v => res.ArtifactReagents = v))
-						res.ArtifactReagents = ItemAttributeProvider.ConvertFormat(res.ArtifactReagents);
+						res.ArtifactReagents = ItemAttributeProvider.ConvertFormat(res.ArtifactReagents!);
 					else
 						res.ArtifactReagents = "Required Reagents  ({0}/{1})";
 
@@ -364,7 +365,7 @@ public partial class ItemProvider : IItemProvider
 				{
 					res.SuffixInfoDescription =
 							this.TryTranslateXTag(k.Item.suffixInfo.DescriptionTag, v => res.SuffixInfoDescription = v)
-								? res.SuffixInfoDescription.TQCleanup(true)
+								? res.SuffixInfoDescription!.TQCleanup(true)
 								: k.Item.suffixID.Raw;
 				}
 				else
@@ -495,11 +496,11 @@ public partial class ItemProvider : IItemProvider
 					res.FormulaeArtifactRecords = Database.GetRecordFromFile(artifactName);
 
 					// Display the name of the Artifact
-					if (!this.TryTranslateXTag(res.FormulaeArtifactRecords.GetString("description", 0), v => res.FormulaeArtifactName = v))
+					if (!this.TryTranslateXTag(res.FormulaeArtifactRecords?.GetString("description", 0) ?? string.Empty, v => res.FormulaeArtifactName = v))
 						res.FormulaeArtifactName = "?Unknown Artifact Name?";
 
 					// Class
-					string artifactClassification = res.FormulaeArtifactRecords.GetString("artifactClassification", 0).ToUpperInvariant();
+					string artifactClassification = (res.FormulaeArtifactRecords?.GetString("artifactClassification", 0) ?? string.Empty).ToUpperInvariant();
 					res.FormulaeArtifactClass = TranslateArtifactClassification(artifactClassification);
 
 					// Attributes
@@ -551,7 +552,7 @@ public partial class ItemProvider : IItemProvider
 
 		string TranslateArtifactClassification(string artifactClassificationKey)
 		{
-			string tag = string.Empty;
+			string? tag = string.Empty;
 			string resartifactClass = string.Empty;
 			if (artifactClassificationKey == null)
 				tag = null;
