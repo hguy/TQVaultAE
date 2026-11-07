@@ -28,7 +28,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private sealed class ForgeComboItem
 	{
 		public ForgePart Value;
-		public string Text;
+		public string Text = string.Empty;
 		public override string ToString() => Text;
 	}
 
@@ -44,8 +44,8 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private readonly IItemProvider ItemProvider;
 	private readonly IItemDatabaseService ItemDatabaseService;
 
-	internal Action CancelAction;
-	internal Action ForgeAction;
+	internal Action? CancelAction;
+	internal Action? ForgeAction;
 
 	/// <summary>Items placed in the slots, and the sacks they come from.</summary>
 	private readonly ForgeSelection Selection = new();
@@ -56,7 +56,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 	/// <summary>Cards describing what each mode allows, on the mode radio buttons.</summary>
 	private RichToolTip? modeToolTip;
 
-	private ScalingRadioButton lastMode;
+	private ScalingRadioButton? lastMode;
 
 	private static RecordId SoundStricMode = @"Sounds\MONSTERS\GREECE\G_TELKINE\TELEKINEVOICE01.WAV";
 	private static RecordId SoundRelaxMode = @"Sounds\MONSTERS\GREECE\G_TELKINE\TELEKINEVOICE02.WAV";
@@ -93,12 +93,12 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	private readonly Color PictureBoxBaseColor = Color.FromArgb(32 * 7, 46, 41, 31);
 
-	Item _PreviewItem = null;
+	Item? _PreviewItem = null;
 
 	internal bool HardcoreMode;
 
 	/// <summary>Base item with the current selection applied, for its tooltip.</summary>
-	private Item PreviewItem
+	private Item? PreviewItem
 	{
 		get
 		{
@@ -116,10 +116,12 @@ public partial class ForgePanel : UserControl, IScalingControl
 		}
 	}
 
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public ForgePanel()
 	{
 		InitializeComponent();
 	}
+#pragma warning restore CS8618
 
 	public ForgePanel(ItemDragInfo dragInfo, GuiServices services)
 	{
@@ -338,7 +340,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	#region Dragging
 
-	private void Forge_MouseEnter(object sender, EventArgs e)
+	private void Forge_MouseEnter(object? sender, EventArgs e)
 	{
 		// Enforce first autosize display
 		if (MaximumSize == Size.Empty)
@@ -347,16 +349,16 @@ public partial class ForgePanel : UserControl, IScalingControl
 		this.UpdateDragCursor();
 	}
 
-	private void Forge_MouseMove(object sender, MouseEventArgs e) => this.UpdateDragCursor();
+	private void Forge_MouseMove(object? sender, MouseEventArgs e) => this.UpdateDragCursor();
 
-	private void Forge_MouseLeave(object sender, EventArgs e)
+	private void Forge_MouseLeave(object? sender, EventArgs e)
 	{
 		// Leaving a child for another one stays inside the panel
 		if (!this.ClientRectangle.Contains(this.PointToClient(Cursor.Position)))
 			this.EndDragCursor();
 	}
 
-	private void Forge_Click(object sender, EventArgs e)
+	private void Forge_Click(object? sender, EventArgs e)
 	{
 		if (!IsDraging)
 			return;
@@ -380,9 +382,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 			return;
 
 		this.EndDragCursor();
-		var bitmap = UIService.LoadBitmap(DragInfo.Item.TexImageResourceId);
-		if (bitmap is null)
-			return;
+		var bitmap = UIService.LoadBitmap(DragInfo.Item?.TexImageResourceId);
 
 		this.dragCursor = ItemDragCursor.Create(bitmap, UIService.Scale);
 		this.dragCursorItem = DragInfo.Item;
@@ -409,8 +409,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 			return;
 		}
 
-		var item = DragInfo.Item;
-		if (Selection.Contains(item))
+		if (DragInfo.Item is not { } item || Selection.Contains(item))
 			return;
 
 		var decision = Rules.CheckDrop(Mode, slot, item, Selection);
@@ -624,7 +623,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	#region Event handlers
 
-	private void CancelButton_Click(object sender, EventArgs e)
+	private void CancelButton_Click(object? sender, EventArgs e)
 	{
 		ResetSelection();
 
@@ -632,11 +631,11 @@ public partial class ForgePanel : UserControl, IScalingControl
 			CancelAction();
 	}
 
-	private void ForgeButton_Click(object sender, EventArgs e) => ForgeItem();
+	private void ForgeButton_Click(object? sender, EventArgs e) => ForgeItem();
 
-	private void scalingButtonReset_Click(object sender, EventArgs e) => ResetSelection();
+	private void scalingButtonReset_Click(object? sender, EventArgs e) => ResetSelection();
 
-	private void ForgeMode_Clicked(object sender, EventArgs e)
+	private void ForgeMode_Clicked(object? sender, EventArgs e)
 	{
 		if (IsGameMode)
 		{
@@ -686,7 +685,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 		}
 	}
 
-	private void pictureBox_MouseEnter(object sender, EventArgs e)
+	private void pictureBox_MouseEnter(object? sender, EventArgs e)
 	{
 		// No tooltip over the slot the dragged item is about to be dropped on
 		if (IsDraging)
@@ -696,18 +695,18 @@ public partial class ForgePanel : UserControl, IScalingControl
 		var itm = slot == ForgeSlot.Base ? PreviewItem : Selection[slot];
 		if (itm is null) return;
 
-		ItemTooltip.ShowTooltip(Services, itm, (PictureBox)sender, true);
+		ItemTooltip.ShowTooltip(Services, itm, (PictureBox)sender!, true);
 	}
 
-	private void pictureBox_MouseLeave(object sender, EventArgs e)
+	private void pictureBox_MouseLeave(object? sender, EventArgs e)
 	{
 		ItemTooltip.HideTooltip();
 	}
 
-	private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
+	private void comboBox_SelectedIndexChanged(object? sender, EventArgs e)
 		=> ResetPreviewItem();
 
-	private void scalingCheckBoxHardcore_CheckedChanged(object sender, EventArgs e)
+	private void scalingCheckBoxHardcore_CheckedChanged(object? sender, EventArgs e)
 	{
 		this.HardcoreMode = scalingCheckBoxHardcore.Checked;
 	}

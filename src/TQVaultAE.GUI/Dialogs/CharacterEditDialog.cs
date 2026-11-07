@@ -27,7 +27,12 @@ internal partial class CharacterEditDialog : VaultForm
 
 	private readonly ILogger Log;
 
-	internal PlayerCollection PlayerCollection { get; set; }
+	/// <summary>Character to edit, set before the dialog is shown.</summary>
+	internal PlayerCollection PlayerCollection { get; set; } = null!;
+
+	/// <summary>The dialog is only opened for a loaded character, which has its player info.</summary>
+	private PlayerInfo Info => this.PlayerCollection.PlayerInfo
+		?? throw new InvalidOperationException("The character has no player info.");
 
 	/// <summary>
 	/// Initializes a new instance of the ItemSeedDialog class.
@@ -72,7 +77,7 @@ internal partial class CharacterEditDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CancelButton_Click(object sender, EventArgs e) => this.Close();
+	private void CancelButton_Click(object? sender, EventArgs e) => this.Close();
 
 	/// <summary>
 	/// 
@@ -100,7 +105,7 @@ internal partial class CharacterEditDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void OKButton_Click(object sender, EventArgs e)
+	private void OKButton_Click(object? sender, EventArgs e)
 	{
 		UpdatePlayerInfo();
 	}
@@ -122,15 +127,15 @@ internal partial class CharacterEditDialog : VaultForm
 				playerInfo.MasteriesAllowed = 2;
 
 			playerInfo.CurrentXP = int.Parse(xpTextBox.Text);
-			playerInfo.Money = PlayerCollection.PlayerInfo.Money > 0 ? PlayerCollection.PlayerInfo.Money : 0;
+			playerInfo.Money = Info.Money > 0 ? Info.Money : 0;
 
 			if (difficultlyComboBox.Enabled)
 				playerInfo.DifficultyUnlocked = difficultlyComboBox.SelectedIndex;
 			else 
-				playerInfo.DifficultyUnlocked = PlayerCollection.PlayerInfo.DifficultyUnlocked;
+				playerInfo.DifficultyUnlocked = Info.DifficultyUnlocked;
 
 			playerInfo.SkillPoints = Convert.ToInt32(skillPointsNumericUpDown.Value);
-			playerInfo.SkillRecordList.AddRange(PlayerCollection.PlayerInfo.SkillRecordList);
+			playerInfo.SkillRecordList.AddRange(Info.SkillRecordList);
 
 			playerInfo.AttributesPoints = Convert.ToInt32(attributeNumericUpDown.Value);
 			playerInfo.BaseStrength = Convert.ToInt32(strengthUpDown.Value);
@@ -141,7 +146,7 @@ internal partial class CharacterEditDialog : VaultForm
 
 			if (mustResetAttributes)
 			{
-				playerInfo.AttributesPoints = PlayerCollection.PlayerInfo.AttributesPoints;
+				playerInfo.AttributesPoints = Info.AttributesPoints;
 				playerInfo.BaseStrength = PlayerLevel.MinStrength;
 				playerInfo.BaseDexterity = PlayerLevel.MinDexterity;
 				playerInfo.BaseIntelligence = PlayerLevel.MinIntelligence;
@@ -149,11 +154,11 @@ internal partial class CharacterEditDialog : VaultForm
 				playerInfo.BaseMana = PlayerLevel.MinMana;
 
 				// Return invested points into attributes point pool
-				playerInfo.AttributesPoints += (PlayerCollection.PlayerInfo.BaseStrength - PlayerLevel.MinStrength) / PlayerLevel.AtrributeIncrementPerPoint;
-				playerInfo.AttributesPoints += (PlayerCollection.PlayerInfo.BaseDexterity - PlayerLevel.MinDexterity) / PlayerLevel.AtrributeIncrementPerPoint;
-				playerInfo.AttributesPoints += (PlayerCollection.PlayerInfo.BaseIntelligence - PlayerLevel.MinIntelligence) / PlayerLevel.AtrributeIncrementPerPoint;
-				playerInfo.AttributesPoints += (PlayerCollection.PlayerInfo.BaseHealth - PlayerLevel.MinHealth) / PlayerLevel.HealthAndManaIncrementPerPoint;
-				playerInfo.AttributesPoints += (PlayerCollection.PlayerInfo.BaseMana - PlayerLevel.MinMana) / PlayerLevel.HealthAndManaIncrementPerPoint;
+				playerInfo.AttributesPoints += (Info.BaseStrength - PlayerLevel.MinStrength) / PlayerLevel.AtrributeIncrementPerPoint;
+				playerInfo.AttributesPoints += (Info.BaseDexterity - PlayerLevel.MinDexterity) / PlayerLevel.AtrributeIncrementPerPoint;
+				playerInfo.AttributesPoints += (Info.BaseIntelligence - PlayerLevel.MinIntelligence) / PlayerLevel.AtrributeIncrementPerPoint;
+				playerInfo.AttributesPoints += (Info.BaseHealth - PlayerLevel.MinHealth) / PlayerLevel.HealthAndManaIncrementPerPoint;
+				playerInfo.AttributesPoints += (Info.BaseMana - PlayerLevel.MinMana) / PlayerLevel.HealthAndManaIncrementPerPoint;
 			}
 
 			playerInfo.MasteriesResetRequiered = masteriesResetRequired;
@@ -190,7 +195,7 @@ internal partial class CharacterEditDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CharacterEditDlg_Load(object sender, EventArgs e)
+	private void CharacterEditDlg_Load(object? sender, EventArgs e)
 	{
 
 		strengthLabel.Text = Resources.CEStrength;
@@ -214,74 +219,74 @@ internal partial class CharacterEditDialog : VaultForm
 				= this.Mastery2NameScalingLabel.Visible
 					= this.Mastery2ValueScalingLabel.Visible = false;
 
-		var dbr = PlayerCollection.PlayerInfo.ActiveMasteriesRecordNames;
+		var dbr = Info.ActiveMasteriesRecordNames;
 		if (dbr.Any())
 		{
 			for (int i = 0; i < dbr.Length; i++)
 			{
 				var rec = dbr[i];
 				var recId = rec.ToRecordId();
-				var relatedSkills = PlayerCollection.PlayerInfo.GetSkillsByBaseRecordName(recId);
+				var relatedSkills = Info.GetSkillsByBaseRecordName(recId);
 				var relatedPoints = relatedSkills.Sum(s => s.skillLevel);
 				var masteryInfo = this.Database.GetInfo(recId);
-				var masteryName = this.TranslationService.TranslateXTag(masteryInfo.DescriptionTag);
+				var masteryName = this.TranslationService.TranslateXTag(masteryInfo?.DescriptionTag ?? string.Empty);
 				var label = this.Controls.Find($"Mastery{i + 1}NameScalingLabel", true).First();
-				label.Text = string.Format(label.Tag.ToString(), masteryName);
+				label.Text = string.Format(label.Tag?.ToString() ?? "{0}", masteryName);
 				label.Visible = true;
 				var value = this.Controls.Find($"Mastery{i + 1}ValueScalingLabel", true).First();
-				value.Text = string.Format(value.Tag.ToString(), relatedSkills.Count(), relatedPoints);
+				value.Text = string.Format(value.Tag?.ToString() ?? "{0} ({1})", relatedSkills.Count(), relatedPoints);
 				value.Visible = true;
 			}
 		}
 
-		if (PlayerCollection.PlayerInfo.BaseStrength > Convert.ToInt32(strengthUpDown.Maximum))
-			strengthUpDown.Maximum = PlayerCollection.PlayerInfo.BaseStrength;
+		if (Info.BaseStrength > Convert.ToInt32(strengthUpDown.Maximum))
+			strengthUpDown.Maximum = Info.BaseStrength;
 
-		strengthUpDown.Value = PlayerCollection.PlayerInfo.BaseStrength;
+		strengthUpDown.Value = Info.BaseStrength;
 		var attrTag = new TagData { IncrementValue = PlayerLevel.AtrributeIncrementPerPoint };
 		strengthUpDown.Tag = attrTag;
 
-		if (PlayerCollection.PlayerInfo.BaseDexterity > Convert.ToInt32(dexterityUpDown.Maximum))
-			dexterityUpDown.Maximum = PlayerCollection.PlayerInfo.BaseDexterity;
+		if (Info.BaseDexterity > Convert.ToInt32(dexterityUpDown.Maximum))
+			dexterityUpDown.Maximum = Info.BaseDexterity;
 
-		dexterityUpDown.Value = PlayerCollection.PlayerInfo.BaseDexterity;
+		dexterityUpDown.Value = Info.BaseDexterity;
 		dexterityUpDown.Tag = attrTag;
 
-		if (PlayerCollection.PlayerInfo.BaseIntelligence > Convert.ToInt32(intelligenceUpDown.Maximum))
-			intelligenceUpDown.Maximum = PlayerCollection.PlayerInfo.BaseIntelligence;
+		if (Info.BaseIntelligence > Convert.ToInt32(intelligenceUpDown.Maximum))
+			intelligenceUpDown.Maximum = Info.BaseIntelligence;
 
-		intelligenceUpDown.Value = PlayerCollection.PlayerInfo.BaseIntelligence;
+		intelligenceUpDown.Value = Info.BaseIntelligence;
 		intelligenceUpDown.Tag = attrTag;
 
-		if (PlayerCollection.PlayerInfo.BaseHealth > Convert.ToInt32(healthUpDown.Maximum))
-			healthUpDown.Maximum = PlayerCollection.PlayerInfo.BaseHealth;
+		if (Info.BaseHealth > Convert.ToInt32(healthUpDown.Maximum))
+			healthUpDown.Maximum = Info.BaseHealth;
 
-		healthUpDown.Value = PlayerCollection.PlayerInfo.BaseHealth;
+		healthUpDown.Value = Info.BaseHealth;
 		var attrHMTag = new TagData { IncrementValue = PlayerLevel.HealthAndManaIncrementPerPoint };
 		healthUpDown.Tag = attrHMTag;
 
-		if (PlayerCollection.PlayerInfo.BaseMana > Convert.ToInt32(manacUpDown.Maximum))
-			manacUpDown.Maximum = PlayerCollection.PlayerInfo.BaseMana;
+		if (Info.BaseMana > Convert.ToInt32(manacUpDown.Maximum))
+			manacUpDown.Maximum = Info.BaseMana;
 
-		manacUpDown.Value = PlayerCollection.PlayerInfo.BaseMana;
+		manacUpDown.Value = Info.BaseMana;
 		manacUpDown.Tag = attrHMTag;
 
-		if (PlayerCollection.PlayerInfo.CurrentLevel > Convert.ToInt32(levelNumericUpDown.Maximum))
-			levelNumericUpDown.Maximum = PlayerCollection.PlayerInfo.CurrentLevel;
+		if (Info.CurrentLevel > Convert.ToInt32(levelNumericUpDown.Maximum))
+			levelNumericUpDown.Maximum = Info.CurrentLevel;
 
-		levelNumericUpDown.Value = PlayerCollection.PlayerInfo.CurrentLevel;
+		levelNumericUpDown.Value = Info.CurrentLevel;
 
-		xpTextBox.Text = string.Format("{0}", PlayerCollection.PlayerInfo.CurrentXP);
+		xpTextBox.Text = string.Format("{0}", Info.CurrentXP);
 
-		if (PlayerCollection.PlayerInfo.AttributesPoints > Convert.ToInt32(attributeNumericUpDown.Maximum))
-			attributeNumericUpDown.Maximum = PlayerCollection.PlayerInfo.AttributesPoints;
+		if (Info.AttributesPoints > Convert.ToInt32(attributeNumericUpDown.Maximum))
+			attributeNumericUpDown.Maximum = Info.AttributesPoints;
 
-		attributeNumericUpDown.Value = PlayerCollection.PlayerInfo.AttributesPoints;
+		attributeNumericUpDown.Value = Info.AttributesPoints;
 
-		if (PlayerCollection.PlayerInfo.SkillPoints > Convert.ToInt32(skillPointsNumericUpDown.Maximum))
-			skillPointsNumericUpDown.Maximum = PlayerCollection.PlayerInfo.SkillPoints;
+		if (Info.SkillPoints > Convert.ToInt32(skillPointsNumericUpDown.Maximum))
+			skillPointsNumericUpDown.Maximum = Info.SkillPoints;
 
-		skillPointsNumericUpDown.Value = PlayerCollection.PlayerInfo.SkillPoints;
+		skillPointsNumericUpDown.Value = Info.SkillPoints;
 
 		difficultlyComboBox.Items.Clear();
 		difficultlyComboBox.Items.Add(new DifficultData { Text = TranslationService.TranslateDifficulty(0), Id = 0 });
@@ -290,7 +295,7 @@ internal partial class CharacterEditDialog : VaultForm
 
 		levelingCheckBox.Checked = false;
 
-		if (PlayerCollection.PlayerInfo.HasBeenInGame == 0)
+		if (Info.HasBeenInGame == 0)
 		{
 			levelingCheckBox.Enabled = false;
 			levelingCheckBox.Visible = false;
@@ -299,14 +304,15 @@ internal partial class CharacterEditDialog : VaultForm
 		_loaded = true;
 	}
 
-	private void LevelNumericUpDown_ValueChanged(object sender, EventArgs e)
+	private void LevelNumericUpDown_ValueChanged(object? sender, EventArgs e)
 	{
 		if (!_loaded) return;
 
 		try
 		{
-			var prevLvl = Convert.ToInt32(((UpDownBase)sender).Text);
-			var level = Convert.ToInt32(((NumericUpDown)sender).Value);
+			var upDown = (NumericUpDown)sender!;
+			var prevLvl = Convert.ToInt32(upDown.Text);
+			var level = Convert.ToInt32(upDown.Value);
 			var xp = PlayerLevel.GetLevelMinXP(level);
 			xpTextBox.Text = string.Format("{0}", (xp + 1));
 
@@ -337,14 +343,14 @@ internal partial class CharacterEditDialog : VaultForm
 		}
 	}
 
-	private void StatsUpDown_ValueChanged(object sender, EventArgs e)
+	private void StatsUpDown_ValueChanged(object? sender, EventArgs e)
 	{
 		if (!_loaded) return;
 		if (sender == null) return;
-		var upDwnCtrl = (NumericUpDown)sender;
+		var upDwnCtrl = (NumericUpDown)sender!;
 		if (upDwnCtrl.Tag == null) return;
 
-		var prevValue = Convert.ToInt32(((UpDownBase)sender).Text);
+		var prevValue = Convert.ToInt32(((UpDownBase)sender!).Text);
 		var value = Convert.ToInt32(upDwnCtrl.Value);
 
 		var dif = prevValue - value;
@@ -355,7 +361,7 @@ internal partial class CharacterEditDialog : VaultForm
 
 		if (newAttr < 0)
 		{
-			((NumericUpDown)sender).Value = prevValue;
+			((NumericUpDown)sender!).Value = prevValue;
 			return;
 		}
 
@@ -367,11 +373,11 @@ internal partial class CharacterEditDialog : VaultForm
 
 	}
 
-	private void LevelingCheckBox_CheckedChanged(object sender, EventArgs e)
+	private void LevelingCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (sender == null) return;
 
-		var chkbx = (CheckBox)sender;
+		var chkbx = (CheckBox)sender!;
 		if (chkbx.Checked)
 		{
 			this.difficultlyComboBox.Enabled = true;
@@ -384,20 +390,20 @@ internal partial class CharacterEditDialog : VaultForm
 		}
 	}
 
-	private void ResetMasteriesScalingButton_Click(object sender, EventArgs e)
+	private void ResetMasteriesScalingButton_Click(object? sender, EventArgs e)
 	{
 		UpdatePlayerInfo(masteriesResetRequired: true);
 	}
 
-	private void ResetAttributesScalingButton_Click(object sender, EventArgs e)
+	private void ResetAttributesScalingButton_Click(object? sender, EventArgs e)
 	{
 		UpdatePlayerInfo(mustResetAttributes: true);
 	}
 
-	private void difficultlyComboBox_EnabledChanged(object sender, EventArgs e)
+	private void difficultlyComboBox_EnabledChanged(object? sender, EventArgs e)
 	{
 		// Init difficulty combo
 		if (levelingCheckBox.Checked && difficultlyComboBox.Enabled)
-			difficultlyComboBox.SelectedIndex = PlayerCollection.PlayerInfo.DifficultyUnlocked;
+			difficultlyComboBox.SelectedIndex = Info.DifficultyUnlocked;
 	}
 }

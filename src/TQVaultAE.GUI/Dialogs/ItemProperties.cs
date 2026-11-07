@@ -24,12 +24,14 @@ internal partial class ItemProperties : VaultForm
 	/// <summary>
 	/// Item instance of the item we are displaying
 	/// </summary>
-	public Item Item { get; set; }
+	/// <summary>Item to show, set before the dialog is shown.</summary>
+	public Item Item { get; set; } = null!;
 
 	/// <summary>
 	/// Item human readable data
 	/// </summary>
-	private ToFriendlyNameResult Data;
+	// Read from Item when the dialog loads.
+	private ToFriendlyNameResult Data = null!;
 
 	/// <summary>
 	/// Initializes a new instance of the ItemProperties class.
@@ -79,7 +81,7 @@ internal partial class ItemProperties : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ItemProperties_Load(object sender, EventArgs e) => this.LoadProperties();
+	private void ItemProperties_Load(object? sender, EventArgs e) => this.LoadProperties();
 
 	/// <summary>
 	/// Loads the item properties
@@ -118,7 +120,7 @@ internal partial class ItemProperties : VaultForm
 			this.dataGridViewPrefixProperties.Rows.Clear();
 
 			if (!this.checkBoxFilterExtraInfo.Checked)
-				this.AddGridRow(this.dataGridViewPrefixProperties, this.Data.PrefixInfoRecords.Id.Normalized, ItemStyle.Relic.Color());
+				this.AddGridRow(this.dataGridViewPrefixProperties, (this.Data.PrefixInfoRecords?.Id.Normalized ?? string.Empty), ItemStyle.Relic.Color());
 
 			foreach (var prop in this.Data.PrefixAttributes)
 				this.AddGridRow(this.dataGridViewPrefixProperties, prop);
@@ -138,7 +140,7 @@ internal partial class ItemProperties : VaultForm
 			this.dataGridViewSuffixProperties.Rows.Clear();
 
 			if (!this.checkBoxFilterExtraInfo.Checked)
-				this.AddGridRow(this.dataGridViewSuffixProperties, this.Data.SuffixInfoRecords.Id.Normalized, ItemStyle.Relic.Color());
+				this.AddGridRow(this.dataGridViewSuffixProperties, (this.Data.SuffixInfoRecords?.Id.Normalized ?? string.Empty), ItemStyle.Relic.Color());
 
 			foreach (var prop in this.Data.SuffixAttributes)
 				this.AddGridRow(this.dataGridViewSuffixProperties, prop);
@@ -190,14 +192,14 @@ internal partial class ItemProperties : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ButtonOK_Button_Click(object sender, EventArgs e) => this.Close();
+	private void ButtonOK_Button_Click(object? sender, EventArgs e) => this.Close();
 
 	/// <summary>
 	/// Handler for clicking the check box
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CheckBox1_CheckedChanged(object sender, EventArgs e)
+	private void CheckBox1_CheckedChanged(object? sender, EventArgs e)
 	{
 		System.Windows.Forms.Cursor.Current = System.Windows.Forms.Cursors.WaitCursor;
 		this.LoadProperties();

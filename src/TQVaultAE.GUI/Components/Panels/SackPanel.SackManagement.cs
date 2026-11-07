@@ -47,7 +47,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 		// Sort the items and put them in a temporary sack.
 		SackCollection tempSack = new SackCollection();
-		var autoSortQuery = from Item item in this.Sack
+		var autoSortQuery = from Item item in this.ShownSack
 							orderby (((item.Height * 3) + item.Width) * 100) descending, item.ItemGroup descending, item.BaseItemId, item.IsRelicComplete descending
 							select item;
 
@@ -57,9 +57,9 @@ public partial class SackPanel : Panel, IScalingControl
 		if (tempSack == null || tempSack.IsEmpty)
 			return;
 
-		SackCollection backUpSack = this.Sack.Duplicate();
+		SackCollection backUpSack = this.ShownSack.Duplicate();
 
-		this.Sack.EmptySack();
+		this.ShownSack.EmptySack();
 		// Toggle sorting direction.
 		this.sortVertical = !this.sortVertical;
 
@@ -89,13 +89,13 @@ public partial class SackPanel : Panel, IScalingControl
 					if (this.sortVertical)
 					{
 						foundItems = this.FindAllItems(new Rectangle(j, k, tempItem.Width, tempItem.Height));
-						if ((foundItems == null || foundItems.Count == 0) && tempItem.Width + j <= this.SackSize.Width)
+						if (foundItems.Count == 0 && tempItem.Width + j <= this.SackSize.Width)
 						{
 							if (k + tempItem.Height <= this.SackSize.Height)
 							{
 								tempItem.PositionX = j;
 								tempItem.PositionY = k;
-								this.Sack.AddItem(tempItem);
+								this.ShownSack.AddItem(tempItem);
 								itemPlaced = true;
 							}
 
@@ -107,13 +107,13 @@ public partial class SackPanel : Panel, IScalingControl
 					else
 					{
 						foundItems = this.FindAllItems(new Rectangle(k, j, tempItem.Width, tempItem.Height));
-						if ((foundItems == null || foundItems.Count == 0) && tempItem.Height + j <= this.SackSize.Height)
+						if (foundItems.Count == 0 && tempItem.Height + j <= this.SackSize.Height)
 						{
 							if (k + tempItem.Width <= this.SackSize.Width)
 							{
 								tempItem.PositionX = k;
 								tempItem.PositionY = j;
-								this.Sack.AddItem(tempItem);
+								this.ShownSack.AddItem(tempItem);
 								itemPlaced = true;
 							}
 
@@ -131,12 +131,12 @@ public partial class SackPanel : Panel, IScalingControl
 			if (!itemPlaced)
 			{
 				this.sortVertical = !this.sortVertical;
-				this.Sack.EmptySack();
+				this.ShownSack.EmptySack();
 
 				foreach (Item item in backUpSack)
-					this.Sack.AddItem(item.Clone());
+					this.ShownSack.AddItem(item.Clone());
 
-				this.Sack.IsModified = false;
+				this.ShownSack.IsModified = false;
 				BagButtonTooltip.InvalidateCache(this.Sack);
 				return;
 			}
@@ -172,7 +172,7 @@ public partial class SackPanel : Panel, IScalingControl
 						this.DragInfo.Set(this, this.Sack, item, new Point(1, 1));
 						this.DragInfo.AutoMoveDestination = this.AutoMoveLocation;
 						this.DragInfo.DestIndex = destination;
-						this.OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
+						this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
 					}
 				}
 
@@ -198,7 +198,7 @@ public partial class SackPanel : Panel, IScalingControl
 			return;
 
 		var isEquipmentReadOnly = (USettings.PlayerReadonly == true && SackType == SackType.Equipment);
-		Item focusedItem = FindItem(LastCellWithFocus);
+		Item? focusedItem = FindItem(LastCellWithFocus);
 
 		if ((focusedItem == null && selectedItems == null) || isEquipmentReadOnly)
 			return;
@@ -231,7 +231,7 @@ public partial class SackPanel : Panel, IScalingControl
 			return;
 
 		var isEquipmentReadOnly = (USettings.PlayerReadonly == true && SackType == SackType.Equipment);
-		Item focusedItem = FindItem(LastCellWithFocus);
+		Item? focusedItem = FindItem(LastCellWithFocus);
 		AutoMoveLocation destination = AutoMoveLocation.NotSet;
 
 		if ((focusedItem == null && selectedItems == null) || isEquipmentReadOnly)
@@ -262,7 +262,7 @@ public partial class SackPanel : Panel, IScalingControl
 					DragInfo.Set(this, Sack, item, new Point(1, 1));
 					DragInfo.AutoMoveDestination = destination;
 					DragInfo.DestIndex = destIndex;
-					OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
+					OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
 				}
 			}
 
@@ -273,7 +273,7 @@ public partial class SackPanel : Panel, IScalingControl
 			DragInfo.Set(this, Sack, focusedItem, new Point(1, 1));
 			DragInfo.AutoMoveDestination = destination;
 			DragInfo.DestIndex = destIndex;
-			OnAutoMoveItem(this, new SackPanelEventArgs(null, null));
+			OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
 		}
 
 		ItemTooltip.HideTooltip();

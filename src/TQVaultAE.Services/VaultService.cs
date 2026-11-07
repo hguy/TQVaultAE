@@ -90,7 +90,7 @@ public class VaultService : IVaultService
 	/// <param name="vaultOnError">If save fails, this will contain the vault that failed.</param>
 	/// <returns>Number of vaults saved.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
-	public int SaveAllModifiedVaults(ref PlayerCollection vaultOnError)
+	public int SaveAllModifiedVaults(ref PlayerCollection? vaultOnError)
 	{
 		int saved = 0;
 

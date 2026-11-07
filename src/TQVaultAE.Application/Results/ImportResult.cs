@@ -11,7 +11,8 @@ public class ImportResult
 	public IReadOnlyList<Item> Items { get; set; } = [];
 	public int SackNumber { get; set; }
 	public string VaultName { get; set; } = string.Empty;
-	public Dictionary<int, List<Item>> SackItems { get; set; } = new();
+	/// <summary>Items of each tab, for a vault import only.</summary>
+	public Dictionary<int, List<Item>>? SackItems { get; set; }
 	public int ImportedCount { get; set; }
 	public int TotalCount { get; set; }
 	public string? ErrorMessage { get; set; }

@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Presentation.Win32;
+﻿﻿using TQVaultAE.Presentation.Win32;
 
 //-----------------------------------------------------------------------
 // <copyright file="ScalingButton.cs" company="None">
@@ -20,7 +20,7 @@ public class ScalingButton : Button, IScalingControl
 	/// <summary>
 	/// Base Font used for scaling of the text to fit within the bounds of the button.
 	/// </summary>
-	private Font baseFont;
+	private Font? baseFont;
 
 	/// <summary>
 	/// Used to indicate that the custom button graphic is being used.
@@ -207,7 +207,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MouseEnterCallback(object sender, EventArgs e)
+	private void MouseEnterCallback(object? sender, EventArgs e)
 	{
 		if (this.UseCustomGraphic)
 		{
@@ -226,7 +226,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void GotFocusCallback(object sender, EventArgs e)
+	private void GotFocusCallback(object? sender, EventArgs e)
 	{
 		if (this.UseCustomGraphic)
 		{
@@ -245,7 +245,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MouseLeaveCallback(object sender, EventArgs e)
+	private void MouseLeaveCallback(object? sender, EventArgs e)
 	{
 		if (this.UseCustomGraphic)
 			this.Image = this.UpBitmap;
@@ -256,7 +256,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void LostFocusCallback(object sender, EventArgs e)
+	private void LostFocusCallback(object? sender, EventArgs e)
 	{
 		if (this.UseCustomGraphic)
 			this.Image = this.UpBitmap;
@@ -267,7 +267,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MouseUpCallback(object sender, EventArgs e)
+	private void MouseUpCallback(object? sender, EventArgs e)
 	{
 		if (this.UseCustomGraphic)
 		{
@@ -283,7 +283,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MouseDownCallback(object sender, EventArgs e)
+	private void MouseDownCallback(object? sender, EventArgs e)
 	{
 		if (this.UseCustomGraphic)
 		{
@@ -302,7 +302,7 @@ public class ScalingButton : Button, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void TextChangedCallback(object sender, EventArgs e)
+	private void TextChangedCallback(object? sender, EventArgs e)
 	{
 		// Make sure we start somewhere.
 		if (this.baseFont == null)
@@ -321,10 +321,10 @@ public class ScalingButton : Button, IScalingControl
 	/// <param name="font">Font that we attempting to scale</param>
 	/// <param name="newWidth">width of the new button.  Used for fit tests.</param>
 	/// <returns>Scaled font</returns>
-	private Font GetScaledButtonTextFont(Font font, int newWidth)
+	private Font? GetScaledButtonTextFont(Font? font, int newWidth)
 	{
 		// Make sure we have something to test.
-		if (font == null && newWidth > 0)
+		if (font == null)
 			return null;
 
 		// See if the text can fit on the button and if it does we do not need to do anything.

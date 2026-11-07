@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using TQVaultAE.GUI.Components.Panels;
@@ -23,7 +24,7 @@ namespace TQVaultAE.GUI.Forms;
 /// </summary>
 public partial class MainForm : VaultForm
 {
-	private readonly ILogger Log = null;
+	private readonly ILogger Log;
 
 	public ITagService TagService { get; }
 
@@ -50,19 +51,19 @@ public partial class MainForm : VaultForm
 	/// <summary>
 	/// Instance of the player panel control
 	/// </summary>
-	private PlayerPanel playerPanel;
+	private PlayerPanel playerPanel = null!; // Created while the form loads.
 
 	/// <summary>
 	/// Holds the last sack that had mouse focus
 	/// Used for Automoving
 	/// </summary>
-	private SackCollection lastSackHighlighted;
+	private SackCollection? lastSackHighlighted;
 
 	/// <summary>
 	/// Holds the last sack panel that had mouse focus
 	/// Used for Automoving
 	/// /// </summary>
-	private SackPanel lastSackPanelHighlighted;
+	private SackPanel? lastSackPanelHighlighted;
 
 	/// <summary>
 	/// Info for the current item being dragged by the mouse
@@ -92,23 +93,23 @@ public partial class MainForm : VaultForm
 	/// <summary>
 	/// Instance of the vault panel control
 	/// </summary>
-	private VaultPanel vaultPanel;
+	private VaultPanel vaultPanel = null!; // Created while the form loads.
 
 	/// <summary>
 	/// Instance of the second vault panel control
 	/// This gets toggled with the player panel
 	/// </summary>
-	private VaultPanel secondaryVaultPanel;
+	private VaultPanel secondaryVaultPanel = null!; // Created while the form loads.
 
 	/// <summary>
 	/// Instance of the stash panel control
 	/// </summary>
-	private StashPanel stashPanel;
+	private StashPanel stashPanel = null!; // Created while the form loads.
 
 	/// <summary>
 	/// Holds that last stash that had focus
 	/// </summary>
-	private Stash lastStash;
+	private Stash? lastStash;
 
 	/// <summary>
 	/// Bag number of the last bag with focus
@@ -133,7 +134,7 @@ public partial class MainForm : VaultForm
 	/// <summary>
 	/// Form for the splash screen.
 	/// </summary>
-	private SplashScreenForm splashScreen;
+	private SplashScreenForm splashScreen = null!; // Created while the form loads.
 
 	/// <summary>
 	/// Holds the opacity interval for fading the form.
@@ -145,7 +146,9 @@ public partial class MainForm : VaultForm
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public MainForm() => InitForm();
+#pragma warning restore CS8618
 #endif
 
 	/// <summary>
@@ -232,6 +235,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		this.MouseWheel += new MouseEventHandler(this.MainFormMouseWheel);
 	}
 
+	[MemberNotNull(nameof(currentVersion), nameof(DragInfo))]
 	private void InitForm()
 	{
 		this.Enabled = false;
@@ -266,7 +270,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 
 		// Changed to a global for versions in tqdebug
 		AssemblyName aname = Assembly.GetExecutingAssembly().GetName();
-		this.currentVersion = aname.Version.ToString();
+		this.currentVersion = aname.Version?.ToString() ?? string.Empty;
 		this.Text = string.Format(CultureInfo.CurrentCulture, "{0} {1}", aname.Name, this.currentVersion);
 
 		// Setup localized strings.
@@ -304,7 +308,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		this.UIService.ShowMessageUserEvent += UIService_ShowMessageUserEvent;
 	}
 
-	private void UIService_ShowMessageUserEvent(object sender, ShowMessageUserEventHandlerEventArgs message)
+	private void UIService_ShowMessageUserEvent(object? sender, ShowMessageUserEventHandlerEventArgs message)
 	{
 		var caption = message.Level switch
 		{
@@ -326,7 +330,7 @@ Item Debug Level: {USettings.ItemDebugLevel}
 		message.IsOK = MessageBox.Show(message.Message, caption, buttons, icon) == DialogResult.OK;
 	}
 
-	private void UIService_NotifyUserEvent(object sender, string message, Color color)
+	private void UIService_NotifyUserEvent(object? sender, string message, Color color)
 	{
 		this.NotificationText.ForeColor = color;
 		this.NotificationText.Text = message;
@@ -347,13 +351,13 @@ Item Debug Level: {USettings.ItemDebugLevel}
 
 
 
-	private void duplicateButton_Click(object sender, EventArgs e) => DuplicateCharacter();
+	private void duplicateButton_Click(object? sender, EventArgs e) => DuplicateCharacter();
 
-	private void saveButton_Click(object sender, EventArgs e) => this.SaveAllModifiedFiles();
+	private void saveButton_Click(object? sender, EventArgs e) => this.SaveAllModifiedFiles();
 
 	#region HighlightItems
 
-	private void typeAssistant_Idled(object sender, EventArgs e)
+	private void typeAssistant_Idled(object? sender, EventArgs e)
 	{
 		var value = (scalingTextBoxHighlight.Text ?? string.Empty).Trim();
 
@@ -363,15 +367,15 @@ Item Debug Level: {USettings.ItemDebugLevel}
 	}
 
 
-	private void scalingTextBoxHighlight_TextChanged(object sender, EventArgs e)
+	private void scalingTextBoxHighlight_TextChanged(object? sender, EventArgs e)
 	{
 		/// Wait for the end of typing by delaying the call to <see cref="typeAssistant_Idled"/>
 		this.typeAssistant.TextChanged();
 	}
 
-	private void scalingLabelHighlight_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+	private void scalingLabelHighlight_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
 	{
-		var link = sender as LinkLabel;
+		var link = (LinkLabel)sender!;
 		if (highlightFilters.Visible)
 		{
 			highlightFilters.Visible = false;

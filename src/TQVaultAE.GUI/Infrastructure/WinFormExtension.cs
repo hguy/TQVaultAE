@@ -2,6 +2,12 @@
 
 public static class WinFormExtension
 {
+	/// <summary>
+	/// Text of the selected item, or an empty string when nothing is selected.
+	/// </summary>
+	public static string SelectedItemText(this ComboBox comboBox)
+		=> comboBox.SelectedItem?.ToString() ?? string.Empty;
+
 	public static void ProcessAllControls(this Control rootControl, Action<Control> action)
 	{
 		foreach (Control childControl in rootControl.Controls)
@@ -11,7 +17,7 @@ public static class WinFormExtension
 		}
 	}
 
-	public static void ProcessAllControlsWithExclusion(this Control rootControl, Func<Control, bool> action, Control extraControl = null)
+	public static void ProcessAllControlsWithExclusion(this Control rootControl, Func<Control, bool> action, Control? extraControl = null)
 	{
 		if (extraControl is not null)
 			action(extraControl);// Used to add rootControl in the loop

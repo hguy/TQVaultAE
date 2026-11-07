@@ -23,24 +23,29 @@ public partial class ItemTooltip : BaseTooltip
 	internal bool EnableDetailedTooltipView { get; set; }
 	internal bool ShowInGameValues { get; set; }
 	internal Item FocusedItem { get; set; }
-	internal SackPanel SackPanel { get; set; }
-	internal ResultsDialog ResultsDialog { get; set; }
-	internal PictureBox PictureBox { get; set; }
+	internal SackPanel? SackPanel { get; set; }
+	internal ResultsDialog? ResultsDialog { get; set; }
+	internal PictureBox? PictureBox { get; set; }
 
 
-	internal ToFriendlyNameResult Data { get; private set; }
+	/// <summary>Text of the item, set by <see cref="FillToolTip"/>.</summary>
+	internal ToFriendlyNameResult? Data { get; private set; }
 
 	/// <summary>Attribute rows with a right-aligned range, sized to the tooltip width once all rows exist.</summary>
 	private readonly List<(Panel Row, Control Left, Control Right)> rangeRows = new();
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public ItemTooltip() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
-	private ItemTooltip(MainForm instance, IItemProvider itemProvider, IFontService fontService, IUIService uiService, ITranslationService translationService) : base(itemProvider, fontService, uiService, translationService)
+	private ItemTooltip(MainForm instance, IItemProvider itemProvider, IFontService fontService, IUIService uiService, ITranslationService translationService, Item focusedItem) : base(itemProvider, fontService, uiService, translationService)
 	{
 		InitializeComponent();
+
+		this.FocusedItem = focusedItem;
 
 		this.Owner = instance;
 
@@ -52,10 +57,10 @@ public partial class ItemTooltip : BaseTooltip
 		this.Location = new Point(0, wa.Height);
 	}
 
-	public static void InvalidateCache(params Item[] items)
+	public static void InvalidateCache(params Item?[] items)
 	{
-		items = items.Where(i => i != null).ToArray();
-		ToImage.RemoveWhere(k => items.Contains(k.Item));
+		var existing = items.OfType<Item>().ToArray();
+		ToImage.RemoveWhere(k => existing.Contains(k.Item));
 	}
 
 	// to avoid Mainform lost focus with this.TopMost = false
@@ -94,9 +99,9 @@ public partial class ItemTooltip : BaseTooltip
 				, services.ItemProvider
 				, services.FontService
 				, services.UIService
-				, services.TranslationService)
+				, services.TranslationService
+				, focusedItem)
 			{
-				FocusedItem = focusedItem,
 				SackPanel = sackPanel,
 				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
 				ShowInGameValues = userSettings.ShowInGameValues
@@ -126,9 +131,9 @@ public partial class ItemTooltip : BaseTooltip
 				, services.ItemProvider
 				, services.FontService
 				, services.UIService
-				, services.TranslationService)
+				, services.TranslationService
+				, focusedItem)
 			{
-				FocusedItem = focusedItem,
 				ResultsDialog = resultsDialog,
 				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
 				ShowInGameValues = userSettings.ShowInGameValues
@@ -158,9 +163,9 @@ public partial class ItemTooltip : BaseTooltip
 				, services.ItemProvider
 				, services.FontService
 				, services.UIService
-				, services.TranslationService)
+				, services.TranslationService
+				, focusedItem)
 			{
-				FocusedItem = focusedItem,
 				PictureBox = picBox,
 				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
 				ShowInGameValues = userSettings.ShowInGameValues
@@ -230,9 +235,9 @@ public partial class ItemTooltip : BaseTooltip
 		// Attributes
 		if (this.EnableDetailedTooltipView)
 		{
-			string AdjustColor(string TQText, string label)
+			string AdjustColor(string? TQText, string label)
 			{
-				TQText = TQText.InsertAfterColorPrefix($"{label} : ");
+				TQText = (TQText ?? string.Empty).InsertAfterColorPrefix($"{label} : ");
 				return TQText.HasColorPrefix() ? TQText : $"{ItemStyle.Relic.TQColor().ColorTag()}{TQText}";
 			}
 
@@ -370,9 +375,9 @@ public partial class ItemTooltip : BaseTooltip
 		ToImage.Add(key, raster, Data);
 	}
 
-	private void AddRow(string friendlyName = TOOLTIPSPACER, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
+	private void AddRow(string? friendlyName = TOOLTIPSPACER, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
 	{
-		Control row = MakeRow(this.UIService, this.FontService, friendlyName, FGColor, fontSize, style, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
+		Control? row = MakeRow(this.UIService, this.FontService, friendlyName, FGColor, fontSize, style, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
 
 		this.flowLayoutPanelFriendlyNames.Controls.Add(row);
 	}
@@ -399,7 +404,8 @@ public partial class ItemTooltip : BaseTooltip
 	private Control MakeRangeRow(string line, string range)
 	{
 		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
-		var left = MakeRow(this.UIService, this.FontService, line, BGColor: bg);
+		var left = MakeRow(this.UIService, this.FontService, line, BGColor: bg)
+			?? MakeSingleColorLabel(this.UIService, this.FontService, line, null, 10F, FontStyle.Regular, bg);
 		var right = MakeSingleColorLabel(this.UIService, this.FontService, range, ItemStyle.Broken.TQColor().Color(), 10F, FontStyle.Regular, bg);
 
 		var row = new Panel()
@@ -455,7 +461,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 	}
 
-	private void ItemTooltip_Load(object sender, EventArgs e)
+	private void ItemTooltip_Load(object? sender, EventArgs e)
 	{
 		var usize = UIService.ItemUnitSize;
 		var wa = Screen.FromControl(this).WorkingArea;

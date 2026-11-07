@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.Extensions.Logging;
+﻿﻿﻿﻿using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components.Icons;
 using TQVaultAE.GUI.Components.Panels;
@@ -48,7 +48,8 @@ public partial class BagButtonSettings : VaultForm
 
 	#region CurrentBagButton
 
-	private BagButtonBase _CurrentBagButton;
+	// Set through CurrentBagButton before the dialog is shown.
+	private BagButtonBase _CurrentBagButton = null!;
 	private bool IsLoaded;
 
 	internal BagButtonBase CurrentBagButton
@@ -64,7 +65,9 @@ public partial class BagButtonSettings : VaultForm
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public BagButtonSettings() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
 	public BagButtonSettings(MainForm instance
@@ -192,13 +195,13 @@ public partial class BagButtonSettings : VaultForm
 	{
 		var vaultPanel = _CurrentBagButton.Parent as VaultPanel;
 		this.scalingLabelSelectedButtonValue.Text = string.Format("{0} - {1} - ({2})"
-			, vaultPanel.Player.PlayerName
+			, vaultPanel?.Player?.PlayerName
 			, _CurrentBagButton.ButtonNumber + 1
 			, _CurrentBagButton.Sack?.BagButtonIconInfo?.Label
 		);
 	}
 
-	private async void BagButtonSettings_Load(object sender, EventArgs e)
+	private async void BagButtonSettings_Load(object? sender, EventArgs e)
 	{
 		if (!IsLoaded)
 		{
@@ -272,7 +275,7 @@ public partial class BagButtonSettings : VaultForm
 	/// </summary>
 	private void ApplyIconInfo()
 	{
-		var info = _CurrentBagButton.Sack.BagButtonIconInfo;
+		var info = _CurrentBagButton.Sack?.BagButtonIconInfo;
 
 		if (info is null)
 			info = _DefaultBagButtonIconInfo;
@@ -383,20 +386,20 @@ public partial class BagButtonSettings : VaultForm
 		this.ShowMagnifier(cell, grid.PointToScreen(bounds.Location), bounds.Height);
 	}
 
-	private void PicOff_MouseEnter(object sender, EventArgs e)
+	private void PicOff_MouseEnter(object? sender, EventArgs e)
 	{
 		if (this.DraggedCell is not null) return;
 		// No magnifier from icon placeholders for default icon
 		if (this.scalingRadioButtonDefaultIcon.Checked) return;
 
-		var picB = (PictureBox)sender;
+		var picB = (PictureBox)sender!;
 		var cell = this.SelectionOf(picB);
 		if (cell is null) return;
 
 		this.ShowMagnifier(cell, picB.PointToScreen(Point.Empty), picB.Height);
 	}
 
-	private void PicOff_MouseLeave(object sender, EventArgs e)
+	private void PicOff_MouseLeave(object? sender, EventArgs e)
 	{
 		if (this.DraggedCell is not null) return;
 
@@ -528,13 +531,13 @@ public partial class BagButtonSettings : VaultForm
 		this.scalingTextBoxDebug.Text = cell.Id.ToString() + $" - ({cell.Bitmap.Size.Width}x{cell.Bitmap.Size.Height})";
 	}
 
-	private void radioButtonPictureSimple_CheckedChanged(object sender, EventArgs e)
+	private void radioButtonPictureSimple_CheckedChanged(object? sender, EventArgs e)
 	{ TogglePicturePickup(); DisplayPictures(); }
 
-	private void radioButtonPictureDetailed_CheckedChanged(object sender, EventArgs e)
+	private void radioButtonPictureDetailed_CheckedChanged(object? sender, EventArgs e)
 	{ TogglePicturePickup(); DisplayPictures(); }
 
-	private void applyButton_Click(object sender, EventArgs e)
+	private void applyButton_Click(object? sender, EventArgs e)
 	{
 		var dispmode = GetDisplayMode();
 
@@ -554,7 +557,8 @@ public partial class BagButtonSettings : VaultForm
 			return;
 		}
 
-		this._CurrentBagButton.Sack.IsModified = true;
+		if (this._CurrentBagButton.Sack is not null)
+			this._CurrentBagButton.Sack.IsModified = true;
 
 		if (dispmode == BagButtonDisplayMode.Default)
 		{
@@ -563,7 +567,8 @@ public partial class BagButtonSettings : VaultForm
 			this._CurrentBagButton.OffBitmap = Images.inventorybagdown01;
 			this._CurrentBagButton.OverBitmap = Images.inventorybagover01;
 
-			this._CurrentBagButton.Sack.BagButtonIconInfo = null;
+			if (this._CurrentBagButton.Sack is not null)
+				this._CurrentBagButton.Sack.BagButtonIconInfo = null;
 		}
 		else
 		{
@@ -574,10 +579,11 @@ public partial class BagButtonSettings : VaultForm
 				Label = this.scalingTextBoxLabel.Text.Trim(),
 				Off = this.SelectedOff!.Id,
 				On = this.SelectedOn!.Id,
-				Over = this.SelectedOver?.Id,
+				Over = this.SelectedOver?.Id ?? RecordId.Empty,
 			};
 
-			this._CurrentBagButton.Sack.BagButtonIconInfo = save;
+			if (this._CurrentBagButton.Sack is not null)
+				this._CurrentBagButton.Sack.BagButtonIconInfo = save;
 			this._CurrentBagButton.ApplyIconInfo(this._CurrentBagButton.Sack);
 
 		}
@@ -599,20 +605,20 @@ public partial class BagButtonSettings : VaultForm
 		return val;
 	}
 
-	private void cancelButton_Click(object sender, EventArgs e)
+	private void cancelButton_Click(object? sender, EventArgs e)
 	{
 		this.DialogResult = DialogResult.Cancel;
 		this.Close();
 	}
 
-	private void checkBoxLabel_CheckedChanged(object sender, EventArgs e)
+	private void checkBoxLabel_CheckedChanged(object? sender, EventArgs e)
 	{
 		this.scalingTextBoxLabel.Enabled = this.scalingCheckBoxLabel.Checked;
 
 		if (!this.scalingTextBoxLabel.Enabled) this.scalingTextBoxLabel.Text = string.Empty;
 	}
 
-	private void scalingRadioButtonDefaultIcon_CheckedChanged(object sender, EventArgs e)
+	private void scalingRadioButtonDefaultIcon_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.scalingRadioButtonDefaultIcon.Checked)
 		{

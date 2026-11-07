@@ -34,15 +34,16 @@ namespace TQVaultAE.GUI;
 /// </summary>
 public static class Program
 {
-	private static ILogger Log;
+	// Set first thing in Main.
+	private static ILogger Log = null!;
 
 	/// <summary>
 	/// Right to left reading options for message boxes
 	/// </summary>
 	private static MessageBoxOptions rightToLeft;
 
-	internal static ServiceProvider ServiceProvider { get; private set; }
-	private static ILoggerFactory LoggerFactory;
+	internal static ServiceProvider ServiceProvider { get; private set; } = null!;
+	private static ILoggerFactory LoggerFactory = null!;
 
 	/// <summary>
 	/// The main entry point for the application.
@@ -153,8 +154,8 @@ public static class Program
 
 			Program.ServiceProvider = scol.BuildServiceProvider();
 
-			var gamePathResolver = Program.ServiceProvider.GetService<IGamePathService>();
-			var userSettings = ServiceProvider.GetService<UserSettings>();
+			var gamePathResolver = Program.ServiceProvider.GetRequiredService<IGamePathService>();
+			var userSettings = ServiceProvider.GetRequiredService<UserSettings>();
 
 			try
 			{
@@ -180,10 +181,10 @@ public static class Program
 			}
 
 			// Initialize the Database AFTER game paths are configured
-			var database = ServiceProvider.GetService<IDatabase>();
+			var database = ServiceProvider.GetRequiredService<IDatabase>();
 			database.LoadDBFile();
 
-			var mainform = Program.ServiceProvider.GetService<MainForm>();
+			var mainform = Program.ServiceProvider.GetRequiredService<MainForm>();
 			var filterMouseWheel = new FormFilterMouseWheelGlobally(mainform);
 			var filterMouseButtons = new FormFilterMouseButtonGlobally(mainform);
 			System.Windows.Forms.Application.AddMessageFilter(filterMouseWheel);
@@ -262,7 +263,7 @@ public static class Program
 	/// </summary>
 	private static void SetUILanguage(UserSettings userSettings)
 	{
-		string settingsCulture = null;
+		string? settingsCulture = null;
 		if (!string.IsNullOrEmpty(userSettings.UILanguage))
 		{
 			settingsCulture = userSettings.UILanguage;
@@ -278,7 +279,7 @@ public static class Program
 
 		if (!string.IsNullOrEmpty(settingsCulture))
 		{
-			string myCulture = null;
+			string? myCulture = null;
 			foreach (CultureInfo ci in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
 			{
 				if (ci.EnglishName.Equals(settingsCulture, StringComparison.InvariantCultureIgnoreCase))
@@ -333,9 +334,9 @@ public static class Program
 		if (CultureInfo.CurrentCulture.IsNeutralCulture)
 		{
 			// Neutral cultures are not supported. Fallback to application's default.
-			String assemblyCultureName = ((NeutralResourcesLanguageAttribute)Attribute.GetCustomAttribute(
+			String? assemblyCultureName = ((NeutralResourcesLanguageAttribute?)Attribute.GetCustomAttribute(
 					Assembly.GetExecutingAssembly(), typeof(NeutralResourcesLanguageAttribute), false))
-				.CultureName;
+				?.CultureName ?? "en";
 			Thread.CurrentThread.CurrentCulture = new CultureInfo(assemblyCultureName, true);
 		}
 
@@ -352,7 +353,7 @@ public static class Program
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="t">ThreadExceptionEventArgs data</param>
-	private static void MainForm_UIThreadException(object sender, ThreadExceptionEventArgs t)
+	private static void MainForm_UIThreadException(object? sender, ThreadExceptionEventArgs t)
 	{
 		DialogResult result = DialogResult.Cancel;
 		try
@@ -386,7 +387,7 @@ public static class Program
 	/// <remarks>NOTE: This exception cannot be kept from terminating the application - it can only log the event, and inform the user about it.</remarks>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">UnhandledExceptionEventArgs data</param>
-	private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+	private static void CurrentDomain_UnhandledException(object? sender, UnhandledExceptionEventArgs e)
 	{
 		try
 		{

@@ -2,8 +2,8 @@
 
 internal class ComboBoxItem
 {
-	public string DisplayName;
-	public string Value;
+	public string DisplayName = string.Empty;
+	public string Value = string.Empty;
 
 	public override string ToString()
 	{
@@ -14,9 +14,9 @@ internal class ComboBoxItem
 
 internal class ComboBoxItem<TComboValue, TValue>
 {
-	public string DisplayName;
-	public TComboValue ComboValue;
-	public TValue Value;
+	public required string DisplayName;
+	public required TComboValue ComboValue;
+	public required TValue Value;
 
 	public override string ToString()
 	{

@@ -1,4 +1,5 @@
-﻿using TQVaultAE.GUI.Components.Scaling;
+﻿using System.Diagnostics.CodeAnalysis;
+using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.Presentation.Win32;
 
 //-----------------------------------------------------------------------
@@ -61,6 +62,7 @@ public class VaultProgressBar : UserControl
 		this.SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 	}
 
+	[MemberNotNull(nameof(scalingLabelTitle))]
 	private void InitializeComponent()
 	{
 		this.scalingLabelTitle = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();

@@ -53,7 +53,7 @@ public interface IVaultService
 	/// <param name="vaultOnError">If save fails, this will contain the vault that failed.</param>
 	/// <returns>Number of vaults saved.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
-	int SaveAllModifiedVaults(ref PlayerCollection vaultOnError);
+	int SaveAllModifiedVaults(ref PlayerCollection? vaultOnError);
 
 	/// <summary>
 	/// Updates VaultPath key from the configuration UI.

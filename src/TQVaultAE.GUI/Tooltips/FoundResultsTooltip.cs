@@ -1,5 +1,6 @@
-﻿using TQVaultAE.Domain.Entities;
+﻿﻿﻿using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Results;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation.Win32;
@@ -18,21 +19,25 @@ public partial class FoundResultsTooltip : BaseTooltip
 	private Rectangle CurrentWorkingArea;
 	private int RightSide;
 	private int LeftSide;
-	private static FoundResultsTooltip _Current = null;
+	private static FoundResultsTooltip? _Current = null;
 	public Control AnchorControl { get; private set; }
-	public IEnumerable<SearchResult> ResultsToDisplay { get; private set; }
+	public IEnumerable<SearchResult> ResultsToDisplay { get; private set; } = [];
 
 	// to avoid Mainform lost focus with this.TopMost = false
 	protected override bool ShowWithoutActivation => true;
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public FoundResultsTooltip() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
-	private FoundResultsTooltip(SearchDialogAdvanced instance, IItemProvider itemProvider, IFontService fontService, IUIService uiService, ITranslationService translationService) : base(itemProvider, fontService, uiService, translationService)
+	private FoundResultsTooltip(SearchDialogAdvanced instance, IItemProvider itemProvider, IFontService fontService, IUIService uiService, ITranslationService translationService, Control anchorControl) : base(itemProvider, fontService, uiService, translationService)
 	{
 		InitializeComponent();
+
+		this.AnchorControl = anchorControl;
 
 		this.Owner = instance;
 
@@ -70,7 +75,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 		}
 	}
 
-	public static FoundResultsTooltip ShowTooltip(GuiServices services, Control anchorControl, IEnumerable<SearchResult> results)
+	public static FoundResultsTooltip? ShowTooltip(GuiServices services, Control anchorControl, IEnumerable<SearchResult> results)
 	{
 		if (anchorControl is null) return null;
 		if (!(results?.Any() ?? false)) return null;
@@ -80,14 +85,14 @@ public partial class FoundResultsTooltip : BaseTooltip
 		{
 			HideTooltip();
 			newTT = new FoundResultsTooltip(
-				(SearchDialogAdvanced)anchorControl.FindForm()
+				(SearchDialogAdvanced)anchorControl.FindForm()!
 				, services.ItemProvider
 				, services.FontService
 				, services.UIService
 				, services.TranslationService
+				, anchorControl
 			)
 			{
-				AnchorControl = anchorControl,
 				ResultsToDisplay = results,
 			};
 			_Current = newTT;
@@ -129,6 +134,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 
 				var friendlylist = ResultsToDisplay
 					.Select(i => i.FriendlyNames)
+					.OfType<ToFriendlyNameResult>()
 					.OrderBy(d => d.FullNameBagTooltipClean)
 					.GroupBy(d => d.FullNameBagTooltip)
 					.Select(g => new
@@ -157,11 +163,11 @@ public partial class FoundResultsTooltip : BaseTooltip
 
 	private void AddRow(string friendlyName, Color color)
 	{
-		Control row = MakeRow(this.UIService, this.FontService, friendlyName, color, 10F, FontStyle.Regular, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
+		Control? row = MakeRow(this.UIService, this.FontService, friendlyName, color, 10F, FontStyle.Regular, BGColor: this.flowLayoutPanelFriendlyNames.BackColor);
 		this.flowLayoutPanelFriendlyNames.Controls.Add(row);
 	}
 
-	private void ItemTooltip_Load(object sender, EventArgs e)
+	private void ItemTooltip_Load(object? sender, EventArgs e)
 	{
 		this.FillToolTip();
 
@@ -194,7 +200,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 		this.Location = loc;
 	}
 
-	private void AnchorControl_MouseMove(object sender, MouseEventArgs e)
+	private void AnchorControl_MouseMove(object? sender, MouseEventArgs e)
 	{
 		var loc = this.Location;
 
@@ -206,5 +212,5 @@ public partial class FoundResultsTooltip : BaseTooltip
 		this.Location = loc;
 	}
 
-	private void ItemTooltip_FormClosing(object sender, FormClosingEventArgs e) => this.AnchorControl.MouseMove -= AnchorControl_MouseMove;
+	private void ItemTooltip_FormClosing(object? sender, FormClosingEventArgs e) => this.AnchorControl.MouseMove -= AnchorControl_MouseMove;
 }

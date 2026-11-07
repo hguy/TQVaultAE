@@ -57,7 +57,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// <summary>
 	/// GraphicsPath used for clipping to a rounded rectangle.
 	/// </summary>
-	private GraphicsPath graphicsPath;
+	private GraphicsPath? graphicsPath;
 
 	/// <summary>
 	/// Initializes a new instance of the SplashScreenForm class.
@@ -216,7 +216,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// </summary>
 	/// <param name="sender">Sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ExitButtonClick(object sender, EventArgs e)
+	private void ExitButtonClick(object? sender, EventArgs e)
 	{
 		this.CloseForm();
 	}
@@ -226,7 +226,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// </summary>
 	/// <param name="sender">Sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void NextButtonClick(object sender, EventArgs e)
+	private void NextButtonClick(object? sender, EventArgs e)
 	{
 		this.CloseForm();
 	}
@@ -237,7 +237,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ElapsedEventArgs data</param>
-	private void WaitTimerElapsed(object sender, ElapsedEventArgs e)
+	private void WaitTimerElapsed(object? sender, ElapsedEventArgs e)
 	{
 		this.waitTimerFlip = 1 - this.waitTimerFlip;
 		if (this.waitTimerFlip == 0)
@@ -251,7 +251,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void SplashScreen_Click(object sender, EventArgs e)
+	private void SplashScreen_Click(object? sender, EventArgs e)
 	{
 		if (this.ShowMainForm)
 			this.CloseForm();
@@ -262,7 +262,7 @@ internal partial class SplashScreenForm : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void FadeTimerTick(object sender, EventArgs e)
+	private void FadeTimerTick(object? sender, EventArgs e)
 	{
 		if (!this.fadeOut)
 		{

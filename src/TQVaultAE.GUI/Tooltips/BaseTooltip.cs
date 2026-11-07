@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Application.Contracts.Providers;
+﻿﻿using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
@@ -17,7 +17,9 @@ public class BaseTooltip : Form
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public BaseTooltip() { }
+#pragma warning restore CS8618
 #endif
 
 	public BaseTooltip(IItemProvider itemProvider, IFontService fontService, IUIService uiService, ITranslationService translationService)
@@ -59,10 +61,10 @@ public class BaseTooltip : Form
 		}
 	}
 
-	internal static Control MakeRow(IUIService uiService, IFontService fontService, string friendlyName, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
+	internal static Control? MakeRow(IUIService uiService, IFontService fontService, string? friendlyName, Color? FGColor = null, float fontSize = 10F, FontStyle style = FontStyle.Regular, Color? BGColor = null)
 	{
-		friendlyName = friendlyName ?? string.Empty;
-		Control row = null;
+		friendlyName ??= string.Empty;
+		Control? row = null;
 		if (friendlyName == TOOLTIPSPACER)
 		{
 			row = new Label()

@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -31,10 +32,10 @@ namespace TQVaultAE.GUI.Components.Panels;
 /// </summary>
 public partial class SackPanel : Panel, IScalingControl
 {
-	private readonly ILogger Log = null;
+	private readonly ILogger Log;
 	private readonly ITranslationService TranslationService;
 	private readonly UserSettings USettings;
-	private VaultForm _VaultForm;
+	private VaultForm? _VaultForm;
 
 	protected readonly IFontService FontService;
 	protected readonly IUIService UIService;
@@ -69,12 +70,12 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <summary>
 	/// The currently selected/displayed sack
 	/// </summary>
-	private SackCollection sack;
+	private SackCollection? sack;
 
 	/// <summary>
 	/// List holding all of the items that have been multi-selected.
 	/// </summary>
-	private List<Item> selectedItems;
+	private List<Item>? selectedItems;
 
 	/// <summary>
 	/// Indicates that the control key is being held down.
@@ -168,11 +169,14 @@ public partial class SackPanel : Panel, IScalingControl
 
 	#endregion
 
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public SackPanel()
 	{
 		InitializeComponent();
 	}
+#pragma warning restore CS8618
 
+	[MemberNotNull(nameof(components), nameof(CustomContextMenu))]
 	private void InitializeComponent()
 	{
 		this.components = new System.ComponentModel.Container();
@@ -289,32 +293,32 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <summary>
 	/// Gets or sets the Clear selected items event handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnClearAllItemsSelected { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnClearAllItemsSelected { get; set; }
 
 	/// <summary>
 	/// Gets or sets the item selected event handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnItemSelected { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnItemSelected { get; set; }
 
 	/// <summary>
 	/// Gets or sets the activate search event handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnActivateSearch { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnActivateSearch { get; set; }
 
 	/// <summary>
 	/// Gets or sets the resize form Event Handler
 	/// </summary>
-	public EventHandler<ResizeEventArgs> OnResizeForm { get; set; }
+	public EventHandler<ResizeEventArgs>? OnResizeForm { get; set; }
 
 	/// <summary>
 	/// Gets or sets the automove item event handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnAutoMoveItem { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnAutoMoveItem { get; set; }
 
 	/// <summary>
 	/// Gets or sets the new item highlighted event handler
 	/// </summary>
-	public EventHandler<SackPanelEventArgs> OnNewItemHighlighted { get; set; }
+	public EventHandler<SackPanelEventArgs>? OnNewItemHighlighted { get; set; }
 
 	/// <summary>
 	/// Gets or sets the sack size
@@ -405,7 +409,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <summary>
 	/// Gets or sets the sack instance
 	/// </summary>
-	public SackCollection Sack
+	public SackCollection? Sack
 	{
 		get => this.sack;
 
@@ -425,7 +429,13 @@ public partial class SackPanel : Panel, IScalingControl
 	/// Gets or sets the container (vault/player/stash) that owns this sack.
 	/// Used to track item locations for search functionality.
 	/// </summary>
-	public PlayerCollection PlayerCollection { get; set; }
+	public PlayerCollection? PlayerCollection { get; set; }
+
+	/// <summary>
+	/// Sack shown by the panel, for the actions that need one (context menu, drag and drop).
+	/// </summary>
+	internal SackCollection ShownSack => this.Sack
+		?? throw new InvalidOperationException("The panel shows no sack.");
 
 	/// <summary>
 	/// Gets MessageBoxOptions for right to left reading.
@@ -500,7 +510,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <summary>
 	/// Gets or sets the background image that is shown when there are no sacks to display.
 	/// </summary>
-	protected Bitmap DefaultImage { get; set; }
+	protected Bitmap? DefaultImage { get; set; }
 
 	#endregion SackPanel Properties
 
@@ -615,7 +625,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="cellLocation">Point of the cell location we are interested in</param>
 	/// <returns>Item at that cell location</returns>
-	protected virtual Item FindItem(Point cellLocation)
+	protected virtual Item? FindItem(Point cellLocation)
 	{
 		if (this.Sack == null)
 			return null;
@@ -663,7 +673,7 @@ public partial class SackPanel : Panel, IScalingControl
 		{
 			for (int y = minY; y < maxY; ++y)
 			{
-				Item item = this.FindItem(new Point(x, y));
+				Item? item = this.FindItem(new Point(x, y));
 
 				if (item != null)
 				{
@@ -763,12 +773,12 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected virtual void PickupItem(object sender, MouseEventArgs e)
+	protected virtual void PickupItem(object? sender, MouseEventArgs e)
 	{
 		// process the mouse moving to this location...just in case
 		this.MouseMoveCallback(sender, e);
 
-		Item focusedItem = this.FindItem(this.LastCellWithFocus);
+		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 		if (focusedItem != null)
 		{
 			// We picked up an item so clear the selection
@@ -782,10 +792,10 @@ public partial class SackPanel : Panel, IScalingControl
 			}
 
 			// Send a message to clear selections in the other panels.
-			this.OnClearAllItemsSelected(this, new SackPanelEventArgs(null, null));
+			this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 
 			// pick up item.
-			this.DragInfo.Set(this, this.Sack, focusedItem, this.GetMouseOffset(e.Location, focusedItem));
+			this.DragInfo.Set(this, this.ShownSack, focusedItem, this.GetMouseOffset(e.Location, focusedItem));
 
 			// process mouse move again to apply the graphical effects of dragging an item.
 			this.MouseMoveCallback(sender, e);
@@ -834,7 +844,7 @@ public partial class SackPanel : Panel, IScalingControl
 			// It's already there so we need to remove it.
 			this.RemoveSelectedItem(item);
 
-		this.OnItemSelected(this, new SackPanelEventArgs(null, null));
+		this.OnItemSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 	}
 
 	/// <summary>
@@ -889,7 +899,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected virtual void TryToPutdownItem(object sender, MouseEventArgs e)
+	protected virtual void TryToPutdownItem(object? sender, MouseEventArgs e)
 	{
 		// process mouse moving to this location
 		this.MouseMoveCallback(sender, e);
@@ -898,9 +908,10 @@ public partial class SackPanel : Panel, IScalingControl
 		// we do this by making sure that:
 		// (a) there are cells under us
 		// (b) there is <= 1 items under us
-		if (!this.CellsUnderDragItem.Size.IsEmpty && (this.ItemsUnderDragItem == null || this.ItemsUnderDragItem.Count <= 1))
+		if (!this.CellsUnderDragItem.Size.IsEmpty && this.ItemsUnderDragItem.Count <= 1)
 		{
-			Item dragItem = this.DragInfo.Item;
+			if (this.DragInfo.Item is not { } dragItem)
+				return;
 
 			/*
 						if ((
@@ -923,8 +934,8 @@ public partial class SackPanel : Panel, IScalingControl
 
 			// Yes we can drop it here!
 			// First take the item that is under us
-			Item itemUnderUs = null;
-			if (this.ItemsUnderDragItem != null && this.ItemsUnderDragItem.Count == 1)
+			Item? itemUnderUs = null;
+			if (this.ItemsUnderDragItem.Count == 1)
 				itemUnderUs = this.ItemsUnderDragItem[0];
 
 			// Maybe we are putting the item back.
@@ -952,7 +963,7 @@ public partial class SackPanel : Panel, IScalingControl
 				dragItem.Location = this.CellsUnderDragItem.Location;
 
 				// Now add the item to our sack
-				this.Sack.AddItem(dragItem);
+				this.ShownSack.AddItem(dragItem);
 
 				// Update item location properties to reflect new position
 				this.UpdateItemLocation(dragItem);
@@ -974,21 +985,21 @@ public partial class SackPanel : Panel, IScalingControl
 				Point mouseOffset = new Point(
 					itemUnderUs.Width * UIService.HalfUnitSize,
 					itemUnderUs.Height * UIService.HalfUnitSize);
-				this.DragInfo.Set(this, this.Sack, itemUnderUs, mouseOffset);
+				this.DragInfo.Set(this, this.ShownSack, itemUnderUs, mouseOffset);
 
 				// since we have dropped something in this location, we can no longer put this item here.
 				// mark its location as invalid to prevent that from happening.
 				itemUnderUs.Location = InvalidDragLocation;
 
 				// set the info to this item
-				this.OnNewItemHighlighted(this, new SackPanelEventArgs(this.Sack, itemUnderUs));
+				this.OnNewItemHighlighted?.Invoke(this, new SackPanelEventArgs(this.Sack, itemUnderUs));
 			}
 
 			// clear the "last focus variables"
 			this.LastCellWithFocus = InvalidDragLocation;
 
 			// Clear any selections.
-			this.OnClearAllItemsSelected(this, new SackPanelEventArgs(null, null));
+			this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 
 			this.InvalidateItemCacheAll(itemUnderUs, dragItem);
 
@@ -1004,10 +1015,13 @@ public partial class SackPanel : Panel, IScalingControl
 		}
 	}
 
-	protected bool doStackRelics(ref Item dragItem, ref Item itemUnderUs)
+	protected bool doStackRelics(ref Item dragItem, ref Item? itemUnderUs)
 	{
+		if (itemUnderUs is null)
+			return false;
+
 		bool doStackRelics = dragItem.IsRelicOrCharm
-			&& itemUnderUs != null && itemUnderUs.IsRelicOrCharm
+			&& itemUnderUs.IsRelicOrCharm
 			&& !itemUnderUs.IsRelicComplete && !dragItem.IsRelicComplete
 			&& dragItem.BaseItemId.Equals(itemUnderUs.BaseItemId)
 			&& !USettings.DisableAutoStacking;
@@ -1025,7 +1039,7 @@ public partial class SackPanel : Panel, IScalingControl
 			if (itemUnderUs.IsRelicComplete)
 			{
 				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
-				LootTableCollection table = ItemProvider.BonusTableRelicOrArtifact(itemUnderUs);
+				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(itemUnderUs);
 
 				if (table != null && table.Length > 0)
 				{
@@ -1068,11 +1082,11 @@ public partial class SackPanel : Panel, IScalingControl
 				dragItem.Location = this.CellsUnderDragItem.Location;
 
 				// Now add the item to our sack
-				this.Sack.AddItem(dragItem);
+				this.ShownSack.AddItem(dragItem);
 			}
 			else
 			{
-				this.Sack.IsModified = true;
+				this.ShownSack.IsModified = true;
 
 				// Get rid of ref to itemUnderUs so code below wont do anything with it.
 				itemUnderUs = null;
@@ -1082,10 +1096,13 @@ public partial class SackPanel : Panel, IScalingControl
 		return doStackRelics;
 	}
 
-	protected bool doStackPotions(Item dragItem, ref Item itemUnderUs)
+	protected bool doStackPotions(Item dragItem, ref Item? itemUnderUs)
 	{
+		if (itemUnderUs is null)
+			return false;
+
 		bool doStackpotions = dragItem.DoesStack
-			&& itemUnderUs != null && itemUnderUs.DoesStack
+			&& itemUnderUs.DoesStack
 			&& dragItem.BaseItemId.Equals(itemUnderUs.BaseItemId)
 			&& !USettings.DisableAutoStacking;
 		if (doStackpotions)
@@ -1096,7 +1113,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 			// Added this so the tooltip would update with the correct number
 			itemUnderUs.IsModified = true;
-			this.Sack.IsModified = true;
+			this.ShownSack.IsModified = true;
 
 			// Get rid of ref to itemUnderUs so code below wont do anything with it.
 			itemUnderUs = null;
@@ -1106,7 +1123,7 @@ public partial class SackPanel : Panel, IScalingControl
 		return doStackpotions;
 	}
 
-	protected virtual void MouseUpCallback(object sender, MouseEventArgs e)
+	protected virtual void MouseUpCallback(object? sender, MouseEventArgs e)
 	{
 		this.mouseDraw = false;
 		Invalidate();
@@ -1117,7 +1134,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected virtual void MouseDownCallback(object sender, MouseEventArgs e)
+	protected virtual void MouseDownCallback(object? sender, MouseEventArgs e)
 	{
 		if (this.Sack == null)
 			return;
@@ -1137,7 +1154,7 @@ public partial class SackPanel : Panel, IScalingControl
 				{
 					this.mouseDraw = true;
 					this.startPosition = this.currentPosition = e.Location;
-					this.OnClearAllItemsSelected(this, new SackPanelEventArgs(null, null));
+					this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 				}
 				else
 					this.PickupItem(sender, e);
@@ -1159,7 +1176,7 @@ public partial class SackPanel : Panel, IScalingControl
 			}
 			else
 			{
-				Item focusedItem = this.FindItem(this.LastCellWithFocus);
+				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 				bool singleSelectionFocused = false;
 				if (this.selectedItems != null)
 					singleSelectionFocused = focusedItem == (Item)this.selectedItems[0] && this.selectedItems.Count == 1;
@@ -1250,8 +1267,8 @@ public partial class SackPanel : Panel, IScalingControl
 		if (cell != this.LastCellWithFocus || redrawSelection)
 		{
 			// We have moved to a different cell
-			Item lastItem = this.FindItem(this.LastCellWithFocus);
-			Item newItem = this.FindItem(cell);
+			Item? lastItem = this.FindItem(this.LastCellWithFocus);
+			Item? newItem = this.FindItem(cell);
 
 			if (newItem != lastItem || redrawSelection)
 			{
@@ -1266,7 +1283,7 @@ public partial class SackPanel : Panel, IScalingControl
 					if (newItem != null)
 						this.Invalidate(GetItemScreenRectangle(newItem));
 
-					this.OnNewItemHighlighted(this, new SackPanelEventArgs(this.Sack, newItem));
+					this.OnNewItemHighlighted?.Invoke(this, new SackPanelEventArgs(this.Sack, newItem));
 				}
 			}
 		}
@@ -1313,7 +1330,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="item">Item that needs screen coordinates</param>
 	/// <returns>Rectangle containing the screen coordinates occupied by the item.</returns>
-	protected virtual Rectangle GetItemScreenRectangle(Item item)
+	protected virtual Rectangle GetItemScreenRectangle(Item? item)
 	{
 		if (item == null)
 			return Rectangle.Empty;
@@ -1331,7 +1348,9 @@ public partial class SackPanel : Panel, IScalingControl
 		// Figure out the rectangle that needs to be redrawn
 		int x = this.LastDragLocation.X;
 		int y = this.LastDragLocation.Y;
-		var ibmp = this.UIService.GetBitmap(this.DragInfo.Item);
+		if (this.DragInfo.Item is not { } dragged || this.UIService.GetBitmap(dragged) is not { } ibmp)
+			return Rectangle.Empty;
+
 		int width = Convert.ToInt32(ibmp.Width * UIService.Scale);
 		int height = Convert.ToInt32(ibmp.Height * UIService.Scale);
 
@@ -1399,7 +1418,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected void MouseMoveCallback(object sender, MouseEventArgs e)
+	protected void MouseMoveCallback(object? sender, MouseEventArgs e)
 	{
 		if (this.Sack == null)
 			return;
@@ -1408,7 +1427,7 @@ public partial class SackPanel : Panel, IScalingControl
 		{
 			if (this.mouseDraw)
 			{
-				this.OnClearAllItemsSelected(this, new SackPanelEventArgs(null, null));
+				this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 				currentPosition = e.Location;
 				this.SelectItemsInMouseDraw(sender, e);
 				this.Invalidate();
@@ -1473,11 +1492,11 @@ public partial class SackPanel : Panel, IScalingControl
 
 	#endregion SackPanel Protected Methods
 
-	private void InvalidateItemCacheAll(params Item[] items)
+	private void InvalidateItemCacheAll(params Item?[] items)
 	{
 		ItemTooltip.InvalidateCache(items);
 		BagButtonTooltip.InvalidateCache(items);
-		this.ItemProvider.InvalidateFriendlyNamesCache(items);
+		this.ItemProvider.InvalidateFriendlyNamesCache(items.OfType<Item>().ToArray());
 	}
 
 	private void InvalidateItemCacheItemTooltip(params Item[] items)
@@ -1491,7 +1510,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyEventArgs data</param>
-	private void KeyDownCallback(object sender, KeyEventArgs e)
+	private void KeyDownCallback(object? sender, KeyEventArgs e)
 	{
 		if (e.KeyCode == Keys.ControlKey)
 			this.controlKeyDown = true;
@@ -1500,7 +1519,7 @@ public partial class SackPanel : Panel, IScalingControl
 			this.shiftKeyDown = true;
 
 		if (e.KeyData == (Keys.Control | Keys.F))
-			this.OnActivateSearch(this, new SackPanelEventArgs(null, null));
+			this.OnActivateSearch?.Invoke(this, new SackPanelEventArgs(null, null));
 
 		if (e.KeyData == (Keys.Control | Keys.A))
 			this.SelectAllItems();
@@ -1521,16 +1540,16 @@ public partial class SackPanel : Panel, IScalingControl
 			this.MoveSelectedItemsInSack("right");
 
 		if (e.KeyData == (Keys.Control | Keys.D))
-			this.OnClearAllItemsSelected(this, new SackPanelEventArgs(null, null));
+			this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
 
 		if (e.KeyData == (Keys.Control | Keys.Add) || e.KeyData == (Keys.Control | Keys.Oemplus))
-			this.OnResizeForm(this, new ResizeEventArgs(0.1F));
+			this.OnResizeForm?.Invoke(this, new ResizeEventArgs(0.1F));
 
 		if (e.KeyData == (Keys.Control | Keys.Subtract) || e.KeyData == (Keys.Control | Keys.OemMinus))
-			this.OnResizeForm(this, new ResizeEventArgs(-0.1F));
+			this.OnResizeForm?.Invoke(this, new ResizeEventArgs(-0.1F));
 
 		if (e.KeyData == (Keys.Control | Keys.Home))
-			this.OnResizeForm(this, new ResizeEventArgs(1.0F));
+			this.OnResizeForm?.Invoke(this, new ResizeEventArgs(1.0F));
 
 		if (e.KeyData == Keys.F5)
 			this.Refresh();
@@ -1578,7 +1597,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyEventArgs data</param>
-	private void KeyUpCallback(object sender, KeyEventArgs e)
+	private void KeyUpCallback(object? sender, KeyEventArgs e)
 	{
 		if (e.KeyCode == Keys.ControlKey)
 			this.controlKeyDown = false;
@@ -1592,7 +1611,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">KeyPressEventArgs data</param>
-	private void KeyPressCallback(object sender, KeyPressEventArgs e)
+	private void KeyPressCallback(object? sender, KeyPressEventArgs e)
 	{
 		if (this.Sack != null)
 		{
@@ -1607,7 +1626,7 @@ public partial class SackPanel : Panel, IScalingControl
 			else if (e.KeyChar == 'c' && USettings.AllowItemCopy == true)
 			{
 				// Copy
-				Item focusedItem = this.FindItem(this.LastCellWithFocus);
+				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 
 				if (focusedItem != null)
 				{
@@ -1626,7 +1645,7 @@ public partial class SackPanel : Panel, IScalingControl
 			else if (e.KeyChar == (char)8)
 			{
 				// Delete
-				Item focusedItem = this.FindItem(this.LastCellWithFocus);
+				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 
 				if (focusedItem != null)
 				{
@@ -1638,7 +1657,7 @@ public partial class SackPanel : Panel, IScalingControl
 			else if (e.KeyChar == 'd' && USettings.AllowItemCopy == true)
 			{
 				// Duplicate
-				Item focusedItem = this.FindItem(this.LastCellWithFocus);
+				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 
 				if (focusedItem != null)
 				{
@@ -1660,9 +1679,9 @@ public partial class SackPanel : Panel, IScalingControl
 		}
 	}
 
-	private void MouseEnterCallback(object sender, EventArgs e) => this.Select();
+	private void MouseEnterCallback(object? sender, EventArgs e) => this.Select();
 
-	private void MouseLeaveCallback(object sender, EventArgs e)
+	private void MouseLeaveCallback(object? sender, EventArgs e)
 	{
 		this.controlKeyDown = false;
 		if (this.Sack == null)
@@ -1703,10 +1722,10 @@ public partial class SackPanel : Panel, IScalingControl
 		item.Place.SackType = this.SackType;
 		item.Place.Path = this.PlayerCollection?.PlayerFile ?? string.Empty;
 		item.Place.Name = this.PlayerCollection?.PlayerName ?? string.Empty;
-		item.Place.StashType = this.Sack.StashType;
-		item.Place.SackNumber = (this.Sack.SackType, this.Sack.StashType) switch
+		item.Place.StashType = this.ShownSack.StashType;
+		item.Place.SackNumber = (this.ShownSack.SackType, this.ShownSack.StashType) switch
 		{
-			(SackType.Stash, _) => (int)this.Sack.StashType!,
+			(SackType.Stash, _) => (int)this.ShownSack.StashType!,
 			(SackType.Equipment, _) => BagIdConstants.BAGID_EQUIPMENTPANEL,
 			_ => this.CurrentSack,
 		};

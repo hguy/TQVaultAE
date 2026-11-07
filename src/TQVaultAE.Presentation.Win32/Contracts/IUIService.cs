@@ -47,8 +47,8 @@ public interface IUIService : IUserNotifier
 	/// Loads a bitmap from a resource Id string
 	/// </summary>
 	/// <param name="resourceId">Resource Id which we are looking up.</param>
-	/// <returns>Bitmap fetched from the database</returns>
-	Bitmap? LoadBitmap(RecordId resourceId);
+	/// <returns>Bitmap fetched from the database, or <see cref="DefaultBitmap"/> when it is missing.</returns>
+	Bitmap LoadBitmap(RecordId? resourceId);
 
 	/// <summary>
 	/// Loads a bitmap from <paramref name="texData"/> with an identifier <paramref name="resourceId"/>

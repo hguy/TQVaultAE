@@ -5,7 +5,7 @@ namespace TQVaultAE.GUI.Forms;
 
 public partial class MainForm
 {
-	private ForgePanel forgePanel;
+	private ForgePanel forgePanel = null!; // Created while the form loads.
 
 	private (
 		bool configureButton
@@ -32,7 +32,7 @@ public partial class MainForm
 		return forgePanel;
 	}
 
-	private void scalingButtonForge_Click(object sender, EventArgs e)
+	private void scalingButtonForge_Click(object? sender, EventArgs e)
 	{
 		if (!forgePanel.Visible)
 		{

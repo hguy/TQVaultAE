@@ -28,7 +28,7 @@ public partial class SackPanel
 			for (int i = 0; i < this.MaxSacks; ++i)
 			{
 				// The sacks do not need to list sack#0 since it is the Main player panel
-				var bagOffest = focusedItem.Place.SackType switch
+				var bagOffest = focusedItem?.Place.SackType switch
 				{
 					SackType.Player => 0,
 					SackType.Vault => 1,
@@ -38,12 +38,12 @@ public partial class SackPanel
 				string label;
 				if (this.SackType == SackType.Player && i == 0)
 					label = Resources.SackPanelMenuPlayer;
-				else if (this.SackType == SackType.Player && i >= this.PlayerCollection.NumberOfSacks)
+				else if (this.SackType == SackType.Player && i >= (this.PlayerCollection?.NumberOfSacks ?? 0))
 					continue;
 				else
 					label = string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, i + bagOffest);
 
-				if (i != focusedItem.Place.SackNumber)
+				if (i != focusedItem?.Place.SackNumber)
 				{
 					choices.Add((label, i));
 				}
@@ -64,8 +64,8 @@ public partial class SackPanel
 					&& loc != Models.AutoMoveLocation.Trash // TODO What is that ?
 			);
 
-			// You can't move TQIT+ items in Equipement, Sack and inventory
-			if (focusedItem.GameDlc != GameDlc.TitanQuest)
+			// You can't move TQIT+ items in Equipement, Sack and inventory (a multiple selection may hold some)
+			if (focusedItem is null || focusedItem.GameDlc != GameDlc.TitanQuest)
 			{
 				autoMoveChoices = autoMoveChoices.Where(loc =>
 					loc != Models.AutoMoveLocation.Player
@@ -329,7 +329,7 @@ public partial class SackPanel
 			|| focusedItem.IsArtifact
 		)
 		{
-			LootTableCollection table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
+			LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
 			if (table?.Any() ?? false)
 			{
 				var choices = new List<ToolStripItem>();
@@ -391,13 +391,13 @@ public partial class SackPanel
 
 	#region ContextMenuMouseWheel
 
-	private void _VaultForm_GlobalMouseWheelUp(object sender, EventArgs e)
+	private void _VaultForm_GlobalMouseWheelUp(object? sender, EventArgs e)
 	{
 		if (this.CustomContextMenu.Visible) // Only for context menu & sub menu because there isn't MouseWheel event at ToolStripMenuItem
 			SendKeys.SendWait("{UP}");
 	}
 
-	private void _VaultForm_GlobalMouseWheelDown(object sender, EventArgs e)
+	private void _VaultForm_GlobalMouseWheelDown(object? sender, EventArgs e)
 	{
 		if (this.CustomContextMenu.Visible) // Only for context menu & sub menu because there isn't MouseWheel event at ToolStripMenuItem
 			SendKeys.SendWait("{DOWN}");
@@ -411,9 +411,12 @@ public partial class SackPanel
 		if (!_ContextMenuMouseWheelEnabled)
 		{
 			this._VaultForm = this.FindForm() as VaultForm;
-			this._VaultForm.GlobalMouseWheelDown += _VaultForm_GlobalMouseWheelDown;
-			this._VaultForm.GlobalMouseWheelUp += _VaultForm_GlobalMouseWheelUp;
-			_ContextMenuMouseWheelEnabled = true;
+			if (this._VaultForm is not null)
+			{
+				this._VaultForm.GlobalMouseWheelDown += _VaultForm_GlobalMouseWheelDown;
+				this._VaultForm.GlobalMouseWheelUp += _VaultForm_GlobalMouseWheelUp;
+				_ContextMenuMouseWheelEnabled = true;
+			}
 		}
 	}
 
@@ -427,7 +430,7 @@ public partial class SackPanel
 
 		if (focusedItem.IsArmor || focusedItem.IsWeaponShield || focusedItem.IsJewellery)
 		{
-			ItemAffixes affixes;
+			ItemAffixes? affixes;
 			if (USettings.EnableEpicLegendaryAffixes
 				&& (focusedItem.Rarity == Rarity.Epic || focusedItem.Rarity == Rarity.Legendary))
 			{
@@ -611,7 +614,7 @@ public partial class SackPanel
 	}
 
 
-	private void SwapAffixesDisplayModeClicked(object sender, EventArgs e)
+	private void SwapAffixesDisplayModeClicked(object? sender, EventArgs e)
 	{
 		_DisplayAffixesByEffect = !_DisplayAffixesByEffect;
 	}
@@ -665,7 +668,7 @@ public partial class SackPanel
 		{
 
 			ToolStripMenuItem choicesMenu = currentchoicesMenu;// Default
-			ToolStripMenuItem affixMenu = null;
+			ToolStripMenuItem? affixMenu = null;
 			if (grp.Count() > 1)
 			{
 				// Multiple variant per affix

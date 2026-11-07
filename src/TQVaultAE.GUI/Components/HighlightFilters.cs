@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Application;
+﻿﻿using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
@@ -12,11 +12,12 @@ namespace TQVaultAE.GUI.Components;
 
 public partial class HighlightFilters : UserControl
 {
-	private LinkLabel _link;
-	public SessionContext UserContext { get; internal set; }
-	public ITranslationService TranslationService { get; internal set; }
-	public IFontService FontService { get; internal set; }
-	public IHighlightService HighlightService { get; internal set; }
+	// Set by MainForm once the control is created by the designer.
+	private LinkLabel _link = null!;
+	public SessionContext UserContext { get; internal set; } = null!;
+	public ITranslationService TranslationService { get; internal set; } = null!;
+	public IFontService FontService { get; internal set; } = null!;
+	public IHighlightService HighlightService { get; internal set; } = null!;
 
 	public HighlightFilters()
 	{
@@ -318,11 +319,14 @@ public partial class HighlightFilters : UserControl
 	{
 		// Adjust location
 		var frm = FindForm();
+		if (frm is null)
+			return;
+
 		var linklocation = frm.PointToClient(_link.PointToScreen(Point.Empty));
 		Location = new Point(linklocation.X, linklocation.Y - Height);
 	}
 
-	private void buttonReset_Click(object sender, EventArgs e)
+	private void buttonReset_Click(object? sender, EventArgs e)
 	{
 		var frm = FindForm();
 		ResetAll();
@@ -330,10 +334,10 @@ public partial class HighlightFilters : UserControl
 		_link.LinkVisited = false;
 		Visible = false;
 		HighlightService.FindHighlight();
-		frm.Refresh();
+		frm?.Refresh();
 	}
 
-	private void buttonSave_Click(object sender, EventArgs e)
+	private void buttonSave_Click(object? sender, EventArgs e)
 	{
 		var frm = FindForm();
 		var filter = new HighlightFilterValues
@@ -365,7 +369,7 @@ public partial class HighlightFilters : UserControl
 			_link.LinkVisited = true;
 			Visible = false;
 			HighlightService.FindHighlight();
-			frm.Refresh();
+			frm?.Refresh();
 			return;
 		}
 
@@ -374,14 +378,14 @@ public partial class HighlightFilters : UserControl
 		_link.LinkVisited = false;
 		Visible = false;
 		HighlightService.FindHighlight();
-		frm.Refresh();
+		frm?.Refresh();
 	}
 
-	private void numericUpDownMinLvl_ValueChanged(object sender, EventArgs e)
+	private void numericUpDownMinLvl_ValueChanged(object? sender, EventArgs e)
 	{
 		scalingCheckBoxMin.Checked = true;
 	}
-	private void numericUpDownMaxLvl_ValueChanged(object sender, EventArgs e)
+	private void numericUpDownMaxLvl_ValueChanged(object? sender, EventArgs e)
 	{
 		scalingCheckBoxMax.Checked = true;
 	}

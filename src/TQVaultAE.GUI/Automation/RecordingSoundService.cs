@@ -103,7 +103,7 @@ internal sealed class RecordingSoundService : ISoundService
 
 	public void InitAllPlayers() => this._inner.InitAllPlayers();
 
-	public byte[] GetSoundResource(RecordId resourceId) => this._inner.GetSoundResource(resourceId);
+	public byte[]? GetSoundResource(RecordId resourceId) => this._inner.GetSoundResource(resourceId);
 
 	public void ConvertMp3ToWav(Stream inMp3, Stream outWav) => this._inner.ConvertMp3ToWav(inMp3, outWav);
 

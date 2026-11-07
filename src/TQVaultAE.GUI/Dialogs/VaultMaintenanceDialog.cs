@@ -1,4 +1,5 @@
 using TQVaultAE.GUI.Forms;
+using TQVaultAE.GUI.Infrastructure;
 
 //-----------------------------------------------------------------------
 // <copyright file="VaultMaintenanceDialog.cs" company="None">
@@ -38,12 +39,12 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// <summary>
 	/// Source vault string
 	/// </summary>
-	private string source;
+	private string? source;
 
 	/// <summary>
 	/// Target vault string
 	/// </summary>
-	private string target;
+	private string? target;
 
 
 	/// <summary>
@@ -146,7 +147,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// <summary>
 	/// Gets the source vault string
 	/// </summary>
-	public string Source
+	public string? Source
 	{
 		get
 		{
@@ -157,7 +158,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// <summary>
 	/// Gets the target vault string
 	/// </summary>
-	public string Target
+	public string? Target
 	{
 		get
 		{
@@ -212,7 +213,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void VaultMaintenanceDialogLoad(object sender, EventArgs e)
+	private void VaultMaintenanceDialogLoad(object? sender, EventArgs e)
 	{
 		this.newRadioButton.Checked = true;
 		this.targetTextBox.Text = Resources.MaintenanceNewVault;
@@ -254,7 +255,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="vault">Name of the vault</param>
 	/// <returns>true if the vault is in the drop down list</returns>
-	private bool IsInList(string vault)
+	private bool IsInList(string? vault)
 	{
 		if (vault == null)
 		{
@@ -281,7 +282,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void OkayButtonClick(object sender, EventArgs e)
+	private void OkayButtonClick(object? sender, EventArgs e)
 	{
 		if (this.action == VaultMaintenance.New)
 		{
@@ -327,7 +328,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 
 			// validate the text.
 			string target = this.targetTextBox.Text.Trim();
-			string source = this.vaultListComboBox.SelectedItem.ToString();
+			string? source = this.vaultListComboBox.SelectedItemText();
 
 			if (string.IsNullOrEmpty(target))
 			{
@@ -367,7 +368,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 				return;
 			}
 
-			string source = this.vaultListComboBox.SelectedItem.ToString();
+			string? source = this.vaultListComboBox.SelectedItemText();
 
 			if (!this.IsInList(source))
 			{
@@ -389,7 +390,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 
 			// validate the text.
 			string target = this.targetTextBox.Text.Trim();
-			string source = this.vaultListComboBox.SelectedItem.ToString();
+			string? source = this.vaultListComboBox.SelectedItemText();
 
 			if (string.IsNullOrEmpty(target))
 			{
@@ -429,7 +430,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CancelButtonClick(object sender, EventArgs e)
+	private void CancelButtonClick(object? sender, EventArgs e)
 	{
 		this.action = VaultMaintenance.None;
 		this.source = null;
@@ -443,7 +444,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void RenameRadioButtonCheckedChanged(object sender, EventArgs e)
+	private void RenameRadioButtonCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.renameRadioButton.Checked)
 		{
@@ -466,7 +467,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void NewRadioButtonCheckedChanged(object sender, EventArgs e)
+	private void NewRadioButtonCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.newRadioButton.Checked)
 		{
@@ -489,7 +490,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void DeleteRadioButtonCheckedChanged(object sender, EventArgs e)
+	private void DeleteRadioButtonCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.deleteRadioButton.Checked)
 		{
@@ -512,7 +513,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CopyRadioButtonCheckedChanged(object sender, EventArgs e)
+	private void CopyRadioButtonCheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.copyRadioButton.Checked)
 		{
@@ -535,11 +536,11 @@ internal partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void VaultListComboBoxSelectedIndexChanged(object sender, EventArgs e)
+	private void VaultListComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		if (!this.deleteRadioButton.Checked)
 		{
-			this.targetTextBox.Text = this.vaultListComboBox.SelectedItem.ToString();
+			this.targetTextBox.Text = this.vaultListComboBox.SelectedItemText();
 			this.targetTextBox.SelectAll();
 			this.targetTextBox.Focus();
 		}

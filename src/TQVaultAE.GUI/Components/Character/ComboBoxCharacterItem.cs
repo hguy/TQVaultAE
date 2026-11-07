@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Application;
+﻿﻿using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Helpers;
@@ -15,15 +15,16 @@ public partial class ComboBoxCharacterItem : UserControl
 	/// </summary>
 	internal const int BASE_HEIGHT = 60;
 
-	private IDatabase Database;
-	private ITagService TagService;
-	private ITranslationService TranslationService;
-	private IFontService FontService;
+	// Set by Init: the drop down creates the item before giving it its save.
+	private IDatabase Database = null!;
+	private ITagService TagService = null!;
+	private ITranslationService TranslationService = null!;
+	private IFontService FontService = null!;
 
 	/// <summary>
 	/// a <see cref="PlayerSave"/> or a <see cref="string"/>
 	/// </summary>
-	public object Item { get; private set; }
+	public object Item { get; private set; } = string.Empty;
 
 	public ComboBoxCharacterItem()
 	{
@@ -40,18 +41,18 @@ public partial class ComboBoxCharacterItem : UserControl
 		});
 	}
 
-	private void Ctr_MouseLeave(object sender, EventArgs e)
+	private void Ctr_MouseLeave(object? sender, EventArgs e)
 	{
 		this.BackColor = Color.White;
 	}
 
-	private void Ctr_MouseEnter(object sender, EventArgs e)
+	private void Ctr_MouseEnter(object? sender, EventArgs e)
 	{
 		this.BackColor = SystemColors.MenuHighlight;
 	}
 
-	public event EventHandler SelectedItemChanged;
-	private void Ctr_Click(object sender, EventArgs e)
+	public event EventHandler? SelectedItemChanged;
+	private void Ctr_Click(object? sender, EventArgs e)
 	{
 		SelectedItemChanged?.Invoke(this, EventArgs.Empty);
 	}
@@ -114,7 +115,7 @@ public partial class ComboBoxCharacterItem : UserControl
 				foreach (var recId in dbr)
 				{
 					var masteryInfo = this.Database.GetInfo(recId);
-					var masteryName = this.TranslationService.TranslateXTag(masteryInfo.DescriptionTag);
+					var masteryName = this.TranslationService.TranslateXTag(masteryInfo?.DescriptionTag ?? string.Empty);
 					masteryNames.Add(masteryName);
 				}
 				this.scalingLabelMasteries.Text = masteryNames.JoinString(" + ");

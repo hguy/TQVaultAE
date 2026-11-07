@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Scaling;
@@ -144,36 +145,37 @@ public partial class VaultForm : Form, IScalingControl
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public VaultForm() => InitForm();
+#pragma warning restore CS8618
 #endif
 	/// <summary>
 	/// Initializes a new instance of the VaultForm class.
 	/// </summary>
 	public VaultForm(GuiServices services)
 	{
-		if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
-		{
-			this.Services = services;
-			this.FontService = this.Services.FontService;
-			this.UIService = this.Services.UIService;
-			this.Database = this.Services.Database;
-			this.ItemProvider = this.Services.ItemProvider;
-			this.PlayerCollectionProvider = this.Services.PlayerCollectionProvider;
-			this.GamePathResolver = this.Services.GamePathService;
-			this.GameFileService = this.Services.GameFileService;
-			this.SoundService = this.Services.SoundService;
-			this.titleFont = FontService.GetFontLight(9.5F);
-			this.Log = this.Services.Logger<VaultForm>();
-			this.TranslationService = this.Services.TranslationService;
-			this.PathIO = this.Services.PathIO;
-			this.FileIO = this.Services.FileIO;
-			this.DirectoryIO = this.Services.DirectoryIO;
-			this.USettings = this.Services.Settings;
+		// Runtime only: the designer uses the parameterless constructor.
+		this.Services = services;
+		this.FontService = this.Services.FontService;
+		this.UIService = this.Services.UIService;
+		this.Database = this.Services.Database;
+		this.ItemProvider = this.Services.ItemProvider;
+		this.PlayerCollectionProvider = this.Services.PlayerCollectionProvider;
+		this.GamePathResolver = this.Services.GamePathService;
+		this.GameFileService = this.Services.GameFileService;
+		this.SoundService = this.Services.SoundService;
+		this.titleFont = FontService.GetFontLight(9.5F);
+		this.Log = this.Services.Logger<VaultForm>();
+		this.TranslationService = this.Services.TranslationService;
+		this.PathIO = this.Services.PathIO;
+		this.FileIO = this.Services.FileIO;
+		this.DirectoryIO = this.Services.DirectoryIO;
+		this.USettings = this.Services.Settings;
 
-			InitForm();
-		}
+		InitForm();
 	}
 
+	[MemberNotNull(nameof(bottomBorder), nameof(bottomLeftCorner), nameof(bottomRightCorner), nameof(sideBorder), nameof(systemMenu), nameof(topBorder))]
 	private void InitForm()
 	{
 		this.InitializeComponent();
@@ -474,8 +476,8 @@ public partial class VaultForm : Form, IScalingControl
 
 	#region Capture Mouse Wheel Event Globally
 
-	protected internal event EventHandler GlobalMouseWheelUp;
-	protected internal event EventHandler GlobalMouseWheelDown;
+	protected internal event EventHandler? GlobalMouseWheelUp;
+	protected internal event EventHandler? GlobalMouseWheelDown;
 	internal void RaiseGlobalMouseWheelDown() => GlobalMouseWheelDown?.Invoke(this, EventArgs.Empty);
 	internal void RaiseGlobalMouseWheelUp() => GlobalMouseWheelUp?.Invoke(this, EventArgs.Empty);
 
@@ -483,8 +485,8 @@ public partial class VaultForm : Form, IScalingControl
 
 	#region Capture Mouse Button Event Globally
 
-	protected internal event EventHandler<Point> GlobalMouseButtonLeft;
-	protected internal event EventHandler<Point> GlobalMouseButtonRight;
+	protected internal event EventHandler<Point>? GlobalMouseButtonLeft;
+	protected internal event EventHandler<Point>? GlobalMouseButtonRight;
 	internal void RaiseGlobalMouseButtonLeft(Point pt) => GlobalMouseButtonLeft?.Invoke(this, pt);
 	internal void RaiseGlobalMouseButtonRight(Point pt) => GlobalMouseButtonRight?.Invoke(this, pt);
 
@@ -495,7 +497,7 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">Sender object</param>
 	/// <param name="e">Window menu event args</param>
-	protected void SystemMenuSystemEvent(object sender, WindowMenuEventArgs e)
+	protected void SystemMenuSystemEvent(object? sender, WindowMenuEventArgs e)
 		=> this.SendNCWinMessage(User32.WindowMessage.SysCommand, (IntPtr)e.SystemCommand, IntPtr.Zero);
 
 	/// <summary>
@@ -588,7 +590,7 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ResizeEventArgs data</param>
-	protected void ResizeFormCallback(object sender, ResizeEventArgs e)
+	protected void ResizeFormCallback(object? sender, ResizeEventArgs e)
 	{
 		if (e.ResizeDelta == 0.0F)
 			// Nothing to do so we return.
@@ -642,7 +644,7 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	protected virtual void ResizeBeginCallback(object sender, EventArgs e)
+	protected virtual void ResizeBeginCallback(object? sender, EventArgs e)
 	{
 		if (this.WindowState != this.lastState)
 		{
@@ -686,8 +688,8 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	protected virtual void ResizeEndCallback(object sender, EventArgs e) => DoResizeEndCallback(sender, e);
-	protected virtual void DoResizeEndCallback(object sender, EventArgs e, bool fromMinimizedMaximized = false)
+	protected virtual void ResizeEndCallback(object? sender, EventArgs e) => DoResizeEndCallback(sender, e);
+	protected virtual void DoResizeEndCallback(object? sender, EventArgs e, bool fromMinimizedMaximized = false)
 	{
 		// Dragging the form will trigger this event.
 		// If the size did not change or if sizing is disabled we just skip it.
@@ -723,7 +725,7 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	protected virtual void ResizeCallback(object sender, EventArgs e)
+	protected virtual void ResizeCallback(object? sender, EventArgs e)
 	{
 		if (!this.ScaleOnResize)
 		{
@@ -738,16 +740,15 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">PaintEventArgs data</param>
-	protected virtual void PaintCallback(object sender, PaintEventArgs e)
+	protected virtual void PaintCallback(object? sender, PaintEventArgs e)
 	{
 		if (this.IsDisposed || this.Disposing)
 			return;
 
 		if (this.DrawCustomBorder)
 		{
-			if (this.topBorder != null)
 			{
-				// Draw the Top
+				// Draw the Top (the border bitmaps are set by InitForm)
 				Rectangle topBorderRect = new Rectangle(ClientRectangle.Left, ClientRectangle.Top, this.ClientRectangle.Width, this.topBorder.Height);
 				e.Graphics.DrawImage(this.topBorder, topBorderRect);
 
@@ -895,31 +896,20 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	private void PlaceButtons()
 	{
-		if (this.buttonClose != null)
-		{
-			this.buttonClose.Text = Resources.GlobalClose;
-			this.buttonClose.Location = new Point(
-				this.ClientRectangle.Right - (this.buttonClose.Width + this.sideBorder.Width)
-				, this.ClientRectangle.Top);
-		}
+		// The buttons are created by InitializeComponent.
+		this.buttonClose.Text = Resources.GlobalClose;
+		this.buttonClose.Location = new Point(
+			this.ClientRectangle.Right - (this.buttonClose.Width + this.sideBorder.Width)
+			, this.ClientRectangle.Top);
 
-		if (this.buttonMaximize != null)
-		{
-			this.buttonMaximize.Text = Resources.GlobalMaximize;
-			this.buttonMaximize.Location = new Point(this.buttonClose.Location.X - 5 - this.buttonMaximize.Width, this.ClientRectangle.Top);
-		}
+		this.buttonMaximize.Text = Resources.GlobalMaximize;
+		this.buttonMaximize.Location = new Point(this.buttonClose.Location.X - 5 - this.buttonMaximize.Width, this.ClientRectangle.Top);
 
-		if (this.ButtonScaleTo1 != null)
-		{
-			this.ButtonScaleTo1.Text = Resources.GlobalNormalize;
-			this.ButtonScaleTo1.Location = new Point(this.buttonMaximize.Location.X - 5 - this.ButtonScaleTo1.Width, this.ClientRectangle.Top);
-		}
+		this.ButtonScaleTo1.Text = Resources.GlobalNormalize;
+		this.ButtonScaleTo1.Location = new Point(this.buttonMaximize.Location.X - 5 - this.ButtonScaleTo1.Width, this.ClientRectangle.Top);
 
-		if (this.buttonMinimize != null)
-		{
-			this.buttonMinimize.Text = Resources.GlobalMinimize;
-			this.buttonMinimize.Location = new Point(this.ButtonScaleTo1.Location.X - 5 - this.buttonMinimize.Width, this.ClientRectangle.Top);
-		}
+		this.buttonMinimize.Text = Resources.GlobalMinimize;
+		this.buttonMinimize.Location = new Point(this.ButtonScaleTo1.Location.X - 5 - this.buttonMinimize.Width, this.ClientRectangle.Top);
 	}
 
 	/// <summary>
@@ -957,9 +947,7 @@ public partial class VaultForm : Form, IScalingControl
 			cornerSize.Width,
 			ClientRectangle.Height - (2 * cornerSize.Height));
 
-		int titleBarHeight = 21;
-		if (this.topBorder != null)
-			titleBarHeight = this.topBorder.Height + 2;
+		int titleBarHeight = this.topBorder.Height + 2;
 
 		this.topBorderRect = new Rectangle(ClientRectangle.Left + cornerSize.Width, ClientRectangle.Top, ClientRectangle.Width - (2 * cornerSize.Width), titleBarHeight);
 
@@ -972,14 +960,14 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void CloseButtonClick(object sender, EventArgs e) => this.Close();
+	private void CloseButtonClick(object? sender, EventArgs e) => this.Close();
 
 	/// <summary>
 	/// Handler for clicking the Minimize button
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MaximizeButtonClick(object sender, EventArgs e)
+	private void MaximizeButtonClick(object? sender, EventArgs e)
 	{
 		if (!this.MaximizeBox)
 			return;
@@ -995,7 +983,7 @@ public partial class VaultForm : Form, IScalingControl
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MinimizeButtonClick(object sender, EventArgs e)
+	private void MinimizeButtonClick(object? sender, EventArgs e)
 	{
 		if (!this.MinimizeBox)
 			return;
@@ -1004,7 +992,7 @@ public partial class VaultForm : Form, IScalingControl
 			this.WindowState = FormWindowState.Minimized;
 	}
 
-	private void ButtonScaleTo1_Click(object sender, EventArgs e)
+	private void ButtonScaleTo1_Click(object? sender, EventArgs e)
 	{
 		if (!this.NormalizeBox)
 			return;

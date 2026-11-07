@@ -101,7 +101,7 @@ public class PlayerPanel : VaultPanel
 	/// <summary>
 	/// Gets or sets the player instance
 	/// </summary>
-	public new PlayerCollection Player
+	public new PlayerCollection? Player
 	{
 		get => base.Player;
 		set
@@ -175,11 +175,11 @@ public class PlayerPanel : VaultPanel
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	protected override void AutoSortButtonClick(object sender, MouseEventArgs e)
+	protected override void AutoSortButtonClick(object? sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Left)
 		{
-			AutoSortButton button = (AutoSortButton)sender;
+			AutoSortButton? button = (AutoSortButton)sender!;
 			int buttonID = button.ButtonNumber;
 			if (buttonID == 1)
 			{

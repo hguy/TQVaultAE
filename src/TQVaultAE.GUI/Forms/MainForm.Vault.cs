@@ -2,6 +2,7 @@ using System.Globalization;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Dialogs;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using TQVaultAE.Logs;
@@ -72,7 +73,7 @@ public partial class MainForm
 			this.vaultService.UpdateVaultPath(GamePathResolver.TQVaultSaveFolder);
 
 		// There was something already selected so we will save it.
-		string currentVault = (this.vaultListComboBox.Items.Count > 0) ? this.vaultListComboBox.SelectedItem.ToString() : VaultService.MAINVAULT;
+		string? currentVault = (this.vaultListComboBox.Items.Count > 0) ? this.vaultListComboBox.SelectedItemText() : VaultService.MAINVAULT;
 
 		// Added by VillageIdiot
 		// Clear the list before creating since this function can be called multiple times.
@@ -81,7 +82,7 @@ public partial class MainForm
 		this.vaultListComboBox.Items.Add(Resources.MainFormMaintainVault);
 
 		// Add Main Vault first
-		if (this.secondaryVaultListComboBox.SelectedItem == null || this.secondaryVaultListComboBox.SelectedItem.ToString() != VaultService.MAINVAULT)
+		if (this.secondaryVaultListComboBox.SelectedItem == null || this.secondaryVaultListComboBox.SelectedItemText() != VaultService.MAINVAULT)
 			this.vaultListComboBox.Items.Add(VaultService.MAINVAULT);
 
 		if (vaults.Length > 0)
@@ -92,7 +93,7 @@ public partial class MainForm
 				if (!vault.Equals(VaultService.MAINVAULT))
 				{
 					// we already added main vault
-					if (this.secondaryVaultListComboBox.SelectedItem != null && vault.Equals(this.secondaryVaultListComboBox.SelectedItem.ToString()) && this.showSecondaryVault)
+					if (this.secondaryVaultListComboBox.SelectedItem != null && vault.Equals(this.secondaryVaultListComboBox.SelectedItemText()) && this.showSecondaryVault)
 						break;
 
 					this.vaultListComboBox.Items.Add(vault);
@@ -128,9 +129,9 @@ public partial class MainForm
 	{
 
 		// There was something already selected so we will save it.
-		string currentVault = (this.secondaryVaultListComboBox.Items.Count > 0) ? this.secondaryVaultListComboBox.SelectedItem.ToString() : Resources.MainFormSelectVault;
+		string? currentVault = (this.secondaryVaultListComboBox.Items.Count > 0) ? this.secondaryVaultListComboBox.SelectedItemText() : Resources.MainFormSelectVault;
 
-		if (currentVault == this.vaultListComboBox.SelectedItem.ToString())
+		if (currentVault == this.vaultListComboBox.SelectedItemText())
 			// Clear the selection if it is already loaded on the main panel.
 			currentVault = Resources.MainFormSelectVault;
 
@@ -145,7 +146,7 @@ public partial class MainForm
 			{ // Skip over the maintenance selection.
 				if (i != this.vaultListComboBox.SelectedIndex)
 					// Skip over the selected item.
-					this.secondaryVaultListComboBox.Items.Add(this.vaultListComboBox.Items[i]);
+					this.secondaryVaultListComboBox.Items.Add(this.vaultListComboBox.Items[i] ?? string.Empty);
 			}
 		}
 
@@ -162,7 +163,7 @@ public partial class MainForm
 	/// <param name="secondaryVault">flag indicating whether this selection is for the secondary panel</param>
 	private void LoadVault(string vaultName, bool secondaryVault)
 	{
-		PlayerCollection vault = null;
+		PlayerCollection? vault = null;
 		if (secondaryVault && vaultName == Resources.MainFormSelectVault)
 		{
 			if (this.secondaryVaultPanel.Player != null)
@@ -203,8 +204,8 @@ public partial class MainForm
 
 			if (dlg.ShowDialog() == DialogResult.OK)
 			{
-				string newName = dlg.Target;
-				string oldName = dlg.Source;
+				string? newName = dlg.Target;
+				string? oldName = dlg.Source;
 				bool handled = false;
 
 				// Create a new vault?
@@ -339,7 +340,7 @@ public partial class MainForm
 	private bool SaveAllModifiedVaults()
 	{
 		// Use service with ref parameter
-		PlayerCollection vaultOnError = null;
+		PlayerCollection? vaultOnError = null;
 		return this.vaultService.SaveAllModifiedVaults(ref vaultOnError) > 0;
 	}
 
@@ -348,7 +349,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void VaultListComboBoxSelectedIndexChanged(object sender, EventArgs e)
+	private void VaultListComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		try
 		{
@@ -358,7 +359,7 @@ public partial class MainForm
 			}
 			else
 			{
-				string vaultName = this.vaultListComboBox.SelectedItem.ToString();
+				string? vaultName = this.vaultListComboBox.SelectedItemText();
 				if (this.vaultPanel.Player == null || !vaultName.Equals(this.vaultPanel.Player.PlayerName))
 				{
 					this.LoadVault(vaultName, false);
@@ -389,7 +390,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void SecondaryVaultListComboBoxSelectedIndexChanged(object sender, EventArgs e)
+	private void SecondaryVaultListComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		try
 		{
@@ -403,7 +404,7 @@ public partial class MainForm
 			}
 			else
 			{
-				string vaultName = this.secondaryVaultListComboBox.SelectedItem.ToString();
+				string? vaultName = this.secondaryVaultListComboBox.SelectedItemText();
 				if (this.secondaryVaultPanel.Player == null || !vaultName.Equals(this.secondaryVaultPanel.Player.PlayerName))
 				{
 					this.LoadVault(vaultName, true);

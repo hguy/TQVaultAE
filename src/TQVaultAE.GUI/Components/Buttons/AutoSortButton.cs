@@ -78,7 +78,7 @@ public class AutoSortButton : BagButtonBase
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	private void MouseDownCallback(object sender, MouseEventArgs e)
+	private void MouseDownCallback(object? sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Left)
 		{
@@ -91,7 +91,7 @@ public class AutoSortButton : BagButtonBase
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">MouseEventArgs data</param>
-	private void MouseUpCallback(object sender, MouseEventArgs e)
+	private void MouseUpCallback(object? sender, MouseEventArgs e)
 	{
 		if (e.Button == MouseButtons.Left)
 		{

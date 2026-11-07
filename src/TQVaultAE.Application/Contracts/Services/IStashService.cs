@@ -33,7 +33,7 @@ public interface IStashService
 	/// <param name="stashOnError">If save fails, this will contain the stash that failed.</param>
 	/// <returns>Number of stash saved.</returns>
 	/// <exception cref="IOException">can happen during file save</exception>
-	int SaveAllModifiedStashes(ref Stash stashOnError);
+	int SaveAllModifiedStashes(ref Stash? stashOnError);
 
 	/// <summary>
 	/// Creates a file watcher for the relic vault stash file.

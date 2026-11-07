@@ -1171,7 +1171,7 @@ public class Item
 	/// </summary>
 	/// <param name="TQText">text containing the color tag</param>
 	/// <returns><see cref="System.Drawing.Color"/> of the embedded color code</returns>
-	public Color ExtractTextColorOrItemColor(string TQText)
+	public Color ExtractTextColorOrItemColor(string? TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText))
 			// Use the standard color code for the item

@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Application;
+﻿﻿﻿﻿using TQVaultAE.Application;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
@@ -134,11 +134,11 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	private void NewItemHighlightedCallback(object sender, SackPanelEventArgs e)
+	private void NewItemHighlightedCallback(object? sender, SackPanelEventArgs e)
 	{
-		Item item = e.Item;
-		SackCollection sack = e.Sack;
-		SackPanel sackPanel = (SackPanel)sender;
+		Item? item = e.Item;
+		SackCollection? sack = e.Sack;
+		var sackPanel = (SackPanel)sender!;
 		if (item == null)
 		{
 			// Only do something if this sack is the "owner" of the current item highlighted.
@@ -154,8 +154,11 @@ public partial class MainForm
 		{
 			var itt = ItemTooltip.ShowTooltip(this.Services, item, sackPanel);
 
-			this.NotificationText.ForeColor = itt.Data.Item.ExtractTextColorOrItemColor(itt.Data.BaseItemInfoDescription);
-			this.NotificationText.Text = itt.Data.FullNameBagTooltipClean;
+			if (itt.Data is { } data)
+			{
+				this.NotificationText.ForeColor = data.Item.ExtractTextColorOrItemColor(data.BaseItemInfoDescription);
+				this.NotificationText.Text = data.FullNameBagTooltipClean;
+			}
 		}
 
 		this.lastSackHighlighted = sack;
@@ -167,9 +170,9 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	private void ItemSelectedCallback(object sender, SackPanelEventArgs e)
+	private void ItemSelectedCallback(object? sender, SackPanelEventArgs e)
 	{
-		SackPanel sackPanel = (SackPanel)sender;
+		SackPanel? sackPanel = (SackPanel)sender!;
 
 		if (this.playerPanel.SackPanel == sackPanel)
 		{
@@ -213,7 +216,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	private void ClearAllItemsSelectedCallback(object sender, SackPanelEventArgs e)
+	private void ClearAllItemsSelectedCallback(object? sender, SackPanelEventArgs e)
 	{
 		this.playerPanel.SackPanel.ClearSelectedItems();
 		this.playerPanel.BagSackPanel.ClearSelectedItems();
@@ -228,7 +231,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	private void ActivateSearchCallback(object sender, SackPanelEventArgs e)
+	private void ActivateSearchCallback(object? sender, SackPanelEventArgs e)
 		=> this.OpenSearchDialog();
 
 	/// <summary>
@@ -236,9 +239,9 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">SackPanelEventArgs data</param>
-	private void AutoMoveItemCallback(object sender, SackPanelEventArgs e)
+	private void AutoMoveItemCallback(object? sender, SackPanelEventArgs e)
 	{
-		SackPanel sackPanel = (SackPanel)sender;
+		SackPanel? sackPanel = (SackPanel)sender!;
 
 		if (!this.DragInfo.IsAutoMoveActive)
 			return;
@@ -256,7 +259,7 @@ public partial class MainForm
 	/// Resolves the destination panel and sack for auto-move operations.
 	/// </summary>
 	// This is a sack to sack move on the same panel.
-	private (VaultPanel Panel, SackPanel SackPanel, int SackNumber) GetAutoMoveDestination(SackPanel sourcePanel)
+	private (VaultPanel? Panel, SackPanel? SackPanel, int SackNumber) GetAutoMoveDestination(SackPanel sourcePanel)
 	{
 		var sacNumber = this.DragInfo.DestIndex;
 		if (sacNumber > -1)
@@ -288,22 +291,25 @@ public partial class MainForm
 		if (!this.ValidateStashAvailability())
 			return;
 
+		if (this.DragInfo.Item is not { } dragItem)
+			return;
+
 		// See if we have an open space to put the item.
-		Point location = this.stashPanel.SackPanel.FindOpenCells(this.DragInfo.Item.Width, this.DragInfo.Item.Height);
+		Point location = this.stashPanel.SackPanel.FindOpenCells(dragItem.Width, dragItem.Height);
 		// We have no space in the sack so we cancel.
-		if (location.X == -1 || !this.stashPanel.SackPanel.IsItemValidForPlacement(this.DragInfo.Item))
+		if (location.X == -1 || !this.stashPanel.SackPanel.IsItemValidForPlacement(dragItem))
 		{
 			this.DragInfo.Cancel();
 			return;
 		}
 
-		Item dragItem = this.DragInfo.Item;
 		this.DragInfo.MarkPlaced();
 		dragItem.PositionX = location.X;
 		dragItem.PositionY = location.Y;
-		this.stashPanel.SackPanel.Sack.AddItem(dragItem);
-		this.UpdateItemLocation(dragItem, this.stashPanel.Player, this.stashPanel.SackPanel.Sack.SackType, this.stashPanel.SackPanel.CurrentSack, this.stashPanel.SackPanel.Sack.StashType);
-		this.lastSackPanelHighlighted.Invalidate();
+		var stashSack = this.stashPanel.SackPanel.ShownSack;
+		stashSack.AddItem(dragItem);
+		this.UpdateItemLocation(dragItem, this.stashPanel.ShownPlayer, stashSack.SackType, this.stashPanel.SackPanel.CurrentSack, stashSack.StashType);
+		this.lastSackPanelHighlighted?.Invalidate();
 		this.stashPanel.Refresh();
 		BagButtonTooltip.InvalidateCache(this.stashPanel.SackPanel.Sack);
 	}
@@ -350,20 +356,23 @@ public partial class MainForm
 	private void AutoMoveItemToPanel(SackPanel sourcePanel)
 	{
 		var (destinationPanel, destinationSackPanel, destSackNumber) = this.GetAutoMoveDestination(sourcePanel);
-		var destinationSack = destinationPanel.Player.GetSack(destSackNumber);
+		var destinationSack = destinationPanel?.Player?.GetSack(destSackNumber);
 
-		if (destinationPanel?.Player == null || destinationSack == null)
+		if (destinationPanel?.Player == null || destinationSackPanel == null || destinationSack == null)
 		{
 			// We have nowhere to send the item so cancel the move.
 			this.DragInfo.Cancel();
 			return;
 		}
 
-		SackCollection oldSack = destinationSackPanel.Sack;
+		SackCollection? oldSack = destinationSackPanel.Sack;
 		destinationSackPanel.Sack = destinationSack;
 
 		// See if we have an open space to put the item.
-		Point location = destinationSackPanel.FindOpenCells(this.DragInfo.Item.Width, this.DragInfo.Item.Height);
+		if (this.DragInfo.Item is not { } movedItem)
+			return;
+
+		Point location = destinationSackPanel.FindOpenCells(movedItem.Width, movedItem.Height);
 		int destination = this.GetDestinationIndex(destinationSackPanel, destinationPanel.CurrentBag, destSackNumber);
 
 		// We have no space in the sack so we cancel.
@@ -403,7 +412,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs strucure</param>
-	private void PanelSelectButtonClick(object sender, EventArgs e)
+	private void PanelSelectButtonClick(object? sender, EventArgs e)
 	{
 		this.showSecondaryVault = !this.showSecondaryVault;
 		this.UpdateTopPanel();
@@ -425,7 +434,8 @@ public partial class MainForm
 		// Update the item's location properties to reflect its new home
 		item.Place.Path = destinationPlayer.PlayerFile;
 		item.Place.Name = this.GamePathResolver.GetNameFromFile(destinationPlayer.PlayerFile)
-			?? GamePathResolver.GetVaultNameFromPath(destinationPlayer.PlayerFile);
+			?? GamePathResolver.GetVaultNameFromPath(destinationPlayer.PlayerFile)
+			?? string.Empty;
 
 		// Calculate sack number based on sack type
 		switch (destinationSackType)

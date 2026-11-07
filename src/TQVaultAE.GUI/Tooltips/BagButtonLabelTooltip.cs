@@ -1,4 +1,4 @@
-﻿using TQVaultAE.Application.Contracts.Providers;
+﻿﻿using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components;
@@ -11,10 +11,10 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 {
 	private static object syncObj = new object();
 
-	private static BagButtonLabelTooltip _Current = null;
-	private string _Label;
-	private Control _AnchorControl;
-	private readonly Bitmap bgimg;
+	private static BagButtonLabelTooltip? _Current = null;
+	private string _Label = string.Empty;
+	private Control? _AnchorControl;
+	private readonly Bitmap? bgimg;
 
 	internal Control AnchorControl
 	{
@@ -23,11 +23,11 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 			_AnchorControl = value;
 
 			// Move it on top of anchor
-			var loc = this._AnchorControl.PointToScreen(Point.Empty);
+			var loc = value.PointToScreen(Point.Empty);
 
 			loc.Y -= this.Size.Height + 5;
 
-			var halfbutton = this._AnchorControl.Size.Width / 2;
+			var halfbutton = value.Size.Width / 2;
 
 			loc.X += halfbutton;
 			loc.X -= this.Size.Width / 2;
@@ -61,7 +61,9 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 
 #if DEBUG
 	// For Design Mode
+#pragma warning disable CS8618 // Designer only: the runtime constructor sets the services and state.
 	public BagButtonLabelTooltip() => InitializeComponent();
+#pragma warning restore CS8618
 #endif
 
 	private BagButtonLabelTooltip(
@@ -82,7 +84,8 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 
 		this.bgimg = this.UIService.LoadBitmap(@"INGAMEUI\HEALTHMANAOVERLAY01_NEW.TEX");
 
-		this.Size = new Size(bgimg.Width, bgimg.Height);
+		if (bgimg is not null)
+			this.Size = new Size(bgimg.Width, bgimg.Height);
 		this.BackgroundImage = bgimg;
 	}
 
@@ -103,7 +106,7 @@ public partial class BagButtonLabelTooltip : BaseTooltip
 
 	#region Factory
 
-	public static BagButtonLabelTooltip ShowTooltip(GuiServices services, BagButtonBase anchorControl)
+	public static BagButtonLabelTooltip? ShowTooltip(GuiServices services, BagButtonBase anchorControl)
 	{
 		var label = anchorControl.Sack?.BagButtonIconInfo?.Label;
 		if (anchorControl is null) return null;

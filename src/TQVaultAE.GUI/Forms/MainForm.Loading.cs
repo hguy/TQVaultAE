@@ -3,6 +3,7 @@ using System.Globalization;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
 using TQVaultAE.GUI.Dialogs;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using System.ComponentModel;
@@ -109,24 +110,18 @@ public partial class MainForm
 		Parallel.Invoke(lambdacharactersIT.Concat(lambdacharacterStashes).Concat(lambdaVault).ToArray());// Parallel loading
 
 		// Dispay errors
-		bagPlayer.Where(p => p.Player.ArgumentException != null).ToList()
-			.ForEach(result =>
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.PlayerFile, result.Player.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-			});
-		bagPlayerStashes.Where(p => p.Stash.ArgumentException != null).ToList()
-			.ForEach(result =>
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-			});
-		bagVault.Where(p => p.ArgumentException != null).ToList()
-			.ForEach(result =>
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.Filename, result.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-			});
+		var readErrors = bagPlayer.Select(p => (File: (string?)p.PlayerFile, Error: p.Player?.ArgumentException))
+			.Concat(bagPlayerStashes.Select(p => (File: p.StashFile, Error: p.Stash?.ArgumentException)))
+			.Concat(bagVault.Select(p => (File: (string?)p.Filename, Error: p.ArgumentException)))
+			.ToList();
+		foreach (var (file, error) in readErrors)
+		{
+			if (error is null)
+				continue;
+
+			string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, file, error.Message);
+			MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+		}
 
 		this.comboBoxCharacter.RefreshItems();
 
@@ -178,7 +173,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">FormClosedEventArgs data</param>
-	private void SplashScreenClosed(object sender, FormClosedEventArgs e)
+	private void SplashScreenClosed(object? sender, FormClosedEventArgs e)
 	{
 		if (this.resourcesLoaded)
 		{
@@ -254,7 +249,7 @@ public partial class MainForm
 
 			// Check to see if we loaded something from the command line.
 			if (args.HasMapName)
-				GamePathResolver.MapName = args.MapName;
+				GamePathResolver.MapName = args.MapName ?? string.Empty;
 
 			this.resourcesLoaded = true;
 			this.backgroundWorkerLoadAllFiles.ReportProgress(1);
@@ -272,10 +267,10 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">DoWorkEventArgs data</param>
-	private void BackgroundWorkerLoadAllFiles_DoWork(object sender, DoWorkEventArgs e)
+	private void BackgroundWorkerLoadAllFiles_DoWork(object? sender, DoWorkEventArgs e)
 	{
 		// Get the BackgroundWorker that raised this event.
-		BackgroundWorker worker = sender as BackgroundWorker;
+		var worker = (BackgroundWorker)sender!;
 
 		// Assign the result of the resource loader
 		// to the Result property of the DoWorkEventArgs
@@ -289,7 +284,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">RunWorkerCompletedEventArgs data</param>
-	private void BackgroundWorkerLoadAllFiles_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+	private void BackgroundWorkerLoadAllFiles_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
 	{
 		// First, handle the case where an exception was thrown.
 		if (e.Error != null)
@@ -309,7 +304,7 @@ public partial class MainForm
 		}
 		else if (e.Cancelled && !this.resourcesLoaded)
 			System.Windows.Forms.Application.Exit();
-		else if (e.Result.Equals(true))
+		else if (e.Result is true)
 		{
 			this.loadingComplete = true;
 			this.Enabled = true;
@@ -381,8 +376,8 @@ public partial class MainForm
 			// Allows skipping of title screen with setting
 			if (args.IsAutomatic || USettings.SkipTitle == true)
 			{
-				string player = args.Player;
-				int index = this.comboBoxCharacter.FindString(player);
+				string? player = args.Player;
+				int index = this.comboBoxCharacter.FindString(player ?? string.Empty);
 				if (index != -1)
 					this.comboBoxCharacter.SelectedIndex = index;
 
@@ -409,7 +404,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">ProgressChangedEventArgs data</param>
-	private void BackgroundWorkerLoadAllFiles_ProgressChanged(object sender, ProgressChangedEventArgs e)
+	private void BackgroundWorkerLoadAllFiles_ProgressChanged(object? sender, ProgressChangedEventArgs e)
 		=> this.splashScreen.IncrementValue();
 
 	#endregion
@@ -430,9 +425,9 @@ public partial class MainForm
 		{
 			// Changed by VillageIdiot
 			// Now check to see if the value is changed since the Main Vault would never auto load
-			if (this.vaultListComboBox.SelectedItem != null && this.vaultListComboBox.SelectedItem.ToString().ToUpperInvariant() != USettings.LastVaultName.ToUpperInvariant())
+			if (this.vaultListComboBox.SelectedItem != null && this.vaultListComboBox.SelectedItemText().ToUpperInvariant() != USettings.LastVaultName.ToUpperInvariant())
 			{
-				USettings.LastVaultName = this.vaultListComboBox.SelectedItem.ToString();
+				USettings.LastVaultName = this.vaultListComboBox.SelectedItemText();
 				this.configChanged = true;
 			}
 		}
@@ -440,12 +435,12 @@ public partial class MainForm
 		// Update last loaded character
 		if (USettings.LoadLastCharacter)
 		{
-			string name = this.comboBoxCharacter.SelectedItem.ToString();
+			string? name = this.comboBoxCharacter.SelectedItem?.ToString();
 			var ps = this.comboBoxCharacter.SelectedItem as PlayerSave;
 
 			if (ps is not null) name = ps.Name;
 
-			if (name.ToUpperInvariant() != USettings.LastCharacterName.ToUpperInvariant())
+			if (name is not null && name.ToUpperInvariant() != USettings.LastCharacterName.ToUpperInvariant())
 			{
 				// Clear the value if no character is selected
 				if (name == Resources.MainFormSelectCharacter)
@@ -488,7 +483,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void ConfigureButtonClick(object sender, EventArgs e)
+	private void ConfigureButtonClick(object? sender, EventArgs e)
 	{
 		SettingsDialog settingsDialog = new SettingsDialog(this);
 		DialogResult result = DialogResult.Cancel;
