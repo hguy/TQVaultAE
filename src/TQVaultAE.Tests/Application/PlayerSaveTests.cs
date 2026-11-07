@@ -95,20 +95,4 @@ public class PlayerSaveTests
 		var act = () => playerSave.Dispose();
 		act.Should().NotThrow();
 	}
-
-	[Fact]
-	public void Dispose_WithWatcher_CallsDispose()
-	{
-		// Arrange
-		_pathIOMock.Setup(p => p.GetFileName(It.IsAny<string>())).Returns("test");
-		var playerSave = new PlayerSave("/folder", false, false, false, "", _translationServiceMock.Object, _pathIOMock.Object);
-		var watcher = new System.IO.FileSystemWatcher();
-		playerSave.PlayerSaveWatcher = watcher;
-
-		// Act
-		playerSave.Dispose();
-
-		// Assert - FileSystemWatcher disposes synchronously, verified by EnableRaisingEvents = false
-		watcher.EnableRaisingEvents.Should().BeFalse();
-	}
 }

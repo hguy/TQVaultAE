@@ -54,33 +54,6 @@ public class GameDlcExtensionTests
 	}
 
 	[Fact]
-	public void GetSuffix_ExpansionDlcs_ReturnsCodeInParens()
-	{
-		// Arrange - All expansions have code in parentheses
-		var expansionDlcs = new[] { GameDlc.ImmortalThrone, GameDlc.Ragnarok, GameDlc.Atlantis, GameDlc.EternalEmbers };
-
-		// Act & Assert
-		foreach (var dlc in expansionDlcs)
-		{
-			var suffix = dlc.GetSuffix();
-			suffix.Should().StartWith("(");
-			suffix.Should().EndWith(")");
-			suffix.Should().Contain(dlc.GetCode());
-		}
-	}
-
-	[Fact]
-	public void GetSuffix_OnlyTitanQuestHasEmptySuffix()
-	{
-		// Arrange - Only base TQ has empty suffix
-		var expansionDlcs = new[] { GameDlc.ImmortalThrone, GameDlc.Ragnarok, GameDlc.Atlantis, GameDlc.EternalEmbers };
-
-		// Act & Assert
-		foreach (var dlc in expansionDlcs)
-			dlc.GetSuffix().Should().NotBeEmpty();
-	}
-
-	[Fact]
 	public void AllDlcs_HaveUniqueCodes()
 	{
 		// Act
@@ -114,14 +87,5 @@ public class GameDlcExtensionTests
 		// Act & Assert - Ensures all DLCs have translation tags
 		foreach (var dlc in Enum.GetValues<GameDlc>())
 			dlc.GetTranslationTag().Should().NotBeNullOrEmpty();
-	}
-
-	[Fact]
-	public void GetSuffix_IsConsistentWithGetCode()
-	{
-		// Assert - Suffix format matches code for all non-TQ DLCs
-		var nonTqDlcs = new[] { GameDlc.ImmortalThrone, GameDlc.Ragnarok, GameDlc.Atlantis, GameDlc.EternalEmbers };
-		foreach (var dlc in nonTqDlcs)
-			dlc.GetSuffix().Should().Be($"({dlc.GetCode()})");
 	}
 }

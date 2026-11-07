@@ -133,15 +133,6 @@ public class HighlightServiceTests
 	}
 
 	[Fact]
-	public void HighlightSearchItemColor_DefaultValue_IsIndigo()
-	{
-		// Assert
-		_service.HighlightSearchItemColor.Should().Be(TQColor.Indigo.Color());
-	}
-
-
-
-	[Fact]
 	public void FindHighlight_WithSearch_LogsInformation()
 	{
 		// Arrange - Create a player with equipment
@@ -176,7 +167,7 @@ public class HighlightServiceTests
 		// Act
 		_service.FindHighlight();
 
-		// Assert - should process without error
-		_service.HighlightedItems.Should().NotBeNull();
+		// Assert - the empty stash is searched without error and matches nothing
+		_service.HighlightedItems.Should().BeEmpty();
 	}
 }

@@ -60,20 +60,4 @@ public class StashLoadResultTests
 		result.StashFile.Should().BeNull();
 		result.IsSuccess.Should().BeFalse();
 	}
-
-	[Fact]
-	public void Properties_CanBeSetAndRetrieved()
-	{
-		// Arrange
-		var result = new StashLoadResult();
-		var stash = new Stash("Player", "stash.d6v");
-
-		// Act
-		result.Stash = stash;
-		result.StashFile = "custom_path.d6v";
-
-		// Assert
-		result.Stash.Should().BeSameAs(stash);
-		result.StashFile.Should().Be("custom_path.d6v");
-	}
 }

@@ -118,16 +118,16 @@ public class ItemProviderTests
 	#region GetRequirementEquationPrefix Tests
 
 	[Fact]
-	public void GetRequirementEquationPrefix_WithValidGearClass_ReturnsPrefix()
+	public void GetRequirementEquationPrefix_WithKnownItemClass_ReturnsItsPrefix()
 	{
-		// Arrange - using an item class that might not be in the gear type map
-		var itemClass = "weapon";
+		// Arrange
+		var itemClass = "WeaponMelee_Sword";
 
 		// Act
 		var result = _provider.GetRequirementEquationPrefix(itemClass);
 
-		// Assert - result could be "none" if not found, or a valid prefix
-		result.Should().NotBeNull();
+		// Assert
+		result.Should().Be("sword");
 	}
 
 	[Fact]
@@ -159,14 +159,14 @@ public class ItemProviderTests
 	[Fact]
 	public void GetRequirementEquationPrefix_CaseInsensitive_ReturnsPrefix()
 	{
-		// Arrange - using uppercase
-		var itemClass = "WEAPON";
+		// Arrange - item classes are matched whatever their case
+		var itemClass = "WEAPONMELEE_SWORD";
 
 		// Act
 		var result = _provider.GetRequirementEquationPrefix(itemClass);
 
-		// Assert - result could be "none" or a valid prefix
-		result.Should().NotBeNull();
+		// Assert
+		result.Should().Be("sword");
 	}
 
 	#endregion

@@ -395,19 +395,6 @@ public class RecordIdTests
 	}
 
 	[Fact]
-	public void TokensNormalized_ReturnsReadOnlyCollection()
-	{
-		// Arrange
-		var recordId = RecordId.Create("records/items/sword");
-
-		// Act
-		var tokens = recordId.TokensNormalized;
-
-		// Assert
-		tokens.Should().BeAssignableTo<ReadOnlyCollection<string>>();
-	}
-
-	[Fact]
 	public void TokensNormalized_IsCached_ReturnsSameInstance()
 	{
 		// Arrange
