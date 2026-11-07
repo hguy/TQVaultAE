@@ -233,7 +233,9 @@ public static class Program
 		Log.LogInformation("Selected TQIT path {GamePathTQIT}", gamePathResolver.GamePathTQIT);
 
 		// Show a message that the default path is going to be used.
-		if (string.IsNullOrEmpty(userSettings.VaultPath))
+		// TQVAULT_SKIP_STARTUP_NOTICES=1 skips it, so that a profiler or a script can start TQVault unattended.
+		if (string.IsNullOrEmpty(userSettings.VaultPath)
+			&& Environment.GetEnvironmentVariable("TQVAULT_SKIP_STARTUP_NOTICES") != "1")
 		{
 			string folderPath = Path.Combine(gamePathResolver.SaveFolderTQ, "TQVaultData");
 
