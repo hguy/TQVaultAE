@@ -30,7 +30,7 @@ public partial class ItemProvider
 	/// <param name="results">List for the results</param>
 	/// <param name="convertStrings">flag on whether we convert attributes to strings.</param>
 	private void GetAttributesFromRecord(Item itm, DBRecordCollection? record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true
-		, IReadOnlyDictionary<string, ValueRange>? valueRanges = null, List<string?>? lineRanges = null)
+		, IReadOnlyDictionary<string, ValueRange>? valueRanges = null, List<string?>? lineRanges = null, int? skillLevelIndex = null)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -202,7 +202,7 @@ public partial class ItemProvider
 			if (!convertStrings)
 				ConvertBareAttributeListToString(attrList, results);
 			else
-				ConvertAttributeListToString(itm, record, attrList, recordId, results);
+				ConvertAttributeListToString(itm, record, attrList, recordId, results, skillLevelIndex);
 
 			// The group's possible in-game values go on its last line.
 			if (lineRanges is not null)
@@ -265,7 +265,8 @@ public partial class ItemProvider
 	/// <param name="attributeList">ArrayList containing the attributes list</param>
 	/// <param name="recordId">string containing the record id</param>
 	/// <param name="results">List containing the results</param>
-	private void ConvertAttributeListToString(Item itm, DBRecordCollection record, List<Variable?> attributeList, RecordId recordId, List<string> results)
+	/// <param name="skillLevelIndex">value index of a skill record shown at a known level (granted skills); null to deduce it</param>
+	private void ConvertAttributeListToString(Item itm, DBRecordCollection record, List<Variable?> attributeList, RecordId recordId, List<string> results, int? skillLevelIndex = null)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -291,7 +292,7 @@ public partial class ItemProvider
 		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.ConvertAttrListToString ()");
 
-		ConvertOffenseAttributesToString(itm, record, attributeList, data, recordId, results);
+		ConvertOffenseAttributesToString(itm, record, attributeList, data, recordId, results, skillLevelIndex);
 		return;
 	}
 
@@ -1127,73 +1128,7 @@ public partial class ItemProvider
 				}
 			}
 
-			// Added by VillageIdiot to support skill activation text
-			string? triggerType = null;
-			string? activationTag = null;
-			string? activationText = null;
-			string autoController = record.GetString("itemSkillAutoController", 0);
-			if (!string.IsNullOrEmpty(autoController))
-			{
-				DBRecordCollection? autoControllerRecord = Database.GetRecordFromFile(autoController);
-				if (autoControllerRecord != null)
-					triggerType = autoControllerRecord.GetString("triggerType", 0);
-			}
-
-			// Convert TriggerType into text tag
-			if (!string.IsNullOrEmpty(triggerType))
-			{
-				switch (triggerType.ToUpperInvariant())
-				{
-					case "LOWHEALTH":
-						// Activated on low health
-						activationTag = "xtagAutoSkillCondition01";
-						break;
-
-					case "LOWMANA":
-						// Activated on low energy
-						activationTag = "xtagAutoSkillCondition02";
-						break;
-
-					case "HITBYENEMY":
-						// Activated upon taking damage
-						activationTag = "xtagAutoSkillCondition03";
-						break;
-
-					case "HITBYMELEE":
-						// Activated upon taking melee damage
-						activationTag = "xtagAutoSkillCondition04";
-						break;
-
-					case "HITBYPROJECTILE":
-						// Activated upon taking ranged damage
-						activationTag = "xtagAutoSkillCondition05";
-						break;
-
-					case "CASTBUFF":
-						// Activated upon casting a buff
-						activationTag = "xtagAutoSkillCondition06";
-						break;
-
-					case "ATTACKENEMY":
-						// Activated on attack
-						activationTag = "xtagAutoSkillCondition07";
-						break;
-
-					case "ONEQUIP":
-						// Activated when equipped
-						activationTag = "xtagAutoSkillCondition08";
-						break;
-
-					default:
-						activationTag = string.Empty;
-						break;
-				}
-			}
-
-			if (!string.IsNullOrEmpty(activationTag))
-				TranslationService.TryTranslateXTag(activationTag, out activationText);
-			else
-				activationText = string.Empty;
+			string activationText = this.GetSkillActivationText(record.GetString("itemSkillAutoController", 0));
 
 			if (string.IsNullOrEmpty(activationText))
 				font = ItemStyle.Epic.TQColor();
@@ -1206,6 +1141,83 @@ public partial class ItemProvider
 		return line;
 	}
 
+
+	/// <summary>
+	/// Translates when an auto controlled granted skill triggers ("Activated on low health"...).
+	/// </summary>
+	/// <param name="autoController">The <c>itemSkillAutoController</c> record, if any.</param>
+	/// <returns>The activation text, or an empty string when the skill is not auto controlled.</returns>
+	private string GetSkillActivationText(string? autoController)
+	{
+		// Added by VillageIdiot to support skill activation text
+		string? triggerType = null;
+		string? activationTag = null;
+		string? activationText;
+		if (!string.IsNullOrEmpty(autoController))
+		{
+			DBRecordCollection? autoControllerRecord = Database.GetRecordFromFile(autoController);
+			if (autoControllerRecord != null)
+				triggerType = autoControllerRecord.GetString("triggerType", 0);
+		}
+
+		// Convert TriggerType into text tag
+		if (!string.IsNullOrEmpty(triggerType))
+		{
+			switch (triggerType.ToUpperInvariant())
+			{
+				case "LOWHEALTH":
+					// Activated on low health
+					activationTag = "xtagAutoSkillCondition01";
+					break;
+
+				case "LOWMANA":
+					// Activated on low energy
+					activationTag = "xtagAutoSkillCondition02";
+					break;
+
+				case "HITBYENEMY":
+					// Activated upon taking damage
+					activationTag = "xtagAutoSkillCondition03";
+					break;
+
+				case "HITBYMELEE":
+					// Activated upon taking melee damage
+					activationTag = "xtagAutoSkillCondition04";
+					break;
+
+				case "HITBYPROJECTILE":
+					// Activated upon taking ranged damage
+					activationTag = "xtagAutoSkillCondition05";
+					break;
+
+				case "CASTBUFF":
+					// Activated upon casting a buff
+					activationTag = "xtagAutoSkillCondition06";
+					break;
+
+				case "ATTACKENEMY":
+					// Activated on attack
+					activationTag = "xtagAutoSkillCondition07";
+					break;
+
+				case "ONEQUIP":
+					// Activated when equipped
+					activationTag = "xtagAutoSkillCondition08";
+					break;
+
+				default:
+					activationTag = string.Empty;
+					break;
+			}
+		}
+
+		if (!string.IsNullOrEmpty(activationTag))
+			TranslationService.TryTranslateXTag(activationTag, out activationText);
+		else
+			activationText = string.Empty;
+
+		return activationText ?? string.Empty;
+	}
 
 	/// <summary>
 	/// Gets the pet bonus string
@@ -1358,7 +1370,7 @@ public partial class ItemProvider
 	/// <param name="data">ItemAttributesData for the item</param>
 	/// <param name="recordId">string containing the record id</param>
 	/// <param name="results">List containing the results</param>
-	private void ConvertOffenseAttributesToString(Item itm, DBRecordCollection record, List<Variable?> attributeList, ItemAttributesData data, RecordId recordId, List<string> results)
+	private void ConvertOffenseAttributesToString(Item itm, DBRecordCollection record, List<Variable?> attributeList, ItemAttributesData data, RecordId recordId, List<string> results, int? skillLevelIndex = null)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -1384,6 +1396,9 @@ public partial class ItemProvider
 		// Triggered skills can have also multiple values so we need to decode it here
 		if (record.GetString("Class", 0).StartsWith("SKILL", noCase))
 			variableNumber = GetTriggeredSkillLevel(itm, record, recordId, variableNumber);
+
+		if (skillLevelIndex is int levelIndex)
+			variableNumber = levelIndex;
 
 		// See what variables we have
 		ItemAttributesData? minData = null;
@@ -1868,7 +1883,9 @@ public partial class ItemProvider
 
 				// Added by VillageIdiot
 				// Another special case for skill description and effects of activated skills
-				if (normalizedFullAttribute == "ITEMSKILLNAME" || ((itm.IsScroll || itm.IsPotion) && normalizedFullAttribute == "SKILLNAME"))
+				// A display that shows the granted skills apart only names them here.
+				bool grantedSkillApart = normalizedFullAttribute == "ITEMSKILLNAME" && (itm.CurrentFriendlyNameResult?.GrantedSkillsApart ?? false);
+				if (!grantedSkillApart && (normalizedFullAttribute == "ITEMSKILLNAME" || ((itm.IsScroll || itm.IsPotion) && normalizedFullAttribute == "SKILLNAME")))
 					GetSkillDescriptionAndEffects(itm, record, results, variable, line);
 			}
 		}

@@ -189,7 +189,10 @@ public partial class ItemTooltip : BaseTooltip
 		if (ToImage.TryGetCopy(key, out var cached, out var data))
 		{
 			this.Data = data;
-			this.ShowCachedImage(cached);
+			if (data.GrantedSkills.Length != 0)
+				this.ShowSkillsImage(cached);
+			else
+				this.ShowCachedImage(cached);
 			return;
 		}
 
@@ -197,7 +200,7 @@ public partial class ItemTooltip : BaseTooltip
 		this.flowLayoutPanelFriendlyNames.SuspendLayout();
 		this.rangeRows.Clear();
 
-		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, FriendlyNamesExtraScopes.ItemFullDisplay);
+		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, FriendlyNamesExtraScopes.ItemFullDisplay | FriendlyNamesExtraScopes.GrantedSkills);
 
 		// Fullname
 		AddRow(Data.FullName, FocusedItem.ExtractTextColorOrItemColor(Data.BaseItemInfoDescription), style: FontStyle.Bold);
@@ -367,6 +370,13 @@ public partial class ItemTooltip : BaseTooltip
 		this.flowLayoutPanelFriendlyNames.ResumeLayout();
 		this.ResumeLayout();
 
+		// The granted skills go in a second panel on the right, shown with the item panel as one cached image.
+		if (this.Data.GrantedSkills.Length != 0)
+		{
+			this.ShowWithGrantedSkills(key, this.Data.GrantedSkills);
+			return;
+		}
+
 		// Rasterize flowLayoutPanelFriendlyNames and cache it for fast redraw
 		var w = this.flowLayoutPanelFriendlyNames.Width;
 		var h = this.flowLayoutPanelFriendlyNames.Height;
@@ -493,6 +503,11 @@ public partial class ItemTooltip : BaseTooltip
 
 			// Adjust position to avoid flickering if the tooltip appears on top of the cursor.
 			x += Cursor.Size.Width;
+
+			// The skills panel makes the tooltip wide: keep it on the screen of the panel.
+			var screen = Screen.FromPoint(loc).WorkingArea;
+			if (x + this.Width > screen.Right)
+				x = Math.Max(screen.Left, screen.Right - this.Width);
 
 			// Ajust position if tooltip size goes offscreen
 			var bottom = y + this.Height;

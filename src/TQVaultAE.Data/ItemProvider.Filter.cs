@@ -73,6 +73,7 @@ public partial class ItemProvider
 			"SKILLWEAPONTINTBLUE",
 			"DEBUFSKILL",
 			"HIDEFROMUI",
+			"MELEEONLY", // skill restriction flag, shown by the granted skills panel otherwise
 			"INSTANTCAST",
 			"WAVEENDWIDTH",
 			"WAVEDISTANCE",

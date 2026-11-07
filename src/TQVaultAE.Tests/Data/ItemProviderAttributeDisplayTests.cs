@@ -39,6 +39,10 @@ public class ItemProviderAttributeDisplayTests
 		["formatQualifyingDamage"] = "{%s0}",
 		["tagQualifyingDamageFire"] = "Fire",
 		["tagQualifyingDamageCold"] = "Cold",
+		["MenuLevel"] = "Level: {%d0}",
+		["tagItemGrantSkill"] = "Grants Skill :",
+		["tagSkillTest"] = "Test Skill",
+		["tagSkillTestDescription"] = "Heals you.",
 	};
 
 	private readonly Mock<IDatabase> _mockDatabase = new();
@@ -195,6 +199,78 @@ public class ItemProviderAttributeDisplayTests
 		var lines = this.BaseAttributes(item);
 
 		lines.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void GrantedBuffSkill_TakesItsNameAndEffectsFromTheBuff_AtTheGrantedLevel()
+	{
+		this.CreateRecord("""records\test\skill.dbr""", "Skill_BuffRadiusToggled", Str("buffSkillName", """records\test\buff.dbr"""));
+		this.CreateRecord("""records\test\buff.dbr""", "SkillBuff_Passive",
+			Str("skillDisplayName", "tagSkillTest"),
+			Str("skillBaseDescription", "tagSkillTestDescription"),
+			Ints("characterLife", 10, 20, 30));
+		var item = this.CreateItem("ArmorJewelry_Amulet", Str("itemSkillName", """records\test\skill.dbr"""), Int("itemSkillLevel", 2));
+
+		var skills = this.GrantedSkills(item);
+
+		skills.Should().ContainSingle();
+		skills[0].Name.Should().Be("Test Skill");
+		skills[0].Level.Should().Be(2);
+		skills[0].LevelText.Should().Be("Level: 2");
+		skills[0].Description.Should().Equal("Heals you.");
+		skills[0].Attributes.Should().Equal($"{Epic}+20 Health");
+	}
+
+	[Fact]
+	public void GrantedSkillShownApart_IsOnlyNamedInTheItemAttributes()
+	{
+		this.CreateRecord("""records\test\skill.dbr""", "Skill_BuffSelfDuration",
+			Str("skillDisplayName", "tagSkillTest"),
+			Str("skillBaseDescription", "tagSkillTestDescription"),
+			Ints("characterLife", 10));
+		var item = this.CreateItem("ArmorJewelry_Amulet",
+			Str("itemSkillName", """records\test\skill.dbr"""),
+			Str("itemSkillAutoController", """records\test\controller.dbr"""),
+			Int("itemSkillLevel", 1));
+
+		var inline = this._provider.GetFriendlyNames(item, FriendlyNamesExtraScopes.BaseAttributes).BaseAttributes;
+		var apart = this._provider.GetFriendlyNames(item, FriendlyNamesExtraScopes.BaseAttributes | FriendlyNamesExtraScopes.GrantedSkills);
+
+		inline.Should().Contain(line => line.Contains("Heals you.", StringComparison.Ordinal));
+		apart.BaseAttributes.Should().Contain(line => line.Contains("Test Skill", StringComparison.Ordinal));
+		apart.BaseAttributes.Should().NotContain(line => line.Contains("Heals you.", StringComparison.Ordinal));
+		apart.GrantedSkills.Should().ContainSingle().Which.Attributes.Should().Equal($"{Epic}+10 Health");
+	}
+
+	[Fact]
+	public void UnnamedGrantedSkill_IsNotListed()
+	{
+		this.CreateRecord("""records\test\skill.dbr""", "Skill_Passive", Ints("characterLife", 10));
+		var item = this.CreateItem("ArmorJewelry_Amulet", Str("itemSkillName", """records\test\skill.dbr"""), Int("itemSkillLevel", 1));
+
+		this.GrantedSkills(item).Should().BeEmpty();
+	}
+
+	private GrantedSkill[] GrantedSkills(Item item)
+		=> this._provider.GetFriendlyNames(item, FriendlyNamesExtraScopes.BaseAttributes | FriendlyNamesExtraScopes.GrantedSkills).GrantedSkills;
+
+	private void CreateRecord(string id, string recordClass, params Variable[] variables)
+	{
+		var recordId = RecordId.Create(id);
+		var record = new DBRecordCollection(recordId, recordClass);
+		record.Set(Str("Class", recordClass));
+		foreach (var variable in variables)
+			record.Set(variable);
+
+		this._mockDatabase.Setup(d => d.GetRecordFromFile(recordId)).Returns(record);
+	}
+
+	private static Variable Ints(string name, params int[] values)
+	{
+		var variable = new Variable(name, VariableDataType.Integer, values.Length);
+		for (int i = 0; i < values.Length; i++)
+			variable[i] = values[i];
+		return variable;
 	}
 
 	private string[] BaseAttributes(Item item, bool filterExtra = true)

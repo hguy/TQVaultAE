@@ -200,6 +200,14 @@ public partial class ToFriendlyNameResult
 	public string[] InGameRolls { get; internal set; } = [];
 
 	/// <summary>
+	/// The skills granted by the item, its affixes and its relics (<see cref="FriendlyNamesExtraScopes.GrantedSkills"/>).
+	/// </summary>
+	public GrantedSkill[] GrantedSkills { get; internal set; } = [];
+
+	/// <summary>The granted skills are shown apart (<see cref="GrantedSkills"/>): the attributes do not repeat their details.</summary>
+	internal bool GrantedSkillsApart { get; set; }
+
+	/// <summary>
 	/// Possible in-game values of each <see cref="PrefixAttributes"/> line, e.g. "(90 - 126)", or <see langword="null"/>
 	/// when the line is not randomized. Same length as <see cref="PrefixAttributes"/>, or empty without in-game values.
 	/// </summary>
