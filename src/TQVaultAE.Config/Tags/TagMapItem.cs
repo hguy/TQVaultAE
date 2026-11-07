@@ -2,7 +2,7 @@
 
 public class TagMapItem
 {
-	public string player;
+	public string player = string.Empty;
 	public bool isTQIT;
 	public bool isMod;
 	public List<string> tags = new();
