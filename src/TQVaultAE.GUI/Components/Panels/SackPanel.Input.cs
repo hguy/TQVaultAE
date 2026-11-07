@@ -11,6 +11,7 @@ using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Rendering;
 using TQVaultAE.GUI.Components.Scaling;
@@ -79,79 +80,68 @@ public partial class SackPanel
 			else
 			{
 				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
-				bool singleSelectionFocused = false;
-				if (this.selectedItems != null)
-					singleSelectionFocused = focusedItem == (Item)this.selectedItems[0] && this.selectedItems.Count == 1;
+				int selectionCount = this.selectedItems?.Count ?? 0;
+				bool singleSelectionFocused = selectionCount == 1 && focusedItem == this.selectedItems![0];
+
+				var actions = ItemActionRules.Available(new ItemActionContext(
+					focusedItem
+					, selectionCount
+					, singleSelectionFocused
+					, isEquipmentReadOnly
+					, USettings.AllowItemEdit
+					, USettings.AllowItemCopy));
 
 				this.CustomContextMenu.Items.Clear();
 
 				if (focusedItem != null)
 					this.contextMenuCellWithFocus = this.LastCellWithFocus;
 
-				if ((focusedItem != null || this.selectedItems != null) && !isEquipmentReadOnly)
+				if (actions.HasFlag(ItemActions.Delete))
 				{
 					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuDelete);
 					this.CustomContextMenu.Items.Add("-");
 				}
 
-				if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused) && !isEquipmentReadOnly)
-				{
-					if (USettings.AllowItemEdit)
-					{
-						if (focusedItem.HasSocketedSlot1)
-							this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic);
+				if (actions.HasFlag(ItemActions.RemoveRelic))
+					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic);
 
-						if (focusedItem.HasSocketedSlot2)
-							this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic2);
-					}
+				if (actions.HasFlag(ItemActions.RemoveRelic2))
+					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic2);
 
-					if (focusedItem.DoesStack && focusedItem.Number > 1)
-						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSplit);
-				}
+				if (actions.HasFlag(ItemActions.Split))
+					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSplit);
 
-				if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused))
-				{
-					if (USettings.AllowItemCopy)
-					{
-						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuCopy);
-						this.CustomContextMenu.Items.Add(Resources.SackPanelMenuDuplicate);
-					}
-				}
+				if (actions.HasFlag(ItemActions.Copy))
+					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuCopy);
+
+				if (actions.HasFlag(ItemActions.Duplicate))
+					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuDuplicate);
 
 				AddExportMenuItems(focusedItem, singleSelectionFocused);
 
-				if ((focusedItem != null || this.selectedItems != null) && !isEquipmentReadOnly)
-				{
+				if (actions.HasFlag(ItemActions.MoveTo))
 					AddAutoMoveMenuItems(focusedItem);
-				}
 
-				if ((focusedItem != null && (this.selectedItems == null || singleSelectionFocused)) && !isEquipmentReadOnly)
+				if (actions.HasFlag(ItemActions.Edit))
 				{
-					// Item Editing options
-					if (USettings.AllowItemEdit)
-					{
-						AddRegularItemEditMenuItems(focusedItem);
-
-						AddPrefixSuffixMenuItems(focusedItem);
-
-						AddSocketedItemCompletionBonusMenuItems(focusedItem);
-
-						AddRelicOrArticaftCompletionBonusMenuItems(focusedItem);
-
-						AddItemSetMenuItems(focusedItem);
-					}
+					// Edit implies a single focused item.
+					AddRegularItemEditMenuItems(focusedItem!);
+					AddPrefixSuffixMenuItems(focusedItem!);
+					AddSocketedItemCompletionBonusMenuItems(focusedItem!);
+					AddRelicOrArticaftCompletionBonusMenuItems(focusedItem!);
+					AddItemSetMenuItems(focusedItem!);
 				}
 
-				if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused))
+				if (actions.HasFlag(ItemActions.Properties))
 				{
 					this.CustomContextMenu.Items.Add("-");
 					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuProperties);
 				}
 
-				if (this.selectedItems != null && !isEquipmentReadOnly)
+				if (actions.HasFlag(ItemActions.ClearSelection))
 					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuClear);
 
-				if ((focusedItem != null || this.selectedItems != null) && this.CustomContextMenu.Items.Count > 0)
+				if ((focusedItem != null || selectionCount > 0) && this.CustomContextMenu.Items.Count > 0)
 					this.CustomContextMenu.Show(this, new Point(e.X, e.Y));
 			}
 		}
