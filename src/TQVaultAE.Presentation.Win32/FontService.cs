@@ -1,4 +1,5 @@
 using EnumsNET;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Drawing;
 using TQVaultAE.Application.Contracts.Services;
@@ -117,47 +118,48 @@ public class FontService : IFontService
 		this.USettings = uSettings;
 	}
 
+	/// <summary>GDI+ default character set, the one the <see cref="Font"/> constructors without <c>gdiCharSet</c> use.</summary>
+	private const byte DefaultCharSet = 1;
+
+	/// <summary>
+	/// Fonts already created, shared by every caller: a <see cref="Font"/> is immutable, and creating one per paint leaks GDI handles
+	/// until the finalizer runs. Callers must not dispose them.
+	/// </summary>
+	private readonly ConcurrentDictionary<(bool Light, float Size, FontStyle Style, GraphicsUnit Unit, byte CharSet), Font> _fonts = new();
+
+	private Font Get(bool light, float fontSize, FontStyle fontStyle = FontStyle.Regular, GraphicsUnit unit = GraphicsUnit.Point, byte charSet = DefaultCharSet)
+		=> this._fonts.GetOrAdd((light, fontSize, fontStyle, unit, charSet), key => new Font(key.Light ? this.FONT_ALBERTUSMTLIGHT : this.FONT_ALBERTUSMT, key.Size, key.Style, key.Unit, key.CharSet));
+
 	public Font GetFont(float fontSize, FontStyle fontStyle, GraphicsUnit unit)
-		=> new Font(FONT_ALBERTUSMT, fontSize, fontStyle, unit);
+		=> this.Get(false, fontSize, fontStyle, unit);
 
 	public Font GetFont(float fontSize, FontStyle fontStyle, GraphicsUnit unit, byte b)
-		=> new Font(FONT_ALBERTUSMT, fontSize, fontStyle, unit, b);
+		=> this.Get(false, fontSize, fontStyle, unit, b);
 
 	public Font GetFont(float fontSize, GraphicsUnit unit)
-		=> new Font(FONT_ALBERTUSMT, fontSize, unit);
+		=> this.Get(false, fontSize, unit: unit);
 
 	public Font GetFont(float fontSize, FontStyle fontStyle, float? scale = null)
-	{
-		scale = scale ?? 1F;
-		return new Font(FONT_ALBERTUSMT, fontSize * scale.Value, fontStyle);
-	}
+		=> this.Get(false, fontSize * (scale ?? 1F), fontStyle);
 
 	public Font GetFont(float fontSize, float? scale = null)
-	{
-		scale = scale ?? 1F;
-		return new Font(FONT_ALBERTUSMT, fontSize * scale.Value);
-	}
+		=> this.Get(false, fontSize * (scale ?? 1F));
 
 	public Font GetFontLight(float fontSize, GraphicsUnit unit)
-		=> new Font(FONT_ALBERTUSMT, fontSize, unit);
+		=> this.Get(false, fontSize, unit: unit);
 
 	public Font GetFontLight(float fontSize, FontStyle fontStyle, GraphicsUnit unit)
-		=> new Font(FONT_ALBERTUSMTLIGHT, fontSize, fontStyle, unit);
+		=> this.Get(true, fontSize, fontStyle, unit);
 
 	public Font GetFontLight(float fontSize, FontStyle fontStyle, GraphicsUnit unit, byte b)
-		=> new Font(FONT_ALBERTUSMTLIGHT, fontSize, fontStyle, unit, b);
+		=> this.Get(true, fontSize, fontStyle, unit, b);
 
-	public Font GetFontLight(float fontSize) => new Font(FONT_ALBERTUSMTLIGHT, fontSize);
+	public Font GetFontLight(float fontSize)
+		=> this.Get(true, fontSize);
 
 	public Font GetFontLight(float fontSize, float? scale = null)
-	{
-		scale = scale ?? 1F;
-		return new Font(FONT_ALBERTUSMTLIGHT, fontSize * scale.Value);
-	}
-	public Font GetFontLight(float fontSize, FontStyle fontStyle, float? scale = null)
-	{
-		scale = scale ?? 1F;
-		return new Font(FONT_ALBERTUSMTLIGHT, fontSize * scale.Value, fontStyle);
-	}
+		=> this.Get(true, fontSize * (scale ?? 1F));
 
+	public Font GetFontLight(float fontSize, FontStyle fontStyle, float? scale = null)
+		=> this.Get(true, fontSize * (scale ?? 1F), fontStyle);
 }

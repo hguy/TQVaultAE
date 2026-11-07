@@ -2,6 +2,9 @@
 
 namespace TQVaultAE.Presentation.Win32.Contracts;
 
+/// <summary>
+/// Game fonts. The returned fonts are cached and shared: do not dispose them, copy one (<c>new Font(font, style)</c>) to own it.
+/// </summary>
 public interface IFontService
 {
 	IAddFontToOS FontLoader { get; }
