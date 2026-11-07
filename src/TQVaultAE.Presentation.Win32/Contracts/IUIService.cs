@@ -41,14 +41,14 @@ public interface IUIService : IUserNotifier
 	/// <summary>
 	/// Gets the item's bitmap
 	/// </summary>
-	Bitmap GetBitmap(Item itm);
+	Bitmap? GetBitmap(Item itm);
 
 	/// <summary>
 	/// Loads a bitmap from a resource Id string
 	/// </summary>
 	/// <param name="resourceId">Resource Id which we are looking up.</param>
 	/// <returns>Bitmap fetched from the database</returns>
-	Bitmap LoadBitmap(RecordId resourceId);
+	Bitmap? LoadBitmap(RecordId resourceId);
 
 	/// <summary>
 	/// Loads a bitmap from <paramref name="texData"/> with an identifier <paramref name="resourceId"/>
@@ -56,11 +56,11 @@ public interface IUIService : IUserNotifier
 	/// <param name="resourceId">Resource Id which we are looking up.</param>
 	/// <param name="texData">raw DDS image data</param>
 	/// <returns>Bitmap converted from <paramref name="texData"/></returns>
-	Bitmap LoadBitmap(RecordId resourceId, byte[] texData);
+	Bitmap? LoadBitmap(RecordId resourceId, byte[]? texData);
 
 	/// <summary>
 	/// Loads the relic overlay bitmap from the database.
 	/// </summary>
 	/// <returns>Relic overlay bitmap</returns>
-	Bitmap LoadRelicOverlayBitmap();
+	Bitmap? LoadRelicOverlayBitmap();
 }

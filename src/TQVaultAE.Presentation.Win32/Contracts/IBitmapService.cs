@@ -18,7 +18,7 @@ public interface IBitmapService
 	/// <param name="offset">offset into the array</param>
 	/// <param name="count">number of bytes</param>
 	/// <returns>bitmap of tex file.</returns>
-	Bitmap LoadFromTexMemory(byte[] data, int offset, int count);
+	Bitmap? LoadFromTexMemory(byte[] data, int offset, int count);
 
 	/// <summary>Resizes an image to a new width and height value.</summary>
 	/// <param name="image">The image to resize.</param>

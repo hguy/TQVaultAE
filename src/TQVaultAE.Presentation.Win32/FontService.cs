@@ -15,7 +15,7 @@ public class FontService : IFontService
 	const string ALBERTUSMT_NAME = "Albertus MT";
 	const string ALBERTUSMTLIGHT_NAME = "Albertus MT Light";
 
-	private FontFamily _FONT_ALBERTUSMT = null;
+	private FontFamily? _FONT_ALBERTUSMT = null;
 	private FontFamily FONT_ALBERTUSMT
 	{
 		get
@@ -36,7 +36,7 @@ public class FontService : IFontService
 							_FONT_ALBERTUSMT = new FontFamily(baseFont.ToString());
 							break;
 						case FontFamilyList.TimesNewRoman:
-							_FONT_ALBERTUSMT = new FontFamily(baseFont.AsString(EnumFormat.Description));
+							_FONT_ALBERTUSMT = new FontFamily(baseFont.AsString(EnumFormat.Description) ?? baseFont.ToString());
 							break;
 					}
 				}
@@ -56,11 +56,12 @@ public class FontService : IFontService
 					}
 				}
 			}
-			return _FONT_ALBERTUSMT;
+			// The font could not be created: let GDI+ pick a safe one rather than fail.
+			return _FONT_ALBERTUSMT ?? FontFamily.GenericSansSerif;
 		}
 	}
 
-	private FontFamily _FONT_ALBERTUSMTLIGHT = null;
+	private FontFamily? _FONT_ALBERTUSMTLIGHT = null;
 
 	private FontFamily FONT_ALBERTUSMTLIGHT
 	{
@@ -82,7 +83,7 @@ public class FontService : IFontService
 							_FONT_ALBERTUSMTLIGHT = new FontFamily(baseFont.ToString());
 							break;
 						case FontFamilyList.TimesNewRoman:
-							_FONT_ALBERTUSMTLIGHT = new FontFamily(baseFont.AsString(EnumFormat.Description));
+							_FONT_ALBERTUSMTLIGHT = new FontFamily(baseFont.AsString(EnumFormat.Description) ?? baseFont.ToString());
 							break;
 					}
 				}
@@ -104,7 +105,8 @@ public class FontService : IFontService
 				}
 			}
 
-			return _FONT_ALBERTUSMTLIGHT;
+			// The font could not be created: let GDI+ pick a safe one rather than fail.
+			return _FONT_ALBERTUSMTLIGHT ?? FontFamily.GenericSansSerif;
 		}
 	}
 
