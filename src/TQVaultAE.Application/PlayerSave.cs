@@ -5,8 +5,8 @@ namespace TQVaultAE.Application;
 
 public class PlayerSave : IDisposable
 {
-	public FileSystemWatcher PlayerSaveWatcher { get; set; }
-	public FileSystemWatcher PlayerStashWatcher { get; set; }
+	public FileSystemWatcher? PlayerSaveWatcher { get; set; }
+	public FileSystemWatcher? PlayerStashWatcher { get; set; }
 
 	public readonly Dictionary<string, Color> Tags = new();
 
@@ -18,7 +18,7 @@ public class PlayerSave : IDisposable
 	public readonly string CustomMapName;
 	readonly ITranslationService Translate;
 	private readonly IPathIO PathIO;
-	public PlayerInfo Info;
+	public PlayerInfo? Info;
 	public readonly bool IsImmortalThrone;
 
 	public PlayerSave(string folder, bool isImmortalThrone, bool isArchived, bool isCustom, string customMap, ITranslationService translate, IPathIO pathIO)

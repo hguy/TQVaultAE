@@ -7,16 +7,16 @@ public class ImportResult
 {
 	public bool Success { get; set; }
 	public ExportScope Scope { get; set; }
-	public Item Item { get; set; }
-	public IReadOnlyList<Item> Items { get; set; }
+	public Item? Item { get; set; }
+	public IReadOnlyList<Item> Items { get; set; } = [];
 	public int SackNumber { get; set; }
-	public string VaultName { get; set; }
-	public Dictionary<int, List<Item>> SackItems { get; set; }
+	public string VaultName { get; set; } = string.Empty;
+	public Dictionary<int, List<Item>> SackItems { get; set; } = new();
 	public int ImportedCount { get; set; }
 	public int TotalCount { get; set; }
-	public string ErrorMessage { get; set; }
-	public BagButtonIconInfo TabIconInfo { get; set; }
-	public Dictionary<int, BagButtonIconInfo> SackIconInfo { get; set; }
+	public string? ErrorMessage { get; set; }
+	public BagButtonIconInfo? TabIconInfo { get; set; }
+	public Dictionary<int, BagButtonIconInfo>? SackIconInfo { get; set; }
 
 	public static ImportResult Succeeded(Item item)
 		=> new()
@@ -28,7 +28,7 @@ public class ImportResult
 			TotalCount = 1
 		};
 
-	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, BagButtonIconInfo iconInfo = null)
+	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, BagButtonIconInfo? iconInfo = null)
 		=> new()
 		{
 			Success = true,
@@ -40,7 +40,7 @@ public class ImportResult
 			TotalCount = items.Count
 		};
 
-	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems, Dictionary<int, BagButtonIconInfo> sackIconInfo = null)
+	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems, Dictionary<int, BagButtonIconInfo>? sackIconInfo = null)
 	{
 		var total = 0;
 		foreach (var kv in sackItems)

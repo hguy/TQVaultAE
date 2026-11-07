@@ -28,7 +28,7 @@ public interface IPlayerCollectionProvider
 	/// </summary>
 	/// <param name="pc"></param>
 	/// <param name="filePathToUse">if not <c>null</c>, use this file instead of <see cref="PlayerCollection.PlayerFile"/> </param>
-	void LoadFile(PlayerCollection pc, string filePathToUse = null);
+	void LoadFile(PlayerCollection pc, string? filePathToUse = null);
 	/// <summary>
 	/// Attempts to save the file.
 	/// </summary>

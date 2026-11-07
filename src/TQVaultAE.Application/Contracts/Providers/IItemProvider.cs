@@ -75,7 +75,7 @@ public interface IItemProvider
 	/// <param name="parameter2">second parameter</param>
 	/// <param name="parameter3">third parameter</param>
 	/// <returns>formatted string.</returns>
-	string Format(string formatSpec, object parameter1, object parameter2 = null, object parameter3 = null);
+	string Format(string formatSpec, object parameter1, object? parameter2 = null, object? parameter3 = null);
 	/// <summary>
 	/// Pulls data out of the TQ item database for this item.
 	/// </summary>

@@ -21,17 +21,17 @@ public class ItemMoveResult
     /// <summary>
     /// Error message if the move failed.
     /// </summary>
-    public string ErrorMessage { get; set; }
+    public string? ErrorMessage { get; set; }
     
     /// <summary>
     /// The item that was moved.
     /// </summary>
-    public Item Item { get; set; }
+    public Item? Item { get; set; }
     
     /// <summary>
     /// The destination sack where the item was moved.
     /// </summary>
-    public SackCollection DestinationSack { get; set; }
+    public SackCollection? DestinationSack { get; set; }
     
     /// <summary>
     /// Creates a successful move result.
@@ -49,7 +49,7 @@ public class ItemMoveResult
     /// <summary>
     /// Creates a failed move result.
     /// </summary>
-    public static ItemMoveResult Failed(string errorMessage, Item item = null, SackCollection destinationSack = null)
+    public static ItemMoveResult Failed(string errorMessage, Item? item = null, SackCollection? destinationSack = null)
         => new()
         {
             Success = false,

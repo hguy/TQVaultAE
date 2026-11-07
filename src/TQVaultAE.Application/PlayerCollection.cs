@@ -22,17 +22,17 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Raised exception at loading time.
 	/// </summary>
-	public ArgumentException ArgumentException;
+	public ArgumentException? ArgumentException;
 
 	/// <summary>
 	/// String holding the player name
 	/// </summary>
-	private string playerName;
+	private string playerName = string.Empty;
 
 	/// <summary>
 	/// Byte array holding the raw data from the file.
 	/// </summary>
-	public byte[] rawData;
+	public byte[]? rawData;
 
 	/// <summary>
 	/// Number of sacks that this file holds
@@ -59,7 +59,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Array of the sacks
 	/// </summary>
-	public SackCollection[] Sacks;
+	public SackCollection[]? Sacks;
 
 	/// <summary>
 	/// Holds the currently disabled tooltip bagId.
@@ -93,12 +93,12 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Gets the equipment sack for this file.
 	/// </summary>
-	public SackCollection EquipmentSack { get; set; }
+	public SackCollection? EquipmentSack { get; set; }
 
 	/// <summary>
 	/// Holds playerInfo
 	/// </summary>
-	public PlayerInfo PlayerInfo { get; set; }
+	public PlayerInfo? PlayerInfo { get; set; }
 
 	/// <summary>
 	/// Gets the player file name
@@ -278,7 +278,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public void ClearPlayerGearBonuses()
 	{
-		if (PlayerInfo.GearBonus == null)
+		if (PlayerInfo?.GearBonus == null)
 			return;
 
 		PlayerInfo.GearBonus.StrengthBonus = 0;
@@ -302,7 +302,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public void ClearPlayerSkillBonuses()
 	{
-		if (PlayerInfo.SkillBonus == null)
+		if (PlayerInfo?.SkillBonus == null)
 			return;
 
 		PlayerInfo.SkillBonus.StrengthBonus = 0;
