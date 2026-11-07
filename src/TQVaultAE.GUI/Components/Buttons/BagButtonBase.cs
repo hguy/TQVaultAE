@@ -356,20 +356,23 @@ public class BagButtonBase : Panel
 					// If we are mousing over then display the bolded font.
 					if (this.IsOver)
 					{
-						font = new Font(font, FontStyle.Bold);
+						font = FontService.WithStyle(font, FontStyle.Bold);
 					}
 
-					StringFormat textFormat = new StringFormat(StringFormatFlags.NoClip);
-					textFormat.LineAlignment = StringAlignment.Center;
-					textFormat.Alignment = StringAlignment.Center;
-
-					e.Graphics.DrawString(this.ButtonText, font, new SolidBrush(Color.White), new RectangleF(0.0F, 0.0F, (float)this.Width, (float)this.Height), textFormat);
+					e.Graphics.DrawString(this.ButtonText, font, Brushes.White, new RectangleF(0.0F, 0.0F, (float)this.Width, (float)this.Height), CenteredText);
 				}
 			}
 		}
 
 		if (highlight) PaintHighlightAreaOnTopOfButton(e);
 	}
+
+	/// <summary>Centers the button text; shared by every button, only the UI thread draws with it.</summary>
+	private static readonly StringFormat CenteredText = new(StringFormatFlags.NoClip)
+	{
+		LineAlignment = StringAlignment.Center,
+		Alignment = StringAlignment.Center,
+	};
 
 	private void PaintHighlightAreaOnTopOfButton(PaintEventArgs e)
 	{
