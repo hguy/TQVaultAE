@@ -2132,4 +2132,7 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SearchHavingSkill" xml:space="preserve">
     <value>Having Skill</value>
   </data>
+	<data name="SearchItemSkills" xml:space="preserve">
+    <value>Item Skills</value>
+  </data>
 </root>

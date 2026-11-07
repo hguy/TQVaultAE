@@ -285,6 +285,24 @@ public class ItemProviderAttributeDisplayTests
 		this._provider.HasGrantedSkill(missing).Should().BeFalse();
 	}
 
+	[Fact]
+	public void GetGrantedSkillNames_NamesEachShownSkillOnce_FromTheItemAndItsRelic()
+	{
+		this._translations["tagSkillOther"] = "{^I}Other Skill";
+		this.CreateRecord("""records\test\skill.dbr""", "Skill_Passive", Str("skillDisplayName", "tagSkillTest"));
+		this.CreateRecord("""records\test\other.dbr""", "Skill_Passive", Str("skillDisplayName", "tagSkillOther"));
+		this.CreateRecord("""records\test\hidden.dbr""", "Skill_Passive", Ints("characterLife", 10));
+		this.CreateRecord("""records\test\relic.dbr""", "ItemRelic", Str("itemSkillName", """records\test\other.dbr"""));
+		this.CreateRecord("""records\test\bonus.dbr""", "ItemRelic", Str("itemSkillName", """records\test\skill.dbr"""));
+		this.CreateRecord("""records\test\prefix.dbr""", "LootRandomizer", Str("itemSkillName", """records\test\hidden.dbr"""));
+		var item = this.CreateItem("ArmorJewelry_Amulet", Str("itemSkillName", """records\test\skill.dbr"""));
+		item.relicID = RecordId.Create("""records\test\relic.dbr""");
+		item.RelicBonusId = RecordId.Create("""records\test\bonus.dbr""");
+		item.prefixID = RecordId.Create("""records\test\prefix.dbr""");
+
+		this._provider.GetGrantedSkillNames(item).Should().Equal("Test Skill", "Other Skill");
+	}
+
 	private GrantedSkill[] GrantedSkills(Item item)
 		=> this._provider.GetFriendlyNames(item, FriendlyNamesExtraScopes.BaseAttributes | FriendlyNamesExtraScopes.GrantedSkills).GrantedSkills;
 

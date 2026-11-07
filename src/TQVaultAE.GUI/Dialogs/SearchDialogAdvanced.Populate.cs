@@ -61,6 +61,25 @@ public partial class SearchDialogAdvanced
 		PopulateInit(clb, setitems);
 	}
 
+	private void PopulateSkills()
+	{
+		var clb = scalingCheckedListBoxSkills;
+		var skills =
+			from id in this.ItemDatabaseService.ItemDatabase
+			from skill in this.ItemProvider.GetGrantedSkillNames(id.Item)
+			orderby skill
+			group id by skill into grp
+			select new BoxItem
+			{
+				DisplayValue = grp.Key,
+				MatchingResults = grp,
+				CheckedList = clb,
+				Category = CategoryLabel(clb),
+			};
+
+		PopulateInit(clb, skills);
+	}
+
 	private void PopulateOrigin()
 	{
 		var clb = scalingCheckedListBoxOrigin;
