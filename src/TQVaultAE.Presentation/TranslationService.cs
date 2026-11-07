@@ -20,7 +20,7 @@ public class TranslationService : ITranslationService
 
 	public string Translate(ItemStyle itemStyle)
 	{
-		var tags = itemStyle.AsString(EnumFormat.Description);
+		var tags = itemStyle.AsString(EnumFormat.Description) ?? string.Empty;
 		var values = tags.Split('|');
 		var trans = (values.Length > 1)
 			? string.Format(values.Last(), this.TranslateXTag(values.First()))
@@ -47,7 +47,7 @@ public class TranslationService : ITranslationService
 
 	public string TranslateXTag(string xTagName, bool removeAllTQTags = false, bool doCleanup = false, bool doCleanupKeepLeadingColorTag = false)
 	{
-		string resx = LookFortranslation(xTagName);
+		string? resx = LookFortranslation(xTagName);
 
 		if (string.IsNullOrWhiteSpace(resx))
 			return xTagName;
@@ -60,11 +60,11 @@ public class TranslationService : ITranslationService
 
 	public bool TryTranslateXTag(string xTagName, out string translation, bool removeAllTQTags = false, bool doCleanup = false, bool doCleanupKeepLeadingColorTag = false)
 	{
-		string resx = LookFortranslation(xTagName);
+		string? resx = LookFortranslation(xTagName);
 
 		if (string.IsNullOrWhiteSpace(resx))
 		{
-			translation = null;
+			translation = string.Empty;
 			return false;
 		}
 
@@ -75,7 +75,7 @@ public class TranslationService : ITranslationService
 		return true;
 	}
 
-	private string LookFortranslation(string xTagName)
+	private string? LookFortranslation(string xTagName)
 	{
 		// all xtag substitute must have a "TextTag_" prefix in resource file (avoid colision & strong naming rule).
 		var resx = Resources.ResourceManager.GetString($"TextTag_{xTagName}");
@@ -95,6 +95,9 @@ public class TranslationService : ITranslationService
 	public string TranslateMastery(string characterXtagClass)
 	{
 		var tags = Resources.ResourceManager.GetString($"Masteries{characterXtagClass}");
+		if (string.IsNullOrEmpty(tags))
+			return TranslateXTag(characterXtagClass);
+
 		var dualclass = tags.Split('-');
 		return dualclass.Count() > 1
 			? $"{TranslateXTag(dualclass.First())}-{TranslateXTag(dualclass.Last())}"
