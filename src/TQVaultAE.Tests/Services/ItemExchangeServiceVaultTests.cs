@@ -191,7 +191,7 @@ public class ItemExchangeServiceVaultTests
 	public void ImportVaultInto_WithNullVault_ShouldDoNothing()
 	{
 		var importData = ImportResult.SucceededVault("Test", new Dictionary<int, List<Item>>());
-		var act = () => _service.ImportVaultInto(null, importData);
+		var act = () => _service.ImportVaultInto(null!, importData);
 		act.Should().NotThrow();
 	}
 
@@ -199,7 +199,7 @@ public class ItemExchangeServiceVaultTests
 	public void ImportVaultInto_WithNullImportData_ShouldDoNothing()
 	{
 		var vault = new PlayerCollection("Target", "target.vault") { IsVault = true };
-		var act = () => _service.ImportVaultInto(vault, null);
+		var act = () => _service.ImportVaultInto(vault, null!);
 		act.Should().NotThrow();
 	}
 
@@ -254,8 +254,8 @@ public class ItemExchangeServiceVaultTests
 		_service.ImportVaultInto(vault, importResult);
 
 		vault.Sacks[0].BagButtonIconInfo.Should().NotBeNull();
-		vault.Sacks[0].BagButtonIconInfo.Label.Should().Be("MyTab");
-		vault.Sacks[0].BagButtonIconInfo.DisplayMode.Should().Be(BagButtonDisplayMode.Label);
+		vault.Sacks[0].BagButtonIconInfo!.Label.Should().Be("MyTab");
+		vault.Sacks[0].BagButtonIconInfo!.DisplayMode.Should().Be(BagButtonDisplayMode.Label);
 	}
 
 	[Fact]

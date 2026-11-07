@@ -43,7 +43,7 @@ public class StashService : IStashService
 	/// <param name="selectedSave">Player save information.</param>
 	/// <param name="fromFileWatcher">When <c>true</c> called from <see cref="FileSystemWatcher.Changed"/></param>
 	/// <returns>Stash load result.</returns>
-	public StashLoadResult LoadPlayerStash(PlayerSave selectedSave, bool fromFileWatcher = false)
+	public StashLoadResult LoadPlayerStash(PlayerSave? selectedSave, bool fromFileWatcher = false)
 	{
 		var result = new StashLoadResult();
 

@@ -298,13 +298,13 @@ public class VaultServiceTests
 	{
 		// Arrange - mock GetVaultFile to return a valid path even for null name
 		var vaultFile = """C:\Test\Vaults\TestVault.vault""";
-		_mockGamePathService.Setup(x => x.GetVaultFile(null)).Returns(vaultFile);
+		_mockGamePathService.Setup(x => x.GetVaultFile(null!)).Returns(vaultFile);
 		_mockGamePathService.Setup(x => x.GetVaultFile("")).Returns(vaultFile);
 		_mockFileIO.Setup(x => x.Exists(vaultFile)).Returns(false);
 		_mockFileIO.Setup(x => x.Exists("""C:\Test\Vaults\TestVault""")).Returns(false);
 
 		// Act & Assert
-		_vaultService.LoadVault(null).Should().NotBeNull();
+		_vaultService.LoadVault(null!).Should().NotBeNull();
 		_vaultService.LoadVault("").Should().NotBeNull();
 	}
 
@@ -369,7 +369,7 @@ public class VaultServiceTests
 		try
 		{
 			// Act
-			_vaultService.UpdateVaultPath(null);
+			_vaultService.UpdateVaultPath(null!);
 
 			// Assert
 			_userSettings.VaultPath.Should().BeNull();

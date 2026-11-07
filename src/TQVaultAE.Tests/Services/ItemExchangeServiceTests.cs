@@ -400,7 +400,7 @@ public class ItemExchangeServiceTests
 	[Fact]
 	public void ImportFromJson_WithNull_ShouldThrowArgumentNullException()
 	{
-		var act = () => _service.ImportFromJson(null);
+		var act = () => _service.ImportFromJson(null!);
 
 		act.Should().Throw<ArgumentNullException>();
 	}

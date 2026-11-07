@@ -64,9 +64,9 @@ public sealed class ArzFileProviderTests : IDisposable
 
 		var record = this._provider.GetItem(file, RecordId.Create(@"records\item\ring01.dbr"));
 
-		record.GetInt32("itemLevel", 0).Should().Be(42);
+		record!.GetInt32("itemLevel", 0).Should().Be(42);
 		record.GetSingle("characterMana", 0).Should().Be(12.5f);
-		record["isQuestItem"][0].Should().Be(1);
+		record["isQuestItem"]![0].Should().Be(1);
 		record.GetString("description", 0).Should().Be(@"records\item\ring01.dbr", "string id 0 is the record id, trimmed");
 	}
 
@@ -80,7 +80,7 @@ public sealed class ArzFileProviderTests : IDisposable
 
 		var record = this._provider.GetItem(file, RecordId.Create(@"records\sounds\reyesh.dbr"));
 
-		record.GetString("soundName", 0).Should().Be("x4tagSQ303_Re’yesh_A1.mp3");
+		record!.GetString("soundName", 0).Should().Be("x4tagSQ303_Re’yesh_A1.mp3");
 	}
 
 	[Fact]

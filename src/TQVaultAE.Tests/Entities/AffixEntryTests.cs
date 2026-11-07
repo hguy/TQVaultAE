@@ -18,7 +18,7 @@ public class AffixEntryTests
 		var key = new AffixGroupKey(1, "Test");
 
 		// Act
-		var group = new AffixGroup(key, null);
+		var group = new AffixGroup(key, null!);
 
 		// Assert - null should be handled gracefully
 		group.Count.Should().Be(0);

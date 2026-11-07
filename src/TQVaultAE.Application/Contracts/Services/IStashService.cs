@@ -11,7 +11,7 @@ public interface IStashService
 	/// <param name="selectedSave">Player save information.</param>
 	/// <param name="fromFileWatcher">When <c>true</c> called from <see cref="FileSystemWatcher.Changed"/></param>
 	/// <returns>Stash load result.</returns>
-	StashLoadResult LoadPlayerStash(PlayerSave selectedSave, bool fromFileWatcher = false);
+	StashLoadResult LoadPlayerStash(PlayerSave? selectedSave, bool fromFileWatcher = false);
 
 	/// <summary>
 	/// Loads the relic vault stash.

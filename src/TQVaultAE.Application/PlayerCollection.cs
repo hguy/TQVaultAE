@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application;
@@ -192,6 +193,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// Creates empty sacks within the file.
 	/// </summary>
 	/// <param name="numberOfSacks">Number of sacks to create</param>
+	[MemberNotNull(nameof(Sacks))]
 	public void CreateEmptySacks(int numberOfSacks)
 	{
 		this.Sacks = new SackCollection[numberOfSacks];
