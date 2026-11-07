@@ -4,6 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Runtime.CompilerServices;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Domain.Jitter;
@@ -109,9 +110,10 @@ public static class ItemRollSimulator
 		table ??= EquipmentRollTable.Attributes;
 
 		var rng = TitanQuestRNG.FromItemSeed(seed);
-		var b = new Instance(Clone(baseRecord), RollSource.Base);
-		var p = new Instance(Clone(prefix), RollSource.Prefix);
-		var s = new Instance(Clone(suffix), RollSource.Suffix);
+		var rolled = RolledVariables(table);
+		var b = new Instance(Clone(baseRecord, rolled), RollSource.Base);
+		var p = new Instance(Clone(prefix, rolled), RollSource.Prefix);
+		var s = new Instance(Clone(suffix, rolled), RollSource.Suffix);
 
 		float prefixPct = p.Record?.GetSingle(LootRandomizerJitter, 0) ?? 0f;
 		float suffixPct = s.Record?.GetSingle(LootRandomizerJitter, 0) ?? 0f;
@@ -346,14 +348,28 @@ public static class ItemRollSimulator
 			? 0f
 			: variable.GetSingle(0);
 
-	private static DBRecordCollection? Clone(DBRecordCollection? record)
+	/// <summary>Names of the variables a roll can change (<see cref="RollField.Variable"/>), by table.</summary>
+	private static readonly ConditionalWeakTable<IReadOnlyList<RollAttribute>, HashSet<string>> RolledVariablesByTable = new();
+
+	private static HashSet<string> RolledVariables(IReadOnlyList<RollAttribute> table)
+		=> RolledVariablesByTable.GetValue(table, static t => t
+			.SelectMany(attr => attr.Fields)
+			.Select(field => field.Variable)
+			.ToHashSet(StringComparer.OrdinalIgnoreCase));
+
+	/// <summary>
+	/// Copy of <paramref name="record"/> the roll can change: only the <paramref name="rolled"/> variables are cloned, the
+	/// others are shared with the database record, as nothing writes them. Cloning every variable of three records per item
+	/// was most of the allocations of the search warm-up.
+	/// </summary>
+	private static DBRecordCollection? Clone(DBRecordCollection? record, HashSet<string> rolled)
 	{
 		if (record is null)
 			return null;
 
 		var copy = new DBRecordCollection(record.Id, record.RecordType, record.Count);
 		foreach (var variable in record)
-			copy.Set(variable.Clone());
+			copy.Set(rolled.Contains(variable.Name) ? variable.Clone() : variable);
 
 		return copy;
 	}
