@@ -192,8 +192,9 @@ public class VaultService : IVaultService
 				.ToList()
 				.AsReadOnly();
 		}
-		catch (Exception)
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 		{
+			Log.LogWarning(ex, "Unable to list the vaults in {Folder}", this.GamePathResolver.TQVaultSaveFolder);
 			return Array.Empty<string>();
 		}
 	}

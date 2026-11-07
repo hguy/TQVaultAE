@@ -10,6 +10,7 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
@@ -203,6 +204,7 @@ public partial class VaultPanel
 			}
 			catch (Exception ex)
 			{
+				this.Services.Logger<VaultPanel>().LogError(ex, "Failed to export tab to PasteBin");
 				this.UIService.ShowError($"Failed to export to PasteBin: {ex.Message}");
 			}
 		}

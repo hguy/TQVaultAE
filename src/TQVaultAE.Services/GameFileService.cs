@@ -493,8 +493,9 @@ public partial class GameFileService : IGameFileService
 					// It already exists--we need to remove it
 					DirectoryIO.Delete(newFolder, true);
 				}
-				catch (Exception)
+				catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
 				{
+					this.Log.LogWarning(ex, "Unable to remove {Folder}, using a numbered folder instead", newFolder);
 					int fn = 1;
 					while (DirectoryIO.Exists(string.Format("{0}({1})", newFolder, fn)))
 					{
