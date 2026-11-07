@@ -14,7 +14,8 @@ public partial class ItemProvider
 
 	public SortedList<string, Variable> GetRequirementVariables(Item itm)
 	{
-		var RequirementVariables = new SortedList<string, Variable>();
+		// Ordinal: the keys are attribute names, and the default culture-aware comparer was a visible cost of the search warm-up.
+		var RequirementVariables = new SortedList<string, Variable>(StringComparer.Ordinal);
 		if (itm.baseItemInfo != null)
 		{
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(itm.BaseItemId));
