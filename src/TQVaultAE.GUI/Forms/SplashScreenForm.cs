@@ -68,6 +68,9 @@ internal sealed partial class SplashScreenForm : VaultForm
 
 		this.InitializeComponent();
 
+		// The form follows the DPI, the picture keeps its pixels: stretch it, as a Form tiles its background by default.
+		this.BackgroundImageLayout = ImageLayout.Stretch;
+
 		#region Apply custom font
 
 		this.label3.Font = FontService.GetFontLight(12F);
@@ -166,7 +169,7 @@ internal sealed partial class SplashScreenForm : VaultForm
 		// Paint a black border around the form.
 		if (this.UseRoundedRectangle && this.graphicsPath != null)
 		{
-			Pen pen = new Pen(Color.Black, borderPenWidth);
+			using var pen = new Pen(Color.Black, borderPenWidth);
 			e.Graphics.DrawPath(pen, this.graphicsPath);
 		}
 	}
