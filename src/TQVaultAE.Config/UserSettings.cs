@@ -189,7 +189,7 @@ public class UserSettings
 	public string GameLanguages { get; set; } = "de,en,es,fr,it,pl,ru,cs,zh";
 
 	[XmlElement(ElementName = nameof(UILanguage))]
-	public string UILanguage { get; set; }
+	public string? UILanguage { get; set; }
 
 	/// <summary>
 	/// https://github.com/EtienneLamoureux/TQVaultAE
@@ -244,7 +244,7 @@ public class UserSettings
 	{
 		XmlSerializer serializer = new XmlSerializer(typeof(UserSettings));
 		using var reader = new StringReader(xmlData);
-		return (UserSettings)serializer.Deserialize(reader);
+		return (UserSettings?)serializer.Deserialize(reader) ?? new UserSettings();
 	}
 
 	#endregion
