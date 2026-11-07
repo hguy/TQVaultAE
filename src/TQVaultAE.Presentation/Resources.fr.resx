@@ -1758,4 +1758,10 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
 	<data name="SettingTooltipShowGrantedSkillsTT" xml:space="preserve">
     <value>Affiche dans un panneau à côté de l'infobulle les compétences accordées par l'objet, ses affixes et ses reliques</value>
   </data>
+	<data name="SettingTooltipShowSetPieceCounts" xml:space="preserve">
+    <value>Afficher le nombre de pièces de set</value>
+  </data>
+	<data name="SettingTooltipShowSetPieceCountsTT" xml:space="preserve">
+    <value>Affiche, en face de chaque pièce du set, combien en contiennent les coffres, personnages et réserves chargés</value>
+  </data>
 </root>

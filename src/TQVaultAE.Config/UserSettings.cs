@@ -102,6 +102,10 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(TooltipShowGrantedSkills))]
 	public bool TooltipShowGrantedSkills { get; set; } = true;
 
+	/// <summary>The enhanced tooltip shows, next to each piece of the item's set, how many of it are loaded.</summary>
+	[XmlElement(ElementName = nameof(TooltipShowSetPieceCounts))]
+	public bool TooltipShowSetPieceCounts { get; set; } = true;
+
 	/// <summary>
 	/// Show item attributes with the in-game jitter applied (issue #552) instead of the database values.
 	/// </summary>

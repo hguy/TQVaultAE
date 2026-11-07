@@ -126,6 +126,7 @@ internal partial class SettingsDialog
 			USettings.TooltipShowInGameRolls = this.tooltipShowInGameRolls;
 			USettings.TooltipShowValueRanges = this.tooltipShowValueRanges;
 			USettings.TooltipShowGrantedSkills = this.tooltipShowGrantedSkills;
+			USettings.TooltipShowSetPieceCounts = this.tooltipShowSetPieceCounts;
 			USettings.ItemBGColorOpacity = this.itemBGColorOpacity;
 			USettings.EnableItemRequirementRestriction = this.enableItemRequirementRestriction;
 			USettings.EnableHotReload = this.enableHotReload;
@@ -589,6 +590,15 @@ internal partial class SettingsDialog
 		if (this.scalingCheckBoxTooltipGrantedSkills.Checked != this.tooltipShowGrantedSkills)
 		{
 			this.tooltipShowGrantedSkills = this.scalingCheckBoxTooltipGrantedSkills.Checked;
+			this.ConfigurationChanged = true;
+		}
+	}
+
+	private void scalingCheckBoxTooltipSetPieceCounts_CheckedChanged(object? sender, EventArgs e)
+	{
+		if (this.scalingCheckBoxTooltipSetPieceCounts.Checked != this.tooltipShowSetPieceCounts)
+		{
+			this.tooltipShowSetPieceCounts = this.scalingCheckBoxTooltipSetPieceCounts.Checked;
 			this.ConfigurationChanged = true;
 		}
 	}

@@ -5703,5 +5703,23 @@ namespace TQVaultAE.Presentation {
                 return ResourceManager.GetString("SettingTooltipShowGrantedSkillsTT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display items set pieces count.
+        /// </summary>
+        public static string SettingTooltipShowSetPieceCounts {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowSetPieceCounts", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show, next to each piece of the set, how many of it are in the vaults, characters and stashes loaded now.
+        /// </summary>
+        public static string SettingTooltipShowSetPieceCountsTT {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowSetPieceCountsTT", resourceCulture);
+            }
+        }
     }
 }
