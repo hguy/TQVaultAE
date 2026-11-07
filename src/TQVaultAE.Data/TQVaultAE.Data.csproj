@@ -2,7 +2,6 @@
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
-		<InternalsVisibleTo>TQVaultAE.Tests</InternalsVisibleTo>
 		<PlatformTarget>AnyCPU</PlatformTarget>
 		<Description>Data layer</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -10,6 +9,10 @@
 		<RepositoryUrl>https://github.com/EtienneLamoureux/TQVaultAE</RepositoryUrl>
 		<RepositoryType>Github</RepositoryType>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="TQVaultAE.Tests" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Enums.NET" />

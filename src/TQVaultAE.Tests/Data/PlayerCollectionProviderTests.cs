@@ -24,7 +24,6 @@ public class PlayerCollectionProviderTests
 	private readonly Mock<ITQDataService> _mockTQDataService;
 	private readonly Mock<IFileIO> _mockFileIO;
 	private readonly Mock<IPathIO> _mockPathIO;
-	private readonly JsonSerializerOptions _jsonOptions;
 	private readonly PlayerCollectionProvider _provider;
 
 	public PlayerCollectionProviderTests()
@@ -35,15 +34,13 @@ public class PlayerCollectionProviderTests
 		_mockTQDataService = new Mock<ITQDataService>();
 		_mockFileIO = new Mock<IFileIO>();
 		_mockPathIO = new Mock<IPathIO>();
-		_jsonOptions = new JsonSerializerOptions();
 		_provider = new PlayerCollectionProvider(
 			_mockLogger.Object,
 			_mockItemProvider.Object,
 			_mockSackCollectionProvider.Object,
 			_mockTQDataService.Object,
 			_mockFileIO.Object,
-			_mockPathIO.Object,
-			_jsonOptions
+			_mockPathIO.Object
 		);
 	}
 
