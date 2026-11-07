@@ -2251,8 +2251,8 @@ namespace TQVaultAE.GUI.Dialogs
 			// SearchDialogAdvanced
 			// 
 			AcceptButton = applyButton;
-			AutoScaleDimensions = new SizeF(9F, 18F);
-			AutoScaleMode = AutoScaleMode.Font;
+			AutoScaleDimensions = new SizeF(96F, 96F);
+			AutoScaleMode = AutoScaleMode.Dpi;
 			BackColor = Color.FromArgb(46, 31, 21);
 			CancelButton = cancelButton;
 			ClientSize = new Size(1415, 870);
