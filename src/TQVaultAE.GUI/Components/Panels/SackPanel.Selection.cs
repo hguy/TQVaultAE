@@ -4,8 +4,21 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Collections.ObjectModel;
 using TQVaultAE.Domain.Entities;
+using Microsoft.Extensions.Logging;
+using System.Globalization;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Config;
+using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Forms;
+using TQVaultAE.GUI.Models;
+using TQVaultAE.Logs;
+using TQVaultAE.Presentation.Win32.Contracts;
+using TQVaultAE.Presentation.Win32;
+using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;
 
@@ -135,5 +148,101 @@ public partial class SackPanel
 
 		// Redraw Sack
 		this.Refresh();
+	}
+
+	/// <summary>
+	/// Gets whether a particular item has been multi-selected
+	/// </summary>
+	/// <param name="item">Item we are testing</param>
+	/// <returns>true if the item has been multi-selected</returns>
+	protected bool IsItemSelected(Item item)
+	{
+		// Make sure we have something to check
+		if (this.selectedItems == null || this.selectedItems.Count == 0)
+			return false;
+
+		// Iterate through the list of selected items
+		foreach (Item selectedItem in this.selectedItems)
+		{
+			if (item == selectedItem)
+				// We have a match
+				return true;
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Adds an item to the selected items list and if it's already there it gets removed.
+	/// </summary>
+	/// <param name="item">Item we are adding to the selection list.</param>
+	protected void SelectItem(Item item)
+	{
+		if (item == null)
+			return;
+
+		// Allocate the List if needed.
+		if (this.selectedItems == null)
+			this.selectedItems = new List<Item>();
+
+		// Check to see if the item is already selected
+		if (!this.IsItemSelected(item))
+		{
+			// Need to add the item to the list
+			this.selectedItems.Add(item);
+			this.selectedItemsChanged = true;
+		}
+		else
+			// It's already there so we need to remove it.
+			this.RemoveSelectedItem(item);
+
+		this.OnItemSelected?.Invoke(this, new SackPanelEventArgs(null, null));
+	}
+
+	/// <summary>
+	/// Removes an item from the selected items list.
+	/// </summary>
+	/// <param name="item">Item that we are removing</param>
+	protected void RemoveSelectedItem(Item item)
+	{
+		if (item == null || this.selectedItems == null)
+			return;
+
+		if (this.IsItemSelected(item))
+		{
+			// Check to see if the item is already selected
+			// If the item is in the list then remove it.
+			this.selectedItems.Remove(item);
+			this.selectedItemsChanged = true;
+
+			if (this.selectedItems.Count == 0)
+				this.ClearSelection();
+		}
+	}
+
+	/// <summary>
+	/// Indicates whether the item selection has changed.
+	/// </summary>
+	/// <returns>True if the item selection has changed and resets back to false afterward.</returns>
+	protected bool IsSelectedItemsChanged()
+	{
+		// Check if the flag is set
+		if (this.selectedItemsChanged)
+		{
+			// Reset the flag and return that the flag WAS set.
+			this.selectedItemsChanged = false;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	/// <summary>
+	/// Clears the item selection array
+	/// </summary>
+	protected void ClearSelection()
+	{
+		if (this.selectedItems != null)
+			this.selectedItems = null;
 	}
 }

@@ -1,0 +1,249 @@
+//-----------------------------------------------------------------------
+// <copyright file="VaultForm.Resizing.cs" company="None">
+//     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+/// <summary>
+/// Abstract class used for constructing TQVault themed forms.
+/// </summary>
+
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Interop;
+using TQVaultAE.Presentation.Win32;
+
+namespace TQVaultAE.GUI.Forms;
+
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using Microsoft.Extensions.Logging;
+using TQVaultAE.GUI.Components;
+using TQVaultAE.GUI.Models;
+
+public partial class VaultForm
+{
+	/// <summary>
+	/// Gets or sets a value indicating whether resizing is allowed when Custom Borders are enabled.
+	/// </summary>
+	public bool ResizeCustomAllowed
+	{
+		get => this.resizeCustomAllowed;
+
+		set
+		{
+			if (this.systemMenu != null)
+				this.systemMenu.SizeEnabled = value;
+
+			this.resizeCustomAllowed = value;
+		}
+	}
+
+	/// <summary>
+	/// Scales the form according to the scale factor.
+	/// </summary>
+	/// <param name="scaleFactor">Float which signifies the scale factor of the form.  This is an absolute from the original size unless useRelativeScaling is set to true.</param>
+	/// <param name="useRelativeScaling">Indicates whether the scale factor is relative.  Used to support a resize operation.</param>
+	protected virtual void ScaleForm(float scaleFactor, bool useRelativeScaling)
+	{
+		// Support relative resizing of the DB value.
+		if (useRelativeScaling && scaleFactor != 1.0F)
+		{
+			float newDBScale = UIService.Scale * scaleFactor;
+			if (newDBScale > 2.0F || newDBScale < 0.40F)
+				return;
+
+			UIService.Scale = newDBScale;
+			this.Scale(new SizeF(scaleFactor, scaleFactor));
+
+			USettings.Scale = UIService.Scale;
+			USettings.Save();
+		}
+		else if (scaleFactor == 1.0F)
+		{
+			// Reset the border graphics to the originals.
+			this.topBorder = Images.BorderTop;
+			this.bottomBorder = Images.BorderBottom;
+			this.sideBorder = Images.BorderSide;
+			this.bottomRightCorner = Images.BorderBottomRightCorner;
+			this.bottomLeftCorner = Images.BorderBottomLeftCorner;
+
+			UIService.Scale = 1.0F;
+
+			// Use the width since it is usually more drastic of a change.
+			// especially when coming from a small size.
+			var size = new SizeF(
+				(float)NORMAL_FORMWIDTH / (float)this.Width,
+				(float)NORMAL_FORMWIDTH / (float)this.Width);
+			this.Scale(size);
+
+			USettings.Scale = 1.0F;
+			USettings.Save();
+		}
+		else
+		{
+			float scalingWidth = (float)NORMAL_FORMWIDTH / (float)this.Width * scaleFactor;
+			float scalingHeight = (float)NORMAL_FORMHEIGHT / (float)this.Height * scaleFactor;
+			float scaling = scalingWidth;
+
+			// Use the scaling factor closest to one.
+			if ((scalingHeight < scalingWidth && scalingHeight > 1.0F) || (scalingHeight > scalingWidth && scalingHeight < 1.0F))
+				scaling = scalingHeight;
+
+			UIService.Scale = scaleFactor;
+			this.Scale(new SizeF(scaling, scaling));
+
+			USettings.Scale = UIService.Scale;
+			USettings.Save();
+		}
+
+		RefreshNormalizeBox();
+
+		this.Log.LogDebug("Config.Settings.Default.Scale changed to {Scale} !", USettings.Scale);
+	}
+
+	/// <summary>
+	/// Callback for resizing of the main form.
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">ResizeEventArgs data</param>
+	protected void ResizeFormCallback(object? sender, ResizeEventArgs e)
+	{
+		if (e.ResizeDelta == 0.0F)
+			// Nothing to do so we return.
+			return;
+
+		if (this.ScaleOnResize)
+		{
+			float scale;
+			if (e.ResizeDelta == 1.0F)
+				scale = e.ResizeDelta;
+			else
+				scale = UIService.Scale + e.ResizeDelta;
+
+			if (scale < 0.39F || scale > 2.01F)
+				return;
+
+			this.ScaleForm(scale, false);
+		}
+
+		this.LastFormSize = this.Size;
+	}
+
+	protected Size InitialScaling(Rectangle workingArea)
+	{
+		// If screen is smaller than NORMAL_FORM sizes, adjust scaling (mostly at first run)
+		if (workingArea.Width < NORMAL_FORMWIDTH || workingArea.Height < NORMAL_FORMHEIGHT)
+		{
+			var initialScale = Math.Min(
+				Convert.ToSingle(workingArea.Width) / Convert.ToSingle(NORMAL_FORMWIDTH)
+				, Convert.ToSingle(workingArea.Height) / Convert.ToSingle(NORMAL_FORMHEIGHT)
+			);
+
+			if (USettings.Scale > initialScale)
+			{
+				USettings.Scale = initialScale;
+				USettings.Save();
+			}
+		}
+
+		// Rescale from last saved value
+		var thisClientSize = new Size(
+			(int)Math.Round(NORMAL_FORMWIDTH * USettings.Scale)
+			, (int)Math.Round(NORMAL_FORMHEIGHT * USettings.Scale)
+		);
+
+		return thisClientSize;
+	}
+
+	/// <summary>
+	/// Handler for the ResizeBegin event.  Used for handling the maximize and minimize functions.
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">EventArgs data</param>
+	protected virtual void ResizeBeginCallback(object? sender, EventArgs e)
+	{
+		if (this.WindowState != this.lastState)
+		{
+			// If we are coming out of a minimized or maximized state, we need to restore
+			// the form the size prior to minimizing or maximizing.
+			bool fromMinimizedMaximized = false;
+			if (this.lastState == FormWindowState.Minimized || this.lastState == FormWindowState.Maximized)
+			{
+				this.LastFormSize = this.RestoreBounds.Size;
+				fromMinimizedMaximized = true;
+			}
+
+			this.lastState = this.WindowState;
+
+			this.DoResizeEndCallback(this, e, fromMinimizedMaximized);
+		}
+		else if (this.Size != this.LastFormSize && this.FormDesignRatio != 0.0F && this.ConstrainToDesignRatio)
+		{
+			Size tempSize = this.Size;
+
+			// Keep the resizing within the form's design aspect ratio and bounds.
+			// Find which was resized.
+			if (tempSize.Height != this.LastFormSize.Height)
+				tempSize.Width = Convert.ToInt32((float)tempSize.Height / this.FormDesignRatio);
+			else
+				tempSize.Height = Convert.ToInt32((float)tempSize.Width * this.FormDesignRatio);
+
+			// Make sure we do not exceed the maximum values.
+			if (tempSize.Height >= this.FormMaximumSize.Height || tempSize.Width >= this.FormMaximumSize.Width)
+				tempSize = this.FormMaximumSize;
+
+			if (tempSize.Height <= this.FormMinimumSize.Height || tempSize.Width <= this.FormMinimumSize.Width)
+				tempSize = this.FormMinimumSize;
+
+			this.Size = tempSize;
+		}
+	}
+
+	protected virtual void DoResizeEndCallback(object? sender, EventArgs e, bool fromMinimizedMaximized = false)
+	{
+		// Dragging the form will trigger this event.
+		// If the size did not change or if sizing is disabled we just skip it.
+		if (this.Size == this.LastFormSize || !this.ResizeCustomAllowed)
+			return;
+
+		if (this.ScaleOnResize)
+		{
+			Size resizeTo = this.LastFormSize;
+			// Scale the internal controls to the new size.
+			float scalingFactor = (float)this.Size.Height / (float)resizeTo.Height;
+
+			// Reset scaling to 1.0 if resize from minimize/maximize to normal with shift keydown
+			if (fromMinimizedMaximized)
+			{
+				if ((Control.ModifierKeys & Keys.Shift) == Keys.Shift)
+				{
+					resizeTo = new Size(NORMAL_FORMWIDTH, NORMAL_FORMHEIGHT);
+					scalingFactor = 1.0F;
+				}
+			}
+
+			// Set it back to the original size since the Scale() call in ScaleForm() will also resize the form.
+			this.Size = resizeTo;
+			this.ScaleForm(scalingFactor, true);
+		}
+
+		this.LastFormSize = this.Size;
+	}
+
+	/// <summary>
+	/// Handler for the Resize event.  Used to update the borders after the window has been resized.
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">EventArgs data</param>
+	protected virtual void ResizeCallback(object? sender, EventArgs e)
+	{
+		if (!this.ScaleOnResize)
+		{
+			this.PlaceButtons();
+			this.CreateBorderRects();
+			this.Invalidate();
+		}
+	}
+}

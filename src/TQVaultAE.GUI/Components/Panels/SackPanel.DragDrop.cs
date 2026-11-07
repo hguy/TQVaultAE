@@ -1,0 +1,423 @@
+//-----------------------------------------------------------------------
+// <copyright file="SackPanel.DragDrop.cs" company="None">
+//     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Microsoft.Extensions.Logging;
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Config;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.GUI.Components.Rendering;
+using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Forms;
+using TQVaultAE.GUI.Models;
+using TQVaultAE.GUI.Tooltips;
+using TQVaultAE.Presentation;
+using TQVaultAE.Presentation.Win32;
+using TQVaultAE.Presentation.Win32.Contracts;
+
+namespace TQVaultAE.GUI.Components.Panels;
+
+public partial class SackPanel
+{
+	/// <summary>
+	/// Cancels an item drag
+	/// </summary>
+	/// <param name="dragInfo">ItemDragInfo instance</param>
+	public virtual void CancelDrag(ItemDragInfo dragInfo)
+	{
+		// if the drag sack is not visible then we really do not need to do anything
+		if (this.Sack == dragInfo.SrcSack)
+			this.Invalidate(this.GetItemScreenRectangle(dragInfo.Item));
+	}
+
+	/// <summary>
+	/// Handler for picking up an item with the mouse
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">MouseEventArgs data</param>
+	protected virtual void PickupItem(object? sender, MouseEventArgs e)
+	{
+		// process the mouse moving to this location...just in case
+		this.MouseMoveCallback(sender, e);
+
+		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
+		if (focusedItem != null)
+		{
+			// We picked up an item so clear the selection
+			if (this.selectedItems != null)
+			{
+				// We might be over the only selected item so no need to redraw the whole sack.
+				if (this.selectedItems.Count != 1 || focusedItem != this.selectedItems[0])
+					this.Invalidate();
+
+				this.ClearSelection();
+			}
+
+			// Send a message to clear selections in the other panels.
+			this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
+
+			// pick up item.
+			this.DragInfo.Set(this, this.ShownSack, focusedItem, this.GetMouseOffset(e.Location, focusedItem));
+
+			// process mouse move again to apply the graphical effects of dragging an item.
+			this.MouseMoveCallback(sender, e);
+
+			ItemTooltip.HideTooltip();
+			BagButtonTooltip.InvalidateCache(this.Sack);
+		}
+	}
+
+	/// <summary>
+	/// Calculates the mouse offset in screen coordinates within an item bitmap.
+	/// </summary>
+	/// <param name="location">Point containing the screen coordinates of the mouse.</param>
+	/// <param name="item">Item that we are over</param>
+	/// <returns>Point containing the mouse offset.</returns>
+	protected virtual Point GetMouseOffset(Point location, Item item)
+	{
+		if (item == null)
+			return Point.Empty;
+
+		Point topLeft = this.CellTopLeft(item.Location);
+		return new Point(location.X - topLeft.X, location.Y - topLeft.Y);
+	}
+
+	/// <summary>
+	/// Handler for putting an item down with the mouse
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">MouseEventArgs data</param>
+	protected virtual void TryToPutdownItem(object? sender, MouseEventArgs e)
+	{
+		// process mouse moving to this location
+		this.MouseMoveCallback(sender, e);
+
+		// Make sure we have room to place the item here
+		// we do this by making sure that:
+		// (a) there are cells under us
+		// (b) there is <= 1 items under us
+		if (!this.CellsUnderDragItem.Size.IsEmpty && this.ItemsUnderDragItem.Count <= 1)
+		{
+			if (this.DragInfo.Item is not { } dragItem)
+				return;
+
+			/*
+						if ((
+							this.SackType == SackType.Player
+							|| this.SackType == SackType.Equipment
+							|| this.SackType == SackType.Player
+							) && IsCurrentPlayerReadOnly()
+						) return;
+			 */
+
+			if (!this.IsItemValidForPlacement(dragItem))
+				return;
+
+			if ((
+				this.SackType == SackType.Player
+				|| this.SackType == SackType.Equipment
+				|| this.SackType == SackType.Player
+				) && !IsSuitableForCurrentPlayer(dragItem)
+			) return;
+
+			// Yes we can drop it here!
+			// First take the item that is under us
+			Item? itemUnderUs = null;
+			if (this.ItemsUnderDragItem.Count == 1)
+				itemUnderUs = this.ItemsUnderDragItem[0];
+
+			// Maybe we are putting the item back.
+			// Then we just cancel.
+			if (itemUnderUs == this.DragInfo.Item && this.DragInfo.IsActive && this.DragInfo.CanBeCanceled)
+			{
+				this.DragInfo.Cancel();
+
+				// Now redraw this sack
+				this.Refresh();
+				this.MouseMoveCallback(sender, e);
+				return;
+			}
+
+			// Notify that the item has been placed.  This will remove it from the old sack
+			this.DragInfo.MarkPlaced();
+
+			// If we are a stackable and we have a stackable under us and we are the same type of stackable
+			// then just add to the stack instead of picking up the other stack
+
+			if (!(doStackPotions(dragItem, ref itemUnderUs) || doStackRelics(ref dragItem, ref itemUnderUs)))
+			{
+				// If not stackable
+				// Drop the dragItem here
+				dragItem.Location = this.CellsUnderDragItem.Location;
+
+				// Now add the item to our sack
+				this.ShownSack.AddItem(dragItem);
+
+				// Update item location properties to reflect new position
+				this.UpdateItemLocation(dragItem);
+
+				// Register new items in the database (existing items are already tracked)
+				this.ItemDatabaseService.TryAddItemToDatabase(dragItem);
+			}
+
+			// clear the "last drag" variables
+			this.LastDragLocation = InvalidDragLocation;
+			this.CellsUnderDragItem = InvalidDragRectangle;
+			this.ItemsUnderOldDragLocation.Clear();
+			this.ItemsUnderDragItem.Clear();
+
+			// Now mark itemUnderUs as picked up.
+			if (itemUnderUs != null && !RecordId.IsNullOrEmpty(itemUnderUs.BaseItemId))
+			{
+				// set our mouse offset to be the center of the item.
+				Point mouseOffset = new Point(
+					itemUnderUs.Width * UIService.HalfUnitSize,
+					itemUnderUs.Height * UIService.HalfUnitSize);
+				this.DragInfo.Set(this, this.ShownSack, itemUnderUs, mouseOffset);
+
+				// since we have dropped something in this location, we can no longer put this item here.
+				// mark its location as invalid to prevent that from happening.
+				itemUnderUs.Location = InvalidDragLocation;
+
+				// set the info to this item
+				this.OnNewItemHighlighted?.Invoke(this, new SackPanelEventArgs(this.Sack, itemUnderUs));
+			}
+
+			// clear the "last focus variables"
+			this.LastCellWithFocus = InvalidDragLocation;
+
+			// Clear any selections.
+			this.OnClearAllItemsSelected?.Invoke(this, new SackPanelEventArgs(null, null));
+
+			this.InvalidateItemCacheAll(itemUnderUs, dragItem);
+
+			// Repaint everything to clear up any graphical issues
+			this.Refresh();
+
+			// and now do a MouseMove() to properly draw the new drag item and/or focus
+			this.MouseMoveCallback(sender, e);
+
+			ItemTooltip.HideTooltip();
+			BagButtonTooltip.InvalidateCache(this.Sack);
+
+		}
+	}
+
+	protected bool doStackRelics(ref Item dragItem, ref Item? itemUnderUs)
+	{
+		if (itemUnderUs is null)
+			return false;
+
+		bool doStackRelics = dragItem.IsRelicOrCharm
+			&& itemUnderUs.IsRelicOrCharm
+			&& !itemUnderUs.IsRelicComplete && !dragItem.IsRelicComplete
+			&& dragItem.BaseItemId.Equals(itemUnderUs.BaseItemId)
+			&& !USettings.DisableAutoStacking;
+		if (doStackRelics)
+		{
+			// Stack relics
+			// Save the original Relic number
+			int originalNumber = itemUnderUs.Number;
+
+			// Adjust the item in the sack
+			// This is limited to the completion level of the Relic
+			itemUnderUs.Number += dragItem.Number;
+
+			// Check if we completed the item
+			if (itemUnderUs.IsRelicComplete)
+			{
+				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
+				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(itemUnderUs);
+
+				if (table != null && table.Length > 0)
+				{
+					int i = table.Length;
+					foreach (var e1 in table)
+					{
+						i--;
+						if (randPercent <= e1.Value.WeightPercent || i == 0)
+						{
+							itemUnderUs.RelicBonusId = e1.Key;
+							break;
+						}
+						else
+							randPercent -= e1.Value.WeightPercent;
+					}
+				}
+
+				ItemProvider.GetDBData(itemUnderUs);
+			}
+
+			itemUnderUs.IsModified = true;
+
+			this.InvalidateItemCacheAll(itemUnderUs, dragItem);
+
+			// Just in case we have more relics than what we need to complete
+			// We then adjust the one we are holding
+			int adjustedNumber = itemUnderUs.Number - originalNumber;
+			if (adjustedNumber != dragItem.Number)
+			{
+				dragItem.Number -= adjustedNumber;
+				dragItem.IsModified = true;
+
+				// Swap the items so the completed item stays in the
+				// sack and the remaining items are still being dragged
+				Item temp = itemUnderUs;
+				itemUnderUs = dragItem;
+				dragItem = temp;
+
+				// Drop the dragItem here
+				dragItem.Location = this.CellsUnderDragItem.Location;
+
+				// Now add the item to our sack
+				this.ShownSack.AddItem(dragItem);
+			}
+			else
+			{
+				this.ShownSack.IsModified = true;
+
+				// Get rid of ref to itemUnderUs so code below wont do anything with it.
+				itemUnderUs = null;
+				// we will just throw away the dragItem now.
+			}
+		}
+		return doStackRelics;
+	}
+
+	protected bool doStackPotions(Item dragItem, ref Item? itemUnderUs)
+	{
+		if (itemUnderUs is null)
+			return false;
+
+		bool doStackpotions = dragItem.DoesStack
+			&& itemUnderUs.DoesStack
+			&& dragItem.BaseItemId.Equals(itemUnderUs.BaseItemId)
+			&& !USettings.DisableAutoStacking;
+		if (doStackpotions)
+		{
+			itemUnderUs.StackSize += dragItem.StackSize;
+
+			this.InvalidateItemCacheAll(itemUnderUs, dragItem);
+
+			// Added this so the tooltip would update with the correct number
+			itemUnderUs.IsModified = true;
+			this.ShownSack.IsModified = true;
+
+			// Get rid of ref to itemUnderUs so code below wont do anything with it.
+			itemUnderUs = null;
+
+			// we will just throw away the dragItem now.
+		}
+		return doStackpotions;
+	}
+
+	/// <summary>
+	/// Gets a rectangle of the screen coordinates for all of the items that need to be redrawn from an item drag.
+	/// </summary>
+	/// <returns>Rectangle of the redraw area.</returns>
+	protected virtual Rectangle GetRepaintDragRect()
+	{
+		// Figure out the rectangle that needs to be redrawn
+		int x = this.LastDragLocation.X;
+		int y = this.LastDragLocation.Y;
+		if (this.DragInfo.Item is not { } dragged || this.UIService.GetBitmap(dragged) is not { } ibmp)
+			return Rectangle.Empty;
+
+		int width = Convert.ToInt32(ibmp.Width * UIService.Scale);
+		int height = Convert.ToInt32(ibmp.Height * UIService.Scale);
+
+		// We also know we need to wipe out any cells under the old drag point
+		// This is used to restore the background after highlighting the cells underneath
+		Rectangle cellRectangle = this.FindAllCells(new Rectangle(x, y, width, height));
+		if (!cellRectangle.Size.IsEmpty)
+		{
+			Point tl = this.CellTopLeft(cellRectangle.Location);
+			Point br = this.CellBottomRight(new Point(cellRectangle.Right - 1, cellRectangle.Bottom - 1));
+
+			// Extend our clipping rectangle to include all these cells
+			int oldX = x;
+			int oldY = y;
+			x = Math.Min(x, tl.X);
+			y = Math.Min(y, tl.Y);
+			width = Math.Max(oldX + width - 1, br.X) - x + 1;
+			height = Math.Max(oldY + height - 1, br.Y) - y + 1;
+		}
+
+		// We also need to wipe out any items that were under or are now under the dragItem so they can be redrawn
+		if (this.ItemsUnderOldDragLocation != null && this.ItemsUnderOldDragLocation.Count != 0)
+		{
+			foreach (Item item in this.ItemsUnderOldDragLocation)
+			{
+				// well we do not actually need to clear the item and redraw it since that will happen automatically
+				// in the PaintCallback().  We just need to include this item in the clip region
+				Point topLeft = this.CellTopLeft(item.Location);
+				Point bottomRight = this.CellBottomRight(new Point(item.Right - 1, item.Bottom - 1));
+
+				// Extend our clipping rectangle to include all these cells
+				int oldX = x;
+				int oldY = y;
+				x = Math.Min(x, topLeft.X);
+				y = Math.Min(y, topLeft.Y);
+				width = Math.Max(oldX + width - 1, bottomRight.X) - x + 1;
+				height = Math.Max(oldY + height - 1, bottomRight.Y) - y + 1;
+			}
+		}
+
+		if (this.ItemsUnderDragItem != null && this.ItemsUnderDragItem.Count != 0)
+		{
+			foreach (Item item in this.ItemsUnderDragItem)
+			{
+				// well we do not actually need to clear the item and redraw it since that will happen automatically
+				// in the PaintCallback().  We just need to include this item in the clip region
+				Point topLeft = this.CellTopLeft(item.Location);
+				Point bottomRight = this.CellBottomRight(new Point(item.Right - 1, item.Bottom - 1));
+
+				// Extend our clipping rectangle to include all these cells
+				int oldX = x;
+				int oldY = y;
+				x = Math.Min(x, topLeft.X);
+				y = Math.Min(y, topLeft.Y);
+				width = Math.Max(oldX + width - 1, bottomRight.X) - x + 1;
+				height = Math.Max(oldY + height - 1, bottomRight.Y) - y + 1;
+			}
+		}
+
+		return new Rectangle(x, y, width, height);
+	}
+
+	/// <summary>
+	/// Finds the rectangle under the mouse drag
+	/// </summary>
+	/// <returns>Rectangle representing the mouse drag area</returns>
+	protected Rectangle GetMouseDragRectangle()
+		=> new Rectangle(Math.Min(startPosition.X, currentPosition.X), Math.Min(startPosition.Y, currentPosition.Y), Math.Abs(startPosition.X - currentPosition.X), Math.Abs(startPosition.Y - currentPosition.Y));
+
+	/// <summary>
+	/// Updates the item's location properties to reflect its current position in this panel.
+	/// This ensures search results always show the correct location.
+	/// Also adds the item to the search database if it's not already present.
+	/// </summary>
+	/// <param name="item">The item to update</param>
+	protected void UpdateItemLocation(Item item)
+	{
+		if (item == null)
+			return;
+
+		item.Place.SackType = this.SackType;
+		item.Place.Path = this.PlayerCollection?.PlayerFile ?? string.Empty;
+		item.Place.Name = this.PlayerCollection?.PlayerName ?? string.Empty;
+		item.Place.StashType = this.ShownSack.StashType;
+		item.Place.SackNumber = (this.ShownSack.SackType, this.ShownSack.StashType) switch
+		{
+			(SackType.Stash, _) => (int)this.ShownSack.StashType!,
+			(SackType.Equipment, _) => BagIdConstants.BAGID_EQUIPMENTPANEL,
+			_ => this.CurrentSack,
+		};
+	}
+}
