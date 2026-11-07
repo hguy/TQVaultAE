@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -50,7 +51,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="search"></param>
 	/// <returns></returns>
-	public static (bool IsRegex, string Pattern, Regex Regex, bool RegexIsValid) IsTQVaultSearchRegEx(string search)
+	public static (bool IsRegex, string Pattern, Regex? Regex, bool RegexIsValid) IsTQVaultSearchRegEx(string? search)
 	{
 		if (string.IsNullOrWhiteSpace(search)) return (false, string.Empty, null, false);
 
@@ -58,11 +59,10 @@ public static partial class StringHelper
 
 		if (isregex)
 		{
-			Regex rex = null;
 			var pattern = search.Substring(1);
 			try
 			{
-				rex = new Regex(pattern, RegexOptions.IgnoreCase);
+				var rex = new Regex(pattern, RegexOptions.IgnoreCase);
 				return (isregex, pattern, rex, true);
 			}
 			catch (ArgumentException)
@@ -252,7 +252,8 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQPath"></param>
 	/// <returns></returns>
-	public static string PrettyFileName(this string TQPath)
+	[return: NotNullIfNotNull(nameof(TQPath))]
+	public static string? PrettyFileName(this string? TQPath)
 	{
 		if (TQPath is null) return null;
 		var filename = Path.GetFileNameWithoutExtension(TQPath).Replace('_', ' ');
@@ -381,8 +382,8 @@ public static partial class StringHelper
 			).Trim();
 	}
 
-	public static IEnumerable<string> RemoveEmptyAndSanitize(this IEnumerable<string> TQText)
-		=> TQText.Where(t => !string.IsNullOrWhiteSpace(t)).Select(t =>
+	public static IEnumerable<string> RemoveEmptyAndSanitize(this IEnumerable<string?> TQText)
+		=> TQText.OfType<string>().Where(t => !string.IsNullOrWhiteSpace(t)).Select(t =>
 		{
 			// Split ColorTag & Content
 			var tag = t.GetColorFromTaggedString();
@@ -457,7 +458,7 @@ public static partial class StringHelper
 						// Not a ColorTag alone
 						&& !line.IsColorTagOnly()
 					) line += ' ';
-					if (foundColor.HasValue) currentColor = foundColor?.ColorTag();
+					if (foundColor.HasValue) currentColor = foundColor.Value.ColorTag();
 					if (line.Length + word.Length > Columns)
 					{
 						res.Add(line);

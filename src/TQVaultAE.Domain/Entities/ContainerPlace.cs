@@ -8,12 +8,12 @@ public record ContainerPlace
 	/// <summary>
 	/// Gets or sets the container file path (vault/player/stash file)
 	/// </summary>
-	public string Path { get; set; }
+	public string Path { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the container display name
 	/// </summary>
-	public string Name { get; set; }
+	public string Name { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the sack number within the container

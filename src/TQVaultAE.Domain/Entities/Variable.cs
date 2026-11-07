@@ -101,7 +101,7 @@ public class Variable
 	/// <returns>
 	/// string of value.
 	/// </returns>
-	public string GetString(int index = 0) => Convert.ToString(this.values[index], CultureInfo.InvariantCulture);
+	public string GetString(int index = 0) => Convert.ToString(this.values[index], CultureInfo.InvariantCulture) ?? string.Empty;
 
 	/// <summary>
 	/// Indicates whether any of the values in the variable are not zero.

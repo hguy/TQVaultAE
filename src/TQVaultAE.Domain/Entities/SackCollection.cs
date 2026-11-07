@@ -170,7 +170,7 @@ public class SackCollection : IEnumerable<Item>
 	/// <summary>
 	/// Loaded icon details
 	/// </summary>
-	public BagButtonIconInfo BagButtonIconInfo { get; set; }
+	public BagButtonIconInfo? BagButtonIconInfo { get; set; }
 
 	/// <summary>
 	/// Gets offset of the weapon slot

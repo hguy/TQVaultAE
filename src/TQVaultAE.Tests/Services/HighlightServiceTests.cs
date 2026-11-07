@@ -81,10 +81,9 @@ public class HighlightServiceTests
 	[Fact]
 	public void FindHighlight_WithFilterOnly_DoesNotSearchText()
 	{
-		// Arrange - Create a player with equipment (Sacks is null by default, causing exception)
+		// Arrange - a filter built with an initializer leaves its class, rarity and origin lists empty
 		var playerFile = "/Test/Players/TestPlayer.plr";
 		var playerCollection = new PlayerCollection("TestPlayer", playerFile);
-		// Note: Sacks is null by default, which causes the exception in FindHighlight
 
 		_sessionContext.Players.GetOrAddAtomic(playerFile, _ => playerCollection);
 
@@ -94,11 +93,12 @@ public class HighlightServiceTests
 			MinLvl = 5
 		};
 
-		// Act - this will throw because Sacks is null
+		// Act
 		var act = () => _service.FindHighlight();
 
-		// Assert - the actual behavior is an ArgumentNullException from LINQ Any()
-		act.Should().Throw<ArgumentNullException>();
+		// Assert - the empty lists do not filter anything out, and the player without sacks has no items
+		act.Should().NotThrow();
+		_service.HighlightedItems.Should().BeEmpty();
 	}
 
 	[Fact]

@@ -10,11 +10,11 @@ public class HighlightFilterValues
 	public int MinInt;
 	public bool MinRequierement;
 	public bool MaxRequierement;
-	public List<string> ClassItem;
-	public List<Rarity> Rarity;
+	public List<string> ClassItem = [];
+	public List<Rarity> Rarity = [];
 	public int MaxLvl;
 	public int MinLvl;
-	public List<GameDlc> Origin;
+	public List<GameDlc> Origin = [];
 	public bool HavingPrefix;
 	public bool HavingSuffix;
 	public bool HavingRelic;

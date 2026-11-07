@@ -24,9 +24,9 @@ public enum GameDlc
 public static class GameDlcExtension
 {
 	public static string GetCode(this GameDlc ext)
-		=> Enums.GetAttributes(ext).Get<GameDlcDescriptionAttribute>().Code;
+		=> Enums.GetAttributes(ext)!.Get<GameDlcDescriptionAttribute>()!.Code;
 	public static string GetTranslationTag(this GameDlc ext)
-		=> Enums.GetAttributes(ext).Get<GameDlcDescriptionAttribute>().TranslationTag;
+		=> Enums.GetAttributes(ext)!.Get<GameDlcDescriptionAttribute>()!.TranslationTag;
 	public static string GetSuffix(this GameDlc ext)
 	{
 		switch (ext)

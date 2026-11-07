@@ -52,7 +52,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// </summary>
 	/// <param name="variableName">Name of the variable we are looking up.</param>
 	/// <returns>Returns a Variable from the hashtable.</returns>
-	public Variable this[string variableName]
+	public Variable? this[string variableName]
 		=> this.variables.TryGetValue(variableName.ToUpperInvariant(), out var val) ? val : null;
 
 	/// <summary>
@@ -123,11 +123,9 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// </summary>
 	/// <param name="variableName">Name of the variable.</param>
 	/// <returns>Returns a string array of the string values.</returns>
-	public string[] GetAllStrings(string variableName)
+	public string[]? GetAllStrings(string variableName)
 	{
-		Variable variable;
-
-		if (!this.variables.TryGetValue(variableName.ToUpperInvariant(), out variable))
+		if (!this.variables.TryGetValue(variableName.ToUpperInvariant(), out var variable))
 			return null;
 
 		string[] ansArray = new string[variable.NumberOfValues];
@@ -138,7 +136,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	}
 
 
-	KeyValuePair<string, Variable>[] _RelevantVars = null;
+	KeyValuePair<string, Variable>[]? _RelevantVars;
 	/// <summary>
 	/// Get the relevant vars, meaning there is something to display.
 	/// </summary>
@@ -146,8 +144,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	{
 		get
 		{
-			if (this._RelevantVars is null) this._RelevantVars = this.variables?.Where(v => v.Value.IsValueRelevant).ToArray();
-			return this._RelevantVars;
+			return this._RelevantVars ??= this.variables.Where(v => v.Value.IsValueRelevant).ToArray();
 		}
 	}
 

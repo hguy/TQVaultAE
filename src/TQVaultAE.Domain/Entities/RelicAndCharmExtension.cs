@@ -12,14 +12,14 @@ public static class RelicAndCharmExtension
 
 	internal static readonly ReadOnlyCollection<RelicAndCharmMapItem> RelicAndCharmMap =
 		EnumsNET.Enums.GetValues<RelicAndCharm>()
-		.Select(v => EnumsNET.Enums.GetMember(v))
+		.Select(v => EnumsNET.Enums.GetMember(v)!)
 		.Select(m =>
 		{
-			var idStr = m.AsString(EnumsNET.EnumFormat.Description);
+			var idStr = m.AsString(EnumsNET.EnumFormat.Description)!;
 			return new RelicAndCharmMapItem(
 				m.Value,
 				RecordId: idStr,
-				Types: m.Attributes.Get<GearTypeAttribute>().Type
+				Types: m.Attributes.Get<GearTypeAttribute>()!.Type
 			);
 		}).ToList().AsReadOnly();
 

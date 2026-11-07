@@ -31,47 +31,47 @@ public class Info
 	/// <summary>
 	/// description variable
 	/// </summary>
-	private string descriptionVar;
+	private string descriptionVar = string.Empty;
 
 	/// <summary>
 	/// item classification variable
 	/// </summary>
-	private string itemClassificationVar;
+	private string itemClassificationVar = string.Empty;
 
 	/// <summary>
 	/// bitmap variable
 	/// </summary>
-	private string bitmapVar;
+	private string bitmapVar = string.Empty;
 
 	/// <summary>
 	/// shard bitmap variable
 	/// </summary>
-	private string shardBitmapVar;
+	private string shardBitmapVar = string.Empty;
 
 	/// <summary>
 	/// item class variable
 	/// </summary>
-	private string itemClassVar;
+	private string itemClassVar = string.Empty;
 
 	/// <summary>
 	/// completed relic level variable
 	/// </summary>
-	private string completedRelicLevelVar;
+	private string completedRelicLevelVar = string.Empty;
 
 	/// <summary>
 	/// item quality variable
 	/// </summary>
-	private string qualityVar;
+	private string qualityVar = string.Empty;
 
 	/// <summary>
 	/// item style variable
 	/// </summary>
-	private string styleVar;
+	private string styleVar = string.Empty;
 
 	/// <summary>
 	/// itemscalepercent attribute
 	/// </summary>
-	private string itemScalePercent;
+	private string itemScalePercent = string.Empty;
 
 	/// <summary>
 	/// Initializes a new instance of the Info class.

@@ -14,7 +14,7 @@ public class Stash
 	/// <summary>
 	/// Raised exception at loading time.
 	/// </summary>
-	public ArgumentException ArgumentException;
+	public ArgumentException? ArgumentException;
 	/// <summary>
 	/// return result of <see cref="StashProvider.LoadFile"/> from loading time.
 	/// </summary>
@@ -22,12 +22,12 @@ public class Stash
 	/// <summary>
 	/// Player name associated with this stash file.
 	/// </summary>
-	private string playerName;
+	private string playerName = string.Empty;
 
 	/// <summary>
 	/// Raw file data
 	/// </summary>
-	public byte[] rawData;
+	public byte[] rawData = [];
 
 	/// <summary>
 	/// Binary marker for begin block
@@ -48,12 +48,12 @@ public class Stash
 	/// Raw data holding the name.
 	/// Changed to raw data to support extended characters
 	/// </summary>
-	public byte[] name;
+	public byte[] name = [];
 
 	/// <summary>
 	/// Gets the current sack instance
 	/// </summary>
-	public SackCollection Sack;
+	public SackCollection? Sack;
 
 	/// <summary>
 	/// Initializes a new instance of the Stash class.

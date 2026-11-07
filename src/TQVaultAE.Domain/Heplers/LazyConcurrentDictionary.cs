@@ -5,6 +5,7 @@ namespace TQVaultAE.Domain.Helpers;
 
 // From : https://blogs.endjin.com/2015/10/using-lazy-and-concurrentdictionary-to-ensure-a-thread-safe-run-once-lazy-loaded-collection/
 public class LazyConcurrentDictionary<TKey, TValue> : ConcurrentDictionary<TKey, Lazy<TValue>>
+	where TKey : notnull
 {
 	private volatile int _version;
 

@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿﻿using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 
@@ -7,13 +8,14 @@ namespace TQVaultAE.Domain.Results;
 public partial class ToFriendlyNameResult
 {
 
-	IEnumerable<string> _FullText = null;
+	IEnumerable<string>? _FullText;
+	[MemberNotNull(nameof(_FullText))]
 	private void FulltextBuild()
 	{
 		if (_FullText is null)
 		{
 			// No mutation, just a comprehensive list of string ref 
-			string[][] parts = [
+			string?[][] parts = [
 					[
 						FullName
 						, ItemThrown
@@ -37,7 +39,7 @@ public partial class ToFriendlyNameResult
 					, ItemSet?.Translations.Select(si => si.Value).ToArray() ?? []
 					, Requirements
 				];
-			_FullText = parts.SelectMany(s => s).Where(s => !string.IsNullOrEmpty(s));
+			_FullText = parts.SelectMany(s => s).OfType<string>().Where(s => s.Length > 0);
 		}
 	}
 
@@ -124,7 +126,7 @@ public partial class ToFriendlyNameResult
 	{
 		get
 		{
-			string[] parts = [
+			string?[] parts = [
 				PrefixInfoDescription
 				, BaseItemInfoQuality
 				, BaseItemInfoDescription
@@ -141,7 +143,7 @@ public partial class ToFriendlyNameResult
 	{
 		get
 		{
-			string[] parts = [
+			string?[] parts = [
 				PrefixInfoDescription
 				, BaseItemInfoQuality
 				, Item.IsRelicOrCharm && !Item.IsCharmOnly ? TQColor.Silver.ColorTag() : null // Make a color diff for Relic & Charm
@@ -158,38 +160,38 @@ public partial class ToFriendlyNameResult
 	}
 
 	public readonly Item Item;
-	public string PrefixInfoDescription { get; internal set; }
-	public string[] PrefixAttributes { get; internal set; }
-	public DBRecordCollection PrefixInfoRecords { get; internal set; }
-	public string SuffixInfoDescription { get; internal set; }
-	public string[] SuffixAttributes { get; internal set; }
-	public DBRecordCollection SuffixInfoRecords { get; internal set; }
+	public string? PrefixInfoDescription { get; internal set; }
+	public string[] PrefixAttributes { get; internal set; } = [];
+	public DBRecordCollection? PrefixInfoRecords { get; internal set; }
+	public string? SuffixInfoDescription { get; internal set; }
+	public string[] SuffixAttributes { get; internal set; } = [];
+	public DBRecordCollection? SuffixInfoRecords { get; internal set; }
 
-	public RecordId BaseItemId { get; internal set; }
-	public string BaseItemRarity { get; internal set; }
+	public RecordId BaseItemId { get; internal set; } = RecordId.Empty;
+	public string? BaseItemRarity { get; internal set; }
 
 	[GeneratedRegex(@"[^\w\s']")]
 	private static partial Regex BaseItemInfoClassRegEx();
-	string _BaseItemInfoClass;
+	string _BaseItemInfoClass = string.Empty;
 	public string BaseItemInfoClass
 	{
 		get => _BaseItemInfoClass;
 		internal set => _BaseItemInfoClass = BaseItemInfoClassRegEx().Replace((value ?? string.Empty), string.Empty);// Clean everything except few things;
 	}
 
-	public string BaseItemInfoStyle { get; internal set; }
-	public string BaseItemInfoQuality { get; internal set; }
-	public string BaseItemInfoDescription { get; internal set; }
-	public string ItemSeed { get; internal set; }
-	public string ItemQuest { get; internal set; }
-	public string ItemOrigin { get; internal set; }
-	public string ItemThrown { get; internal set; }
-	public string NumberFormat { get; internal set; }
-	public string ItemWith { get; internal set; }
+	public string? BaseItemInfoStyle { get; internal set; }
+	public string? BaseItemInfoQuality { get; internal set; }
+	public string? BaseItemInfoDescription { get; internal set; }
+	public string? ItemSeed { get; internal set; }
+	public string? ItemQuest { get; internal set; }
+	public string? ItemOrigin { get; internal set; }
+	public string? ItemThrown { get; internal set; }
+	public string? NumberFormat { get; internal set; }
+	public string? ItemWith { get; internal set; }
 	public string[] FlavorText { get; internal set; } = [];
 	public string[] Requirements { get; internal set; } = [];
-	public SortedList<string, Variable> RequirementVariables { get; internal set; }
-	public RequirementInfo RequirementInfo { get; internal set; }
+	public SortedList<string, Variable> RequirementVariables { get; internal set; } = new();
+	public RequirementInfo? RequirementInfo { get; internal set; }
 	public string[] BaseAttributes { get; internal set; } = [];
 
 	/// <summary>
@@ -208,47 +210,47 @@ public partial class ToFriendlyNameResult
 
 	/// <summary>Possible in-game values of each <see cref="BaseAttributes"/> line (see <see cref="PrefixAttributeRanges"/>).</summary>
 	public string?[] BaseAttributeRanges { get; internal set; } = [];
-	public SetItemInfo ItemSet { get; internal set; }
-	public DBRecordCollection BaseItemInfoRecords { get; internal set; }
+	public SetItemInfo? ItemSet { get; internal set; }
+	public DBRecordCollection? BaseItemInfoRecords { get; internal set; }
 
 	#region Relic Common
 
-	public string AnimalPartComplete { get; internal set; }
-	public string AnimalPartCompleteBonus { get; internal set; }
-	public string AnimalPart { get; internal set; }
-	public string AnimalPartRatio { get; internal set; }
-	public string RelicComplete { get; internal set; }
-	public string RelicBonus { get; internal set; }
-	public string RelicShard { get; internal set; }
-	public string RelicRatio { get; internal set; }
-	public string RelicClass { get; internal set; }
-	public string RelicCompletionFormat { get; internal set; }
-	public string RelicPattern { get; internal set; }
-	public string RelicBonusPattern { get; internal set; }
-	public string RelicBonusFormat { get; internal set; }
-	public string RelicBonusFileName { get; internal set; }
-	public string RelicBonusTitle { get; internal set; }
-	public DBRecordCollection RelicInfoRecords { get; internal set; }
+	public string? AnimalPartComplete { get; internal set; }
+	public string? AnimalPartCompleteBonus { get; internal set; }
+	public string? AnimalPart { get; internal set; }
+	public string? AnimalPartRatio { get; internal set; }
+	public string? RelicComplete { get; internal set; }
+	public string? RelicBonus { get; internal set; }
+	public string? RelicShard { get; internal set; }
+	public string? RelicRatio { get; internal set; }
+	public string? RelicClass { get; internal set; }
+	public string? RelicCompletionFormat { get; internal set; }
+	public string? RelicPattern { get; internal set; }
+	public string? RelicBonusPattern { get; internal set; }
+	public string? RelicBonusFormat { get; internal set; }
+	public string? RelicBonusFileName { get; internal set; }
+	public string? RelicBonusTitle { get; internal set; }
+	public DBRecordCollection? RelicInfoRecords { get; internal set; }
 
 	#endregion
 
 	#region RelicInfo 1 & 2
 
-	public string ItemRelicBonus1Format { get; internal set; }
-	public string ItemRelicBonus2Format { get; internal set; }
-	public string RelicInfo1Description { get; internal set; }
-	public string RelicInfo2Description { get; internal set; }
+	public string? ItemRelicBonus1Format { get; internal set; }
+	public string? ItemRelicBonus2Format { get; internal set; }
+	public string? RelicInfo1Description { get; internal set; }
+	public string? RelicInfo2Description { get; internal set; }
 	public string[] Relic1Attributes { get; internal set; } = [];
 	public string[] Relic2Attributes { get; internal set; } = [];
 	public string[] RelicBonus1Attributes { get; internal set; } = [];
 	public string[] RelicBonus2Attributes { get; internal set; } = [];
-	public DBRecordCollection RelicBonus1InfoRecords { get; internal set; }
-	public DBRecordCollection RelicBonus2InfoRecords { get; internal set; }
-	public DBRecordCollection Relic2InfoRecords { get; internal set; }
+	public DBRecordCollection? RelicBonus1InfoRecords { get; internal set; }
+	public DBRecordCollection? RelicBonus2InfoRecords { get; internal set; }
+	public DBRecordCollection? Relic2InfoRecords { get; internal set; }
 	/// <summary>
 	/// Resolve first relic completion label
 	/// </summary>
-	public string RelicInfo1CompletionResolved
+	public string? RelicInfo1CompletionResolved
 	{
 		get
 		{
@@ -260,7 +262,7 @@ public partial class ToFriendlyNameResult
 					if (this.Item.IsRelicBonus1Complete)
 						return this.AnimalPartComplete;
 					else
-						return string.Format(this.AnimalPartRatio
+						return string.Format(this.AnimalPartRatio ?? string.Empty
 							, this.AnimalPart
 							, this.Item.Var1
 							, this.Item.RelicBonusInfo?.CompletedRelicLevel.ToString() ?? "??"
@@ -271,7 +273,7 @@ public partial class ToFriendlyNameResult
 					if (this.Item.IsRelicBonus1Complete)
 						return this.RelicComplete;
 					else
-						return string.Format(this.RelicRatio
+						return string.Format(this.RelicRatio ?? string.Empty
 							, this.RelicShard
 							, this.Item.Var1
 							, this.Item.RelicBonusInfo?.CompletedRelicLevel.ToString() ?? "??"
@@ -283,7 +285,7 @@ public partial class ToFriendlyNameResult
 	/// <summary>
 	/// Resolve first relic completion bonus label
 	/// </summary>
-	public string RelicInfo1CompletionBonusResolved
+	public string? RelicInfo1CompletionBonusResolved
 	{
 		get
 		{
@@ -296,7 +298,7 @@ public partial class ToFriendlyNameResult
 	/// <summary>
 	/// Resolve second relic completion label
 	/// </summary>
-	public string RelicInfo2CompletionResolved
+	public string? RelicInfo2CompletionResolved
 	{
 		get
 		{
@@ -308,7 +310,7 @@ public partial class ToFriendlyNameResult
 					if (this.Item.IsRelicBonus2Complete)
 						return this.AnimalPartComplete;
 					else
-						return string.Format(this.AnimalPartRatio
+						return string.Format(this.AnimalPartRatio ?? string.Empty
 							, this.AnimalPart
 							, this.Item.Var2
 							, this.Item.RelicBonus2Info?.CompletedRelicLevel.ToString() ?? "??"
@@ -319,7 +321,7 @@ public partial class ToFriendlyNameResult
 					if (this.Item.IsRelicBonus2Complete)
 						return this.RelicComplete;
 					else
-						return string.Format(this.RelicRatio
+						return string.Format(this.RelicRatio ?? string.Empty
 							, this.RelicShard
 							, this.Item.Var2
 							, this.Item.RelicBonus2Info?.CompletedRelicLevel.ToString() ?? "??"
@@ -332,7 +334,7 @@ public partial class ToFriendlyNameResult
 	/// <summary>
 	/// Resolve second relic completion bonus label
 	/// </summary>
-	public string RelicInfo2CompletionBonusResolved
+	public string? RelicInfo2CompletionBonusResolved
 	{
 		get
 		{
@@ -345,24 +347,24 @@ public partial class ToFriendlyNameResult
 
 	#endregion
 
-	public string ArtifactClass { get; internal set; }
-	public string ArtifactRecipe { get; internal set; }
-	public string ArtifactReagents { get; internal set; }
-	public string ArtifactBonus { get; internal set; }
-	public string ArtifactBonusFormat { get; internal set; }
+	public string? ArtifactClass { get; internal set; }
+	public string? ArtifactRecipe { get; internal set; }
+	public string? ArtifactReagents { get; internal set; }
+	public string? ArtifactBonus { get; internal set; }
+	public string? ArtifactBonusFormat { get; internal set; }
 
-	public string FormulaeArtifactClass { get; internal set; }
-	public string FormulaeArtifactName { get; internal set; }
-	public string FormulaeFormat { get; internal set; }
+	public string? FormulaeArtifactClass { get; internal set; }
+	public string? FormulaeArtifactName { get; internal set; }
+	public string? FormulaeFormat { get; internal set; }
 	public string[] FormulaeArtifactAttributes { get; internal set; } = [];
-	public DBRecordCollection FormulaeArtifactRecords { get; internal set; }
+	public DBRecordCollection? FormulaeArtifactRecords { get; internal set; }
 
 	public ToFriendlyNameResult(Item itm)
 	{
 		this.Item = itm;
 	}
 
-	string[] _AttributesAll = null;
+	string[]? _AttributesAll;
 
 	/// <summary>
 	/// Return the collection of all attributes without any color tags.

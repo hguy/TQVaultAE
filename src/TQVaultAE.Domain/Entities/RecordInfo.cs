@@ -21,7 +21,7 @@ public class RecordInfo
 	/// <summary>Entry of the shared reader, used to decode the record.</summary>
 	public ArzRecordInfo? Entry { get; set; }
 
-	public RecordId ID { get; set; }
+	public RecordId ID { get; set; } = RecordId.Empty;
 
 	public string RecordType { get; set; }
 }
