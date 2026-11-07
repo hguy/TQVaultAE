@@ -292,7 +292,7 @@ public partial class ItemProvider
 		if (itemId.Normalized.Length < 4)
 			return itemId;
 
-		if (PathIO.GetExtension(itemId.Normalized).Equals(".DBR"))
+		if (PathIO.GetExtension(itemId.Normalized).Equals(".DBR", StringComparison.Ordinal))
 			return itemId;
 		else
 			return string.Concat(itemId.Raw, ".dbr");
@@ -305,7 +305,7 @@ public partial class ItemProvider
 	private void GetRequirementsFromRecord(SortedList<string, Variable> requirements, DBRecordCollection? record)
 	{
 		if (USettings.ItemDebugLevel > 0)
-			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, record);
+			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({Requirements}, {Record})", requirements, record);
 
 		if (record == null)
 		{
@@ -316,12 +316,12 @@ public partial class ItemProvider
 		}
 
 		if (USettings.ItemDebugLevel > 1)
-			Log.LogDebug(record.Id.Normalized);
+			Log.LogDebug("{RecordId}", record.Id.Normalized);
 
 		foreach (Variable variable in record)
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug(variable.Name);
+				Log.LogDebug("{VariableName}", variable.Name);
 
 			if (FilterValue(variable, false))
 				continue;
@@ -336,7 +336,7 @@ public partial class ItemProvider
 			key = key.AsSpan().ToFirstCharUpperCase();
 
 			// Level needs to be LevelRequirement bah
-			if (key.Equals("Level"))
+			if (key.Equals("Level", StringComparison.Ordinal))
 				key = Variable.KEY_LEVELREQ;
 			;
 			// Keep Max value per Requirement (LevelRequirement, Strength, Dexterity, Intelligence)
@@ -366,7 +366,7 @@ public partial class ItemProvider
 			}
 
 			if (USettings.ItemDebugLevel > 1)
-				Log.LogDebug("Added Requirement {0}={1}", key, value);
+				Log.LogDebug("Added Requirement {Key}={Value}", key, value);
 
 			requirements.Add(key, variable);
 		}
@@ -382,7 +382,7 @@ public partial class ItemProvider
 	private void GetDynamicRequirementsFromRecord(Item itm, SortedList<string, Variable> requirements, Info itemInfo)
 	{
 		if (USettings.ItemDebugLevel > 0)
-			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, itemInfo);
+			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({Requirements}, {ItemInfo})", requirements, itemInfo);
 
 		DBRecordCollection? record = Database.GetRecordFromFile(itemInfo.ItemId);
 		if (record == null)
@@ -405,7 +405,7 @@ public partial class ItemProvider
 		}
 
 		if (USettings.ItemDebugLevel > 1)
-			Log.LogDebug(record.Id.Normalized);
+			Log.LogDebug("{RecordId}", record.Id.Normalized);
 
 		string prefix = GetRequirementEquationPrefix(itemInfo.ItemClass);
 		foreach (Variable variable in record)
@@ -414,7 +414,7 @@ public partial class ItemProvider
 				continue;
 
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug(variable.Name);
+				Log.LogDebug("{VariableName}", variable.Name);
 
 			if (FilterValue(variable, true))
 				// our equation is a string, so we want also strings
@@ -427,7 +427,7 @@ public partial class ItemProvider
 
 			// We need to ignore the cost equations.
 			// Shields have costs so they will cause an overflow.
-			if (key.Equals("Cost"))
+			if (key.Equals("Cost", StringComparison.Ordinal))
 				continue;
 
 			var variableKey = key.ToLowerInvariant();
@@ -435,7 +435,7 @@ public partial class ItemProvider
 				variableKey += "Requirement";
 
 			// Level needs to be LevelRequirement bah
-			if (key.Equals("Level"))
+			if (key.Equals("Level", StringComparison.Ordinal))
 				key = Variable.KEY_LEVELREQ;
 
 			// Skip over any requirements that have been set by the database record. 
@@ -473,7 +473,7 @@ VariableValue Raw : {valueRaw}
 ";
 				if (USettings.ItemDebugLevel > 0)
 					throw new System.Data.EvaluateException(mess);
-				else Log.LogError(mess);
+				else Log.LogError("{Message}", mess);
 			}
 
 			int intVal = 0;
@@ -489,7 +489,7 @@ VariableValue Raw : {valueRaw}
 			ans[0] = intVal;
 
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Added Requirement {0}={1}", key, ans.ToStringValue());
+				Log.LogDebug("Added Requirement {Key}={Value}", key, ans.ToStringValue());
 
 			requirements.Add(key, ans);
 		}

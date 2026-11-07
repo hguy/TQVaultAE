@@ -7,7 +7,7 @@ public partial class RecordId
 	public bool Equals(RecordId? other)
 	{
 		if (other is null) return false;
-		return Normalized.Equals(other.Normalized);
+		return Normalized.Equals(other.Normalized, StringComparison.Ordinal);
 	}
 
 	public override bool Equals(object? obj) => Equals(obj as RecordId);

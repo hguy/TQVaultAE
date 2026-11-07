@@ -111,7 +111,7 @@ public partial class ItemProvider
 	public void GetDBData(Item itm)
 	{
 		if (USettings.ItemDebugLevel > 0)
-			Log.LogDebug("Item.GetDBData ()   baseItemID = {0}", itm.BaseItemId);
+			Log.LogDebug("Item.GetDBData ()   baseItemID = {BaseItemId}", itm.BaseItemId);
 
 		itm.BaseItemId = CheckExtension(itm.BaseItemId);
 		itm.baseItemInfo = Database.GetInfo(itm.BaseItemId);
@@ -121,8 +121,8 @@ public partial class ItemProvider
 
 		if (USettings.ItemDebugLevel > 1)
 		{
-			Log.LogDebug("prefixID = {0}", itm.prefixID);
-			Log.LogDebug("suffixID = {0}", itm.suffixID);
+			Log.LogDebug("prefixID = {PrefixID}", itm.prefixID);
+			Log.LogDebug("suffixID = {SuffixID}", itm.suffixID);
 		}
 
 		itm.prefixInfo = Database.GetInfo(itm.prefixID);
@@ -132,8 +132,8 @@ public partial class ItemProvider
 
 		if (USettings.ItemDebugLevel > 1)
 		{
-			Log.LogDebug("relicID = {0}", itm.relicID);
-			Log.LogDebug("relicBonusID = {0}", itm.RelicBonusId);
+			Log.LogDebug("relicID = {RelicID}", itm.relicID);
+			Log.LogDebug("relicBonusID = {RelicBonusId}", itm.RelicBonusId);
 		}
 
 		itm.RelicInfo = Database.GetInfo(itm.relicID);
@@ -143,7 +143,7 @@ public partial class ItemProvider
 		itm.RelicBonus2Info = Database.GetInfo(itm.RelicBonus2Id);
 
 		if (USettings.ItemDebugLevel > 1)
-			Log.LogDebug("'{0}' baseItemInfo is {1} null"
+			Log.LogDebug("'{FullNameBagTooltip}' baseItemInfo is {Negation} null"
 				, GetFriendlyNames(itm).FullNameBagTooltip
 				, (itm.baseItemInfo == null) ? string.Empty : "NOT"
 			);
@@ -156,14 +156,14 @@ public partial class ItemProvider
 				itm.TexImageResourceId = itm.baseItemInfo.ShardBitmap;
 				itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
 				if (USettings.ItemDebugLevel > 1)
-					Log.LogDebug("Loaded shardbitmap ({0})", itm.baseItemInfo.ShardBitmap);
+					Log.LogDebug("Loaded shardbitmap ({ShardBitmap})", itm.baseItemInfo.ShardBitmap);
 			}
 			else
 			{
 				itm.TexImageResourceId = itm.baseItemInfo.Bitmap;
 				itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
 				if (USettings.ItemDebugLevel > 1)
-					Log.LogDebug("Loaded regular bitmap ({0})", itm.baseItemInfo.Bitmap);
+					Log.LogDebug("Loaded regular bitmap ({Bitmap})", itm.baseItemInfo.Bitmap);
 			}
 		}
 		else
@@ -343,7 +343,7 @@ public partial class ItemProvider
 		foreach (KeyValuePair<string, Variable> kvp in requirementVariables)
 		{
 			if (USettings.ItemDebugLevel > 1)
-				Log.LogDebug("Retrieving requirement {0}={1} (type={2})", kvp.Key, kvp.Value, kvp.Value.GetType().ToString());
+				Log.LogDebug("Retrieving requirement {Key}={Value} (type={Type})", kvp.Key, kvp.Value, kvp.Value.GetType().ToString());
 
 			Variable variable = kvp.Value;
 

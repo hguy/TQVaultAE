@@ -127,7 +127,7 @@ public class Item
 	/// Gets the value indicating whether the item allows 2 relic socketing
 	/// </summary>
 	public bool AcceptExtraRelic
-		=> HasSuffix && suffixID.Normalized.EndsWith("RARE_EXTRARELIC_01.DBR");
+		=> HasSuffix && suffixID.Normalized.EndsWith("RARE_EXTRARELIC_01.DBR", StringComparison.Ordinal);
 
 	/// <summary>
 	/// Tell if the item is modified

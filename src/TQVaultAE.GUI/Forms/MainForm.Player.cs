@@ -40,8 +40,8 @@ public partial class MainForm
 		var selectedText = selected?.ToString() ?? string.Empty;
 
 		// See if they actually changed their selection and ignore "No TQ characters detected"
-		if (selectedText.Equals(Resources.MainFormSelectCharacter) || selectedText.Equals(Resources.MainFormNoCharacters)
-			|| selectedText.Equals(Resources.MainFormNoCustomChars))
+		if (selectedText.Equals(Resources.MainFormSelectCharacter, StringComparison.Ordinal) || selectedText.Equals(Resources.MainFormNoCharacters, StringComparison.Ordinal)
+			|| selectedText.Equals(Resources.MainFormNoCustomChars, StringComparison.Ordinal))
 		{
 			// no char selected
 			this.ClearPlayer();
@@ -247,7 +247,7 @@ public partial class MainForm
 		{
 			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, resultDTO.PlayerFile, exception.ToString());
 			MessageBox.Show(msg, Resources.MainFormPlayerReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-			Log.LogError(exception, msg);
+			Log.LogError(exception, "{Message}", msg);
 			this.playerPanel.Player = null;
 			this.comboBoxCharacter.SelectedIndex = 0;
 		}
@@ -288,7 +288,7 @@ public partial class MainForm
 		{
 			string msg = string.Concat(Resources.MainFormReadError, resultStash.StashFile, exception.ToString());
 			MessageBox.Show(msg, Resources.MainFormStashReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-			Log.LogError(exception, msg);
+			Log.LogError(exception, "{Message}", msg);
 			this.stashPanel.Stash = null;
 		}
 
@@ -311,7 +311,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			string title = string.Format(CultureInfo.InvariantCulture, Resources.MainFormSaveError, playerIfError?.PlayerName);
-			Log.LogError(exception, title);
+			Log.LogError(exception, "{Message}", title);
 			switch (MessageBox.Show(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1, RightToLeftOptions))
 			{
 				case DialogResult.Abort:
@@ -368,7 +368,7 @@ public partial class MainForm
 			catch (Exception ex)
 			{
 				// Display Error
-				Log.LogError(ex, Resources.DuplicateCharacter_Error);
+				Log.LogError(ex, "{Message}", Resources.DuplicateCharacter_Error);
 				MessageBox.Show(Log.FormatException(ex), Resources.DuplicateCharacter_Error, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 				// Rollback IO
 				try
@@ -378,7 +378,7 @@ public partial class MainForm
 				catch (Exception exx)
 				{
 					// log & mute
-					Log.LogError(exx, Resources.DuplicateCharacter_Error);
+					Log.LogError(exx, "{Message}", Resources.DuplicateCharacter_Error);
 				}
 				return;
 			}

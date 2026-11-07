@@ -111,7 +111,7 @@ public class SoundServiceWin : ISoundService, IDisposable
 		if (!(resourceData?.Any() ?? false))
 			return false;// Not a sound
 
-		if (resourceId.Normalized.EndsWith(".MP3"))
+		if (resourceId.Normalized.EndsWith(".MP3", StringComparison.Ordinal))
 		{
 			using (var mp3 = new MemoryStream(resourceData))
 			using (var wav = new MemoryStream())

@@ -241,7 +241,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 
 			foreach (string vault in vaults)
 			{
-				if (!vault.Equals(VaultService.MAINVAULT))
+				if (!vault.Equals(VaultService.MAINVAULT, StringComparison.Ordinal))
 				{
 					// now add everything EXCEPT for main vault
 					this.vaultListComboBox.Items.Add(vault);

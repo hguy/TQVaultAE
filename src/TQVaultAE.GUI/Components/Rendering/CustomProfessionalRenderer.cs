@@ -17,7 +17,7 @@ internal class CustomProfessionalRenderer : ToolStripProfessionalRenderer
 			e.TextColor = Color.Black;
 		else
 		{
-			if (e.Item?.Name?.StartsWith(ComboBoxCharacter.TAGKEY) ?? false)
+			if (e.Item?.Name?.StartsWith(ComboBoxCharacter.TAGKEY, StringComparison.Ordinal) ?? false)
 				e.TextColor = Color.Black;
 			else
 				e.TextColor = Color.FromArgb(200, 200, 200);

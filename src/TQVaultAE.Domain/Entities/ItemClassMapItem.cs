@@ -2,5 +2,5 @@
 
 public record ItemClassMapItem<T>(string ItemClass, T Value)
 {
-	public string ItemClassUpper => ItemClass.ToUpper();
+	public string ItemClassUpper => ItemClass.ToUpperInvariant();
 }

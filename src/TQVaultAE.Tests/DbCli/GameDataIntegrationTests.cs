@@ -34,7 +34,7 @@ public sealed class GameDataIntegrationTests(ITestOutputHelper output)
 		using var arc = ArcArchiveFactory.Open(Game.TextArchive("EN")!);
 		var text = TextDatabaseFactory.Load(arc.Path, "EN");
 
-		arc.Entries.Count(e => e.Name.EndsWith(".txt")).Should().Be(57);
+		arc.Entries.Count(e => e.Name.EndsWith(".txt", StringComparison.Ordinal)).Should().Be(57);
 		text.Entries.Values.Should().NotContain(v => v.Contains('�'));
 		text.Entries.Count.Should().BeGreaterThan(10_000);
 	}

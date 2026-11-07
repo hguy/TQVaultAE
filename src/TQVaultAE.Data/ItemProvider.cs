@@ -119,7 +119,7 @@ public partial class ItemProvider : IItemProvider
 
 			string error = string.Concat("FormatErr(\"", formatSpec, parameters);
 
-			Log.LogDebug(error);
+			Log.LogDebug("{Message}", error);
 
 			return error;
 		}

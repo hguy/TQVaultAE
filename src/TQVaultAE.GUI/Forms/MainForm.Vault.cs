@@ -90,10 +90,10 @@ public partial class MainForm
 			// now add everything EXCEPT for main vault
 			foreach (string vault in vaults)
 			{
-				if (!vault.Equals(VaultService.MAINVAULT))
+				if (!vault.Equals(VaultService.MAINVAULT, StringComparison.Ordinal))
 				{
 					// we already added main vault
-					if (this.secondaryVaultListComboBox.SelectedItem != null && vault.Equals(this.secondaryVaultListComboBox.SelectedItemText()) && this.showSecondaryVault)
+					if (this.secondaryVaultListComboBox.SelectedItem != null && vault.Equals(this.secondaryVaultListComboBox.SelectedItemText(), StringComparison.Ordinal) && this.showSecondaryVault)
 						break;
 
 					this.vaultListComboBox.Items.Add(vault);
@@ -360,7 +360,7 @@ public partial class MainForm
 			else
 			{
 				string? vaultName = this.vaultListComboBox.SelectedItemText();
-				if (this.vaultPanel.Player == null || !vaultName.Equals(this.vaultPanel.Player.PlayerName))
+				if (this.vaultPanel.Player == null || !vaultName.Equals(this.vaultPanel.Player.PlayerName, StringComparison.Ordinal))
 				{
 					this.LoadVault(vaultName, false);
 				}
@@ -405,7 +405,7 @@ public partial class MainForm
 			else
 			{
 				string? vaultName = this.secondaryVaultListComboBox.SelectedItemText();
-				if (this.secondaryVaultPanel.Player == null || !vaultName.Equals(this.secondaryVaultPanel.Player.PlayerName))
+				if (this.secondaryVaultPanel.Player == null || !vaultName.Equals(this.secondaryVaultPanel.Player.PlayerName, StringComparison.Ordinal))
 				{
 					this.LoadVault(vaultName, true);
 				}

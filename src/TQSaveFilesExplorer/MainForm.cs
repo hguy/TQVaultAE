@@ -37,7 +37,7 @@ namespace TQ.SaveFilesExplorer
 
 		private void LoadFilesFromDirectory(string path)
 		{
-			var tqfiles = Directory.GetFiles(path).Where(p => TQFile.Ext_All.Contains(Path.GetExtension(p).ToLower())).ToArray();
+			var tqfiles = Directory.GetFiles(path).Where(p => TQFile.Ext_All.Contains(Path.GetExtension(p).ToLowerInvariant())).ToArray();
 
 			foreach (var file in tqfiles)
 			{
@@ -106,7 +106,7 @@ namespace TQ.SaveFilesExplorer
 				.SelectMany(p => Directory.GetDirectories(p, "_*"))
 				.Select(d =>
 				{
-					var itm = new ToolStripMenuItem($"{(d.StartsWith(TQPath.SaveDirectoryTQIT) ? "TQIT" : "TQ")} : {Path.GetFileName(d)}") { Tag = d, };
+					var itm = new ToolStripMenuItem($"{(d.StartsWith(TQPath.SaveDirectoryTQIT, StringComparison.Ordinal) ? "TQIT" : "TQ")} : {Path.GetFileName(d)}") { Tag = d, };
 					itm.Click += new System.EventHandler(this.toolStripMenuItem_DetectedPlayers_Click);
 					return itm;
 				}

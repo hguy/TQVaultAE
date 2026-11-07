@@ -174,7 +174,7 @@ public partial class ComboBoxCharacterItem : UserControl
 	private void ClearTagList()
 	{
 		this.bufferedFlowLayoutPanelTags.Controls.OfType<ScalingLabel>()
-			.Where(ctr => ctr.Name.StartsWith(ComboBoxCharacter.TAGKEY))
+			.Where(ctr => ctr.Name.StartsWith(ComboBoxCharacter.TAGKEY, StringComparison.Ordinal))
 			.ToList().ForEach(ctr => this.bufferedFlowLayoutPanelTags.Controls.Remove(ctr));
 	}
 }

@@ -1026,7 +1026,7 @@ public partial class MainForm : Form
 
 
 		// DBR references are usually prefixed by RECORDS
-		if (recordId.Normalized.EndsWith(".DBR") && !recordId.Normalized.StartsWith("RECORDS"))
+		if (recordId.Normalized.EndsWith(".DBR", StringComparison.Ordinal) && !recordId.Normalized.StartsWith("RECORDS", StringComparison.Ordinal))
 		{
 			var guessingId = RecordId.Create(Path.Combine("records", recordId.Raw));
 			if (dicoReverseKeys.TryGetValue(guessingId, out var guessinglist))
@@ -1042,14 +1042,14 @@ public partial class MainForm : Form
 		// Resolve file name
 		string xPackVersion, fileToken, fileName;
 		RecordId dicoKey;
-		if (recordId.Normalized.StartsWith("XPACK"))
+		if (recordId.Normalized.StartsWith("XPACK", StringComparison.Ordinal))
 		{
 			xPackVersion = recordId.TokensNormalized[0];
 			fileToken = recordId.TokensNormalized[1];
 			fileName = $"{fileToken}.ARC";
 			dicoKey = @$"RESOURCES\{xPackVersion}\{fileName}";
 		}
-		else if (recordId.Normalized.EndsWith(".MP3") || recordId.Normalized.EndsWith(".WAV"))
+		else if (recordId.Normalized.EndsWith(".MP3", StringComparison.Ordinal) || recordId.Normalized.EndsWith(".WAV", StringComparison.Ordinal))
 		{
 			xPackVersion = string.Empty;
 			fileToken = recordId.TokensNormalized[0];

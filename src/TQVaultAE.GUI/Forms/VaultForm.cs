@@ -582,7 +582,7 @@ public partial class VaultForm : Form, IScalingControl
 
 		RefreshNormalizeBox();
 
-		this.Log.LogDebug("Config.Settings.Default.Scale changed to {0} !", USettings.Scale);
+		this.Log.LogDebug("Config.Settings.Default.Scale changed to {Scale} !", USettings.Scale);
 	}
 
 	/// <summary>

@@ -90,7 +90,7 @@ public class SearchResult
 	private int GetRequirement(IList<Variable> variables, string key)
 	{
 		return variables
-			.Where(v => string.Equals(v.Name, key, StringComparison.InvariantCultureIgnoreCase) && v.DataType == VariableDataType.Integer && v.NumberOfValues > 0)
+			.Where(v => string.Equals(v.Name, key, StringComparison.OrdinalIgnoreCase) && v.DataType == VariableDataType.Integer && v.NumberOfValues > 0)
 			.Select(v => v.GetInt32(0))
 			.DefaultIfEmpty(0)
 			.Max();

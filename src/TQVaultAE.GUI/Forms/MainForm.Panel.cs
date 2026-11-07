@@ -30,7 +30,7 @@ public partial class MainForm
 		{
 			this.customMapText.Visible = true;
 			this.customMapText.Text = string.Format(
-				GamePathResolver.MapName.ToUpper().Contains(@"\CUSTOMMAPS\")
+				GamePathResolver.MapName.Contains(@"\CUSTOMMAPS\", StringComparison.OrdinalIgnoreCase)
 					? "Legacy : " + Resources.MainFormCustomMapLabel
 					: "Steam : " + Resources.MainFormCustomMapLabel
 				, this.PathIO.GetFileName(GamePathResolver.MapName)

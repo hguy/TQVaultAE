@@ -221,14 +221,21 @@ public partial class MainForm : VaultForm
 		{
 			// Write this version into the debug file.
 			Log.LogDebug(
-$@"Current TQVault Version: {this.currentVersion}
-Debug Enabled: {USettings.DebugEnabled}
-LootTable Debug Enabled: {USettings.LootTableDebugEnabled}
-ARCFile Debug Level: {USettings.ARCFileDebugLevel}
-Database Debug Level: {USettings.DatabaseDebugLevel}
-Item Attributes Debug Level: {USettings.ItemAttributesDebugLevel}
-Item Debug Level: {USettings.ItemDebugLevel}
-");
+@"Current TQVault Version: {CurrentVersion}
+Debug Enabled: {DebugEnabled}
+LootTable Debug Enabled: {LootTableDebugEnabled}
+ARCFile Debug Level: {ARCFileDebugLevel}
+Database Debug Level: {DatabaseDebugLevel}
+Item Attributes Debug Level: {ItemAttributesDebugLevel}
+Item Debug Level: {ItemDebugLevel}
+",
+				this.currentVersion,
+				USettings.DebugEnabled,
+				USettings.LootTableDebugEnabled,
+				USettings.ARCFileDebugLevel,
+				USettings.DatabaseDebugLevel,
+				USettings.ItemAttributesDebugLevel,
+				USettings.ItemDebugLevel);
 		}
 
 		// Process the mouse scroll wheel to cycle through the vaults.
