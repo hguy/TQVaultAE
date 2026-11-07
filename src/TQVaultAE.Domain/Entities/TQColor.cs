@@ -162,7 +162,7 @@ public static partial class TQColorHelper
 	/// </summary>
 	/// <param name="text"></param>
 	/// <returns>null if no color prefix</returns>
-	public static TQColor? GetColorFromTaggedString(this string text)
+	public static TQColor? GetColorFromTaggedString(this string? text)
 	{
 		if (string.IsNullOrWhiteSpace(text)) return null;
 		TQColor? res = null;

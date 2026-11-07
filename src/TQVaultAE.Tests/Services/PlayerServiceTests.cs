@@ -93,7 +93,7 @@ public class PlayerServiceTests
 	public void LoadPlayer_WithNullPlayerSave_ReturnsEmptyResult()
 	{
 		// Act
-		var result = _playerService.LoadPlayer(null);
+		var result = _playerService.LoadPlayer(null!);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -391,7 +391,7 @@ public class PlayerServiceTests
 	public void SaveAllModifiedPlayers_WithNoModifiedPlayers_ReturnsFalse()
 	{
 		// Arrange
-		PlayerCollection playerOnError = null;
+		PlayerCollection? playerOnError = null;
 
 		// Act
 		var result = _playerService.SaveAllModifiedPlayers(ref playerOnError);
@@ -434,7 +434,7 @@ public class PlayerServiceTests
 	public void UpdatePlayerFilePath_WithNullOldPath_DoesNothing()
 	{
 		// Act
-		_playerService.UpdatePlayerFilePath(null, "/new/path");
+		_playerService.UpdatePlayerFilePath(null!, "/new/path");
 
 		// Assert - should not throw
 		_sessionContext.Players.Should().BeEmpty();

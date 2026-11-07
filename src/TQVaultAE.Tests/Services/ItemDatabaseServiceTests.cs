@@ -69,7 +69,7 @@ public class ItemDatabaseServiceTests
 	public void TryAddItemToDatabase_WithNullItem_ReturnsFalse()
 	{
 		// Act
-		var result = _service.TryAddItemToDatabase(null);
+		var result = _service.TryAddItemToDatabase(null!);
 
 		// Assert
 		result.Should().BeFalse();

@@ -92,7 +92,8 @@ public static partial class StringHelper
 		return sBuilder.ToString();
 	}
 
-	public static string ToFirstCharUpperCase(this string text)
+	[return: NotNullIfNotNull(nameof(text))]
+	public static string? ToFirstCharUpperCase(this string? text)
 	{
 		if (string.IsNullOrEmpty(text)) return text;
 		return string.Concat(char.ToUpperInvariant(text[0]), text.Substring(1));
@@ -169,7 +170,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQText"></param>
 	/// <returns></returns>
-	public static bool IsColorTagOnly(this string TQText) => IsColorTagOnlyExtended(TQText).Value;
+	public static bool IsColorTagOnly(this string? TQText) => IsColorTagOnlyExtended(TQText).Value;
 
 	[GeneratedRegex(@"^" + TQColorHelper.RegExTQTag + @"$")]
 	private static partial Regex IsColorTagOnlyExtendedRegEx();
@@ -178,14 +179,15 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQText"></param>
 	/// <returns></returns>
-	public static (bool Value, int Length) IsColorTagOnlyExtended(this string TQText)
+	public static (bool Value, int Length) IsColorTagOnlyExtended(this string? TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return (false, 0);
 		return (IsColorTagOnlyExtendedRegEx().IsMatch(TQText), TQText.Length);
 	}
 
 
-	public static string RemoveAllTQTags(this string TQText)
+	[return: NotNullIfNotNull(nameof(TQText))]
+	public static string? RemoveAllTQTags(this string? TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return TQText;
 		return TQColorHelper.RegExTQTagInstance().Replace(TQText, string.Empty);
@@ -219,7 +221,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQText"></param>
 	/// <returns></returns>
-	public static bool HasColorPrefix(this string TQText)
+	public static bool HasColorPrefix(this string? TQText)
 	{
 		if (TQText is null) return false;
 		var t = TQColorHelper.GetColorFromTaggedString(TQText);

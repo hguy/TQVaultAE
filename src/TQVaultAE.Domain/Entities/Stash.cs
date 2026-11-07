@@ -4,6 +4,8 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace TQVaultAE.Domain.Entities;
 
 /// <summary>
@@ -71,6 +73,7 @@ public class Stash
 	/// <summary>
 	/// Creates an empty sack
 	/// </summary>
+	[MemberNotNull(nameof(Sack))]
 	public void CreateEmptySack()
 	{
 		this.Sack = new SackCollection();

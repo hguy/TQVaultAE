@@ -306,7 +306,7 @@ public class ItemAttributeProviderTests
 	public void GetAttributeTextTag_NullData_ReturnsEmpty()
 	{
 		// Act
-		var result = _provider.GetAttributeTextTag((ItemAttributesData)null);
+		var result = _provider.GetAttributeTextTag((ItemAttributesData)null!);
 
 		// Assert
 		result.Should().BeEmpty();

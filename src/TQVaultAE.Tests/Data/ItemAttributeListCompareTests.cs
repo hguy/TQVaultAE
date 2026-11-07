@@ -208,7 +208,7 @@ public class ItemAttributeListCompareTests
 			.Returns(new ItemAttributesData(ItemAttributesEffectType.Offense, "globalAttr", "effect", "var", 0));
 		_mockItemAttributeProvider.Setup(p => p.GetAttributeData("normalAttr"))
 			.Returns(new ItemAttributesData(ItemAttributesEffectType.Offense, "normalAttr", "effect", "var", 0));
-		_mockItemAttributeProvider.Setup(p => p.AttributeGroupHas(It.IsAny<Collection<Variable>>(), "Global"))
+		_mockItemAttributeProvider.Setup(p => p.AttributeGroupHas(It.IsAny<Collection<Variable?>>(), "Global"))
 			.Returns((Collection<Variable> vars, string group) => vars[0].Name.Contains("global"));
 
 		// Act

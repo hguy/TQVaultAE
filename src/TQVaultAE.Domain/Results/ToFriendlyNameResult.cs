@@ -44,7 +44,7 @@ public partial class ToFriendlyNameResult
 	}
 
 
-	public bool FulltextIsMatch(string search)
+	public bool FulltextIsMatch(string? search)
 	{
 		if (string.IsNullOrWhiteSpace(search)) return false;
 
@@ -56,7 +56,7 @@ public partial class ToFriendlyNameResult
 		return FulltextIsMatchIndexOf(search);
 	}
 
-	public bool FulltextIsMatchIndexOf(string search)
+	public bool FulltextIsMatchIndexOf(string? search)
 	{
 		if (string.IsNullOrWhiteSpace(search)) return false;
 
@@ -89,7 +89,7 @@ public partial class ToFriendlyNameResult
 		return false;
 	}
 
-	public bool FulltextIsMatchRegex(string pattern)
+	public bool FulltextIsMatchRegex(string? pattern)
 	{
 		if (string.IsNullOrWhiteSpace(pattern)) return false;
 

@@ -29,7 +29,7 @@ public class ItemMovementServiceTests
 	public void FindOpenCells_WithNullSack_ReturnsInvalidPosition()
 	{
 		// Act
-		var result = _service.FindOpenCells(null, 2, 2, 10, 10);
+		var result = _service.FindOpenCells(null!, 2, 2, 10, 10);
 
 		// Assert
 		result.X.Should().Be(-1);
@@ -133,7 +133,7 @@ public class ItemMovementServiceTests
 		var item = CreateItem("Item1", 0, 0, 1, 1);
 
 		// Act
-		var result = _service.CanPlaceItem(null, item, 10, 10);
+		var result = _service.CanPlaceItem(null!, item, 10, 10);
 
 		// Assert
 		result.Should().BeFalse();
@@ -149,7 +149,7 @@ public class ItemMovementServiceTests
 		var sack = new SackCollection();
 
 		// Act
-		var result = _service.CanPlaceItem(sack, null, 10, 10);
+		var result = _service.CanPlaceItem(sack, null!, 10, 10);
 
 		// Assert
 		result.Should().BeFalse();
@@ -179,7 +179,7 @@ public class ItemMovementServiceTests
 	public void IsItemValidForStashType_WithNullItem_ReturnsFalse()
 	{
 		// Act
-		var result = _service.IsItemValidForStashType(null, StashType.PlayerStash);
+		var result = _service.IsItemValidForStashType(null!, StashType.PlayerStash);
 
 		// Assert
 		result.Should().BeFalse();
@@ -243,7 +243,7 @@ public class ItemMovementServiceTests
 		var destSack = new SackCollection();
 
 		// Act
-		var result = _service.MoveItem(null, null, destSack, new Point(0, 0));
+		var result = _service.MoveItem(null!, null!, destSack, new Point(0, 0));
 
 		// Assert
 		result.Success.Should().BeFalse();
@@ -260,7 +260,7 @@ public class ItemMovementServiceTests
 		var item = CreateItem("Item1", 0, 0, 1, 1);
 
 		// Act
-		var result = _service.MoveItem(item, null, null, new Point(0, 0));
+		var result = _service.MoveItem(item, null!, null!, new Point(0, 0));
 
 		// Assert
 		result.Success.Should().BeFalse();
@@ -278,7 +278,7 @@ public class ItemMovementServiceTests
 		var destSack = new SackCollection();
 
 		// Act
-		var result = _service.MoveItem(item, null, destSack, new Point(-1, 0));
+		var result = _service.MoveItem(item, null!, destSack, new Point(-1, 0));
 
 		// Assert
 		result.Success.Should().BeFalse();
@@ -317,7 +317,7 @@ public class ItemMovementServiceTests
 		var player = new PlayerCollection("TestPlayer", "/path/to/player");
 
 		// Act & Assert - should not throw
-		_service.UpdateItemLocation(null, player, SackType.Player, 0);
+		_service.UpdateItemLocation(null!, player, SackType.Player, 0);
 	}
 
 	/// <summary>
@@ -330,7 +330,7 @@ public class ItemMovementServiceTests
 		var item = CreateItem("Item1", 0, 0, 1, 1);
 
 		// Act & Assert - should not throw
-		_service.UpdateItemLocation(item, null, SackType.Player, 0);
+		_service.UpdateItemLocation(item, null!, SackType.Player, 0);
 	}
 
 	/// <summary>

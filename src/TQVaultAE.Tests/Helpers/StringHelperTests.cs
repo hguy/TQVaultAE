@@ -271,7 +271,7 @@ public class StringHelperTests
 	public void TQCleanup_NullInput_ReturnsEmpty()
 	{
 		// Act
-		var result = ((string?)null).TQCleanup();
+		var result = ((string?)null!).TQCleanup();
 
 		// Assert
 		result.Should().BeEmpty();
@@ -544,7 +544,7 @@ public class StringHelperTests
 	public void InsertAfterColorPrefix_WithNullInput_ReturnsInsertedText()
 	{
 		// Act
-		var result = ((string?)null).InsertAfterColorPrefix("inserted");
+		var result = ((string?)null!).InsertAfterColorPrefix("inserted");
 
 		// Assert
 		result.Should().Be("inserted");

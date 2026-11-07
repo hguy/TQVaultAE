@@ -247,7 +247,7 @@ public class TQColorHelperTests
 	public void RemoveLeadingColorTag_NullInput_ReturnsEmpty()
 	{
 		// Act
-		var result = ((string?)null).RemoveLeadingColorTag();
+		var result = ((string?)null!).RemoveLeadingColorTag();
 
 		// Assert
 		result.Should().BeEmpty();

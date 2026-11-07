@@ -221,7 +221,7 @@ public class StashServiceTests
 		result.Stash.Should().NotBeNull();
 		result.Stash.StashFound.Should().BeTrue();
 		result.Stash.IsImmortalThrone.Should().BeTrue();
-		result.Stash.Sack.StashType.Should().Be(StashType.RelicVaultStash);
+		result.Stash.Sack!.StashType.Should().Be(StashType.RelicVaultStash);
 	}
 
 	/// <summary>
@@ -392,7 +392,7 @@ public class StashServiceTests
 	public void SaveAllModifiedStashes_WithNullStash_HandlesGracefully()
 	{
 		// Arrange
-		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => null);
+		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => null!);
 
 		Stash? stashOnError = null;
 
