@@ -21,6 +21,9 @@
 		<ComVisible>false</ComVisible>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
+		<!-- Server GC: the saves load on every core, and a single workstation heap suspended them all on each collection
+		     (load 1.15 s -> 0.45 s on 64 cores, about 270 MB more). DATAS keeps the number of heaps small. -->
+		<ServerGarbageCollection>true</ServerGarbageCollection>
 	</PropertyGroup>
 
 
