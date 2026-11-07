@@ -28,16 +28,23 @@ internal enum ItemTooltipView
 	ValueRanges = 4,
 	/// <summary>The skills granted by the item in a panel on the right.</summary>
 	GrantedSkills = 8,
+	/// <summary>How many of each piece of the item's set are loaded, on its right.</summary>
+	SetPieceCounts = 16,
 }
 
 public partial class ItemTooltip : BaseTooltip
 {
 	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();
 	/// <summary>Rendered item tooltips and their text, up to 48 MB.</summary>
-	private static readonly TooltipImageCache<(Item Item, float Scale, ItemTooltipView View, bool InGameValues), ToFriendlyNameResult> ToImage = new(48L << 20);
+	private static readonly TooltipImageCache<TooltipKey, ToFriendlyNameResult> ToImage = new(48L << 20);
+
+	/// <summary>What a cached tooltip image depends on. <paramref name="SetCounts"/> lists the set piece counts shown, empty without them.</summary>
+	private readonly record struct TooltipKey(Item Item, float Scale, ItemTooltipView View, bool InGameValues, string SetCounts);
 
 	internal ItemTooltipView View { get; set; }
 	internal bool ShowInGameValues { get; set; }
+	/// <summary>The loaded items, counted for <see cref="ItemTooltipView.SetPieceCounts"/>.</summary>
+	internal IItemDatabaseService? ItemDatabase { get; set; }
 	internal Item FocusedItem { get; set; }
 	internal SackPanel? SackPanel { get; set; }
 	internal ResultsDialog? ResultsDialog { get; set; }
@@ -138,7 +145,8 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				SackPanel = sackPanel,
 				View = ViewOf(userSettings, enableDetailedTooltipView),
-				ShowInGameValues = userSettings.ShowInGameValues
+				ShowInGameValues = userSettings.ShowInGameValues,
+				ItemDatabase = services.ItemDatabaseService,
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
 			_Current.Show();
@@ -170,7 +178,8 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				ResultsDialog = resultsDialog,
 				View = ViewOf(userSettings, enableDetailedTooltipView),
-				ShowInGameValues = userSettings.ShowInGameValues
+				ShowInGameValues = userSettings.ShowInGameValues,
+				ItemDatabase = services.ItemDatabaseService,
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
 			_Current.Show();
@@ -202,7 +211,8 @@ public partial class ItemTooltip : BaseTooltip
 			{
 				PictureBox = picBox,
 				View = ViewOf(userSettings, enableDetailedTooltipView),
-				ShowInGameValues = userSettings.ShowInGameValues
+				ShowInGameValues = userSettings.ShowInGameValues,
+				ItemDatabase = services.ItemDatabaseService,
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
 			_Current.Show();
@@ -228,6 +238,8 @@ public partial class ItemTooltip : BaseTooltip
 			view |= ItemTooltipView.ValueRanges;
 		if (settings.TooltipShowGrantedSkills)
 			view |= ItemTooltipView.GrantedSkills;
+		if (settings.TooltipShowSetPieceCounts)
+			view |= ItemTooltipView.SetPieceCounts;
 		return view;
 	}
 
@@ -236,7 +248,14 @@ public partial class ItemTooltip : BaseTooltip
 	/// </summary>
 	public void FillToolTip()
 	{
-		var key = (this.FocusedItem, UIService.Scale, this.View, this.ShowInGameValues);
+		// How many of each set piece are loaded now: part of the cache key, since it changes with the loaded items.
+		IReadOnlyDictionary<RecordId, int>? setCounts = null;
+		if (this.View.HasFlag(ItemTooltipView.SetPieceCounts) && this.ItemDatabase is not null
+			&& this.ItemProvider.GetSetItems(this.FocusedItem) is { setMembers.Count: > 0 } set)
+			setCounts = this.ItemDatabase.CountItemsByRecord(set.setMembers.Keys.Select(RecordId.Create));
+
+		var key = new TooltipKey(this.FocusedItem, UIService.Scale, this.View, this.ShowInGameValues
+			, setCounts is null ? string.Empty : string.Join(",", setCounts.Values));
 		bool detailed = this.View.HasFlag(ItemTooltipView.Detailed);
 
 		// Redraw
@@ -414,7 +433,15 @@ public partial class ItemTooltip : BaseTooltip
 		if (Data.ItemSet is { setMembers.Count: > 0 })
 		{
 			AddRow(TOOLTIPDELIM);
-			foreach (var str in Data.ItemSet.Translations) AddRow(str.Value);
+			foreach (var str in Data.ItemSet.Translations)
+			{
+				// The set name comes first, then one line per piece with its count on the right.
+				if (setCounts is not null && str.Key != Data.ItemSet.setName
+					&& setCounts.TryGetValue(RecordId.Create(str.Key), out var count))
+					this.flowLayoutPanelFriendlyNames.Controls.Add(this.MakeRangeRow(str.Value, count.ToString()));
+				else
+					AddRow(str.Value);
+			}
 		}
 
 		if (Data.Requirements.Length != 0)

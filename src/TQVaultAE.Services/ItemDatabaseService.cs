@@ -183,6 +183,25 @@ public class ItemDatabaseService : IItemDatabaseService
         this._log.LogInformation("Item database rebuilt with {Count} items", this.ItemDatabase.Count);
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyDictionary<RecordId, int> CountItemsByRecord(IEnumerable<RecordId> recordIds)
+    {
+        var counts = new Dictionary<RecordId, int>();
+        foreach (var id in recordIds)
+            counts.TryAdd(id, 0);
+
+        if (counts.Count == 0)
+            return counts;
+
+        foreach (var result in this.ItemDatabase)
+        {
+            if (result.Item.BaseItemId is { } id && counts.TryGetValue(id, out var count))
+                counts[id] = count + 1;
+        }
+
+        return counts;
+    }
+
     #region Search Methods
 
     /// <inheritdoc/>

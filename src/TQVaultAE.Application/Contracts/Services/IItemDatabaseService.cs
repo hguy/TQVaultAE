@@ -40,6 +40,12 @@ public interface IItemDatabaseService
     /// </summary>
     void RebuildItemDatabase();
 
+    /// <summary>
+    /// Counts the loaded items made from each of <paramref name="recordIds"/> (their base item),
+    /// e.g. how many of each piece of a set are owned. Records with no loaded item count 0.
+    /// </summary>
+    IReadOnlyDictionary<RecordId, int> CountItemsByRecord(IEnumerable<RecordId> recordIds);
+
     #region Search Methods
 
     /// <summary>

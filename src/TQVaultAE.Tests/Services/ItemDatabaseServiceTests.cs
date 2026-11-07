@@ -66,6 +66,28 @@ public class ItemDatabaseServiceTests
 	}
 
 	[Fact]
+	public void CountItemsByRecord_CountsEachLoadedCopy_WhateverTheRecordPathSpelling()
+	{
+		// Arrange: two copies of the helm, one of the greaves, and an item of another record
+		_service.TryAddItemToDatabase(new Item { BaseItemId = RecordId.Create("""records\xpack2\item\set\helm.dbr""") });
+		_service.TryAddItemToDatabase(new Item { BaseItemId = RecordId.Create("""RECORDS/XPACK2/ITEM/SET/HELM.DBR""") });
+		_service.TryAddItemToDatabase(new Item { BaseItemId = RecordId.Create("""records\xpack2\item\set\greaves.dbr""") });
+		_service.TryAddItemToDatabase(new Item { BaseItemId = RecordId.Create("""records\item\other.dbr""") });
+		var helm = RecordId.Create("""Records\XPack2\Item\Set\Helm.dbr""");
+		var greaves = RecordId.Create("""records\xpack2\item\set\greaves.dbr""");
+		var armband = RecordId.Create("""records\xpack2\item\set\armband.dbr""");
+
+		// Act
+		var counts = _service.CountItemsByRecord([helm, greaves, armband]);
+
+		// Assert
+		counts.Should().HaveCount(3);
+		counts[helm].Should().Be(2);
+		counts[greaves].Should().Be(1);
+		counts[armband].Should().Be(0);
+	}
+
+	[Fact]
 	public void TryAddItemToDatabase_WithNullItem_ReturnsFalse()
 	{
 		// Act

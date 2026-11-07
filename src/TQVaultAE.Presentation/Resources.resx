@@ -2123,4 +2123,10 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SettingTooltipShowGrantedSkillsTT" xml:space="preserve">
     <value>Show the skills granted by the item, its affixes and its relics in a panel next to the tooltip</value>
   </data>
+	<data name="SettingTooltipShowSetPieceCounts" xml:space="preserve">
+    <value>Display items set pieces count</value>
+  </data>
+	<data name="SettingTooltipShowSetPieceCountsTT" xml:space="preserve">
+    <value>Show, next to each piece of the set, how many of it are in the vaults, characters and stashes loaded now</value>
+  </data>
 </root>

@@ -91,6 +91,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 	private bool tooltipShowInGameRolls;
 	private bool tooltipShowValueRanges;
 	private bool tooltipShowGrantedSkills;
+	private bool tooltipShowSetPieceCounts;
 
 	/// <summary>
 	/// Value Range (0-255) for item background color opacity
@@ -380,6 +381,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.scalingCheckBoxTooltipInGameRolls.Font =
 		this.scalingCheckBoxTooltipValueRanges.Font =
 		this.scalingCheckBoxTooltipGrantedSkills.Font =
+		this.scalingCheckBoxTooltipSetPieceCounts.Font =
 		this.ShowInGameValuesCheckBox.Font =
 		this.EnableItemRequirementRestrictionCheckBox.Font =
 		this.ItemBGColorOpacityLabel.Font =
@@ -432,6 +434,8 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.toolTip.SetToolTip(this.scalingCheckBoxTooltipValueRanges, Resources.SettingTooltipShowValueRangesTT);
 		this.scalingCheckBoxTooltipGrantedSkills.Text = Resources.SettingTooltipShowGrantedSkills;
 		this.toolTip.SetToolTip(this.scalingCheckBoxTooltipGrantedSkills, Resources.SettingTooltipShowGrantedSkillsTT);
+		this.scalingCheckBoxTooltipSetPieceCounts.Text = Resources.SettingTooltipShowSetPieceCounts;
+		this.toolTip.SetToolTip(this.scalingCheckBoxTooltipSetPieceCounts, Resources.SettingTooltipShowSetPieceCountsTT);
 		this.ShowInGameValuesCheckBox.Text = Resources.SettingShowInGameValues;
 		this.toolTip.SetToolTip(this.ShowInGameValuesCheckBox, Resources.SettingShowInGameValuesTT);
 		this.ItemBGColorOpacityLabel.Text = Resources.SettingsItemBGColorOpacityLabel;
@@ -520,6 +524,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.tooltipShowInGameRolls = USettings.TooltipShowInGameRolls;
 		this.tooltipShowValueRanges = USettings.TooltipShowValueRanges;
 		this.tooltipShowGrantedSkills = USettings.TooltipShowGrantedSkills;
+		this.tooltipShowSetPieceCounts = USettings.TooltipShowSetPieceCounts;
 		this.itemBGColorOpacity = USettings.ItemBGColorOpacity;
 		this.enableItemRequirementRestriction = USettings.EnableItemRequirementRestriction;
 		this.enableHotReload = USettings.EnableHotReload;
@@ -605,6 +610,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.scalingCheckBoxTooltipInGameRolls.Checked = this.tooltipShowInGameRolls;
 		this.scalingCheckBoxTooltipValueRanges.Checked = this.tooltipShowValueRanges;
 		this.scalingCheckBoxTooltipGrantedSkills.Checked = this.tooltipShowGrantedSkills;
+		this.scalingCheckBoxTooltipSetPieceCounts.Checked = this.tooltipShowSetPieceCounts;
 		this.ShowInGameValuesCheckBox.Checked = this.showInGameValues;
 		this.ItemBGColorOpacityTrackBar.Value = this.itemBGColorOpacity;
 		this.EnableItemRequirementRestrictionCheckBox.Checked = this.enableItemRequirementRestriction;

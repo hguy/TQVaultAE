@@ -193,6 +193,7 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingCheckBoxTooltipInGameRolls = new ScalingCheckBox();
 			scalingCheckBoxTooltipValueRanges = new ScalingCheckBox();
 			scalingCheckBoxTooltipGrantedSkills = new ScalingCheckBox();
+			scalingCheckBoxTooltipSetPieceCounts = new ScalingCheckBox();
 			ItemBGColorOpacityLabel = new ScalingLabel();
 			EnableItemRequirementRestrictionCheckBox = new ScalingCheckBox();
 			hotReloadCheckBox = new ScalingCheckBox();
@@ -554,6 +555,7 @@ namespace TQVaultAE.GUI.Dialogs
 			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipInGameRolls);
 			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipValueRanges);
 			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipGrantedSkills);
+			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipSetPieceCounts);
 			bufferedFlowLayoutPanelTooltipEnhanced.Dock = DockStyle.Fill;
 			bufferedFlowLayoutPanelTooltipEnhanced.FlowDirection = FlowDirection.TopDown;
 			bufferedFlowLayoutPanelTooltipEnhanced.Location = new Point(3, 20);
@@ -596,6 +598,18 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingCheckBoxTooltipGrantedSkills.Text = "Display item skills";
 			scalingCheckBoxTooltipGrantedSkills.UseVisualStyleBackColor = true;
 			scalingCheckBoxTooltipGrantedSkills.CheckedChanged += scalingCheckBoxTooltipGrantedSkills_CheckedChanged;
+			//
+			// scalingCheckBoxTooltipSetPieceCounts
+			//
+			scalingCheckBoxTooltipSetPieceCounts.AutoSize = true;
+			scalingCheckBoxTooltipSetPieceCounts.Font = new Font("Microsoft Sans Serif", 11.25F);
+			scalingCheckBoxTooltipSetPieceCounts.ForeColor = Color.White;
+			scalingCheckBoxTooltipSetPieceCounts.Name = "scalingCheckBoxTooltipSetPieceCounts";
+			scalingCheckBoxTooltipSetPieceCounts.Size = new Size(213, 22);
+			scalingCheckBoxTooltipSetPieceCounts.TabIndex = 3;
+			scalingCheckBoxTooltipSetPieceCounts.Text = "Display items set pieces count";
+			scalingCheckBoxTooltipSetPieceCounts.UseVisualStyleBackColor = true;
+			scalingCheckBoxTooltipSetPieceCounts.CheckedChanged += scalingCheckBoxTooltipSetPieceCounts_CheckedChanged;
 			//
 			// ShowInGameValuesCheckBox
 			// 
@@ -1476,6 +1490,7 @@ namespace TQVaultAE.GUI.Dialogs
 		private ScalingCheckBox scalingCheckBoxTooltipInGameRolls;
 		private ScalingCheckBox scalingCheckBoxTooltipValueRanges;
 		private ScalingCheckBox scalingCheckBoxTooltipGrantedSkills;
+		private ScalingCheckBox scalingCheckBoxTooltipSetPieceCounts;
 		private System.Windows.Forms.TrackBar ItemBGColorOpacityTrackBar;
 		private ScalingLabel ItemBGColorOpacityLabel;
 		private ScalingCheckBox EnableItemRequirementRestrictionCheckBox;
