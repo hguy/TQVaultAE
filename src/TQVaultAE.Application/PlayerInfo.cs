@@ -44,7 +44,7 @@ public class PlayerInfo
 	{
 		get
 		{
-			string[] ret = new string[] { };
+			string[] ret = Array.Empty<string>();
 			if (ActiveMasteries.HasValue)
 			{
 				var actives = ActiveMasteries.Value;

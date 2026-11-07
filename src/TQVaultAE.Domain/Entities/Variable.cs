@@ -144,17 +144,17 @@ public class Variable
 
 		StringBuilder ans = new(64);
 		ans.Append(this.Name);
-		ans.Append(",");
+		ans.Append(',');
 
 		for (int i = 0; i < this.NumberOfValues; ++i)
 		{
 			if (i > 0)
-				ans.Append(";");
+				ans.Append(';');
 
 			ans.AppendFormat(CultureInfo.InvariantCulture, formatSpec, this.values[i]);
 		}
 
-		ans.Append(",");
+		ans.Append(',');
 
 		_toString = ans.ToString();
 

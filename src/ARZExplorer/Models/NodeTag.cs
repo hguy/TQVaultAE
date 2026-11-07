@@ -3,7 +3,7 @@ using TQVaultAE.Domain.Entities;
 
 namespace ArzExplorer.Models;
 
-internal class NodeTag
+internal sealed class NodeTag
 {
 	internal RecordId? Thread;
 	internal string Text = string.Empty;

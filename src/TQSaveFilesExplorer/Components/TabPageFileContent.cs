@@ -79,7 +79,7 @@ private bool _DisplayDataDecimal = true;
 			{
 				var tn = new TreeNode(k.KeyName) { Tag = k };
 
-				if (k.Childs.Any())
+				if (k.Childs.Count != 0)
 				{
 					tn.Nodes.AddRange(MakeTreeNode(k.Childs).ToArray());
 				}

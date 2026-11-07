@@ -110,7 +110,7 @@ public partial class ComboBoxCharacterItem : UserControl
 			this.scalingLabelMasteries.Text = string.Empty;
 			List<string> masteryNames = new();
 			var dbr = ps.Info?.ActiveMasteriesRecordNames;
-			if (dbr?.Any() ?? false)
+			if (dbr is { Length: > 0 })
 			{
 				foreach (var recId in dbr)
 				{
@@ -137,7 +137,7 @@ public partial class ComboBoxCharacterItem : UserControl
 
 			this.TagService.LoadTags(ps);
 
-			if (ps.Tags.Any())
+			if (ps.Tags.Count != 0)
 			{
 				// refresh assigned tag list
 				int idx = 0;
@@ -157,7 +157,7 @@ public partial class ComboBoxCharacterItem : UserControl
 				}
 			}
 
-			if (ps.Tags.Any() || ps.IsArchived)
+			if (ps.Tags.Count != 0 || ps.IsArchived)
 				this.scalingLabelTags.Visible = this.bufferedFlowLayoutPanelTags.Visible = true;
 
 			#endregion

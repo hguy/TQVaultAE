@@ -5,7 +5,7 @@ namespace TQVaultAE.GUI.Components.Rendering;
 /// <summary>
 /// Class for rendering the context menu strip.
 /// </summary>
-internal class CustomProfessionalRenderer : ToolStripProfessionalRenderer
+internal sealed class CustomProfessionalRenderer : ToolStripProfessionalRenderer
 {
 	/// <summary>
 	/// Handler for rendering the contect meny strip.

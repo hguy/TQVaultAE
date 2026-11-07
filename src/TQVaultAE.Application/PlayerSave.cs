@@ -3,7 +3,7 @@ using TQVaultAE.Application.Contracts.Services;
 
 namespace TQVaultAE.Application;
 
-public class PlayerSave : IDisposable
+public sealed class PlayerSave : IDisposable
 {
 	public FileSystemWatcher? PlayerSaveWatcher { get; set; }
 	public FileSystemWatcher? PlayerStashWatcher { get; set; }

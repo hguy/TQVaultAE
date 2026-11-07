@@ -182,7 +182,7 @@ public partial class GameFileService : IGameFileService
 					RepoTQITPathExists = DirectoryIO.Exists(RepoTQITPath);
 
 					// Do you want to refresh your vault and local Save with last git save ?
-					if (vaultfiles.Any())
+					if (vaultfiles.Length != 0)
 					{
 						overrideFiles = DoYouWantToReplaceLocalVault();
 					}
@@ -225,7 +225,7 @@ public partial class GameFileService : IGameFileService
 			RepoTQITPathExists = DirectoryIO.Exists(RepoTQITPath);
 
 			overrideFiles = false;
-			if (vaultfiles.Any())
+			if (vaultfiles.Length != 0)
 			{
 				overrideFiles = DoYouWantToReplaceLocalVault();
 			}
@@ -410,7 +410,7 @@ public partial class GameFileService : IGameFileService
 
 			// Added by VillageIdiot
 			// Backup the file pairs for the player stash files.
-			if (this.PathIO.GetFileName(file).ToUpperInvariant() == GamePathService.PlayerStashFileNameB.ToUpperInvariant())
+			if (PathIO.GetFileName(file).Equals(GamePathService.PlayerStashFileNameB, StringComparison.OrdinalIgnoreCase))
 			{
 				string dxgfile = this.PathIO.ChangeExtension(file, ".dxg");
 

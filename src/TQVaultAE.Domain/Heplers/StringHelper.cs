@@ -74,12 +74,12 @@ public static partial class StringHelper
 		return (false, search, null, false);
 	}
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5351", Justification = "MD5 makes a stable identifier, not a security hash.")]
 	public static string MakeMD5(this string input)
 	{
-		using var md5Hash = MD5.Create();
 
 		// Convert the input string to a byte array and compute the hash.
-		byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+		byte[] data = MD5.HashData(Encoding.UTF8.GetBytes(input));
 
 		// Pre-allocate StringBuilder with exact capacity
 		var sBuilder = new StringBuilder(data.Length * 2, data.Length * 2);

@@ -19,7 +19,7 @@ using TQVaultAE.Services;
 /// <summary>
 /// Class for VaultMaintenanceDialog form
 /// </summary>
-internal partial class VaultMaintenanceDialog : VaultForm
+internal sealed partial class VaultMaintenanceDialog : VaultForm
 {
 	/// <summary>
 	/// MessageBoxOptions for right to left reading.
@@ -266,7 +266,7 @@ internal partial class VaultMaintenanceDialog : VaultForm
 
 		foreach (string vaultName in this.vaultListComboBox.Items)
 		{
-			if (vault.ToUpperInvariant() == vaultName.ToUpperInvariant())
+			if (vault.Equals(vaultName, StringComparison.OrdinalIgnoreCase))
 			{
 				found = true;
 				break;

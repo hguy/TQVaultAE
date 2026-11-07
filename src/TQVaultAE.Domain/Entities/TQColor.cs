@@ -168,7 +168,7 @@ public static partial class TQColorHelper
 		if (string.IsNullOrWhiteSpace(text)) return null;
 		TQColor? res = null;
 		string ColorId = GetColorFromTaggedStringRegEx().Replace(text, @"${ColorId}").ToUpperInvariant();
-		if (ColorId.Any())
+		if (ColorId.Length != 0)
 			res = GetColorFromTagIdentifier(ColorId.First());
 		return res;
 	}

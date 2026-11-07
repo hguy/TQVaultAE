@@ -188,9 +188,8 @@ public class TagService : ITagService
 			// update references inside mapping
 			foreach (var map in this.TagConfig.mapping)
 			{
-				if (map.tags.Contains(tagNameOld))
+				if (map.tags.Remove(tagNameOld))
 				{
-					map.tags.Remove(tagNameOld);
 					map.tags.Add(tagNameNew);
 				}
 			}

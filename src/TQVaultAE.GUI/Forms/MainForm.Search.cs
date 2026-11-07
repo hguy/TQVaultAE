@@ -41,7 +41,7 @@ public partial class MainForm
 		var searchDialog = this._searchDialog;
 		var result = searchDialog.ShowDialog();
 
-		if (result == DialogResult.OK && searchDialog.QueryResults.Any())
+		if (result == DialogResult.OK && searchDialog.QueryResults.Length != 0)
 			this.DisplayResults(null, searchDialog.QueryResults);
 	}
 

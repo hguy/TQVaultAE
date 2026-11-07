@@ -354,7 +354,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		if (label != null && label.IndexOf('{') >= 0)
+		if (label != null && label.Contains('{'))
 		{
 			// the label has formatting codes.  Use it to format the amount
 			formatSpec = label;
@@ -425,7 +425,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		if (label != null && label.IndexOf('{') >= 0)
+		if (label != null && label.Contains('{'))
 		{
 			// the label has formatting codes.  Use it to format the amount
 			formatSpec = label;
@@ -1329,7 +1329,7 @@ public partial class ItemProvider
 		}
 
 		label = ItemAttributeProvider.ConvertFormat(label);
-		if (label != null && label.IndexOf('{') >= 0)
+		if (label != null && label.Contains('{'))
 		{
 			// we have a format string.  try using it.
 			line = Format(label, variable[Math.Min(variable.NumberOfValues - 1, variableNumber)]);
@@ -2257,7 +2257,7 @@ public partial class ItemProvider
 				// regular armor attribute is not magical
 				labelColor = ItemStyle.Mundane.TQColor();
 				// Add trailing '\n' + space for regular armor pieces to force empty row in tooltip (only if is first attribute)
-				if (!(itm.CurrentFriendlyNameResult?.TmpAttrib.Any() ?? false))
+				if ((itm.CurrentFriendlyNameResult?.TmpAttrib.Count ?? 0) == 0)
 					TrailingNL = StringHelper.TQNewLineTag + ' ';
 			}
 		}

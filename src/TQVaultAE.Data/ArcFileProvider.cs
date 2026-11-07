@@ -36,7 +36,7 @@ public class ArcFileProvider : IArcFileProvider
 			if (!file.FileHasBeenRead)
 				this.ReadARCToC(file);
 
-			return file.DirectoryEntries.Any();
+			return file.DirectoryEntries.Count != 0;
 		}
 		catch (IOException exception)
 		{
@@ -99,7 +99,7 @@ public class ArcFileProvider : IArcFileProvider
 		if (!file.FileHasBeenRead)
 			this.ReadARCToC(file);
 
-		if (!file.DirectoryEntries.Any())
+		if (file.DirectoryEntries.Count == 0)
 		{
 			if (USettings.ARCFileDebugLevel > 1)
 				Log.LogDebug("Error - Could not read {FileName}", file.FileName);
@@ -116,8 +116,8 @@ public class ArcFileProvider : IArcFileProvider
 
 		ArcDirEntry directoryEntry;
 
-		if (file.DirectoryEntries.ContainsKey(dataId))
-			directoryEntry = file.DirectoryEntries[dataId];
+		if (file.DirectoryEntries.TryGetValue(dataId, out ArcDirEntry? value))
+			directoryEntry = value;
 		else
 		{
 			if (USettings.ARCFileDebugLevel > 1)
@@ -167,7 +167,7 @@ public class ArcFileProvider : IArcFileProvider
 					continue;
 
 				string filename = destination;
-				if (!filename.EndsWith("\\", StringComparison.Ordinal))
+				if (!filename.EndsWith('\\'))
 					filename = string.Concat(filename, "\\");
 
 				filename = string.Concat(filename, dirEntry.FileName);

@@ -43,6 +43,8 @@ public static class Program
 	private static MessageBoxOptions rightToLeft;
 
 	internal static ServiceProvider ServiceProvider { get; private set; } = null!;
+	// Registered in the services as ILoggerFactory: keep the interface type.
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "Registered as ILoggerFactory.")]
 	private static ILoggerFactory LoggerFactory = null!;
 
 	/// <summary>

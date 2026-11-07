@@ -453,7 +453,7 @@ public class BagButtonBase : Panel
 		}
 
 		// Make sure the string has a space before attempting to split it.
-		if (!this.ButtonText.Contains(" "))
+		if (!this.ButtonText.Contains(' '))
 		{
 			return teststring;
 		}
@@ -477,8 +477,8 @@ public class BagButtonBase : Panel
 		{
 			// Otherwise we need to figure out where the break will occur and find the longer string of the two.
 			int middle = (this.ButtonText.Length / 2) + (this.ButtonText.Length - ((this.ButtonText.Length / 2) * 2)) - 1;
-			int left = this.ButtonText.LastIndexOf(" ", middle, StringComparison.Ordinal);
-			int right = this.ButtonText.IndexOf(" ", middle, StringComparison.Ordinal);
+			int left = this.ButtonText.LastIndexOf(' ', middle);
+			int right = this.ButtonText.IndexOf(' ', middle);
 
 			// Use the whole string just in case we don't find a space.
 			string testLeft = this.ButtonText;

@@ -24,7 +24,7 @@ namespace TQVaultAE.GUI.Dialogs;
 /// <summary>
 /// Class for the Settings/Configuration Dialog
 /// </summary>
-internal partial class SettingsDialog : VaultForm, IScalingControl
+internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 {
 	#region Properties & Fields
 
@@ -462,7 +462,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 
 		var maps = GamePathResolver.GetCustomMapList();
 
-		if (maps?.Any() ?? false)
+		if (maps is { Length: > 0 })
 			this.mapListComboBox.Items.AddRange(maps);
 
 		this.ResumeLayout(false);
@@ -491,7 +491,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.folderBrowserDialog.RootFolder = Environment.SpecialFolder.Desktop;
 		this.folderBrowserDialog.SelectedPath = this.VaultPath;
 		this.folderBrowserDialog.ShowDialog();
-		if (this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant() != this.VaultPath.Trim().ToUpperInvariant())
+		if (!this.folderBrowserDialog.SelectedPath.Trim().Equals(this.VaultPath.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
 			this.VaultPath = this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant();
 			this.vaultPathTextBox.Text = this.VaultPath.Trim().ToUpperInvariant();
@@ -631,7 +631,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		}).OrderBy(cb => cb.DisplayName).ToArray();
 
 		// Reading failed so we default to English
-		if (!languages.Any()) languages = new ComboBoxItem[] { new ComboBoxItem() { Value = "English", DisplayName = "English" } };
+		if (languages.Length == 0) languages = new ComboBoxItem[] { new ComboBoxItem() { Value = "English", DisplayName = "English" } };
 
 		this.languageComboBox.Items.AddRange(languages);
 
@@ -966,7 +966,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 			return;
 
 		this.titanQuestLanguage = (this.languageComboBox.SelectedItem as ComboBoxItem)?.Value ?? string.Empty;
-		if (this.titanQuestLanguage.ToUpperInvariant() != gl.ToUpperInvariant())
+		if (!this.titanQuestLanguage.Equals(gl, StringComparison.OrdinalIgnoreCase))
 			this.LanguageChanged = true;
 
 		this.ConfigurationChanged = true;
@@ -979,7 +979,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <param name="e">EventArgs data</param>
 	private void VaultPathTextBoxLeave(object? sender, EventArgs e)
 	{
-		if (this.VaultPath.ToUpperInvariant() != this.vaultPathTextBox.Text.Trim().ToUpperInvariant())
+		if (!this.VaultPath.Equals(this.vaultPathTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
 			this.VaultPath = this.vaultPathTextBox.Text.Trim();
 			this.vaultPathTextBox.Invalidate();
@@ -994,7 +994,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <param name="e">EventArgs data</param>
 	private void TitanQuestPathTextBoxLeave(object? sender, EventArgs e)
 	{
-		if (this.titanQuestPath.ToUpperInvariant() != this.titanQuestPathTextBox.Text.Trim().ToUpperInvariant())
+		if (!this.titanQuestPath.Equals(this.titanQuestPathTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
 			this.titanQuestPath = this.titanQuestPathTextBox.Text.Trim();
 			this.titanQuestPathTextBox.Invalidate();
@@ -1009,7 +1009,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 	/// <param name="e">EventArgs data</param>
 	private void ImmortalThronePathTextBoxLeave(object? sender, EventArgs e)
 	{
-		if (this.immortalThronePath.ToUpperInvariant() != this.immortalThronePathTextBox.Text.Trim().ToUpperInvariant())
+		if (!this.immortalThronePath.Equals(this.immortalThronePathTextBox.Text.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
 			this.immortalThronePath = this.immortalThronePathTextBox.Text.Trim();
 			this.immortalThronePathTextBox.Invalidate();
@@ -1028,7 +1028,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
 		this.folderBrowserDialog.SelectedPath = this.titanQuestPath;
 		this.folderBrowserDialog.ShowDialog();
-		if (this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant() != this.titanQuestPath.Trim().ToUpperInvariant())
+		if (!this.folderBrowserDialog.SelectedPath.Trim().Equals(this.titanQuestPath.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
 			this.titanQuestPath = this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant();
 			this.titanQuestPathTextBox.Text = this.titanQuestPath.Trim().ToUpperInvariant();
@@ -1048,7 +1048,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.folderBrowserDialog.RootFolder = Environment.SpecialFolder.MyComputer;
 		this.folderBrowserDialog.SelectedPath = this.immortalThronePath;
 		this.folderBrowserDialog.ShowDialog();
-		if (this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant() != this.immortalThronePath.Trim().ToUpperInvariant())
+		if (!this.folderBrowserDialog.SelectedPath.Trim().Equals(this.immortalThronePath.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
 			this.immortalThronePath = this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant();
 			this.immortalThronePathTextBox.Text = this.immortalThronePath.Trim().ToUpperInvariant();

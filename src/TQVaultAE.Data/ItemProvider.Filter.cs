@@ -269,9 +269,9 @@ public partial class ItemProvider
 			int value = variable.GetInt32(statLevel);
 
 			// Update the value if it already exists.
-			if (statBonuses.ContainsKey(key))
+			if (statBonuses.TryGetValue(key, out int value1))
 			{
-				value += statBonuses[key];
+				value += value1;
 				statBonuses.Remove(key);
 			}
 
@@ -340,14 +340,14 @@ public partial class ItemProvider
 				key = Variable.KEY_LEVELREQ;
 			;
 			// Keep Max value per Requirement (LevelRequirement, Strength, Dexterity, Intelligence)
-			if (requirements.ContainsKey(key))
+			if (requirements.TryGetValue(key, out Variable? value1))
 			{
-				Variable oldVariable = (Variable)requirements[key];
+				Variable oldVariable = (Variable)value1;
 
 				// Changed by VillageIdiot
 				// Comparison was failing when level difference was too high
 				// (single digit vs multi-digit)
-				if (value.Contains(",") || oldVariable.Name.Contains(","))
+				if (value.Contains(',') || oldVariable.Name.Contains(','))
 				{
 					// Just in case there is something with multiple values
 					// Keep the original code

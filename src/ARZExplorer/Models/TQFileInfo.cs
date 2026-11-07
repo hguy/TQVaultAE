@@ -3,7 +3,7 @@ using TQVaultAE.Domain.Helpers;
 
 namespace ArzExplorer.Models;
 
-internal class TQFileInfo
+internal sealed class TQFileInfo
 {
 
 	/// <summary>

@@ -6,6 +6,8 @@ namespace TQVaultAE.Domain.Entities;
 
 public partial class RecordId : IEquatable<RecordId>, IComparable, IComparable<RecordId>
 {
+	private static readonly char[] PathSeparators = ['\\', '/'];
+
 	public readonly string Raw;
 	public readonly string Normalized;
 
@@ -123,7 +125,7 @@ public partial class RecordId : IEquatable<RecordId>, IComparable, IComparable<R
 		get
 		{
 			if (_Tokens is null)
-				_Tokens = this.Raw.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
+				_Tokens = this.Raw.Split(PathSeparators, StringSplitOptions.RemoveEmptyEntries).ToList().AsReadOnly();
 
 			return _Tokens;
 		}

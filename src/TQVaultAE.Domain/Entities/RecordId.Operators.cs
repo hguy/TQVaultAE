@@ -51,6 +51,16 @@ public partial class RecordId
 		return Compare(left, right) > 0;
 	}
 
+	public static bool operator <=(RecordId? left, RecordId? right)
+	{
+		return Compare(left, right) <= 0;
+	}
+
+	public static bool operator >=(RecordId? left, RecordId? right)
+	{
+		return Compare(left, right) >= 0;
+	}
+
 	public static int Compare(RecordId? left, RecordId? right)
 	{
 		if (object.ReferenceEquals(left, right))

@@ -15,7 +15,7 @@ using TQVaultAE.Presentation;
 /// <summary>
 /// Class for About dialog box.
 /// </summary>
-internal partial class AboutBox : VaultForm
+internal sealed partial class AboutBox : VaultForm
 {
 	/// <summary>
 	/// Initializes a new instance of the AboutBox class.

@@ -219,7 +219,7 @@ public partial class ItemTooltip : BaseTooltip
 			AddRow(Data.ArtifactRecipe);
 
 		// Flavor text
-		if (Data.FlavorText.Any())
+		if (Data.FlavorText.Length != 0)
 		{
 			foreach (var str in Data.FlavorText) AddRow(str);
 			AddRow(TOOLTIPSPACER);
@@ -242,19 +242,19 @@ public partial class ItemTooltip : BaseTooltip
 			}
 
 			// Detailed display
-			if (Data.PrefixAttributes.Any())
+			if (Data.PrefixAttributes.Length != 0)
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(AdjustColor(this.Data.PrefixInfoDescription, Resources.ItemPropertiesLabelPrefixProperties), style: FontStyle.Bold);
 				AddAttributeRows(Data.PrefixAttributes, Data.PrefixAttributeRanges);
 			}
-			if (Data.BaseAttributes.Any())
+			if (Data.BaseAttributes.Length != 0)
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(AdjustColor(this.Data.BaseItemInfoDescription, Resources.ItemPropertiesLabelBaseItemProperties), style: FontStyle.Bold);
 				AddAttributeRows(Data.BaseAttributes, Data.BaseAttributeRanges);
 			}
-			if (Data.SuffixAttributes.Any())
+			if (Data.SuffixAttributes.Length != 0)
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(AdjustColor(this.Data.SuffixInfoDescription, Resources.ItemPropertiesLabelSuffixProperties), style: FontStyle.Bold);
@@ -270,7 +270,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 
 		// In-game jitter comparison (database -> in-game), detailed view only
-		if (this.EnableDetailedTooltipView && Data.InGameRolls.Any())
+		if (this.EnableDetailedTooltipView && Data.InGameRolls.Length != 0)
 		{
 			AddRow(TOOLTIPSPACER);
 			AddRow(Resources.ItemPropertiesLabelInGameRolls, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);
@@ -278,7 +278,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 
 		// formula Artifact Details goes after formula attributes
-		if (Data.FormulaeArtifactAttributes.Any())
+		if (Data.FormulaeArtifactAttributes.Length != 0)
 		{
 			AddRow(TOOLTIPSPACER);
 			AddRow(Data.FormulaeArtifactName, FocusedItem.ExtractTextColorOrItemColor(Data.BaseItemInfoDescription), style: FontStyle.Bold);
@@ -293,7 +293,7 @@ public partial class ItemTooltip : BaseTooltip
 			&& (Data.Item.RelicInfo is not null || Data.Item.Relic2Info is not null);
 		if (Data.Item.HasRelicOrCharm || hasSocketedRecord)
 		{
-			if (Data.Relic1Attributes.Any())
+			if (Data.Relic1Attributes.Length != 0)
 			{
 				AddRow(TOOLTIPDELIM);
 				AddRow(Data.RelicInfo1Description, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);// Name
@@ -302,7 +302,7 @@ public partial class ItemTooltip : BaseTooltip
 				AddRow(Data.RelicInfo1CompletionBonusResolved, ItemStyle.Relic.TQColor().Color());// Bonus Completion label
 				foreach (var str in Data.RelicBonus1Attributes) AddRow(str);
 			}
-			if (Data.Relic2Attributes.Any())
+			if (Data.Relic2Attributes.Length != 0)
 			{
 				AddRow(TOOLTIPDELIM);
 				AddRow(Data.RelicInfo2Description, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);// Name
@@ -314,7 +314,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 		else if (Data.Item.IsArtifact)
 		{
-			if (Data.RelicBonus1Attributes.Any())
+			if (Data.RelicBonus1Attributes.Length != 0)
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(Data.ArtifactBonus, ItemStyle.Relic.TQColor().Color());// Completion label
@@ -323,7 +323,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 		else if (Data.Item.IsRelicOrCharm)
 		{
-			if (Data.RelicBonus1Attributes.Any())
+			if (Data.RelicBonus1Attributes.Length != 0)
 			{
 				AddRow(TOOLTIPSPACER);
 				AddRow(Data.RelicBonusTitle, ItemStyle.Relic.TQColor().Color());// Completion label
@@ -350,13 +350,13 @@ public partial class ItemTooltip : BaseTooltip
 			AddRow(this.TranslationService.ItemIT, TQColor.Green.Color());
 
 		// ItemSet
-		if (Data.ItemSet?.setMembers.Any() ?? false)
+		if (Data.ItemSet is { setMembers.Count: > 0 })
 		{
 			AddRow(TOOLTIPDELIM);
 			foreach (var str in Data.ItemSet.Translations) AddRow(str.Value);
 		}
 
-		if (Data.Requirements.Any())
+		if (Data.Requirements.Length != 0)
 		{
 			AddRow(TOOLTIPDELIM);
 			// Requierments
@@ -401,7 +401,7 @@ public partial class ItemTooltip : BaseTooltip
 	/// A row with the attribute on the left and its range on the right. Its width is set by <see cref="AlignRangeRows"/>:
 	/// a flow layout does not count rows stretched with anchors when it measures its widest row.
 	/// </summary>
-	private Control MakeRangeRow(string line, string range)
+	private Panel MakeRangeRow(string line, string range)
 	{
 		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
 		var left = MakeRow(this.UIService, this.FontService, line, BGColor: bg)

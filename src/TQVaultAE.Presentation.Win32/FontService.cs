@@ -7,6 +7,7 @@ using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.Presentation.Win32;
 
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1001", Justification = "Singleton: its font families live as long as the application.")]
 public class FontService : IFontService
 {
 	private readonly UserSettings USettings;

@@ -42,14 +42,13 @@ public class BitmapService : IBitmapService
 		// AMS: Yet another hack to new offset needed for Atlantis and Eternal Ember Images...
 		int newTextureOffsetAdd = int.MinValue;
 
-		if (data == null)
-			throw new ArgumentNullException("data");
+		ArgumentNullException.ThrowIfNull(data);
 
 		if (offset < 0 || offset > data.Length)
-			throw new ArgumentOutOfRangeException("offset");
+			throw new ArgumentOutOfRangeException(nameof(offset));
 
 		if (count < 0 || (data.Length - offset) < count)
-			throw new ArgumentOutOfRangeException("count");
+			throw new ArgumentOutOfRangeException(nameof(count));
 
 		if (data.Length < 12)
 		{
@@ -189,8 +188,7 @@ public class BitmapService : IBitmapService
 	/// <returns>converted bitmap</returns>
 	private Bitmap LoadFromMemory(byte[] data, int offset, int count)
 	{
-		if (data == null)
-			throw new ArgumentNullException(nameof(data));
+		ArgumentNullException.ThrowIfNull(data);
 
 		if (offset < 0 || offset > data.Length)
 			throw new ArgumentOutOfRangeException(nameof(offset));
@@ -211,8 +209,7 @@ public class BitmapService : IBitmapService
 	/// <returns>converted bitmap</returns>
 	private Bitmap LoadFromMemory(byte[] data)
 	{
-		if (data == null)
-			throw new ArgumentNullException(nameof(data));
+		ArgumentNullException.ThrowIfNull(data);
 
 		try
 		{

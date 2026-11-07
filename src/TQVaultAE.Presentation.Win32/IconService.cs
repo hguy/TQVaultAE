@@ -129,7 +129,7 @@ public class IconService : IIconService
 	{
 		var arcpath = this.GamePathService.ResolveArcFileName(fileName.ToRecordId());
 		var arcfile = this.Database.ReadARCFile(arcpath.ArcFileName);
-		if (arcfile is null || !arcfile.DirectoryEntries.Any())
+		if (arcfile is null || arcfile.DirectoryEntries.Count == 0)
 			return [];
 
 		return arcfile.DirectoryEntries.Keys

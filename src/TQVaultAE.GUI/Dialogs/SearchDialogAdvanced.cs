@@ -34,7 +34,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	private readonly List<VirtualCheckedListBox> CachedCheckedListBoxes = new();
 	private readonly SearchQueries SQueries;
 
-	public SearchResult[] QueryResults { get; private set; } = new SearchResult[] { };
+	public SearchResult[] QueryResults { get; private set; } = Array.Empty<SearchResult>();
 	private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 	/// <summary>
@@ -241,9 +241,9 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// <param name="e">EventArgs data</param>
 	private void ApplyButtonClicked(object? sender, EventArgs e)
 	{
-		if (!SelectedFilters.Any())
+		if (SelectedFilters.Count == 0)
 		{
-			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, this.ItemDatabaseService.ItemDatabase.Count())}";
+			scalingLabelProgress.Text = $"{Resources.SearchTermRequired} - {string.Format(Resources.SearchItemCountIs, this.ItemDatabaseService.ItemDatabase.Count)}";
 			return;
 		}
 		;
@@ -1070,7 +1070,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			MinStr = (int)numericUpDownMinStr.Value;
 		bool MaxRequierement = scalingCheckBoxMaxReq.Checked, MinRequierement = scalingCheckBoxMinReq.Checked;
 
-		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag?.ToString() ?? "{0}", SelectedFilters.Count());
+		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag?.ToString() ?? "{0}", SelectedFilters.Count);
 
 		// Combine selected filter results based on operator
 		IReadOnlyList<SearchResult> initialResults;
@@ -1122,7 +1122,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			}
 		).ToArray();
 
-		scalingLabelProgress.Text = $"{string.Format(Resources.SearchItemCountIs, QueryResults.Count())}";
+		scalingLabelProgress.Text = $"{string.Format(Resources.SearchItemCountIs, QueryResults.Length)}";
 
 		ApplyCategoriesReducer();
 	}
@@ -1165,7 +1165,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		}
 	}
 
-	private class FilterCategoriesDetails
+	private sealed class FilterCategoriesDetails
 	{
 		internal bool HasFilterCategory;
 		internal bool IsRegex;
@@ -1222,13 +1222,13 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void ReduceCheckBoxesToQueryResult()
 	{
 		// Nothing selected: there is nothing to reduce to, show every category entry.
-		if (!this.SelectedFilters.Any())
+		if (this.SelectedFilters.Count == 0)
 		{
 			ResetCheckBoxesToFirstLoad();
 			return;
 		}
 
-		if (this.QueryResults.Any())
+		if (this.QueryResults.Length != 0)
 		{
 			CleanAllCheckBoxes();
 
@@ -1497,7 +1497,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Renew list
 		(
 			from m in matrix
-			where m.found.Any() // Saved boxitems may not be retrieved if you have lost the items that carry the corresponding properties.
+			where m.found.Count != 0 // Saved boxitems may not be retrieved if you have lost the items that carry the corresponding properties.
 			group m by m.QueryName into grp // Should have only one query per group
 			select grp
 		).ToList().ForEach(grp =>
@@ -1627,7 +1627,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 		bool HaveFilters()
 		{
-			return this.SelectedFilters.Any()
+			return this.SelectedFilters.Count != 0
 				|| (this.scalingCheckBoxMinReq.Checked
 					&& (
 						this.numericUpDownMinLvl.Value != 0

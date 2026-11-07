@@ -580,13 +580,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 			if (alpha.Equals("d", StringComparison.Ordinal) || alpha.Equals("f", StringComparison.Ordinal))
 			{
 				// a number
-				if (!precis.Any())
+				if (precis.Length == 0)
 					// simple
 					return $@"[{formatNumber}]";
 
 				// see if they listed a decimal precision
 				string decimalSpec = string.Empty;
-				if (numDecimal.Any())
+				if (numDecimal.Length != 0)
 				{
 					// Sometimes the parsing would cause a format exception with 0
 					// Use TryParse to handle the exception.
@@ -598,7 +598,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 				}
 
 				// See if they want the +- sign.
-				return sign.Any()
+				return sign.Length != 0
 					? $"[{formatNumber}:{sign}#0{decimalSpec}]"
 					: $"[{formatNumber}:#0{decimalSpec}]";
 			}
@@ -806,11 +806,11 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>modified character effect text tag</returns>
 	private string GetCharacterEffectTextTag(string effect)
 	{
-		if (effect.ToUpperInvariant() == "CHARACTERGLOBALREQREDUCTION")
+		if (effect.Equals("CHARACTERGLOBALREQREDUCTION", StringComparison.OrdinalIgnoreCase))
 			// awful mispelling by IL.
 			return "CharcterItemGlobalReduction";
 
-		else if (effect.ToUpperInvariant() == "CHARACTERDEFLECTPROJECTILE")
+		else if (effect.Equals("CHARACTERDEFLECTPROJECTILE", StringComparison.OrdinalIgnoreCase))
 			return "CharacterDeflectProjectiles";
 
 		// Just return as-is since the effect is the text tag with the first letter capitalized.

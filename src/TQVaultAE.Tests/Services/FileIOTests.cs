@@ -7,7 +7,7 @@ namespace TQVaultAE.Tests.Services;
 /// <summary>
 /// Unit tests for FileIO wrapper class
 /// </summary>
-public class FileIOTests : IDisposable
+public sealed class FileIOTests : IDisposable
 {
 	private readonly FileIO _fileIO;
 	private readonly DirectoryIO _directoryIO;

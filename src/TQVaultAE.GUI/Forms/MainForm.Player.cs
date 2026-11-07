@@ -73,7 +73,7 @@ public partial class MainForm
 			}
 		}
 
-		if (!characters.Any())
+		if (characters.Length == 0)
 			this.comboBoxCharacter.Items.Add(Resources.MainFormNoCharacters);
 		else
 		{

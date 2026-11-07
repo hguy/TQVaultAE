@@ -98,19 +98,19 @@ public partial class GamePathServiceWin : IGamePathService
 		// Get the containing folder
 		string? charName = this.PathIO.GetFileName(basePath);
 
-		if (charName.ToUpperInvariant() == "SYS")
+		if (charName.Equals("SYS", StringComparison.OrdinalIgnoreCase))
 		{
 			string fileAndExtension = this.PathIO.GetFileName(filename);
-			if (fileAndExtension.ToUpperInvariant().Contains("MISC"))
+			if (fileAndExtension.Contains("MISC", StringComparison.OrdinalIgnoreCase))
 				// Check for the relic vault stash.
 				charName = Resources.GlobalRelicVaultStash;
-			else if (fileAndExtension.ToUpperInvariant().Contains("WIN"))
+			else if (fileAndExtension.Contains("WIN", StringComparison.OrdinalIgnoreCase))
 				// Check for the transfer stash.
 				charName = Resources.GlobalTransferStash;
 			else
 				charName = null;
 		}
-		else if (charName.StartsWith("_", StringComparison.Ordinal))
+		else if (charName.StartsWith('_'))
 			// See if it is a character folder.
 			charName = charName.Substring(1);
 		else
@@ -288,7 +288,7 @@ public partial class GamePathServiceWin : IGamePathService
 	/// <returns>List of custom maps in a string array</returns>
 	public GamePathEntry[] GetCustomMapList()
 		=> new GamePathEntry[][] { GetCustomMapListLegacy(), GetCustomMapListSteamWork() }
-			.Where(g => g?.Any() ?? false)
+			.Where(g => g is { Length: > 0 })
 			.SelectMany(g => g)
 			.ToArray();
 
@@ -320,7 +320,7 @@ public partial class GamePathServiceWin : IGamePathService
 	/// Gets a value indicating whether a custom map has been specified.
 	/// </summary>
 	public bool IsCustom
-		=> !string.IsNullOrEmpty(MapName) && (MapName.Trim().ToUpperInvariant() != "MAIN");
+		=> !string.IsNullOrEmpty(MapName) && (!MapName.Trim().Equals("MAIN", StringComparison.OrdinalIgnoreCase));
 
 
 
@@ -476,14 +476,14 @@ public partial class GamePathServiceWin : IGamePathService
 	/// <returns>The list of all of the vault files in the save folder.</returns>
 	public string[] GetVaultList()
 	{
-		string[] empty = new string[0];
+		string[] empty = Array.Empty<string>();
 		try
 		{
 			// Get all files that have a .vault extension.
 			string[] filesOld = DirectoryIO.GetFiles(TQVaultSaveFolder, $"*{VAULTFILENAME_EXTENSION_OLD}");
 			string[] filesJson = DirectoryIO.GetFiles(TQVaultSaveFolder, $"*{VAULTFILENAME_EXTENSION_JSON}");
 
-			if (!filesOld.Any() && !filesJson.Any())
+			if (filesOld.Length == 0 && filesJson.Length == 0)
 				return empty;
 
 			List<string> vaultList = new List<string>();
@@ -531,7 +531,7 @@ public partial class GamePathServiceWin : IGamePathService
 
 			var modDir = this.DirectoryIO.GetDirectories(steamworkshopRootDir, "*");
 
-			if (!(modDir?.Any() ?? false))
+			if (modDir is not { Length: > 0 })
 				return [];
 
 			var customMapList = modDir
@@ -563,7 +563,7 @@ public partial class GamePathServiceWin : IGamePathService
 
 			var mapFolders = DirectoryIO.GetDirectories(this.PathIO.Combine(saveFolder, "CustomMaps"), "*");
 
-			if (!(mapFolders?.Any() ?? false))
+			if (mapFolders is not { Length: > 0 })
 				return [];
 
 			var customMapList = mapFolders
@@ -717,9 +717,9 @@ Please select the game installation directory.");
 	{
 		string? vaultname = null;
 
-		if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_JSON, StringComparison.InvariantCultureIgnoreCase))
+		if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_JSON, StringComparison.OrdinalIgnoreCase))
 			vaultname = this.PathIO.GetFileNameWithoutExtension(this.PathIO.GetFileNameWithoutExtension(vaultFilePath));
-		else if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_OLD, StringComparison.InvariantCultureIgnoreCase))
+		else if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_OLD, StringComparison.OrdinalIgnoreCase))
 			vaultname = this.PathIO.GetFileNameWithoutExtension(vaultFilePath);
 
 		return vaultname;

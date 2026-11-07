@@ -363,7 +363,7 @@ public partial class HighlightFilters : UserControl
 		};
 
 		if (filter.MaxRequierement || filter.MinRequierement || filter.HavingPrefix || filter.HavingSuffix || filter.HavingRelic || filter.HavingCharm || filter.IsSetItem
-			|| filter.ClassItem.Any() || filter.Rarity.Any() || filter.Origin.Any())
+			|| filter.ClassItem.Count != 0 || filter.Rarity.Count != 0 || filter.Origin.Count != 0)
 		{
 			HighlightService.HighlightFilter = filter;
 			_link.LinkVisited = true;

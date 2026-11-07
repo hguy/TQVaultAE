@@ -94,7 +94,7 @@ public class BaseTooltip : Form
 			if (friendlyName.LastIndexOf('{') > 0)
 			{
 				var multiColors = friendlyName.Split('{').Where(t => !string.IsNullOrEmpty(t)).ToArray();
-				if (multiColors.Count() > 1)
+				if (multiColors.Length > 1)
 				{
 					row = new FlowLayoutPanel()
 					{

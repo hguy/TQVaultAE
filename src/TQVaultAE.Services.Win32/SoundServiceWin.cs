@@ -108,7 +108,7 @@ public class SoundServiceWin : ISoundService, IDisposable
 		if (!IsSoundRecordId(resourceId))
 			return false;// Not a sound
 
-		if (!(resourceData?.Any() ?? false))
+		if (resourceData is not { Length: > 0 })
 			return false;// Not a sound
 
 		if (resourceId.Normalized.EndsWith(".MP3", StringComparison.Ordinal))

@@ -209,7 +209,7 @@ public partial class SackPanel
 	{
 		// If the item is a set item, then add a menu to create the rest of the set
 		var setItems = ItemProvider.GetSetItems(focusedItem);
-		if (setItems?.setMembers?.Any() ?? false)
+		if (setItems?.setMembers is { Count: > 0 })
 		{
 			var choices = new List<ToolStripItem>();
 			foreach (var setPiece in setItems.setMembers)
@@ -256,10 +256,10 @@ public partial class SackPanel
 		{
 			var text = $"{Resources.SackPanelMenuBonus} {TranslationService.TranslateXTag("tagRelic")}";
 
-			if (ltrel1?.Any() ?? false)
+			if (ltrel1 is { Length: > 0 })
 				BuildMenu(focusedItem, ltrel1, $"{text} 1", true);
 
-			if (ltrel2?.Any() ?? false)
+			if (ltrel2 is { Length: > 0 })
 				BuildMenu(focusedItem, ltrel2, $"{text} 2", false);
 
 		}
@@ -330,7 +330,7 @@ public partial class SackPanel
 		)
 		{
 			LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
-			if (table?.Any() ?? false)
+			if (table is { Length: > 0 })
 			{
 				var choices = new List<ToolStripItem>();
 				foreach (var tableitem in table)
@@ -669,7 +669,7 @@ public partial class SackPanel
 
 			ToolStripMenuItem choicesMenu = currentchoicesMenu;// Default
 			ToolStripMenuItem? affixMenu = null;
-			if (grp.Count() > 1)
+			if (grp.Count > 1)
 			{
 				// Multiple variant per affix
 				affixMenu = new ToolStripMenuItem()

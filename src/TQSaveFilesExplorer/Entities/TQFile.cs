@@ -254,7 +254,7 @@ namespace TQ.SaveFilesExplorer.Entities
 
 		private static void MakeUnknownSegment(List<TQFileRecord> records, List<byte> orphans, List<KeyValuePair<int, TQFileRecord>> orphansRecords, int ii)
 		{
-			if (orphans.Any())
+			if (orphans.Count != 0)
 			{
 				var previdx = ii - 1;
 				var valueStart = previdx == -1 ? 0 : records[previdx].DataType == TQFileDataType.Unknown ? records[previdx].ValueStart : records[previdx].ValueEnd + 1;
@@ -278,7 +278,7 @@ namespace TQ.SaveFilesExplorer.Entities
 		private (List<TQFileRecord> nodes, int newidx) MakeTreeRecords(TQFileRecord parent = null, int idx = 0)
 		{
 			List<TQFileRecord> currentLvl = new List<TQFileRecord>();
-			for (; idx < this.Records.Count(); idx++)
+			for (; idx < this.Records.Length; idx++)
 			{
 				var k = this.Records[idx];
 				k.Parent = parent;

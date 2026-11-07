@@ -719,7 +719,7 @@ public partial class MainForm : Form
 					switch (extension)
 					{
 						case ".TXT":
-							if (!tag.RecordText.Any())
+							if (tag.RecordText.Count == 0)
 							{
 								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 

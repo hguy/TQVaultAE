@@ -19,7 +19,7 @@ using TQVaultAE.Domain.Helpers;
 /// <summary>
 /// Form for the item properties display
 /// </summary>
-internal partial class ItemProperties : VaultForm
+internal sealed partial class ItemProperties : VaultForm
 {
 	/// <summary>
 	/// Item instance of the item we are displaying
@@ -95,7 +95,7 @@ internal partial class ItemProperties : VaultForm
 		this.labelItemName.Text = this.Data.FullNameClean;
 
 		// Base Item Attributes
-		if (this.Data.BaseAttributes.Any())
+		if (this.Data.BaseAttributes.Length != 0)
 		{
 			this.dataGridViewBaseItemProperties.Rows.Clear();
 
@@ -115,7 +115,7 @@ internal partial class ItemProperties : VaultForm
 		}
 
 		// Prefix Attributes
-		if (this.Data.PrefixAttributes.Any())
+		if (this.Data.PrefixAttributes.Length != 0)
 		{
 			this.dataGridViewPrefixProperties.Rows.Clear();
 
@@ -135,7 +135,7 @@ internal partial class ItemProperties : VaultForm
 		}
 
 		// Suffix Attributes
-		if (this.Data.SuffixAttributes.Any())
+		if (this.Data.SuffixAttributes.Length != 0)
 		{
 			this.dataGridViewSuffixProperties.Rows.Clear();
 

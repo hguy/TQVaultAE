@@ -52,8 +52,7 @@ internal static class NativeWindows
 		var result = new List<NativeWindow>();
 		EnumWindows((hwnd, _) =>
 		{
-			GetWindowThreadProcessId(hwnd, out var windowPid);
-			if (windowPid == pid && IsWindowVisible(hwnd))
+			if (GetWindowThreadProcessId(hwnd, out var windowPid) != 0 && windowPid == pid && IsWindowVisible(hwnd))
 				result.Add(Describe(hwnd));
 			return true;
 		}, IntPtr.Zero);
@@ -128,17 +127,16 @@ internal static class NativeWindows
 
 	private static string GetText(IntPtr hwnd)
 	{
-		var length = GetWindowTextLength(hwnd);
-		var sb = new StringBuilder(length + 1);
-		GetWindowText(hwnd, sb, sb.Capacity);
-		return sb.ToString();
+		var buffer = new char[GetWindowTextLength(hwnd) + 1];
+		int length = GetWindowText(hwnd, buffer, buffer.Length);
+		return new string(buffer, 0, length);
 	}
 
 	private static string GetClass(IntPtr hwnd)
 	{
-		var sb = new StringBuilder(256);
-		GetClassName(hwnd, sb, sb.Capacity);
-		return sb.ToString();
+		var buffer = new char[256];
+		int length = GetClassName(hwnd, buffer, buffer.Length);
+		return new string(buffer, 0, length);
 	}
 
 	private const uint GW_OWNER = 4;
@@ -173,10 +171,10 @@ internal static class NativeWindows
 	private static extern int GetWindowTextLength(IntPtr hWnd);
 
 	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
-	private static extern int GetWindowText(IntPtr hWnd, StringBuilder lpString, int nMaxCount);
+	private static extern int GetWindowText(IntPtr hWnd, [Out] char[] lpString, int nMaxCount);
 
 	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
-	private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
+	private static extern int GetClassName(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
 
 	[DllImport("user32.dll")]
 	private static extern bool PostMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
