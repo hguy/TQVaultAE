@@ -21,7 +21,28 @@ public class ItemDatabaseService : IItemDatabaseService
     private readonly IItemProvider _itemProvider;
     private readonly SessionContext _sessionContext;
 
-    public ConcurrentBag<SearchResult> ItemDatabase { get; private set; } = new();
+    /// <summary>
+    /// The searchable items and, by reference, the items already in it. Replaced as a whole, so both always match.
+    /// </summary>
+    /// <remarks>
+    /// Enumerating a <see cref="ConcurrentBag{T}"/> locks it and copies it: checking for duplicates that way made
+    /// loading the saves quadratic, with every loading thread waiting on that lock.
+    /// </remarks>
+    private sealed record Database(ConcurrentBag<SearchResult> Items, ConcurrentDictionary<Item, byte> Indexed)
+    {
+        public static Database Of(IEnumerable<SearchResult> results)
+        {
+            var list = results.ToList();
+            var indexed = new ConcurrentDictionary<Item, byte>(ReferenceEqualityComparer.Instance);
+            foreach (var r in list)
+                indexed.TryAdd(r.Item, 0);
+            return new Database(new ConcurrentBag<SearchResult>(list), indexed);
+        }
+    }
+
+    private Database _database = Database.Of([]);
+
+    public ConcurrentBag<SearchResult> ItemDatabase => this._database.Items;
 
     public ItemDatabaseService(
         ILogger<ItemDatabaseService> log,
@@ -39,12 +60,10 @@ public class ItemDatabaseService : IItemDatabaseService
         if (item == null)
             return false;
 
-        // Check if already exists (by reference)
-        foreach (var existing in this.ItemDatabase)
-        {
-            if (existing.Item == item)
-                return false;
-        }
+        // Already in the database (by reference)
+        var database = this._database;
+        if (!database.Indexed.TryAdd(item, 0))
+            return false;
 
         var result = new SearchResult(
             item,
@@ -53,7 +72,7 @@ public class ItemDatabaseService : IItemDatabaseService
                 LazyThreadSafetyMode.ExecutionAndPublication
             )
         );
-        this.ItemDatabase.Add(result);
+        database.Items.Add(result);
         return true;
     }
 
@@ -78,18 +97,12 @@ public class ItemDatabaseService : IItemDatabaseService
         if (item == null)
             return;
 
-        var itemsToKeep = this.ItemDatabase.Where(r => r.Item != item).ToList();
-        this.ClearItemDatabase();
-
-        foreach (var result in itemsToKeep)
-        {
-            this.ItemDatabase.Add(result);
-        }
+        this._database = Database.Of(this.ItemDatabase.Where(r => r.Item != item));
     }
 
     /// <inheritdoc/>
     public void ClearItemDatabase()
-        => this.ItemDatabase = new();
+        => this._database = Database.Of([]);
 
     /// <inheritdoc/>
     public void RebuildItemDatabase()
@@ -187,7 +200,7 @@ public class ItemDatabaseService : IItemDatabaseService
 
     public void ResetAllItemDatabase(List<SearchResult> validItems)
     {
-	    this.ItemDatabase = new(validItems);
+	    this._database = Database.Of(validItems);
 	}
 
 	private readonly object _warmUpLock = new();
