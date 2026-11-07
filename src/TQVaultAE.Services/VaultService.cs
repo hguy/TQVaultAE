@@ -62,8 +62,8 @@ public class VaultService : IVaultService
 		{
 			LoadVault(vault, oldFormatfileName);
 
-			if (vault.Sacks.Any())
-				vault.Sacks.First().IsModified = true;// Force Save into json on closing
+			if (vault.Sacks is { Length: > 0 } sacks)
+				sacks[0].IsModified = true;// Force Save into json on closing
 
 			return vault;
 		}

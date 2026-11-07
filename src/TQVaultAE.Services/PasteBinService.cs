@@ -19,7 +19,7 @@ public class PasteBinService : IPasteBinService
 		_userSettings = userSettings;
 	}
 
-	public async Task<string> UploadAsync(string text, string pasteName = null)
+	public async Task<string> UploadAsync(string text, string? pasteName = null)
 	{
 		var formData = new Dictionary<string, string>
 		{

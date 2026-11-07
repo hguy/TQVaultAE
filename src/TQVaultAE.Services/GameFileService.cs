@@ -77,7 +77,7 @@ public partial class GameFileService : IGameFileService
 		string errMess = string.Format(Resources.GitUnableToPush, repoUrl);
 		Action<Shell.Options> options = (opt) => opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
 
-		Command status, stageAll, commit, tagVersion, tagLatest, push, pushTags;
+		Command? status, stageAll, commit, tagVersion, tagLatest, push, pushTags;
 		status = stageAll = commit = tagVersion = tagLatest = push = pushTags = null;
 
 		try
@@ -399,7 +399,7 @@ public partial class GameFileService : IGameFileService
 		return overrideFiles;
 	}
 
-	public string BackupFile(string prefix, string file)
+	public string? BackupFile(string prefix, string file)
 	{
 		if (this.FileIO.Exists(file))
 		{
@@ -565,7 +565,7 @@ public partial class GameFileService : IGameFileService
 
 		var newFolder = GamePathService.ArchiveTogglePath(oldFolder);
 
-		Exception ex = null;
+		Exception? ex = null;
 		try
 		{
 			DirectoryIO.Move(oldFolder, newFolder);
@@ -623,7 +623,7 @@ public partial class GameFileService : IGameFileService
 
 		var newFolder = GamePathService.ArchiveTogglePath(oldFolder);
 
-		Exception ex = null;
+		Exception? ex = null;
 		try
 		{
 			DirectoryIO.Move(oldFolder, newFolder);

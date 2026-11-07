@@ -236,7 +236,7 @@ public class PlayerService : IPlayerService
 	/// <param name="playerSave">Player save information.</param>
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	public FileSystemWatcher CreatePlayerFileWatcher(PlayerSave playerSave, Action<PlayerSave, bool> onChanged)
+	public FileSystemWatcher? CreatePlayerFileWatcher(PlayerSave playerSave, Action<PlayerSave, bool> onChanged)
 	{
 		var playerFile = GamePathResolver.GetPlayerFile(playerSave.Name, playerSave.IsImmortalThrone, playerSave.IsArchived);
 		var directory = Path.GetDirectoryName(playerFile);

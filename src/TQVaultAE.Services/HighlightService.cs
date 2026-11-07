@@ -22,8 +22,8 @@ public class HighlightService : IHighlightService
 
     public Color HighlightSearchItemColor { get; set; } = TQColor.Indigo.Color();
     public Color HighlightSearchItemBorderColor { get; set; } = TQColor.Red.Color();
-    public string HighlightSearch { get; set; }
-    public HighlightFilterValues HighlightFilter { get; set; }
+    public string? HighlightSearch { get; set; }
+    public HighlightFilterValues? HighlightFilter { get; set; }
     public IReadOnlyList<Item> HighlightedItems { get; private set; } = new List<Item>();
 
     public HighlightService(
@@ -64,13 +64,14 @@ public class HighlightService : IHighlightService
 
             // Check for Vaults
             var sacksVault = this._sessionContext.Vaults.Select(p => p.Value.Value)
-                .SelectMany(p => p.Sacks)
-                .Where(s => s is not null && s.Count > 0);
+                .SelectMany(p => p.Sacks ?? Array.Empty<SackCollection>())
+                .Where(s => s.Count > 0);
 
             // Check for Stash
             var sacksStash = this._sessionContext.Stashes.Select(p => p.Value.Value)
                 .Select(p => p.Sack)
-                .Where(s => s is not null && s.Count > 0);
+                .OfType<SackCollection>()
+                .Where(s => s.Count > 0);
 
             var availableItems = sacksplayers.Concat(sacksVault).Concat(sacksStash).SelectMany(i => i)
                 .Select(i =>
@@ -91,93 +92,93 @@ public class HighlightService : IHighlightService
 
                 availableItems = availableItems.Where(i =>
                     isRegex && regexIsValid
-                        ? i.FriendlyNames.FulltextIsMatchRegex(regex)
-                        : i.FriendlyNames.FulltextIsMatchIndexOf(this.HighlightSearch)
+                        ? i.FriendlyNames.FulltextIsMatchRegex(regex!)
+                        : i.FriendlyNames.FulltextIsMatchIndexOf(this.HighlightSearch!)
                 );
             }
 
-            if (hasFilter)
+            if (this.HighlightFilter is { } filter)
             {
-                if (this.HighlightFilter.MinRequierement)
+                if (filter.MinRequierement)
                 {
-                    if (this.HighlightFilter.MinLvl != 0)
+                    if (filter.MinLvl != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Lvl.HasValue || i.Info.Lvl >= this.HighlightFilter.MinLvl);
+                            i.Info == null || !i.Info.Lvl.HasValue || i.Info.Lvl >= filter.MinLvl);
                     }
-                    if (this.HighlightFilter.MinDex != 0)
+                    if (filter.MinDex != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Dex.HasValue || i.Info.Dex >= this.HighlightFilter.MinDex);
+                            i.Info == null || !i.Info.Dex.HasValue || i.Info.Dex >= filter.MinDex);
                     }
-                    if (this.HighlightFilter.MinStr != 0)
+                    if (filter.MinStr != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Str.HasValue || i.Info.Str >= this.HighlightFilter.MinStr);
+                            i.Info == null || !i.Info.Str.HasValue || i.Info.Str >= filter.MinStr);
                     }
-                    if (this.HighlightFilter.MinInt != 0)
+                    if (filter.MinInt != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Int.HasValue || i.Info.Int >= this.HighlightFilter.MinInt);
+                            i.Info == null || !i.Info.Int.HasValue || i.Info.Int >= filter.MinInt);
                     }
                 }
 
-                if (this.HighlightFilter.MaxRequierement)
+                if (filter.MaxRequierement)
                 {
-                    if (this.HighlightFilter.MaxLvl != 0)
+                    if (filter.MaxLvl != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Lvl.HasValue || i.Info.Lvl <= this.HighlightFilter.MaxLvl);
+                            i.Info == null || !i.Info.Lvl.HasValue || i.Info.Lvl <= filter.MaxLvl);
                     }
-                    if (this.HighlightFilter.MaxDex != 0)
+                    if (filter.MaxDex != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Dex.HasValue || i.Info.Dex <= this.HighlightFilter.MaxDex);
+                            i.Info == null || !i.Info.Dex.HasValue || i.Info.Dex <= filter.MaxDex);
                     }
-                    if (this.HighlightFilter.MaxStr != 0)
+                    if (filter.MaxStr != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Str.HasValue || i.Info.Str <= this.HighlightFilter.MaxStr);
+                            i.Info == null || !i.Info.Str.HasValue || i.Info.Str <= filter.MaxStr);
                     }
-                    if (this.HighlightFilter.MaxInt != 0)
+                    if (filter.MaxInt != 0)
                     {
                         availableItems = availableItems.Where(i =>
-                            !i.Info.Int.HasValue || i.Info.Int <= this.HighlightFilter.MaxInt);
+                            i.Info == null || !i.Info.Int.HasValue || i.Info.Int <= filter.MaxInt);
                     }
                 }
 
-                if (this.HighlightFilter.ClassItem.Any())
+                if (filter.ClassItem.Any())
                 {
                     availableItems = availableItems.Where(i =>
-                        this.HighlightFilter.ClassItem
+                        filter.ClassItem
                             .Any(ci => ci.Equals(i.Item.ItemClass, StringComparison.OrdinalIgnoreCase)));
                 }
 
-                if (this.HighlightFilter.Rarity.Any())
+                if (filter.Rarity.Any())
                 {
                     availableItems = availableItems.Where(i =>
-                        this.HighlightFilter.Rarity.Contains(i.Item.Rarity));
+                        filter.Rarity.Contains(i.Item.Rarity));
                 }
 
-                if (this.HighlightFilter.Origin.Any())
+                if (filter.Origin.Any())
                 {
                     availableItems = availableItems.Where(i =>
-                        this.HighlightFilter.Origin.Contains(i.Item.GameDlc));
+                        filter.Origin.Contains(i.Item.GameDlc));
                 }
 
-                if (this.HighlightFilter.HavingPrefix)
+                if (filter.HavingPrefix)
                     availableItems = availableItems.Where(i => i.Item.HasPrefix);
 
-                if (this.HighlightFilter.HavingSuffix)
+                if (filter.HavingSuffix)
                     availableItems = availableItems.Where(i => i.Item.HasSuffix);
 
-                if (this.HighlightFilter.HavingRelic)
+                if (filter.HavingRelic)
                     availableItems = availableItems.Where(i => i.Item.HasRelic);
 
-                if (this.HighlightFilter.HavingCharm)
+                if (filter.HavingCharm)
                     availableItems = availableItems.Where(i => i.Item.HasCharm);
 
-                if (this.HighlightFilter.IsSetItem)
+                if (filter.IsSetItem)
                     availableItems = availableItems.Where(i => i.FriendlyNames.ItemSet != null);
             }
 

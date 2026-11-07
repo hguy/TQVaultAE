@@ -22,12 +22,12 @@ public interface IHighlightService
     /// <summary>
     /// Gets or sets the highlight search string.
     /// </summary>
-    string HighlightSearch { get; set; }
+    string? HighlightSearch { get; set; }
 
     /// <summary>
     /// Gets or sets the highlight search filters.
     /// </summary>
-    HighlightFilterValues HighlightFilter { get; set; }
+    HighlightFilterValues? HighlightFilter { get; set; }
 
     /// <summary>
     /// Gets the list of items to highlight.
