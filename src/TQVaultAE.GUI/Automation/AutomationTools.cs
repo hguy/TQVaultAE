@@ -351,6 +351,27 @@ internal static partial class AutomationTools
 		return blocks;
 	}
 
+	[McpServerTool(Name = "context_menu", Destructive = true)]
+	[Description("Right-clicks a cell of a panel, as the user would, and returns the context menu TQVault builds for it (separators as '-', sub menus with their entries), then closes the menu without choosing anything. Selected items count, as for a real right click.")]
+	public static string ContextMenu(
+		[Description("Panel id.")] string panel,
+		[Description("Cell column.")] int x,
+		[Description("Cell row.")] int y)
+		=> AutomationHost.OnUi(form =>
+		{
+			var named = ResolveShownPanel(form, panel);
+			if (form.AutomationDragInfo.IsActive)
+				throw new McpException("An item is being dragged: a right click would cancel it. Use cancel_drag first.");
+
+			var cell = new Point(x, y);
+			var item = named.Panel.AutomationFindItem(cell);
+			AutomationHost.MarkDriving();
+			var entries = named.Panel.AutomationContextMenu(cell);
+			ReleaseCursor(named.Panel);
+
+			return Serialize(new { panel = named.Id, item = item is null ? null : DescribeItem(item, null), entries });
+		});
+
 	[McpServerTool(Name = "hover_end", Destructive = true)]
 	[Description("Ends a hover_item: the virtual cursor leaves the panel and the tooltip closes.")]
 	public static string HoverEnd()
