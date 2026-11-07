@@ -1037,8 +1037,9 @@ public class Item
 	/// </summary>
 	/// <param name="relicBaseItemId"></param>
 	/// <returns></returns>
-	public bool IsRelicAllowed(RecordId relicBaseItemId)
-		=> IsRelicAllowed(this, relicBaseItemId);
+	/// <param name="relicInfo">Record of the relic, read when the relic is not a known one.</param>
+	public bool IsRelicAllowed(RecordId relicBaseItemId, Info? relicInfo = null)
+		=> IsRelicAllowed(this, relicBaseItemId, relicInfo);
 
 	/// <summary>
 	/// Tells if <paramref name="relicItem"/> is allowed.
@@ -1076,14 +1077,15 @@ public class Item
 	/// <param name="item"></param>
 	/// <param name="relicBaseItemId"></param>
 	/// <returns></returns>
-	public static bool IsRelicAllowed(Item item, RecordId relicBaseItemId)
+	/// <param name="relicInfo">Record of the relic, read when the relic is not a known one.</param>
+	public static bool IsRelicAllowed(Item item, RecordId relicBaseItemId, Info? relicInfo = null)
 	{
 		var itemGearType = item.GearType;
 
 		if (itemGearType == GearType.Undefined) return false;
 
 		// Is it allowed ?
-		if (!TryGetAllowedGearTypes(relicBaseItemId, out var relicAllowedGearTypes))
+		if (!TryGetAllowedGearTypes(relicBaseItemId, out var relicAllowedGearTypes, relicInfo))
 			return false;
 
 		return relicAllowedGearTypes.HasFlag(itemGearType);
@@ -1106,7 +1108,7 @@ public class Item
 		// relicItem a relic ?
 		if (!relicItem.IsRelicOrCharm) return false;
 
-		return TryGetAllowedGearTypes(relicItem.BaseItemId, out types);
+		return TryGetAllowedGearTypes(relicItem.BaseItemId, out types, relicItem.baseItemInfo);
 	}
 
 	/// <summary>
@@ -1114,25 +1116,24 @@ public class Item
 	/// </summary>
 	/// <param name="relicBaseItemId"></param>
 	/// <param name="types"></param>
+	/// <param name="relicInfo">Record of the relic: its slot flags give the gear when the relic is not a known one (mods).</param>
 	/// <returns></returns>
-	public static bool TryGetAllowedGearTypes(RecordId relicBaseItemId, out GearType types)
+	public static bool TryGetAllowedGearTypes(RecordId relicBaseItemId, out GearType types, Info? relicInfo = null)
 	{
 		types = GearType.Undefined;
 
 		if (RecordId.IsNullOrEmpty(relicBaseItemId)) return false;
 
-		// Find GearType
-		var map = RelicAndCharmExtension.RelicAndCharmMap
-			.Where(m => m.RecordId == relicBaseItemId)
-			.FirstOrDefault();
+		if (RelicAndCharmExtension.ByRecordId.TryGetValue(relicBaseItemId, out var known))
+		{
+			types = known.Types;
+			return true;
+		}
 
-		// No match found or Unknown relic - return false
-		if (map is null || map.Value == RelicAndCharm.Unknown) return false;
+		if (relicInfo is not null && relicInfo.ItemId == relicBaseItemId)
+			types = RelicAndCharmExtension.GetAllowedGearTypes(relicInfo);
 
-		// Found
-		types = map.Types;
-
-		return true;
+		return types != GearType.Undefined;
 	}
 
 	#endregion

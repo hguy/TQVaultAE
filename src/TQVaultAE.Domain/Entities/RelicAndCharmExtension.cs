@@ -23,6 +23,44 @@ public static class RelicAndCharmExtension
 			);
 		}).ToList().AsReadOnly();
 
+	/// <summary><see cref="RelicAndCharmMap"/> by record id, without <see cref="RelicAndCharm.Unknown"/>.</summary>
+	internal static readonly IReadOnlyDictionary<RecordId, RelicAndCharmMapItem> ByRecordId =
+		RelicAndCharmMap.Where(m => m.Value != RelicAndCharm.Unknown).ToDictionary(m => m.RecordId);
+
+	/// <summary>Slot flag of a relic or charm record, and the gear it allows (same mapping as <c>RegenRelicEnum.ps1</c>).</summary>
+	private static readonly (string Flag, GearType Type)[] SlotFlags =
+	[
+		("helmet", GearType.Head),
+		("bodyArmor", GearType.Torso),
+		("armband", GearType.Arm),
+		("greaves", GearType.Leg),
+		("ring", GearType.Ring),
+		("amulet", GearType.Amulet),
+		("spear", GearType.Spear),
+		("staff", GearType.Staff),
+		// Relics have no thrown flag: the ones made for thrown weapons set bow.
+		("bow", GearType.Bow | GearType.Thrown),
+		("sword", GearType.Sword),
+		("mace", GearType.Mace),
+		("axe", GearType.Axe),
+		("shield", GearType.Shield),
+	];
+
+	/// <summary>
+	/// Gear allowed by the slot flags of a relic or charm record. Used for records missing from
+	/// <see cref="RelicAndCharm"/>, such as mod relics.
+	/// </summary>
+	public static GearType GetAllowedGearTypes(Info relicInfo)
+	{
+		var types = GearType.Undefined;
+		foreach (var (flag, type) in SlotFlags)
+		{
+			if (relicInfo.GetInt32(flag) != 0)
+				types |= type;
+		}
+		return types;
+	}
+
 	/// <summary>
 	/// Gets the <see cref="GearType"/> for a <see cref="RelicAndCharm"/>
 	/// </summary>

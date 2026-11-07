@@ -232,4 +232,67 @@ public class ItemIsRelicAllowedTests
 	}
 
 	#endregion
+
+	#region Relics missing from RelicAndCharm (mods)
+
+	private static Info ModRelic(string id, params string[] slotFlags)
+	{
+		var record = new DBRecordCollection(RecordId.Create(id), "ItemRelic");
+		foreach (var flag in slotFlags)
+		{
+			var variable = new Variable(flag, VariableDataType.Boolean, 1);
+			variable[0] = 1;
+			record.Set(variable);
+		}
+		return new Info(record);
+	}
+
+	[Fact]
+	public void TryGetAllowedGearTypes_ModRelic_ReadsTheSlotFlagsOfItsRecord()
+	{
+		var id = RecordId.Create("""records\xmod\relics\blade.dbr""");
+		var info = ModRelic(id.Raw, "sword", "bow");
+
+		var result = Item.TryGetAllowedGearTypes(id, out var types, info);
+
+		result.Should().BeTrue();
+		types.Should().Be(GearType.Sword | GearType.Bow | GearType.Thrown, "relics made for thrown weapons only set bow");
+	}
+
+	[Fact]
+	public void TryGetAllowedGearTypes_ModRelicWithoutItsRecord_ReturnsFalse()
+	{
+		var id = RecordId.Create("""records\xmod\relics\blade.dbr""");
+
+		Item.TryGetAllowedGearTypes(id, out var types).Should().BeFalse();
+		types.Should().Be(GearType.Undefined);
+	}
+
+	[Fact]
+	public void TryGetAllowedGearTypes_RecordOfAnotherRelic_IsIgnored()
+	{
+		var id = RecordId.Create("""records\xmod\relics\blade.dbr""");
+		var other = ModRelic("""records\xmod\relics\other.dbr""", "sword");
+
+		Item.TryGetAllowedGearTypes(id, out _, other).Should().BeFalse();
+	}
+
+	[Fact]
+	public void TryGetAllowedGearTypes_ModRelicWithoutSlotFlags_ReturnsFalse()
+	{
+		var id = RecordId.Create("""records\xmod\relics\blade.dbr""");
+
+		Item.TryGetAllowedGearTypes(id, out _, ModRelic(id.Raw)).Should().BeFalse();
+	}
+
+	[Fact]
+	public void TryGetAllowedGearTypes_KnownRelic_IgnoresItsRecord()
+	{
+		var id = RelicAndCharm.AEGISOFATHENA_ACT1_01.GetRecordId();
+
+		Item.TryGetAllowedGearTypes(id, out var types, ModRelic(id.Raw, "sword")).Should().BeTrue();
+		types.Should().Be(GearType.Shield);
+	}
+
+	#endregion
 }
