@@ -153,6 +153,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		scalingCheckBoxHavingPrefix.Text = Resources.SearchHavingPrefix;
 		scalingCheckBoxHavingSuffix.Text = Resources.SearchHavingSuffix;
 		scalingCheckBoxIsSetItem.Text = Resources.SearchSetItem;
+		scalingCheckBoxHavingSkill.Text = Resources.SearchHavingSkill;
 
 		#endregion
 
@@ -562,6 +563,7 @@ public partial class SearchDialogAdvanced : VaultForm
 	internal void ResetQuickFilters()
 	{
 		scalingCheckBoxIsSetItem.Checked =
+		scalingCheckBoxHavingSkill.Checked =
 		scalingCheckBoxHavingCharm.Checked =
 		scalingCheckBoxHavingRelic.Checked =
 		scalingCheckBoxHavingPrefix.Checked =

@@ -162,6 +162,42 @@ internal static partial class AutomationTools
 		}));
 	}
 
+	[McpServerTool(Name = "highlight_filters", Destructive = true)]
+	[Description("Opens the highlight filters panel of the main window (the 'Highlight items having' link), ticks or unticks its check boxes by text or name, and applies the filters when asked. Returns the check boxes and how many items are highlighted. See it with capture('main'); 'Reset' in the panel, or highlight_filters(uncheck=...) then apply, clears the highlight.")]
+	public static string HighlightFilters(
+		[Description("Comma separated check box texts or names to tick, e.g. 'Having Skill,Set Item'.")] string? check = null,
+		[Description("Comma separated check box texts or names to untick.")] string? uncheck = null,
+		[Description("true to apply the filters like the Apply button.")] bool apply = false)
+		=> AutomationHost.OnUi(main =>
+		{
+			AutomationHost.MarkDriving();
+			var panel = main.AutomationShowHighlightFilters();
+			var boxes = panel.AutomationCheckBoxes;
+
+			void Set(string? list, bool value)
+			{
+				foreach (var wanted in (list ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+				{
+					var box = boxes.FirstOrDefault(b => string.Equals(b.Text, wanted, StringComparison.OrdinalIgnoreCase) || string.Equals(b.Name, wanted, StringComparison.OrdinalIgnoreCase))
+						?? throw new McpException($"No check box '{wanted}' in the highlight filters.");
+					box.Checked = value;
+				}
+			}
+
+			Set(check, true);
+			Set(uncheck, false);
+			if (apply)
+				panel.AutomationApply();
+
+			var highlighted = Program.ServiceProvider.GetRequiredService<Application.Contracts.Services.IHighlightService>().HighlightedItems;
+			return Serialize(new
+			{
+				shown = panel.Visible,
+				checkBoxes = boxes.Select(b => new { b.Name, b.Text, b.Checked }),
+				highlighted = highlighted.Count,
+			});
+		});
+
 	private static IEnumerable<Type> FormTypes()
 	{
 		var check = Program.ServiceProvider.GetRequiredService<IServiceProviderIsService>();

@@ -66,6 +66,7 @@ namespace TQVaultAE.GUI.Components
             this.scalingCheckBoxHavingCharm = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
             this.toolTip = new System.Windows.Forms.ToolTip(this.components);
             this.scalingCheckBoxSetItem = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
+            this.scalingCheckBoxHavingSkill = new TQVaultAE.GUI.Components.Scaling.ScalingCheckBox();
             this.tableLayoutPanelHighlight.SuspendLayout();
             this.flowLayoutPanelMax.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDownMaxLvl)).BeginInit();
@@ -584,6 +585,7 @@ namespace TQVaultAE.GUI.Components
             this.bufferedFlowLayoutPanelPrefixSuffix.Controls.Add(this.scalingCheckBoxHavingRelic);
             this.bufferedFlowLayoutPanelPrefixSuffix.Controls.Add(this.scalingCheckBoxHavingCharm);
             this.bufferedFlowLayoutPanelPrefixSuffix.Controls.Add(this.scalingCheckBoxSetItem);
+            this.bufferedFlowLayoutPanelPrefixSuffix.Controls.Add(this.scalingCheckBoxHavingSkill);
             this.bufferedFlowLayoutPanelPrefixSuffix.Dock = System.Windows.Forms.DockStyle.Fill;
             this.bufferedFlowLayoutPanelPrefixSuffix.Location = new System.Drawing.Point(0, 55);
             this.bufferedFlowLayoutPanelPrefixSuffix.Margin = new System.Windows.Forms.Padding(0, 3, 3, 3);
@@ -656,6 +658,19 @@ namespace TQVaultAE.GUI.Components
             this.scalingCheckBoxSetItem.Text = "Set Item";
             this.scalingCheckBoxSetItem.UseVisualStyleBackColor = true;
             // 
+            // scalingCheckBoxHavingSkill
+            // 
+            this.scalingCheckBoxHavingSkill.AutoSize = true;
+            this.scalingCheckBoxHavingSkill.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F);
+            this.scalingCheckBoxHavingSkill.ForeColor = System.Drawing.Color.White;
+            this.scalingCheckBoxHavingSkill.Location = new System.Drawing.Point(83, 20);
+            this.scalingCheckBoxHavingSkill.Margin = new System.Windows.Forms.Padding(3, 0, 3, 0);
+            this.scalingCheckBoxHavingSkill.Name = "scalingCheckBoxHavingSkill";
+            this.scalingCheckBoxHavingSkill.Size = new System.Drawing.Size(76, 20);
+            this.scalingCheckBoxHavingSkill.TabIndex = 5;
+            this.scalingCheckBoxHavingSkill.Text = "Having Skill";
+            this.scalingCheckBoxHavingSkill.UseVisualStyleBackColor = true;
+            // 
             // HighlightFilters
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -725,5 +740,6 @@ namespace TQVaultAE.GUI.Components
         private ScalingCheckBox scalingCheckBoxHavingRelic;
         private ScalingCheckBox scalingCheckBoxHavingCharm;
         private ScalingCheckBox scalingCheckBoxSetItem;
+        private ScalingCheckBox scalingCheckBoxHavingSkill;
     }
 }

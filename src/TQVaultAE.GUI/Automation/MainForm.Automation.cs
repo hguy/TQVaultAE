@@ -90,4 +90,12 @@ public partial class MainForm
 		if (show != this.AutomationForgeShown)
 			this.scalingButtonForge_Click(this, EventArgs.Empty);
 	}
+
+	/// <summary>Shows the highlight filters panel like its link, and returns it.</summary>
+	internal HighlightFilters AutomationShowHighlightFilters()
+	{
+		if (!this.highlightFilters.Visible)
+			this.scalingLabelHighlight_LinkClicked(this.scalingLabelHighlight, new LinkLabelLinkClickedEventArgs(this.scalingLabelHighlight.Links[0]));
+		return this.highlightFilters;
+	}
 }

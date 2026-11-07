@@ -211,6 +211,7 @@ public partial class SearchDialogAdvanced
 			foundIt.HavingRelic = this.scalingCheckBoxHavingRelic.Checked;
 			foundIt.HavingCharm = this.scalingCheckBoxHavingCharm.Checked;
 			foundIt.IsSetItem = this.scalingCheckBoxIsSetItem.Checked;
+			foundIt.HavingSkill = this.scalingCheckBoxHavingSkill.Checked;
 			return foundIt;
 		}
 
@@ -238,6 +239,7 @@ public partial class SearchDialogAdvanced
 				|| this.scalingCheckBoxHavingPrefix.Checked
 				|| this.scalingCheckBoxHavingSuffix.Checked
 				|| this.scalingCheckBoxIsSetItem.Checked
+				|| this.scalingCheckBoxHavingSkill.Checked
 				;
 		}
 	}

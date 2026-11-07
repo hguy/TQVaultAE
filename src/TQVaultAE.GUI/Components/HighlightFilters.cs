@@ -65,6 +65,7 @@ public partial class HighlightFilters : UserControl
 		scalingCheckBoxHavingPrefix.Text = Resources.SearchHavingPrefix;
 		scalingCheckBoxHavingSuffix.Text = Resources.SearchHavingSuffix;
 		scalingCheckBoxSetItem.Text = Resources.SearchSetItem;
+		scalingCheckBoxHavingSkill.Text = Resources.SearchHavingSkill;
 		buttonReset.Text = TranslationService.TranslateXTag("tagSkillReset");
 		buttonApply.Text = TranslationService.TranslateXTag("tagMenuButton07");
 
@@ -274,6 +275,7 @@ public partial class HighlightFilters : UserControl
 		scalingCheckBoxMax.Checked =
 		scalingCheckBoxMin.Checked =
 		scalingCheckBoxSetItem.Checked =
+		scalingCheckBoxHavingSkill.Checked =
 		scalingCheckBoxHavingCharm.Checked =
 		scalingCheckBoxHavingRelic.Checked =
 		scalingCheckBoxHavingPrefix.Checked =
@@ -360,9 +362,10 @@ public partial class HighlightFilters : UserControl
 			HavingRelic = scalingCheckBoxHavingRelic.Checked,
 			HavingCharm = scalingCheckBoxHavingCharm.Checked,
 			IsSetItem = scalingCheckBoxSetItem.Checked,
+			HavingSkill = scalingCheckBoxHavingSkill.Checked,
 		};
 
-		if (filter.MaxRequierement || filter.MinRequierement || filter.HavingPrefix || filter.HavingSuffix || filter.HavingRelic || filter.HavingCharm || filter.IsSetItem
+		if (filter.MaxRequierement || filter.MinRequierement || filter.HavingPrefix || filter.HavingSuffix || filter.HavingRelic || filter.HavingCharm || filter.IsSetItem || filter.HavingSkill
 			|| filter.ClassItem.Count != 0 || filter.Rarity.Count != 0 || filter.Origin.Count != 0)
 		{
 			HighlightService.HighlightFilter = filter;

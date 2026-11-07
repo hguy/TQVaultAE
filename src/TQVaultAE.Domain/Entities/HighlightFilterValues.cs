@@ -20,4 +20,6 @@ public class HighlightFilterValues
 	public bool HavingRelic;
 	public bool HavingCharm;
 	public bool IsSetItem;
+	/// <summary>Only the items that grant a skill.</summary>
+	public bool HavingSkill;
 }

@@ -123,6 +123,7 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingCheckBoxHavingRelic = new ScalingCheckBox();
 			scalingCheckBoxHavingCharm = new ScalingCheckBox();
 			scalingCheckBoxIsSetItem = new ScalingCheckBox();
+			scalingCheckBoxHavingSkill = new ScalingCheckBox();
 			flowLayoutPanelMisc = new FlowLayoutPanel();
 			scalingLabelMaxVisibleElement = new ScalingLabel();
 			numericUpDownMaxElement = new NumericUpDown();
@@ -1322,6 +1323,7 @@ namespace TQVaultAE.GUI.Dialogs
 			bufferedFlowLayoutPanelQuickFilters.Controls.Add(scalingCheckBoxHavingRelic);
 			bufferedFlowLayoutPanelQuickFilters.Controls.Add(scalingCheckBoxHavingCharm);
 			bufferedFlowLayoutPanelQuickFilters.Controls.Add(scalingCheckBoxIsSetItem);
+			bufferedFlowLayoutPanelQuickFilters.Controls.Add(scalingCheckBoxHavingSkill);
 			bufferedFlowLayoutPanelQuickFilters.Dock = DockStyle.Fill;
 			bufferedFlowLayoutPanelQuickFilters.Location = new Point(3, 126);
 			bufferedFlowLayoutPanelQuickFilters.Name = "bufferedFlowLayoutPanelQuickFilters";
@@ -1397,6 +1399,20 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingCheckBoxIsSetItem.Text = "Set Item";
 			scalingCheckBoxIsSetItem.UseVisualStyleBackColor = true;
 			scalingCheckBoxIsSetItem.CheckedChanged += scalingCheckBoxQuickFilters_CheckedChanged;
+			// 
+			// scalingCheckBoxHavingSkill
+			// 
+			scalingCheckBoxHavingSkill.AutoSize = true;
+			scalingCheckBoxHavingSkill.Font = new Font("Microsoft Sans Serif", 9F);
+			scalingCheckBoxHavingSkill.ForeColor = Color.Gold;
+			scalingCheckBoxHavingSkill.Location = new Point(584, 0);
+			scalingCheckBoxHavingSkill.Margin = new Padding(3, 0, 3, 0);
+			scalingCheckBoxHavingSkill.Name = "scalingCheckBoxHavingSkill";
+			scalingCheckBoxHavingSkill.Size = new Size(84, 22);
+			scalingCheckBoxHavingSkill.TabIndex = 5;
+			scalingCheckBoxHavingSkill.Text = "Having Skill";
+			scalingCheckBoxHavingSkill.UseVisualStyleBackColor = true;
+			scalingCheckBoxHavingSkill.CheckedChanged += scalingCheckBoxQuickFilters_CheckedChanged;
 			// 
 			// flowLayoutPanelMisc
 			// 
@@ -2460,6 +2476,7 @@ namespace TQVaultAE.GUI.Dialogs
         private ScalingCheckBox scalingCheckBoxHavingRelic;
         private ScalingCheckBox scalingCheckBoxHavingCharm;
         private ScalingCheckBox scalingCheckBoxIsSetItem;
+        private ScalingCheckBox scalingCheckBoxHavingSkill;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelOrigin;
         private ScalingLabel scalingLabelOrigin;
         private VirtualCheckedListBox scalingCheckedListBoxOrigin;

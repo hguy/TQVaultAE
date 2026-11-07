@@ -404,6 +404,29 @@ public class ItemDatabaseServiceTests
 	}
 
 	[Fact]
+	public void ExecuteAdvancedSearch_WithHasSkill_KeepsOnlyTheItemsGrantingASkill()
+	{
+		// Arrange
+		var withSkill = CreateTestItem();
+		var withoutSkill = CreateTestItem();
+		_mockItemProvider.Setup(x => x.HasGrantedSkill(withSkill)).Returns(true);
+		_mockItemProvider.Setup(x => x.HasGrantedSkill(withoutSkill)).Returns(false);
+		_service.TryAddItemToDatabase(withSkill);
+		_service.TryAddItemToDatabase(withoutSkill);
+		var request = new AdvancedSearchRequest
+		{
+			InitialResults = _service.ItemDatabase.ToList(),
+			HasSkill = true,
+		};
+
+		// Act
+		var result = _service.ExecuteAdvancedSearch(request);
+
+		// Assert
+		result.Should().ContainSingle().Which.Item.Should().BeSameAs(withSkill);
+	}
+
+	[Fact]
 	public void ExecuteAdvancedSearch_WithNullInitialResults_ReturnsEmpty()
 	{
 		// Arrange
