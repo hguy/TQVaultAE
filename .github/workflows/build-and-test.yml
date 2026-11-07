@@ -38,25 +38,42 @@ jobs:
       - name: Build Release
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
 
-      - name: Upload TQVaultAE.GUI artifacts (Release)
+      - name: Publish release outputs
+        run: pwsh -File .github/scripts/Publish-Release.ps1 -OutputDir publish
+
+      - name: Upload TQVaultAE-GUI-Release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: TQVaultAE-GUI-Release
-          path: src/TQVaultAE.GUI/bin/Release/net10.0-windows/
+          path: publish/TQVaultAE/
           retention-days: 3
 
-      - name: Upload TQ.SaveFilesExplorer artifacts (Release)
-        uses: actions/upload-artifact@v4
-        with:
-          name: TQ-SaveFilesExplorer-Release
-          path: src/TQSaveFilesExplorer/bin/Release/net10.0-windows/
-          retention-days: 3
-
-      - name: Upload ARZExplorer artifacts (Release)
+      - name: Upload ARZExplorer-Release artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ARZExplorer-Release
-          path: src/ARZExplorer/bin/Release/net10.0-windows/
+          path: publish/ARZExplorer/
+          retention-days: 3
+
+      - name: Upload TQ-SaveFilesExplorer-Release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: TQ-SaveFilesExplorer-Release
+          path: publish/TQSaveFilesExplorer/
+          retention-days: 3
+
+      - name: Upload tqdb-win-x64-Release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tqdb-win-x64-Release
+          path: publish/tqdb-win-x64/
+          retention-days: 3
+
+      - name: Upload tqdb-linux-x64-Release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tqdb-linux-x64-Release
+          path: publish/tqdb-linux-x64/
           retention-days: 3
 
   test:

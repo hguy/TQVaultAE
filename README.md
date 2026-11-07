@@ -48,7 +48,7 @@ Works with all expansions!
 ## Installation
 
 1. Navigate to the [release page](https://github.com/EtienneLamoureux/TQVaultAE/releases)
-2. Download the latest release's `.zip` file.
+2. Download the latest release's `TQVaultAE.GUI-<version>.zip` file. It runs on Windows x64 and includes the .NET runtime, so nothing else needs to be installed.
 3. Extract the content of the archive on your computer.
 4. Navigate to the folder where you extracted the artefacts. Double-click `TQVaultAE.exe`
 5. Enjoy!
