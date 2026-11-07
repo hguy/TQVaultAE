@@ -73,14 +73,7 @@ public partial class MainForm
 	{
 		if (results is null || !results.Any())
 		{
-			MessageBox.Show(
-				string.Format(Resources.MainFormNoItemsFound, searchString)
-				, Resources.MainFormNoItemsFound2
-				, MessageBoxButtons.OK
-				, MessageBoxIcon.Information
-				, MessageBoxDefaultButton.Button1
-				, RightToLeftOptions
-			);
+			this.Services.MessageBoxes.Inform(string.Format(Resources.MainFormNoItemsFound, searchString), Resources.MainFormNoItemsFound2, MessageBoxIcon.Information);
 			return;
 		}
 

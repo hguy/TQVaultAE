@@ -334,7 +334,7 @@ Item Debug Level: {ItemDebugLevel}
 		var buttons = message.Buttons == ShowMessageButtons.OK ? MessageBoxButtons.OK : MessageBoxButtons.OKCancel;
 
 		// Propagate response to the caller
-		message.IsOK = MessageBox.Show(message.Message, caption, buttons, icon) == DialogResult.OK;
+		message.IsOK = this.Services.MessageBoxes.Ask(message.Message, caption, buttons, icon) == DialogResult.OK;
 	}
 
 	private void UIService_NotifyUserEvent(object? sender, string message, Color color)

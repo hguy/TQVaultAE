@@ -545,13 +545,7 @@ public partial class BagButtonSettings : VaultForm
 		if ((dispmode != BagButtonDisplayMode.Default && (this.SelectedOff is null || this.SelectedOn is null))
 		    || (dispmode.HasFlag(BagButtonDisplayMode.Label) && string.IsNullOrWhiteSpace(this.scalingTextBoxLabel.Text)))
 		{
-			MessageBox.Show(
-				Resources.BagButtonSettingsValidationMessage,
-				Resources.BagButtonSettingsValidationCaption,
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Error,
-				MessageBoxDefaultButton.Button1,
-				PlayerPanel.RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(Resources.BagButtonSettingsValidationMessage, Resources.BagButtonSettingsValidationCaption, MessageBoxIcon.Error);
 
 			this.DialogResult = DialogResult.None;
 			return;

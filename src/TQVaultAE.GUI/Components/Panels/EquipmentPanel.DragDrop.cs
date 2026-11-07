@@ -37,7 +37,7 @@ public partial class EquipmentPanel
 			catch (NullReferenceException exception)
 			{
 				Log.ErrorException(exception);
-				MessageBox.Show(Log.FormatException(exception), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.ShowException(exception);
 			}
 		}
 	}

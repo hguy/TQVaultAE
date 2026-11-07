@@ -19,11 +19,6 @@ using TQVaultAE.Presentation;
 internal sealed partial class ItemSeedDialog : VaultForm
 {
 	/// <summary>
-	/// MessageBoxOptions for right to left reading.
-	/// </summary>
-	private static MessageBoxOptions rightToLeftOptions = (MessageBoxOptions)0;
-
-	/// <summary>
 	/// Selected Item
 	/// </summary>
 	// Set before the dialog is shown.
@@ -58,11 +53,6 @@ internal sealed partial class ItemSeedDialog : VaultForm
 		this.ButtonRandom.Text = Resources.SeedBtnRandom;
 		this.ButtonOk.Text = Resources.GlobalOK;
 
-		// Set options for Right to Left reading.
-		if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-		{
-			rightToLeftOptions = MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
-		}
 	}
 
 	/// <summary>
@@ -119,7 +109,7 @@ internal sealed partial class ItemSeedDialog : VaultForm
 		}
 		else
 		{
-			MessageBox.Show(this, Resources.SeedRange, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+			this.Services.MessageBoxes.Inform(Resources.SeedRange, Resources.GlobalError, owner: this);
 		}
 	}
 

@@ -29,13 +29,7 @@ public partial class SackPanel
 	{
 		if (focusedItem != null)
 		{
-			if (suppressMessage || USettings.SuppressWarnings || MessageBox.Show(
-				Resources.SackPanelDeleteMsg,
-				Resources.SackPanelDelete,
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Warning,
-				MessageBoxDefaultButton.Button1,
-				RightToLeftOptions) == DialogResult.Yes)
+			if (suppressMessage || USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.SackPanelDeleteMsg, Resources.SackPanelDelete, MessageBoxIcon.Warning))
 			{
 				// remove item
 				this.ShownSack.RemoveItem(focusedItem);
@@ -528,13 +522,7 @@ public partial class SackPanel
 			{
 				if (this.selectedItems != null)
 				{
-					if (USettings.SuppressWarnings || MessageBox.Show(
-						Resources.SackPanelDeleteMultiMsg,
-						Resources.SackPanelDeleteMulti,
-						MessageBoxButtons.YesNo,
-						MessageBoxIcon.Warning,
-						MessageBoxDefaultButton.Button1,
-						RightToLeftOptions) == DialogResult.Yes)
+					if (USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.SackPanelDeleteMultiMsg, Resources.SackPanelDeleteMulti, MessageBoxIcon.Warning))
 					{
 						foreach (Item sackSelectedItem in this.selectedItems)
 							this.DeleteItem(sackSelectedItem, true);
@@ -554,13 +542,7 @@ public partial class SackPanel
 			else if (selectedMenuItem == Resources.SackPanelMenuRemoveRelic
 				|| selectedMenuItem == Resources.SackPanelMenuRemoveRelic2)
 			{
-				if (USettings.SuppressWarnings || MessageBox.Show(
-					Resources.SackPanelRemoveRelicMsg,
-					Resources.SackPanelMenuRemoveRelic,
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question,
-					MessageBoxDefaultButton.Button1,
-					RightToLeftOptions) == DialogResult.Yes)
+				if (USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.SackPanelRemoveRelicMsg, Resources.SackPanelMenuRemoveRelic))
 				{
 					// Set DragInfo to focused item.
 					this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));

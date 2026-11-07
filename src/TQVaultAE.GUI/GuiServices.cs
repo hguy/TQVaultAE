@@ -44,6 +44,7 @@ public sealed class GuiServices
 		, IPathIO pathIO
 		, IFileIO fileIO
 		, IDirectoryIO directoryIO
+		, IMessageBoxService messageBoxes
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -68,6 +69,7 @@ public sealed class GuiServices
 		this.PathIO = pathIO;
 		this.FileIO = fileIO;
 		this.DirectoryIO = directoryIO;
+		this.MessageBoxes = messageBoxes;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -93,6 +95,9 @@ public sealed class GuiServices
 	public IPathIO PathIO { get; }
 	public IFileIO FileIO { get; }
 	public IDirectoryIO DirectoryIO { get; }
+
+	/// <summary>Message boxes: information, confirmations and errors.</summary>
+	public IMessageBoxService MessageBoxes { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();
