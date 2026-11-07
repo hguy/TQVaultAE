@@ -160,7 +160,8 @@ public partial class VaultForm : Form, IScalingControl
 		this.GamePathResolver = this.Services.GamePathService;
 		this.GameFileService = this.Services.GameFileService;
 		this.SoundService = this.Services.SoundService;
-		this.titleFont = FontService.GetFontLight(9.5F);
+		// Its own copy: the form disposes it, and the service shares its fonts.
+		this.titleFont = (Font)FontService.GetFontLight(9.5F).Clone();
 		this.Log = this.Services.Logger<VaultForm>();
 		this.TranslationService = this.Services.TranslationService;
 		this.PathIO = this.Services.PathIO;
@@ -330,7 +331,11 @@ public partial class VaultForm : Form, IScalingControl
 		if (this.DrawCustomBorder)
 		{
 			if (this.titleFont != null)
-				this.titleFont = new Font(this.titleFont.Name, this.titleFont.SizeInPoints * factor.Width);
+			{
+				var previous = this.titleFont;
+				this.titleFont = new Font(previous.Name, previous.SizeInPoints * factor.Width);
+				previous.Dispose();
+			}
 		}
 
 		base.ScaleControl(factor, specified);
