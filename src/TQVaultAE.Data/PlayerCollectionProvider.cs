@@ -27,7 +27,6 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	private readonly ITQDataService TQData;
 	private readonly IFileIO FileIO;
 	private readonly IPathIO PathIO;
-	private readonly JsonSerializerOptions JsonOptions;
 
 	/// <summary>
 	/// array holding the byte pattern for the beginning of a block in the player file.
@@ -39,7 +38,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// </summary>
 	public byte[] endBlockPattern = { 0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
 
-	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO, JsonSerializerOptions jsonOptions)
+	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
 	{
 		this.Log = log;
 		this.ItemProvider = itemProvider;
@@ -47,7 +46,6 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		this.TQData = tQData;
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;
-		this.JsonOptions = jsonOptions;
 	}
 
 	public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
@@ -217,7 +215,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 			}).ToList()
 		};
 
-		this.FileIO.WriteAllText(fileName, JsonSerializer.Serialize(pcjson, JsonOptions), Encoding.UTF8);
+		this.FileIO.WriteAllText(fileName, JsonSerializer.Serialize(pcjson, VaultJsonContext.Default.VaultDto), Encoding.UTF8);
 	}
 
 	/// <summary>
@@ -309,7 +307,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 
 	private void ParseJsonData(PlayerCollection pc, string path)
 	{
-		var vaultDto = JsonSerializer.Deserialize<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8), JsonOptions)
+		var vaultDto = JsonSerializer.Deserialize(this.FileIO.ReadAllText(path, Encoding.UTF8), VaultJsonContext.Default.VaultDto)
 			?? throw new InvalidDataException($"Empty vault file: {path}");
 
 		pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? new();
