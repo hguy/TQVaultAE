@@ -165,7 +165,10 @@ public partial class ItemProvider : IItemProvider
 		return FriendlyNamesCache.GetOrAddAtomic(key, k =>
 		{
 
-			var res = new ToFriendlyNameResult(k.Item);
+			var res = new ToFriendlyNameResult(k.Item)
+			{
+				GrantedSkillsApart = k.Scope?.HasFlag(FriendlyNamesExtraScopes.GrantedSkills) ?? false,
+			};
 			k.Item.CurrentFriendlyNameResult = res;
 
 			#region Minimal Info (ButtonBag tooltip + Common item properties)
@@ -551,6 +554,9 @@ public partial class ItemProvider : IItemProvider
 			}
 
 			#endregion
+
+			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.GrantedSkills) ?? false)
+				res.GrantedSkills = this.GetGrantedSkills(k.Item);
 
 			k.Item.CurrentFriendlyNameResult.TmpAttrib.Clear();
 			k.Item.CurrentFriendlyNameResult = null;
