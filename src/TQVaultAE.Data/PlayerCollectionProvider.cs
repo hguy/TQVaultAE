@@ -90,6 +90,9 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// <param name="playerFileRawData"></param>
 	public void Commit(PlayerCollection pc)
 	{
+		ArgumentNullException.ThrowIfNull(pc.rawData);
+		ArgumentNullException.ThrowIfNull(pc.PlayerInfo);
+
 		TQData.WriteIntAfter(pc.rawData, "playerLevel", pc.PlayerInfo.CurrentLevel);
 
 		TQData.WriteIntAfter(pc.rawData, "money", pc.PlayerInfo.Money);
@@ -235,6 +238,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		byte[] rawEquipmentData = EncodeEquipmentData(pc);
 
 		// May have change with skill reset so i get the new offsets
+		ArgumentNullException.ThrowIfNull(pc.rawData);
 		var itemBlockStart = TQData.BinaryFindKey(pc.rawData, "numberOfSacks");
 		var itemBlockStartOffset = itemBlockStart.indexOf - 4;// -4 to include key name length
 		var itemBlockEnd = TQData.BinaryFindEndBlockOf(pc.rawData, "numberOfSacks");
@@ -280,7 +284,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// </summary>
 	/// <param name="pc"></param>
 	/// <param name="filePathToUse">if not <c>null</c>, use this file instead of <see cref="PlayerCollection.PlayerFile"/> </param>
-	public void LoadFile(PlayerCollection pc, string filePathToUse = null)
+	public void LoadFile(PlayerCollection pc, string? filePathToUse = null)
 	{
 		try
 		{
@@ -305,7 +309,8 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 
 	private void ParseJsonData(PlayerCollection pc, string path)
 	{
-		var vaultDto = JsonSerializer.Deserialize<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8), JsonOptions);
+		var vaultDto = JsonSerializer.Deserialize<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8), JsonOptions)
+			?? throw new InvalidDataException($"Empty vault file: {path}");
 
 		pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? new();
 		pc.numberOfSacks = vaultDto.sacks.Count;
@@ -427,6 +432,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	private void ParseRawData(PlayerCollection pc)
 	{
 		// First create a memory stream so we can decode the binary data as needed.
+		ArgumentNullException.ThrowIfNull(pc.rawData);
 		using (MemoryStream stream = new MemoryStream(pc.rawData, false))
 		using (BinaryReader reader = new BinaryReader(stream))
 		{
@@ -546,6 +552,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		var pi = new PlayerInfo(this.PathIO);
 		pi.Modified = false;
 
+		ArgumentNullException.ThrowIfNull(pc.rawData);
 		var headerVersion = TQData.ReadIntAfter(pc.rawData, "headerVersion");
 		pi.HeaderVersion = (PlayerFileHeaderVersion)headerVersion.valueAsInt;
 
@@ -704,6 +711,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				TQData.WriteCString(writer, "currentlySelectedSackNumber");
 				writer.Write(pc.currentlySelectedSackNumber);
 
+				ArgumentNullException.ThrowIfNull(pc.Sacks);
 				for (int i = 0; i < pc.numberOfSacks; ++i)
 				{
 					// SackType should already be set at pc point
@@ -791,6 +799,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 					writer.Write(pc.equipmentCtrlIOStreamVersion);
 				}
 
+				ArgumentNullException.ThrowIfNull(pc.EquipmentSack);
 				SackCollectionProvider.Encode(pc.EquipmentSack, writer);
 
 				dataLength = (int)writeStream.Length;

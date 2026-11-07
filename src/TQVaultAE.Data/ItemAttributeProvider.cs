@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+﻿﻿//-----------------------------------------------------------------------
 // <copyright file="ItemAttributes.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -551,7 +551,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// </summary>
 	/// <param name="attribute">attribute string.  Internally normalized to UpperInvariant.</param>
 	/// <returns>ItemAttributesData for the attribute</returns>
-	public ItemAttributesData GetAttributeData(string attribute)
+	public ItemAttributesData? GetAttributeData(string attribute)
 	{
 		if (String.IsNullOrEmpty(attribute))
 			return null;
@@ -700,7 +700,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>effect tag string</returns>
 	public string GetAttributeTextTag(string attribute)
 	{
-		ItemAttributesData data = GetAttributeData(attribute);
+		ItemAttributesData? data = GetAttributeData(attribute);
 		if (data == null)
 			return attribute;
 
@@ -713,12 +713,12 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="variable">attribute variable</param>
 	/// <param name="variableName">string for variable name</param>
 	/// <returns>true if the variable == variable name</returns>
-	public bool AttributeHas(Variable variable, string variableName)
+	public bool AttributeHas(Variable? variable, string variableName)
 	{
 		if (variable == null)
 			return false;
 
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
 		if (data == null)
 			return false;
 
@@ -731,10 +731,12 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="attributeList">Array of attributes</param>
 	/// <param name="effect">effect string to be tested</param>
 	/// <returns>true if attribute effect in group == effect</returns>
-	public bool AttributeGroupIs(Collection<Variable> attributeList, string effect)
+	public bool AttributeGroupIs(Collection<Variable?> attributeList, string effect)
 	{
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
+		if (attributeList[0] is not { } variable)
+			return false;
+
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
 		if (data == null)
 			return false;
 
@@ -747,10 +749,12 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="attributeList">Array of attributes</param>
 	/// <param name="type">Effect type enumeration</param>
 	/// <returns>true if attribute effect in group == type</returns>
-	public bool AttributeGroupIs(Collection<Variable> attributeList, ItemAttributesEffectType type)
+	public bool AttributeGroupIs(Collection<Variable?> attributeList, ItemAttributesEffectType type)
 	{
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
+		if (attributeList[0] is not { } variable)
+			return false;
+
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
 		if (data == null)
 			return false;
 
@@ -762,10 +766,12 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// </summary>
 	/// <param name="attributeList">array of attributes</param>
 	/// <returns>Effect type of the attribute list</returns>
-	public ItemAttributesEffectType AttributeGroupType(Collection<Variable> attributeList) // TODO Not used ?
+	public ItemAttributesEffectType AttributeGroupType(Collection<Variable?> attributeList) // TODO Not used ?
 	{
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
+		if (attributeList[0] is not { } variable)
+			return ItemAttributesEffectType.Other;
+
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
 		if (data == null)
 			return ItemAttributesEffectType.Other;
 
@@ -778,9 +784,9 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="attributeList">array of attributes</param>
 	/// <param name="variableName">name of variable</param>
 	/// <returns>true if variable is present in the list</returns>
-	public bool AttributeGroupHas(Collection<Variable> attributeList, string variableName)
+	public bool AttributeGroupHas(Collection<Variable?> attributeList, string variableName)
 	{
-		foreach (Variable variable in attributeList)
+		foreach (Variable? variable in attributeList)
 		{
 			if (AttributeHas(variable, variableName))
 				return true;

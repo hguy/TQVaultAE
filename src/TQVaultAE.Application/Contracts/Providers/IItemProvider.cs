@@ -17,7 +17,7 @@ public interface IItemProvider
 	/// </summary>
 	/// <param name="itemId"></param>
 	/// <returns><c>null</c> if <paramref name="type"/> is not wearable (can't have an affix)</returns>
-	ItemAffixes GetAllAvailableAffixes(GearType type);
+	ItemAffixes? GetAllAvailableAffixes(GearType type);
 	/// <summary>
 	/// Gets the socketed charm/relic bonus loot table
 	/// </summary>
@@ -25,24 +25,24 @@ public interface IItemProvider
 	/// <param name="RelicTable1"></param>
 	/// <param name="RelicTable2"></param>
 	/// <returns>Returns <c>false</c> if the item does not contain a charm/relic</returns>
-	bool BonusTableSocketedRelic(Item Item, out LootTableCollection RelicTable1, out LootTableCollection RelicTable2);
+	bool BonusTableSocketedRelic(Item Item, out LootTableCollection? RelicTable1, out LootTableCollection? RelicTable2);
 	/// <summary>
 	/// Return all affixes for <paramref name="itemId"/>
 	/// </summary>
 	/// <param name="itemId"></param>
 	/// <returns></returns>
-	ItemAffixes GetItemAffixes(RecordId itemId);
+	ItemAffixes? GetItemAffixes(RecordId itemId);
 	/// <summary>
 	/// Gets the artifact/charm/relic bonus loot table
 	/// </summary>
 	/// <param name="itm"></param>
 	/// <returns>returns null if the item is not an artifact/charm/relic</returns>
-	LootTableCollection BonusTableRelicOrArtifact(Item itm);
+	LootTableCollection? BonusTableRelicOrArtifact(Item itm);
 	/// <summary>
 	/// Create an artifact from its formulae
 	/// </summary>
 	/// <returns>A new artifact</returns>
-	Item CraftArtifact(Item itm);
+	Item? CraftArtifact(Item itm);
 	/// <summary>
 	/// Encodes an item into the save file format
 	/// </summary>
@@ -75,7 +75,7 @@ public interface IItemProvider
 	/// <param name="parameter2">second parameter</param>
 	/// <param name="parameter3">third parameter</param>
 	/// <returns>formatted string.</returns>
-	string Format(string formatSpec, object parameter1, object? parameter2 = null, object? parameter3 = null);
+	string Format(string? formatSpec, object? parameter1, object? parameter2 = null, object? parameter3 = null);
 	/// <summary>
 	/// Pulls data out of the TQ item database for this item.
 	/// </summary>
@@ -92,7 +92,7 @@ public interface IItemProvider
 	/// Shows the items in a set for the set items
 	/// </summary>
 	/// <returns>string containing the set items</returns>
-	SetItemInfo GetItemSetTranslations(Item itm);
+	SetItemInfo? GetItemSetTranslations(Item itm);
 	/// <summary>
 	/// Pet skills can also have multiple values so we attempt to decode it here
 	/// unfortunately the level is not in the skill record so we need to look up
@@ -126,12 +126,12 @@ public interface IItemProvider
 	RequirementInfo GetRequirementInfo(Item item, SortedList<string, Variable> requirementVariables);
 
 	SortedList<string, int> GetStatBonuses(Item item);
-	void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection record, int statLevel = 0);
+	void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection? record, int statLevel = 0);
 	/// <summary>
 	/// Gets the itemID's of all the items in the set.
 	/// </summary>
 	/// <returns>Returns <see cref="SetItemInfo"/> containing the remaining set items or null if the item is not part of a set.</returns>
-	SetItemInfo GetSetItems(Item itm);
+	SetItemInfo? GetSetItems(Item itm);
 	/// <summary>
 	/// Gets the level of a triggered skill
 	/// </summary>
@@ -150,13 +150,13 @@ public interface IItemProvider
 	/// Removes the first relic from this item
 	/// </summary>
 	/// <returns>Returns the removed relic as a new Item</returns>
-	Item RemoveRelic1(Item itm);
+	Item? RemoveRelic1(Item itm);
 
 	/// <summary>
 	/// Removes the second relic from this item
 	/// </summary>
 	/// <returns>Returns the removed relic as a new Item</returns>
-	Item RemoveRelic2(Item itm);
+	Item? RemoveRelic2(Item itm);
 
 	/// <summary>
 	/// Invalidate item data cache

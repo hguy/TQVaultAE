@@ -56,7 +56,7 @@ public class ArzFileProvider : IArzFileProvider
 	/// </summary>
 	/// <param name="recordId">string ID of the record will be normalized internally</param>
 	/// <returns>DBRecord corresponding to the string ID, <c>null</c> when not found.</returns>
-	public DBRecordCollection GetItem(ArzFile file, RecordId recordId)
+	public DBRecordCollection? GetItem(ArzFile file, RecordId recordId)
 	{
 		if (recordId is null) return null;
 

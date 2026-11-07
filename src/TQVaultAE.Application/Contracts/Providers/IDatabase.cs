@@ -19,19 +19,19 @@ public interface IDatabase
 	/// </summary>
 	/// <param name="itemId"></param>
 	/// <returns></returns>
-	ReadOnlyCollection<AffixTableMapItem> GetItemAffixTableMap(RecordId itemId);
+	ReadOnlyCollection<AffixTableMapItem>? GetItemAffixTableMap(RecordId itemId);
 	/// <summary>
 	/// Gets the instance of the Titan Quest Database ArzFile.
 	/// </summary>
-	ArzFile ArzFile { get; }
+	ArzFile? ArzFile { get; }
 	/// <summary>
 	/// Gets the instance of the Immortal Throne Database ArzFile.
 	/// </summary>
-	ArzFile ArzFileIT { get; }
+	ArzFile? ArzFileIT { get; }
 	/// <summary>
 	/// Gets the instance of a custom map Database ArzFile.
 	/// </summary>
-	ArzFile ArzFileMod { get; }
+	ArzFile? ArzFileMod { get; }
 	/// <summary>
 	/// Gets or sets a value indicating whether the game language is being auto detected.
 	/// </summary>
@@ -40,7 +40,7 @@ public interface IDatabase
 	/// Gets the game language setting as a an English DisplayName.
 	/// </summary>
 	/// <remarks>Changed to property by VillageIdiot to support changing of Language in UI</remarks>
-	string GameLanguage { get; }
+	string? GameLanguage { get; }
 	/// <summary>
 	/// Gets or sets the game language from the config file.
 	/// </summary>
@@ -67,7 +67,7 @@ public interface IDatabase
 	/// </summary>
 	/// <param name="itemId">Item ID which we are looking up.  Will be normalized internally.</param>
 	/// <returns>Returns Infor for item ID and NULL if not found.</returns>
-	Info GetInfo(RecordId itemId);
+	Info? GetInfo(RecordId itemId);
 	/// <summary>
 	/// Converts the item attribute to a name in the localized language
 	/// </summary>
@@ -85,7 +85,7 @@ public interface IDatabase
 	/// </remarks>
 	/// <param name="itemId">Item Id which we are looking up</param>
 	/// <returns>Returns the DBRecord for the item Id</returns>
-	DBRecordCollection GetRecordFromFile(RecordId itemId);
+	DBRecordCollection? GetRecordFromFile(RecordId itemId);
 
 	/// <summary>
 	/// Gets a resource from the database using the resource Id.
