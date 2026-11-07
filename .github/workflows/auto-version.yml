@@ -68,8 +68,8 @@ jobs:
           # Create TQVaultAE.GUI archive (.NET 10.0 Windows)
           Compress-Archive -Path "src/TQVaultAE.GUI/bin/Release/net10.0-windows/*" -DestinationPath "TQVaultAE.GUI-$version.zip" -Force
           
-          # Create TQSaveFilesExplorer archive (.NET Framework 4.8)
-          Compress-Archive -Path "src/TQSaveFilesExplorer/bin/Release/net48/*" -DestinationPath "TQSaveFilesExplorer-$version.zip" -Force
+          # Create TQSaveFilesExplorer archive (.NET 10.0 Windows)
+          Compress-Archive -Path "src/TQSaveFilesExplorer/bin/Release/net10.0-windows/*" -DestinationPath "TQSaveFilesExplorer-$version.zip" -Force
           
           # Create ARZExplorer archive (.NET 10.0 Windows)
           Compress-Archive -Path "src/ARZExplorer/bin/Release/net10.0-windows/*" -DestinationPath "ARZExplorer-$version.zip" -Force
@@ -88,7 +88,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TQ-SaveFilesExplorer-Release
-          path: src/TQSaveFilesExplorer/bin/Release/net48/
+          path: src/TQSaveFilesExplorer/bin/Release/net10.0-windows/
           retention-days: 3
 
       - name: Upload ARZExplorer artifacts (Release)
