@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------
 namespace TQVaultAE.GUI.Components.Scaling;
 
-using System.Linq;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -34,14 +33,15 @@ public class ScalingComboBox : ComboBox, IScalingControl
 	private void ScalingComboBox_DrawItem(object? sender, DrawItemEventArgs e)
 	{
 		if (this.Items.Count == 0 || e.Index == -1) return;
-		var itemsValues = this.Items.Cast<object>().Select(o => o?.ToString() ?? string.Empty).ToArray();
-		var currentBrush = new SolidBrush(this.ForeColor);
+		// Only the drawn item: converting the whole list for each item made opening the list quadratic.
+		var text = this.Items[e.Index]?.ToString() ?? string.Empty;
+		using var currentBrush = new SolidBrush(this.ForeColor);
 
 		// Draw the background of the item.
 		e.DrawBackground();
 
 		// Draw value
-		e.Graphics.DrawString(itemsValues[e.Index], this.Font, currentBrush, new RectangleF(e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height));
+		e.Graphics.DrawString(text, this.Font, currentBrush, new RectangleF(e.Bounds.X, e.Bounds.Y, e.Bounds.Width, e.Bounds.Height));
 
 		// Draw the focus rectangle if the mouse hovers over an item.
 		e.DrawFocusRectangle();
