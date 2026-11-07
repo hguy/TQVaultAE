@@ -268,9 +268,10 @@ public class UIService : IUIService
 	public Bitmap? GetBitmap(Item itm)
 	{
 		Bitmap? bmp = null;
-		if (itm.TexImageResourceId != null && itm.TexImage != null)
+		if (!RecordId.IsNullOrEmpty(itm.TexImageResourceId))
 		{
-			bmp = LoadBitmap(itm.TexImageResourceId, itm.TexImage);
+			// Both the raw resource and the decoded bitmap are cached: only the first call per resource reads and decodes.
+			bmp = LoadBitmap(itm.TexImageResourceId, this.Database.LoadResource(itm.TexImageResourceId));
 		}
 
 		if (bmp is not null)
