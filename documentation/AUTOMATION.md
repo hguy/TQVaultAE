@@ -62,6 +62,7 @@ Cells are grid coordinates, as reported by `get_state`.
 | `move_drag(panel, x, y)` | Hovers the dragged item so that its top-left corner lands on cell (x, y). The result reports the cells under the item. |
 | `drop_item(panel, x, y)` | Drops the dragged item with its top-left corner on cell (x, y). It reports whether the panel accepted the drop. |
 | `cancel_drag` | Returns the dragged item to where it was picked up, like a right click. |
+| `create_item(panel, baseItem, prefix?, suffix?, relic?, relicBonus?, seed?)` | Builds an item in memory from database record ids and drags it, like the Duplicate menu entry; place it with `drop_item` (a created item cannot be cancelled back). It tests combinations no vault holds, for example a relic whose completion bonus grants a skill. The save guard keeps it from being written. |
 | `hover_item(panel, x, y)` | Rests the virtual cursor on a cell without dragging. TQVault shows the item's tooltip and writes its name in the notification bar. The result gives the item, the notification text, the tooltips shown, and a PNG of the tooltip taken at once, since a tooltip can close by itself. |
 | `hover_end` | Moves the virtual cursor off the panel, which closes the tooltip. |
 | `context_menu(panel, x, y)` | Right-clicks a cell through the panel's mouse handlers and returns the context menu built for it: entry texts, `-` for separators, sub menus with their entries. The menu is closed without choosing anything. The current selection counts, as for a real right click. |
