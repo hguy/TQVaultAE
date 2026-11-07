@@ -9,10 +9,10 @@ namespace TQVaultAE.Services;
 public class VaultExportDTO
 {
 	[JsonPropertyName("name")]
-	public string Name { get; set; }
+	public string Name { get; set; } = string.Empty;
 
 	[JsonPropertyName("sacks")]
-	public IReadOnlyList<SackExportDTO> Sacks { get; set; }
+	public IReadOnlyList<SackExportDTO> Sacks { get; set; } = [];
 
 	public static VaultExportDTO FromPlayerCollection(PlayerCollection vault)
 	{
@@ -52,8 +52,8 @@ public class SackExportDTO
 	public int SackNumber { get; set; }
 
 	[JsonPropertyName("items")]
-	public IReadOnlyList<ItemDto> Items { get; set; }
+	public IReadOnlyList<ItemDto> Items { get; set; } = [];
 
 	[JsonPropertyName("iconInfo")]
-	public BagButtonIconInfo IconInfo { get; set; }
+	public BagButtonIconInfo? IconInfo { get; set; }
 }

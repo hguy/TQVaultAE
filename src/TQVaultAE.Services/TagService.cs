@@ -17,7 +17,7 @@ public class TagService : ITagService
 	protected readonly IFileIO FileIO;
 	protected readonly IPathIO PathIO;
 	protected readonly JsonSerializerOptions JsonOptions;
-	protected TagConfig TagConfig;
+	protected TagConfig TagConfig = new();
 	public Dictionary<string, Color> Tags => this.TagConfig.tags.OrderBy(t => t.name).ToDictionary(
 		t => t.name,
 		t => Color.FromArgb(t.color.R, t.color.G, t.color.B)
@@ -151,7 +151,7 @@ public class TagService : ITagService
 		if (this.FileIO.Exists(configFilePath))
 		{
 			var content = this.FileIO.ReadAllText(configFilePath);
-			this.TagConfig = JsonSerializer.Deserialize<TagConfig>(content, JsonOptions);
+			this.TagConfig = JsonSerializer.Deserialize<TagConfig>(content, JsonOptions) ?? new();
 			return;
 		}
 

@@ -247,7 +247,7 @@ public class ItemExchangeService : IItemExchangeService
 	public bool HasPasteBinApiKey
 		=> !string.IsNullOrWhiteSpace(_userSettings?.PasteBinApiKey);
 
-	public async Task<string> ExportToPasteBinAsync(string json, string pasteName = null)
+	public async Task<string> ExportToPasteBinAsync(string json, string? pasteName = null)
 	{
 		if (_pasteBinService == null)
 			throw new InvalidOperationException("PasteBin service is not configured.");

@@ -40,12 +40,12 @@ public interface IStashService
 	/// </summary>
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	FileSystemWatcher CreateRelicStashFileWatcher(Action onChanged);
+	FileSystemWatcher? CreateRelicStashFileWatcher(Action onChanged);
 
 	/// <summary>
 	/// Creates a file watcher for the transfer stash file.
 	/// </summary>
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	FileSystemWatcher CreateTransferStashFileWatcher(Action onChanged);
+	FileSystemWatcher? CreateTransferStashFileWatcher(Action onChanged);
 }

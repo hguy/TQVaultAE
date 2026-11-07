@@ -17,7 +17,7 @@ public interface IGameFileService
 	/// <param name="prefix">prefix of the backup file</param>
 	/// <param name="file">file name to backup</param>
 	/// <returns>Returns the name of the backup file, or NULL if file does not exist</returns>
-	string BackupFile(string prefix, string file);
+	string? BackupFile(string prefix, string file);
 	/// <summary>
 	/// TQ has an annoying habit of throwing away your char in preference
 	/// for the Backup folder if it exists if it thinks your char is not valid.

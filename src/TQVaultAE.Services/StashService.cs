@@ -58,7 +58,7 @@ public class StashService : IStashService
 			try
 			{
 				stash.StashFound = StashProvider.LoadFile(stash);
-				if (stash.StashFound ?? false)
+				if ((stash.StashFound ?? false) && stash.Sack is not null)
 					stash.Sack.StashType = StashType.PlayerStash;
 
 				// Add stash items to the search database
@@ -105,7 +105,7 @@ public class StashService : IStashService
 			try
 			{
 				stash.StashFound = StashProvider.LoadFile(stash);
-				if (stash.StashFound ?? false)
+				if ((stash.StashFound ?? false) && stash.Sack is not null)
 					stash.Sack.StashType = StashType.TransferStash;
 
 				// Add transfer stash items to the search database
@@ -155,7 +155,7 @@ public class StashService : IStashService
 			try
 			{
 				stash.StashFound = StashProvider.LoadFile(stash);
-				if (stash.StashFound ?? false)
+				if ((stash.StashFound ?? false) && stash.Sack is not null)
 					stash.Sack.StashType = StashType.RelicVaultStash;
 
 				// Add relic vault stash items to the search database
@@ -226,7 +226,7 @@ public class StashService : IStashService
 	/// </summary>
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	public FileSystemWatcher CreateRelicStashFileWatcher(Action onChanged)
+	public FileSystemWatcher? CreateRelicStashFileWatcher(Action onChanged)
 	{
 		var stashFile = GamePathResolver.RelicVaultStashFileFullPath;
 
@@ -265,7 +265,7 @@ public class StashService : IStashService
 	/// </summary>
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	public FileSystemWatcher CreateTransferStashFileWatcher(Action onChanged)
+	public FileSystemWatcher? CreateTransferStashFileWatcher(Action onChanged)
 	{
 		var stashFile = GamePathResolver.TransferStashFileFullPath;
 

@@ -10,7 +10,7 @@ public static class ItemDtoExtensions
 		{
 			stackSize = item.StackSize,
 			seed = item.Seed,
-			baseName = item.BaseItemId?.Raw,
+			baseName = item.BaseItemId.Raw,
 			prefixName = item.prefixID?.Raw,
 			suffixName = item.suffixID?.Raw,
 			relicName = item.relicID?.Raw,

@@ -136,7 +136,7 @@ public class ItemMovementService : IItemMovementService
     /// This ensures search results always reflect the current location.
     /// </summary>
     public void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, 
-        int destinationSackNumber, StashType? destinationStashType = null, string containerName = null)
+        int destinationSackNumber, StashType? destinationStashType = null, string? containerName = null)
     {
         if (item == null || destinationPlayer == null)
             return;
@@ -175,7 +175,7 @@ public class ItemMovementService : IItemMovementService
     /// Find all items that are at least partially within the cell rectangle.
     /// Extracted from SackPanel.FindAllItems().
     /// </summary>
-    private System.Collections.ObjectModel.Collection<Item> FindAllItems(SackCollection sack, Rectangle cellRectangle)
+    private System.Collections.ObjectModel.Collection<Item>? FindAllItems(SackCollection sack, Rectangle cellRectangle)
     {
         var items = new System.Collections.ObjectModel.Collection<Item>();
         int minX = cellRectangle.X;
@@ -209,7 +209,7 @@ public class ItemMovementService : IItemMovementService
     /// Gets an item at a cell location.
     /// Extracted from SackPanel.FindItem().
     /// </summary>
-    private Item FindItem(SackCollection sack, Point cellLocation)
+    private Item? FindItem(SackCollection sack, Point cellLocation)
     {
         if (sack == null)
             return null;
@@ -234,7 +234,7 @@ public class ItemMovementService : IItemMovementService
         return null;
     }
 
-    private static ItemMoveResult ItemMoveResultFailed(string errorMessage, Item item = null, SackCollection destinationSack = null)
+    private static ItemMoveResult ItemMoveResultFailed(string errorMessage, Item? item = null, SackCollection? destinationSack = null)
         => ItemMoveResult.Failed(errorMessage, item, destinationSack);
 
     #endregion
