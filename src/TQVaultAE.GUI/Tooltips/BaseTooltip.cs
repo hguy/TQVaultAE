@@ -70,7 +70,7 @@ public class BaseTooltip : Form
 			row = new Label()
 			{
 				Text = " ",
-				Font = fontService.GetFontLight(fontSize, style, uiService.Scale),
+				Font = fontService.GetFontLight(fontSize, style, uiService.Zoom),
 				AutoSize = true,
 			};
 		}
@@ -141,7 +141,7 @@ public class BaseTooltip : Form
 		{
 			Text = txt,
 			ForeColor = FGColor.Value,
-			Font = fontService.GetFontLight(fontSize, style, uiService.Scale),
+			Font = fontService.GetFontLight(fontSize, style, uiService.Zoom),
 			AutoSize = true,
 			Anchor = AnchorStyles.Left,
 			BackColor = BGColor ?? Color.Transparent,

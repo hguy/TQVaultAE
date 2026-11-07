@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Windows.Forms;
 using TQVaultAE.Presentation;
+using TQVaultAE.GUI.Components.Scaling;
 
 /// <summary>
 /// Class for About dialog box.
@@ -183,7 +184,7 @@ internal sealed partial class AboutBox : VaultForm
 	/// <param name="specified">BoundsSpecified value.</param>
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
-		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * factor.Height, this.Font.Style);
+		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
 
 		if (this.logoPictureBox != null && this.logoPictureBox.Image != null)
 		{

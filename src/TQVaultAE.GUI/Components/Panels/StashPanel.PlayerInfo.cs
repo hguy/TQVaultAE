@@ -108,7 +108,7 @@ public partial class StashPanel
 			var mg = new Padding(0, 0, 0, 1);
 			var pd = new Padding(0);
 			int rowIdx = 0;
-			var labFnt = new Font(this.Font.FontFamily, 7.5f * UIService.Scale);
+			var labFnt = new Font(this.Font.FontFamily, 7.5f * UIService.Zoom);
 
 			// Add Edit Button
 			var editButton = new ScalingButton()

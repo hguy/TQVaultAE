@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using TQVaultAE.Application;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.GUI.Components.Scaling;
 
 namespace TQVaultAE.GUI.Forms;
 
@@ -420,9 +421,9 @@ public partial class MainForm
 			USettings.TQPath = string.Empty;
 		}
 
-		if (UIService.Scale != 1.0F)
+		if (UIService.Zoom != 1.0F)
 		{
-			USettings.Scale = UIService.Scale;
+			USettings.Scale = UIService.Zoom;
 			this.configChanged = true;
 		}
 
@@ -440,7 +441,8 @@ public partial class MainForm
 	{
 		SettingsDialog settingsDialog = new SettingsDialog(this);
 		bool restart = false;
-		settingsDialog.Scale(new SizeF(UIService.Scale, UIService.Scale));
+		using (ZoomScope.Enter())
+			settingsDialog.Scale(new SizeF(UIService.Zoom, UIService.Zoom));
 
 		string title = string.Empty;
 		string message = string.Empty;

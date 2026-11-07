@@ -218,7 +218,7 @@ public partial class ComboBoxCharacter : UserControl
 			this.renameToolStripMenuItem.Text = Resources.GlobalRename;
 			this.colorToolStripMenuItem.Text = TranslationService.TranslateXTag("x3tagGraphicOption02");
 
-			this.scalingLabelCharName.Font = FontService.GetFontLight(13F, UIService.Scale);
+			this.scalingLabelCharName.Font = FontService.GetFontLight(13F, UIService.Zoom);
 
 			this.archiveAllToolStripMenuItemGlobal.Font =
 			this.unarchiveAllToolStripMenuItemGlobal.Font =

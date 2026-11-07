@@ -48,16 +48,20 @@ public partial class VaultForm
 	protected virtual void ScaleForm(float scaleFactor, bool useRelativeScaling)
 	{
 		// Support relative resizing of the DB value.
+		// scaleFactor is a zoom: the DPI is applied on top of it (UIService.Scale = zoom * DpiScale).
+		float dpi = UIService.DpiScale;
+
 		if (useRelativeScaling && scaleFactor != 1.0F)
 		{
-			float newDBScale = UIService.Scale * scaleFactor;
-			if (newDBScale > 2.0F || newDBScale < 0.40F)
+			float newZoom = UIService.Zoom * scaleFactor;
+			if (newZoom > Presentation.Win32.UIService.MaxZoom || newZoom < Presentation.Win32.UIService.MinZoom)
 				return;
 
-			UIService.Scale = newDBScale;
-			this.Scale(new SizeF(scaleFactor, scaleFactor));
+			UIService.Scale = newZoom * dpi;
+			using (ZoomScope.Enter())
+				this.Scale(new SizeF(scaleFactor, scaleFactor));
 
-			USettings.Scale = UIService.Scale;
+			USettings.Scale = UIService.Zoom;
 			USettings.Save();
 		}
 		else if (scaleFactor == 1.0F)
@@ -69,32 +73,34 @@ public partial class VaultForm
 			this.bottomRightCorner = Images.BorderBottomRightCorner;
 			this.bottomLeftCorner = Images.BorderBottomLeftCorner;
 
-			UIService.Scale = 1.0F;
+			UIService.Scale = dpi;
 
 			// Use the width since it is usually more drastic of a change.
 			// especially when coming from a small size.
 			var size = new SizeF(
-				(float)NORMAL_FORMWIDTH / (float)this.Width,
-				(float)NORMAL_FORMWIDTH / (float)this.Width);
-			this.Scale(size);
+				(float)NORMAL_FORMWIDTH * dpi / (float)this.Width,
+				(float)NORMAL_FORMWIDTH * dpi / (float)this.Width);
+			using (ZoomScope.Enter())
+				this.Scale(size);
 
 			USettings.Scale = 1.0F;
 			USettings.Save();
 		}
 		else
 		{
-			float scalingWidth = (float)NORMAL_FORMWIDTH / (float)this.Width * scaleFactor;
-			float scalingHeight = (float)NORMAL_FORMHEIGHT / (float)this.Height * scaleFactor;
+			float scalingWidth = (float)NORMAL_FORMWIDTH * dpi / (float)this.Width * scaleFactor;
+			float scalingHeight = (float)NORMAL_FORMHEIGHT * dpi / (float)this.Height * scaleFactor;
 			float scaling = scalingWidth;
 
 			// Use the scaling factor closest to one.
 			if ((scalingHeight < scalingWidth && scalingHeight > 1.0F) || (scalingHeight > scalingWidth && scalingHeight < 1.0F))
 				scaling = scalingHeight;
 
-			UIService.Scale = scaleFactor;
-			this.Scale(new SizeF(scaling, scaling));
+			UIService.Scale = scaleFactor * dpi;
+			using (ZoomScope.Enter())
+				this.Scale(new SizeF(scaling, scaling));
 
-			USettings.Scale = UIService.Scale;
+			USettings.Scale = UIService.Zoom;
 			USettings.Save();
 		}
 
@@ -120,7 +126,7 @@ public partial class VaultForm
 			if (e.ResizeDelta == 1.0F)
 				scale = e.ResizeDelta;
 			else
-				scale = UIService.Scale + e.ResizeDelta;
+				scale = UIService.Zoom + e.ResizeDelta;
 
 			if (scale < 0.39F || scale > 2.01F)
 				return;
@@ -133,12 +139,15 @@ public partial class VaultForm
 
 	protected Size InitialScaling(Rectangle workingArea)
 	{
+		// The working area is in screen pixels, the normal size in design pixels.
+		float dpi = UIService.DpiScale;
+
 		// If screen is smaller than NORMAL_FORM sizes, adjust scaling (mostly at first run)
-		if (workingArea.Width < NORMAL_FORMWIDTH || workingArea.Height < NORMAL_FORMHEIGHT)
+		if (workingArea.Width < NORMAL_FORMWIDTH * dpi || workingArea.Height < NORMAL_FORMHEIGHT * dpi)
 		{
 			var initialScale = Math.Min(
-				Convert.ToSingle(workingArea.Width) / Convert.ToSingle(NORMAL_FORMWIDTH)
-				, Convert.ToSingle(workingArea.Height) / Convert.ToSingle(NORMAL_FORMHEIGHT)
+				Convert.ToSingle(workingArea.Width) / (NORMAL_FORMWIDTH * dpi)
+				, Convert.ToSingle(workingArea.Height) / (NORMAL_FORMHEIGHT * dpi)
 			);
 
 			if (USettings.Scale > initialScale)
@@ -150,8 +159,8 @@ public partial class VaultForm
 
 		// Rescale from last saved value
 		var thisClientSize = new Size(
-			(int)Math.Round(NORMAL_FORMWIDTH * USettings.Scale)
-			, (int)Math.Round(NORMAL_FORMHEIGHT * USettings.Scale)
+			(int)Math.Round(NORMAL_FORMWIDTH * USettings.Scale * dpi)
+			, (int)Math.Round(NORMAL_FORMHEIGHT * USettings.Scale * dpi)
 		);
 
 		return thisClientSize;

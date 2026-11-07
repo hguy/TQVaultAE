@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
+using TQVaultAE.GUI.Components.Scaling;
 
 namespace TQVaultAE.GUI.Forms;
 
@@ -226,7 +227,9 @@ public partial class MainForm
 	private void AboutButtonClick(object? sender, EventArgs e)
 	{
 		AboutBox dlg = this.Services.Forms.Create<AboutBox>();
-		dlg.Scale(new SizeF(UIService.Scale, UIService.Scale));
+		// Windows Forms scaled the dialog to the DPI: only the zoom is left.
+		using (ZoomScope.Enter())
+			dlg.Scale(new SizeF(UIService.Zoom, UIService.Zoom));
 		dlg.ShowDialog();
 	}
 
@@ -259,14 +262,18 @@ public partial class MainForm
 
 		Rectangle workingArea = Screen.FromControl(this).WorkingArea;
 
+		// Windows Forms already scaled the designer layout to the screen DPI (AutoScaleMode.Dpi); the code-built panels and
+		// the drawing follow UIService.Scale, which gets the same factor on top of the user's zoom.
+		UIService.DpiScale = this.CurrentAutoScaleDimensions.Width / UIService.DESIGNDPI;
+
 		this.ScaleOnResize = false;
 
 		this.ClientSize = InitialScaling(workingArea);
 
 		this.ScaleOnResize = true;
 
-		UIService.Scale = USettings.Scale;
-		this.Log.LogDebug("Config.Settings.Default.Scale changed to {Scale} !", UIService.Scale);
+		UIService.Scale = USettings.Scale * UIService.DpiScale;
+		this.Log.LogDebug("Zoom {Zoom} at {Dpi} times the design DPI: scale {Scale}", UIService.Zoom, UIService.DpiScale, UIService.Scale);
 
 		// Save the height / width ratio for resizing.
 		this.FormDesignRatio = (float)this.Height / (float)this.Width;
@@ -277,14 +284,6 @@ public partial class MainForm
 
 		this.OriginalFormSize = this.Size;
 		this.OriginalFormScale = USettings.Scale;
-
-		if (CurrentAutoScaleDimensions.Width != UIService.DESIGNDPI)
-		{
-			// We do not need to scale the main form controls since autoscaling will handle it.
-			// Scale internally to 96 dpi for the drawing functions.
-			UIService.Scale = this.CurrentAutoScaleDimensions.Width / UIService.DESIGNDPI;
-			this.OriginalFormScale = UIService.Scale;
-		}
 
 		this.LastFormSize = this.Size;
 

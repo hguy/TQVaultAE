@@ -269,7 +269,7 @@ public partial class SackPanel : Panel, IScalingControl
 		this.BackColor = Theme.Background;
 
 		this.CustomContextMenu.Renderer = new CustomProfessionalRenderer();
-		this.CustomContextMenu.Font = FontService.GetFont(9.0F * UIService.Scale);
+		this.CustomContextMenu.Font = FontService.GetFont(9.0F * UIService.Zoom);
 
 		this.CustomContextMenuAffixUnknown = this.UIService.LoadBitmap(@"INGAMEUI\MAP\ICONS\ICONSMALLQUEST01.TEX");
 		this.CustomContextMenuAffixUntranslated = this.UIService.LoadBitmap(@"INGAMEUI\MAP\ICONS\ICONSMALLAREAOFINTEREST01.TEX");
@@ -549,7 +549,7 @@ public partial class SackPanel : Panel, IScalingControl
 	{
 		this.borderPen.Width = Math.Max((4.0F * UIService.Scale), 1.0F);
 		this.numberFont = new Font(this.numberFont.Name, 10.0F * UIService.Scale, GraphicsUnit.Pixel);
-		this.CustomContextMenu.Font = new Font(this.CustomContextMenu.Font.Name, 9.0F * UIService.Scale);
+		this.CustomContextMenu.Font = new Font(this.CustomContextMenu.Font.Name, 9.0F * UIService.Zoom);
 
 		this.Size = new Size(
 			(Convert.ToInt32(this.borderPen.Width) * 2) + (UIService.ItemUnitSize * this.SackSize.Width),

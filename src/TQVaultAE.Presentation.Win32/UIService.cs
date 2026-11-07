@@ -34,9 +34,11 @@ public class UIService : IUIService
 	private Bitmap? _DefaultBitmap;
 
 	/// <summary>
-	/// Scaling factor used to scale the UI for higher DPI values than the default of 96.
+	/// Pixels per design pixel: <see cref="Zoom"/> times <see cref="DpiScale"/>.
 	/// </summary>
 	private float _Scale = 1.00F;
+
+	private float _DpiScale = 1.00F;
 
 	/// <summary>
 	/// Gets the default bitmap
@@ -71,30 +73,40 @@ public class UIService : IUIService
 	/// </summary>
 	public int HalfUnitSize => this.ItemUnitSize / 2;
 
+	/// <summary>Smallest <see cref="Zoom"/>: good enough for a 640 x 480 screen.</summary>
+	public const float MinZoom = 0.4F;
+
+	/// <summary>Largest <see cref="Zoom"/>.</summary>
+	public const float MaxZoom = 2.0F;
+
 	/// <summary>
-	/// Gets or sets the scaling of the UI
+	/// Gets or sets the pixels per design pixel (the UI is designed at 96 DPI): what the item cells, panels and pixel
+	/// fonts are multiplied by. It is the user's <see cref="Zoom"/> times <see cref="DpiScale"/>, and is kept within
+	/// <see cref="MinZoom"/> and <see cref="MaxZoom"/> zoom.
 	/// </summary>
 	public float Scale
 	{
 		get => _Scale;
 
-		set
-		{
-			// Set some bounds for the scale factors.
-			if (value < 0.4F)
-			{
-				// Should be good enough for a 640 x 480 screen.
-				value = 0.4F;
-			}
-			else if (value > 2.0F)
-			{
-				// Large fonts are 1.50 so this should be good enough.
-				value = 2.0F;
-			}
-
-			_Scale = value;
-		}
+		set => _Scale = Math.Clamp(value, MinZoom * this._DpiScale, MaxZoom * this._DpiScale);
 	}
+
+	/// <summary>
+	/// Gets or sets the screen DPI over <see cref="DESIGNDPI"/>: 1 for a DPI-unaware process, 1.25 at 120 DPI.
+	/// Windows already applies it to fonts sized in points, so those follow <see cref="Zoom"/> only.
+	/// </summary>
+	public float DpiScale
+	{
+		get => _DpiScale;
+
+		set => _DpiScale = value > 0F ? value : 1.0F;
+	}
+
+	/// <summary>
+	/// Gets the user's zoom, set by resizing the main window: <see cref="Scale"/> without the DPI. It is what the
+	/// settings keep, and what fonts sized in points and dialogs are scaled by.
+	/// </summary>
+	public float Zoom => this._Scale / this._DpiScale;
 
 	public UIService(ILogger<UIService> log, IDatabase database, IBitmapService bitmapService, UserSettings uSettings)
 	{

@@ -164,8 +164,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		this.StashBackground = Images.caravan_bg;
 
 		// Set up the inital font size
-		if (UIService.Scale != 1.0F)
-			this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.Scale, this.Font.Style);
+		if (UIService.Zoom != 1.0F)
+			this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.Zoom, this.Font.Style);
 
 		// Now that the buttons are set we can move the panel
 		this.BagSackPanel.SetLocation(new Point(
@@ -216,7 +216,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 		#endregion
 
-		this.buttonContextMenuStrip.Font = FontService.GetFont(9.0F * UIService.Scale);
+		this.buttonContextMenuStrip.Font = FontService.GetFont(9.0F * UIService.Zoom);
 
 		this.toolStripMenuItemEnableTooltip.Text = Resources.PlayerPanelMenuEnableTooltip;
 		this.toolStripMenuItemDisableTooltip.Text = Resources.PlayerPanelMenuDisableTooltip;

@@ -240,7 +240,7 @@ public class ScalingButton : Button, IScalingControl
 		if (this.baseFont.FontFamily != this.Font.FontFamily)
 			this.baseFont = this.Font;
 
-		this.baseFont = new Font(this.baseFont.FontFamily, this.baseFont.SizeInPoints * factor.Height, this.baseFont.Style);
+		this.baseFont = ZoomScope.ScaleFont(this.baseFont, factor.Height);
 		this.Font = this.GetScaledButtonTextFont(this.baseFont, Convert.ToInt32((float)this.Width * factor.Width));
 
 		// Reset the image to the original size.  Assume that we are resizing and that this button is not under the mouse.

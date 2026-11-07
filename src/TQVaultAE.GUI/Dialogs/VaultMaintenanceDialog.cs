@@ -15,6 +15,7 @@ using System.Text;
 using System.Windows.Forms;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
+using TQVaultAE.GUI.Components.Scaling;
 
 /// <summary>
 /// Class for VaultMaintenanceDialog form
@@ -163,13 +164,10 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 	/// <param name="specified">BoundsSpecified value.</param>
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
-		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * factor.Height, this.Font.Style);
+		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
 		if (this.selectFunctionGroupBox != null && this.selectFunctionGroupBox.Font != null)
 		{
-			this.selectFunctionGroupBox.Font = new Font(
-				this.selectFunctionGroupBox.Font.Name,
-				this.selectFunctionGroupBox.Font.SizeInPoints * factor.Height,
-				this.selectFunctionGroupBox.Font.Style);
+			this.selectFunctionGroupBox.Font = ZoomScope.ScaleFont(this.selectFunctionGroupBox.Font, factor.Height);
 		}
 
 		base.ScaleControl(factor, specified);

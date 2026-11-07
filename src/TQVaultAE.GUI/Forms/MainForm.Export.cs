@@ -62,7 +62,7 @@ public partial class MainForm
 		{
 			vaultExportButton.Text = "...";
 			vaultExportButton.FlatStyle = FlatStyle.Flat;
-			vaultExportButton.Font = FontService.GetFontLight(10F, UIService.Scale);
+			vaultExportButton.Font = FontService.GetFontLight(10F, UIService.Zoom);
 			vaultExportButton.FlatAppearance.BorderSize = 0;
 		}
 
@@ -93,7 +93,7 @@ public partial class MainForm
 
 		this.flowLayoutPanelVaultSelector.Controls.Add(vaultExportButton);
 
-		ScaleControl(this.UIService, vaultExportButton);
+		ScaleControl(this.UIService, vaultExportButton, builtInCode: true);
 	}
 
 	private void ExportVaultToFileClicked(object? sender, EventArgs e)

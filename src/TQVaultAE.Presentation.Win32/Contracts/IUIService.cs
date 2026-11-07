@@ -38,6 +38,12 @@ public interface IUIService : IUserNotifier
 	/// </summary>
 	float Scale { get; set; }
 
+	/// <summary>Screen DPI over <see cref="DESIGNDPI"/>; fonts sized in points get it from Windows.</summary>
+	float DpiScale { get; set; }
+
+	/// <summary>The user's zoom: <see cref="Scale"/> without <see cref="DpiScale"/>.</summary>
+	float Zoom { get; }
+
 	/// <summary>
 	/// Gets the item's bitmap
 	/// </summary>
