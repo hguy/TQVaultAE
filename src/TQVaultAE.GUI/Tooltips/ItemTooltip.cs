@@ -189,10 +189,7 @@ public partial class ItemTooltip : BaseTooltip
 		if (ToImage.TryGetCopy(key, out var cached, out var data))
 		{
 			this.Data = data;
-			if (data.GrantedSkills.Length != 0)
-				this.ShowSkillsImage(cached);
-			else
-				this.ShowCachedImage(cached);
+			this.ShowCompositeImage(cached);
 			return;
 		}
 
@@ -294,6 +291,7 @@ public partial class ItemTooltip : BaseTooltip
 		// (e.g. a weapon used as a relic), and what was socketed must still show.
 		bool hasSocketedRecord = !Data.Item.IsRelicOrCharm && !Data.Item.IsArtifact
 			&& (Data.Item.RelicInfo is not null || Data.Item.Relic2Info is not null);
+		int relicRowsStart = this.flowLayoutPanelFriendlyNames.Controls.Count;
 		if (Data.Item.HasRelicOrCharm || hasSocketedRecord)
 		{
 			if (Data.Relic1Attributes.Length != 0)
@@ -334,6 +332,8 @@ public partial class ItemTooltip : BaseTooltip
 			}
 		}
 
+		int relicRowsEnd = this.flowLayoutPanelFriendlyNames.Controls.Count;
+
 		AddRow(TOOLTIPDELIM);
 
 		// Add the item seed
@@ -370,10 +370,16 @@ public partial class ItemTooltip : BaseTooltip
 		this.flowLayoutPanelFriendlyNames.ResumeLayout();
 		this.ResumeLayout();
 
-		// The granted skills go in a second panel on the right, shown with the item panel as one cached image.
-		if (this.Data.GrantedSkills.Length != 0)
+		// A tooltip taller than the screen gets cut: the relics then go in a column on the right.
+		FlowLayoutPanel? relicColumn = null;
+		if (relicRowsEnd > relicRowsStart
+			&& this.flowLayoutPanelFriendlyNames.GetPreferredSize(Size.Empty).Height > this.MaxPanelHeight())
+			relicColumn = this.MoveRowsToColumn(relicRowsStart, relicRowsEnd);
+
+		// The relic column and the granted skills go on the right, shown with the item panel as one cached image.
+		if (relicColumn is not null || this.Data.GrantedSkills.Length != 0)
 		{
-			this.ShowWithGrantedSkills(key, this.Data.GrantedSkills);
+			this.ShowComposite(key, relicColumn, this.Data.GrantedSkills);
 			return;
 		}
 
