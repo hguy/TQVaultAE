@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.Concurrent;
+using System.Globalization;
 using EnumsNET;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
@@ -77,10 +78,19 @@ public class TranslationService : ITranslationService
 		return true;
 	}
 
+	/// <summary>
+	/// <c>TextTag_</c> resource strings by culture and tag, misses included. Most tags have none, and a miss walks the
+	/// culture fallback chain under the <see cref="System.Resources.ResourceManager"/> lock, which the parallel search
+	/// warm-up contended on.
+	/// </summary>
+	private readonly ConcurrentDictionary<(string Culture, string Tag), string?> _textTags = new();
+
 	private string? LookFortranslation(string xTagName)
 	{
 		// all xtag substitute must have a "TextTag_" prefix in resource file (avoid colision & strong naming rule).
-		var resx = Resources.ResourceManager.GetString($"TextTag_{xTagName}", CultureInfo.CurrentUICulture);
+		var culture = CultureInfo.CurrentUICulture;
+		var resx = this._textTags.GetOrAdd((culture.Name, xTagName)
+			, static (key, culture) => Resources.ResourceManager.GetString($"TextTag_{key.Tag}", culture), culture);
 
 		// Check if the value is a @redirectTag 
 		if (resx != null && resx.StartsWith('@'))
