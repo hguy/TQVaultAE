@@ -59,7 +59,7 @@ public class GamePathServiceWin : IGamePathService
 		this.USettings = uSettings;
 	}
 
-	string _ResolveTQVaultPath;
+	string? _ResolveTQVaultPath;
 	private string ResolveTQVaultPath
 	{
 		get
@@ -79,13 +79,13 @@ public class GamePathServiceWin : IGamePathService
 	/// </summary>
 	/// <param name="filename">filename of the character file</param>
 	/// <returns>string containing the character name</returns>
-	public string GetNameFromFile(string filename)
+	public string? GetNameFromFile(string filename)
 	{
 		// Strip off the filename
 		string basePath = this.PathIO.GetDirectoryName(filename);
 
 		// Get the containing folder
-		string charName = this.PathIO.GetFileName(basePath);
+		string? charName = this.PathIO.GetFileName(basePath);
 
 		if (charName.ToUpperInvariant() == "SYS")
 		{
@@ -112,7 +112,7 @@ public class GamePathServiceWin : IGamePathService
 	/// <summary>
 	/// Name of the vault folder
 	/// </summary>
-	private string _VaultFolder;
+	private string? _VaultFolder;
 
 	public bool GamePathAreDifferent => GamePathTQIT != GamePathTQ;
 
@@ -145,12 +145,12 @@ public class GamePathServiceWin : IGamePathService
 	/// <summary>
 	/// Gets or sets the Titan Quest game path.
 	/// </summary>
-	public string GamePathTQ { get; set; }
+	public string GamePathTQ { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets or sets the Immortal Throne game path.
 	/// </summary>
-	public string GamePathTQIT { get; set; }
+	public string GamePathTQIT { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets the filename for the game's transfer stash.
@@ -303,7 +303,7 @@ public class GamePathServiceWin : IGamePathService
 	/// Gets or sets the name of the custom map.
 	/// Added to support custom quest characters
 	/// </summary>
-	public string MapName { get; set; }
+	public string MapName { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Gets a value indicating whether a custom map has been specified.
@@ -516,12 +516,12 @@ public class GamePathServiceWin : IGamePathService
 			var steamworkshopRootDir = Regex.Replace(TQITFolder, @"(?i)^(?<SteamappsRoot>.+steamapps).*", @"${SteamappsRoot}\workshop\content\475150");
 
 			if (steamworkshopRootDir == TQITFolder)// regex failed ! This is not a steamapps path
-				return null;
+				return [];
 
 			var modDir = this.DirectoryIO.GetDirectories(steamworkshopRootDir, "*");
 
 			if (!(modDir?.Any() ?? false))
-				return null;
+				return [];
 
 			var customMapList = modDir
 				// Find SubModDir having readable Mod names
@@ -535,7 +535,7 @@ public class GamePathServiceWin : IGamePathService
 		}
 		catch (DirectoryNotFoundException)
 		{
-			return null;
+			return [];
 		}
 	}
 
@@ -553,7 +553,7 @@ public class GamePathServiceWin : IGamePathService
 			var mapFolders = DirectoryIO.GetDirectories(this.PathIO.Combine(saveFolder, "CustomMaps"), "*");
 
 			if (!(mapFolders?.Any() ?? false))
-				return null;
+				return [];
 
 			var customMapList = mapFolders
 			.Select(p => new GamePathEntry(p, $"Legacy : {this.PathIO.GetFileName(p)}"))
@@ -564,7 +564,7 @@ public class GamePathServiceWin : IGamePathService
 		}
 		catch (DirectoryNotFoundException)
 		{
-			return null;
+			return [];
 		}
 	}
 
@@ -574,7 +574,7 @@ public class GamePathServiceWin : IGamePathService
 	/// <returns></returns>
 	public string ResolveGamePath()
 	{
-		string titanQuestGamePath = null;
+		string? titanQuestGamePath = null;
 
 		// ForceGamePath precedence for dev on PC with partial installation
 		if (!string.IsNullOrEmpty(this.USettings.ForceGamePath))
@@ -690,12 +690,13 @@ Please select the game installation directory.");
 
 		for (int i = 0; i <= lastSubKey; ++i)
 		{
-			key = key.OpenSubKey(path[i]);
-			if (key == null)
+			var subKey = key.OpenSubKey(path[i]);
+			if (subKey == null)
 				return string.Empty;
+			key = subKey;
 		}
 
-		return (string)key.GetValue(path[valueKey]);
+		return key.GetValue(path[valueKey]) as string ?? string.Empty;
 	}
 
 	/// <summary>
@@ -703,9 +704,9 @@ Please select the game installation directory.");
 	/// </summary>
 	/// <param name="vaultFilePath"></param>
 	/// <returns>name stripted from path and extension</returns>
-	public string GetVaultNameFromPath(string vaultFilePath)
+	public string? GetVaultNameFromPath(string vaultFilePath)
 	{
-		string vaultname = null;
+		string? vaultname = null;
 
 		if (vaultFilePath.EndsWith(VAULTFILENAME_EXTENSION_JSON, StringComparison.InvariantCultureIgnoreCase))
 			vaultname = this.PathIO.GetFileNameWithoutExtension(this.PathIO.GetFileNameWithoutExtension(vaultFilePath));
