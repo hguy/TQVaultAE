@@ -225,6 +225,8 @@ public class ItemDatabaseService : IItemDatabaseService
 	{
 		Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 		var watch = System.Diagnostics.Stopwatch.StartNew();
+		long allocated = GC.GetTotalAllocatedBytes();
+		int collections = GC.CollectionCount(0);
 		int failed = 0;
 
 		// Half the cores, so the main window stays responsive while this runs.
@@ -243,7 +245,9 @@ public class ItemDatabaseService : IItemDatabaseService
 			}
 		});
 
-		this._log.LogInformation("Search data warmed up in {Elapsed} ms ({Count} items, {Failed} failed)", watch.ElapsedMilliseconds, items.Length, failed);
+		// Allocations and collections cover the whole process while this runs, as other startup work goes on too.
+		this._log.LogInformation("Search data warmed up in {Elapsed} ms ({Count} items, {Failed} failed, {Allocated} MB allocated, {Collections} gen0 collections)"
+			, watch.ElapsedMilliseconds, items.Length, failed, (GC.GetTotalAllocatedBytes() - allocated) >> 20, GC.CollectionCount(0) - collections);
 	}
 
 	/// <inheritdoc/>
