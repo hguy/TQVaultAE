@@ -20,6 +20,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Coverage settings shared by the test projects: only our own assemblies are measured. -->
+		<None Include="..\testconfig.json" Link="testconfig.json" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Using Include="Xunit" />
 	</ItemGroup>
 
