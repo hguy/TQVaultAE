@@ -92,7 +92,7 @@ public partial class MainForm
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void MainFormLoad(object? sender, EventArgs e)
+	private async void MainFormLoad(object? sender, EventArgs e)
 	{
 		// Sync git local repo first
 		this.GameFileService.GitRepositorySetup();
@@ -108,7 +108,7 @@ public partial class MainForm
 		this.splashScreen.Update();
 		this.splashScreen.BringToFront();
 
-		this.backgroundWorkerLoadAllFiles.RunWorkerAsync();
+		await this.LoadResourcesAsync();
 	}
 
 	/// <summary>

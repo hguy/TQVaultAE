@@ -63,7 +63,6 @@ namespace TQVaultAE.GUI.Forms
 		/// <summary>
 		/// Background worker to load resources.
 		/// </summary>
-		private System.ComponentModel.BackgroundWorker backgroundWorkerLoadAllFiles;
 
 		/// <summary>
 		/// Timer for fading in the main form.
@@ -109,7 +108,6 @@ namespace TQVaultAE.GUI.Forms
             this.aboutButton = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
             this.titleLabel = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.searchButton = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
-            this.backgroundWorkerLoadAllFiles = new System.ComponentModel.BackgroundWorker();
             this.fadeInTimer = new System.Windows.Forms.Timer(this.components);
             this.flowLayoutPanelVaultSelector = new TQVaultAE.GUI.Components.Layout.BufferedFlowLayoutPanel();
             this.vaultPictureBox = new System.Windows.Forms.PictureBox();
@@ -314,14 +312,6 @@ namespace TQVaultAE.GUI.Forms
             this.searchButton.UseCustomGraphic = true;
             this.searchButton.UseVisualStyleBackColor = false;
             this.searchButton.Click += new System.EventHandler(this.SearchButtonClick);
-            // 
-            // backgroundWorkerLoadAllFiles
-            // 
-            this.backgroundWorkerLoadAllFiles.WorkerReportsProgress = true;
-            this.backgroundWorkerLoadAllFiles.WorkerSupportsCancellation = true;
-            this.backgroundWorkerLoadAllFiles.DoWork += new System.ComponentModel.DoWorkEventHandler(this.BackgroundWorkerLoadAllFiles_DoWork);
-            this.backgroundWorkerLoadAllFiles.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.BackgroundWorkerLoadAllFiles_ProgressChanged);
-            this.backgroundWorkerLoadAllFiles.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.BackgroundWorkerLoadAllFiles_RunWorkerCompleted);
             // 
             // fadeInTimer
             // 

@@ -173,7 +173,6 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingButtonMenuBaseAttribute = new ScalingButton();
 			scalingButtonMenuSuffixName = new ScalingButton();
 			scalingButtonMenuSuffixAttribute = new ScalingButton();
-			backgroundWorkerBuildDB = new System.ComponentModel.BackgroundWorker();
 			typeAssistantSearchBox = new TypeAssistant();
 			typeAssistantFilterCategories = new TypeAssistant();
 			tableLayoutPanelBottom.SuspendLayout();
@@ -2241,13 +2240,6 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingButtonMenuSuffixAttribute.UseVisualStyleBackColor = false;
 			scalingButtonMenuSuffixAttribute.Click += scalingButtonMenu_Click;
 			// 
-			// backgroundWorkerBuildDB
-			// 
-			backgroundWorkerBuildDB.WorkerReportsProgress = true;
-			backgroundWorkerBuildDB.DoWork += backgroundWorkerBuildDB_DoWork;
-			backgroundWorkerBuildDB.ProgressChanged += backgroundWorkerBuildDB_ProgressChanged;
-			backgroundWorkerBuildDB.RunWorkerCompleted += backgroundWorkerBuildDB_RunWorkerCompleted;
-			// 
 			// typeAssistantSearchBox
 			// 
 			typeAssistantSearchBox.Idled += scalingTextBoxSearchTerm_TextChanged_Idled;
@@ -2409,7 +2401,6 @@ namespace TQVaultAE.GUI.Dialogs
 		private ScalingButton scalingButtonReset;
 		private ScalingLabel scalingLabelMaxVisibleElement;
 		private System.Windows.Forms.NumericUpDown numericUpDownMaxElement;
-		private System.ComponentModel.BackgroundWorker backgroundWorkerBuildDB;
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelStyle;
 		private ScalingLabel scalingLabelStyle;
 		private VirtualCheckedListBox scalingCheckedListBoxStyle;
