@@ -433,7 +433,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 					int offsetX = Math.Max(0, (this.maxPanelSize.Width - this.transferStash.Width) * UIService.HalfUnitSize);
 					int offsetY = Math.Max(0, (this.maxPanelSize.Height - this.transferStash.Height) * UIService.HalfUnitSize);
 
-					this.BagSackPanel.Location = new Point(BorderPad + offsetX, buttonOffsetY + offsetY);
+					// SetLocation, so a zoom keeps the centering (ScaleControl places the sack from that origin).
+					this.BagSackPanel.SetLocation(new Point(BorderPad + offsetX, buttonOffsetY + offsetY));
 					this.equipmentPanel.Visible = false;
 					this.equipmentPanel.Enabled = false;
 					this.BagSackPanel.Visible = true;
@@ -453,7 +454,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 					int offsetX = Math.Max(0, (this.maxPanelSize.Width - this.stash.Width) * UIService.HalfUnitSize);
 					int offsetY = Math.Max(0, (this.maxPanelSize.Height - Math.Max(15, this.stash.Height)) * UIService.HalfUnitSize);
 
-					this.BagSackPanel.Location = new Point(BorderPad + offsetX, buttonOffsetY + offsetY);
+					// SetLocation, so a zoom keeps the centering (ScaleControl places the sack from that origin).
+					this.BagSackPanel.SetLocation(new Point(BorderPad + offsetX, buttonOffsetY + offsetY));
 					this.equipmentPanel.Visible = false;
 					this.equipmentPanel.Enabled = false;
 					this.BagSackPanel.Visible = true;
@@ -473,7 +475,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 					int offsetX = Math.Max(0, (this.maxPanelSize.Width - this.relicVaultStash.Width) * UIService.HalfUnitSize);
 					int offsetY = Math.Max(0, (this.maxPanelSize.Height - this.relicVaultStash.Height) * UIService.HalfUnitSize);
 
-					this.BagSackPanel.Location = new Point(BorderPad + offsetX, buttonOffsetY + offsetY);
+					// SetLocation, so a zoom keeps the centering (ScaleControl places the sack from that origin).
+					this.BagSackPanel.SetLocation(new Point(BorderPad + offsetX, buttonOffsetY + offsetY));
 					this.equipmentPanel.Visible = false;
 					this.equipmentPanel.Enabled = false;
 					this.BagSackPanel.Visible = true;
