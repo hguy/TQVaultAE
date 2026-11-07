@@ -10,12 +10,16 @@ namespace TQVaultAE.GUI.Components.Icons;
 /// </summary>
 /// <remarks>
 /// Replaces one <see cref="PictureBox"/> per icon: thousands of native controls took seconds to create and lay out.
-/// Only the visible rows are drawn, each icon from a thumbnail made the first time it is shown.
+/// Only the visible rows are drawn, each icon decoded and reduced to a thumbnail the first time it is shown.
 /// </remarks>
 public class IconGrid : Control
 {
 	/// <summary>One picture of an icon: its On, Off or Over bitmap.</summary>
-	public sealed record Cell(IconInfo Info, RecordId Id, Bitmap Bitmap);
+	public sealed record Cell(IconInfo Info, RecordId Id)
+	{
+		/// <summary>The picture, decoded the first time it is drawn.</summary>
+		public Bitmap Bitmap => this.Info.BitmapOf(this.Id);
+	}
 
 	/// <summary>Size of a drawn icon, border included, as the former picture boxes.</summary>
 	public const int IconSize = 32;

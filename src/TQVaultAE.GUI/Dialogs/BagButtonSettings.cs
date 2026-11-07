@@ -250,16 +250,16 @@ public partial class BagButtonSettings : VaultForm
 
 		foreach (var info in this.Pictures)
 		{
-			Add(info.Off, info.OffBitmap);
-			Add(info.On, info.OnBitmap);
-			Add(info.Over, info.OverBitmap);
+			Add(info.Off, info.HasOff);
+			Add(info.On, info.HasOn);
+			Add(info.Over, info.HasOver);
 
-			void Add(RecordId? id, Bitmap? bmp)
+			void Add(RecordId? id, bool exists)
 			{
-				if (RecordId.IsNullOrEmpty(id) || bmp is null || this.CellById.ContainsKey(id!))
+				if (RecordId.IsNullOrEmpty(id) || !exists || this.CellById.ContainsKey(id!))
 					return;
 
-				var cell = new Cell(info, id!, bmp);
+				var cell = new Cell(info, id!);
 				this.CellById.Add(id!, cell);
 				if (cells.TryGetValue(info.Category, out var list))
 					list.Add(cell);
@@ -360,13 +360,13 @@ public partial class BagButtonSettings : VaultForm
 
 	private void CherryPickIconSimpleMode(IconInfo info)
 	{
-		this.SelectedOff = PictureOf(info.Off, info.OffBitmap);
-		this.SelectedOn = PictureOf(info.On, info.OnBitmap);// May be missing on rare exception (TEX Filename rule not consitent)
+		this.SelectedOff = PictureOf(info.Off, info.HasOff);
+		this.SelectedOn = PictureOf(info.On, info.HasOn);// May be missing on rare exception (TEX Filename rule not consitent)
 		// Apply only if different
-		this.SelectedOver = info.IsOverSameAsOthers ? null : PictureOf(info.Over, info.OverBitmap);
+		this.SelectedOver = info.IsOverSameAsOthers ? null : PictureOf(info.Over, info.HasOver);
 
-		Cell? PictureOf(RecordId? id, Bitmap? bmp)
-			=> RecordId.IsNullOrEmpty(id) || bmp is null ? null : new Cell(info, id!, bmp);
+		Cell? PictureOf(RecordId? id, bool exists)
+			=> RecordId.IsNullOrEmpty(id) || !exists ? null : new Cell(info, id!);
 	}
 
 	#region Magnifier

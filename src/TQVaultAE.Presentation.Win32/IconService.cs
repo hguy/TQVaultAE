@@ -1,7 +1,6 @@
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using Microsoft.Extensions.Logging;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text.Json;
@@ -66,28 +65,25 @@ public class IconService : IIconService
 		var keys = configfile.list
 			.SelectMany(file => this.KeysOf(file.fileName))
 			.ToArray();
+		var existing = keys.Select(k => k.ToRecordId()).ToHashSet();
 		long keysTime = watch.ElapsedMilliseconds;
 
 		var candidates = this.Match(configfile, keys);
 		long matchTime = watch.ElapsedMilliseconds;
-
-		var bitmaps = this.LoadBitmaps(candidates);
-		long bitmapTime = watch.ElapsedMilliseconds;
 
 		var pictures = new List<IconInfo>(candidates.Count);
 		// The first of identical icons is kept.
 		var seen = new HashSet<(RecordId?, RecordId?, RecordId?)>();
 		foreach (var candidate in candidates)
 		{
-			var info = new IconInfo(
-				candidate.Category
-				, candidate.On!
-				, BitmapOf(candidate.On)
-				, candidate.Off!
-				, BitmapOf(candidate.Off)
-				, candidate.Over!
-				, BitmapOf(candidate.Over)
-			);
+			// Pictures are decoded when the bag button settings first show them, not here.
+			var info = new IconInfo(candidate.Category, candidate.On!, candidate.Off!, candidate.Over!)
+			{
+				HasOn = Exists(candidate.On),
+				HasOff = Exists(candidate.Off),
+				HasOver = Exists(candidate.Over),
+				BitmapLoader = this.UIService.LoadBitmap,
+			};
 
 			if (info.IsEmpty)
 				continue;
@@ -95,33 +91,33 @@ public class IconService : IIconService
 			// Square only for shields
 			if (info.Category == IconCategory.Shields)
 			{
-				var size = SizeOf(info.FirstDefined!);
-				if (size.Width != size.Height)
+				var first = info.HasOn ? info.On : info.HasOff ? info.Off : info.Over;
+				if (this.SizeOf(first) is not { } size || size.Width != size.Height)
 					continue;
 			}
 
 			if (!seen.Add((candidate.Off, candidate.On, candidate.Over)))
 				continue;
 
-			if (info.OnBitmap is null)
+			if (!info.HasOn)
 				this.Log.LogWarning(@"ON ""{On}"" not found !", info.On);
-			if (info.OffBitmap is null)
+			if (!info.HasOff)
 				this.Log.LogWarning(@"OFF ""{Off}"" not found !", info.Off);
-			if (info.OverBitmap is null)
+			if (!info.HasOver)
 				this.Log.LogWarning(@"OVER ""{Over}"" not found !", info.Over);
 
 			pictures.Add(info);
 		}
 
 		this.Log.LogInformation(
-			"Icon database loaded in {Elapsed} ms: {Count} icons, {Bitmaps} bitmaps, {Keys} archive keys (config {Config} ms, keys {KeysTime} ms, match {Match} ms, bitmaps {BitmapTime} ms)"
-			, watch.ElapsedMilliseconds, pictures.Count, bitmaps.Count, keys.Length
-			, configTime, keysTime - configTime, matchTime - keysTime, bitmapTime - matchTime);
+			"Icon database loaded in {Elapsed} ms: {Count} icons, {Keys} archive keys (config {Config} ms, keys {KeysTime} ms, match {Match} ms)"
+			, watch.ElapsedMilliseconds, pictures.Count, keys.Length
+			, configTime, keysTime - configTime, matchTime - keysTime);
 
 		return pictures.AsReadOnly();
 
-		Bitmap? BitmapOf(RecordId? id)
-			=> id is not null && bitmaps.TryGetValue(id, out var bmp) ? bmp : null;
+		bool Exists(RecordId? id)
+			=> id is not null && existing.Contains(id);
 	}
 
 	/// <summary>File names of the archive <paramref name="fileName"/>, prefixed with it.</summary>
@@ -191,52 +187,28 @@ public class IconService : IIconService
 			.ToList();
 	}
 
-	/// <summary>Loads and decodes every bitmap the candidates refer to, in parallel.</summary>
-	private Dictionary<RecordId, Bitmap> LoadBitmaps(List<Candidate> candidates)
-	{
-		var ids = candidates
-			.SelectMany(c => new[] { c.On, c.Off, c.Over })
-			.Where(id => id is not null)
-			.Distinct()
-			.ToArray();
-
-		var bitmaps = new ConcurrentDictionary<RecordId, Bitmap>();
-		var options = new ParallelOptions { MaxDegreeOfParallelism = WorkerCount };
-		Parallel.ForEach(ids, options, id =>
-		{
-			var data = this.Database.LoadResource(id!);
-			if (data is null)
-				return;
-
-			var bmp = this.UIService.LoadBitmap(id!, data);
-			// A texture that cannot be decoded comes back as the shared default bitmap: treat it as missing.
-			if (bmp is not null && !ReferenceEquals(bmp, this.UIService.DefaultBitmap))
-				bitmaps[id!] = bmp;
-		});
-
-		return new Dictionary<RecordId, Bitmap>(bitmaps);
-	}
-
 	/// <summary>Half the cores, so the main window stays responsive while this runs.</summary>
 	private static int WorkerCount => Math.Max(1, Environment.ProcessorCount / 2);
 
 	/// <summary>
-	/// Size of a bitmap from the shared cache, which the UI thread may be drawing at the same time.
+	/// Width and height of the texture <paramref name="resourceId"/>, read from its DDS header without decoding it
+	/// (see tq-file-formats.md, Textures). <c>null</c> when the texture is missing or not a TEX file.
 	/// </summary>
-	private static Size SizeOf(Bitmap bmp)
+	private Size? SizeOf(RecordId resourceId)
 	{
-		for (int attempt = 0; ; attempt++)
-		{
-			try
-			{
-				return bmp.Size;
-			}
-			catch (InvalidOperationException) when (attempt < 10)
-			{
-				// "Object is currently in use elsewhere": GDI+ is drawing it.
-				Thread.Sleep(5);
-			}
-		}
+		var data = this.Database.LoadResource(resourceId);
+		if (data is null || data.Length < 13 || data[0] != 'T' || data[1] != 'E' || data[2] != 'X')
+			return null;
+
+		// Version 1: "TEX" 1, u32 fps, u32 frame size. Version 2 has a flag byte after fps.
+		int dds = data[3] == 2 ? 13 : 12;
+		if (data.Length < dds + 20)
+			return null;
+
+		// DDS header: magic, size, flags, height, width.
+		int height = BitConverter.ToInt32(data, dds + 12);
+		int width = BitConverter.ToInt32(data, dds + 16);
+		return new Size(width, height);
 	}
 
 	private static string Replace(string input, string[] onrep)
