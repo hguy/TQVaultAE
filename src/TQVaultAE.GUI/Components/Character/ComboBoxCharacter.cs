@@ -222,8 +222,13 @@ public partial class ComboBoxCharacter : UserControl
 			var nameHeight = this.scalingLabelCharName.PreferredHeight + this.scalingLabelCharName.Margin.Vertical
 				+ (this.bufferedFlowLayoutPanelContent.Height - this.bufferedFlowLayoutPanelContent.ClientSize.Height);
 			var size = this.bufferedTableLayoutPanelSkeleton.Size;
-			this.bufferedTableLayoutPanelSkeleton.Size = new Size(size.Width
-				, Math.Max(nameHeight, Math.Max(HUDCHARACTERBUTTONUP01.Height, HUDMENUSKILLBUTTONUP01.Height)));
+			var rowHeight = Math.Max(nameHeight, Math.Max(HUDCHARACTERBUTTONUP01.Height, HUDMENUSKILLBUTTONUP01.Height));
+			this.bufferedTableLayoutPanelSkeleton.Size = new Size(size.Width, rowHeight);
+
+			// The tools button fills the row height, keeping the bitmap proportions, like the vault tools button.
+			var toolsWidth = (int)Math.Round(HUDMENUSKILLBUTTONUP01.Width * (float)rowHeight / HUDMENUSKILLBUTTONUP01.Height);
+			this.scalingButtonTools.Size = new Size(toolsWidth, rowHeight);
+			this.bufferedTableLayoutPanelSkeleton.ColumnStyles[2].Width = toolsWidth;
 
 			this.archiveAllToolStripMenuItemGlobal.Font =
 			this.unarchiveAllToolStripMenuItemGlobal.Font =
