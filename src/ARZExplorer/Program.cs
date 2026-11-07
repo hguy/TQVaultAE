@@ -23,9 +23,10 @@ namespace ArzExplorer;
 /// </summary>
 public static class Program
 {
-	internal static IServiceProvider ServiceProvider;
-	private static ILoggerFactory LoggerFactory;
-	private static ILogger Log;
+	// Set first thing in Main.
+	internal static IServiceProvider ServiceProvider = null!;
+	private static ILoggerFactory LoggerFactory = null!;
+	private static ILogger Log = null!;
 	/// <summary>
 	/// The main entry point for the application.
 	/// </summary>
@@ -61,15 +62,15 @@ public static class Program
 		.AddTransient<IBitmapService, BitmapService>()
 		.AddSingleton<IGamePathService, GamePathServiceWin>()
 		// Init SoundServiceWin without IDatabase
-		.AddSingleton<SoundServiceWin>(sp => new SoundServiceWin(sp.GetService<ILogger<SoundServiceWin>>(), null, sp.GetService<UserSettings>()))
+		.AddSingleton<SoundServiceWin>(sp => new SoundServiceWin(sp.GetRequiredService<ILogger<SoundServiceWin>>(), null, sp.GetRequiredService<UserSettings>()))
 		// Forms
 		.AddSingleton<MainForm>()
 		.AddTransient<ExtractProgress>();
 
 		Program.ServiceProvider = scol.BuildServiceProvider();
 
-		var gamePathResolver = Program.ServiceProvider.GetService<IGamePathService>();
-		var userSettings = Program.ServiceProvider.GetService<UserSettings>();
+		var gamePathResolver = Program.ServiceProvider.GetRequiredService<IGamePathService>();
+		var userSettings = Program.ServiceProvider.GetRequiredService<UserSettings>();
 
 		try
 		{
@@ -92,7 +93,7 @@ public static class Program
 			}
 		}
 
-		var mainform = Program.ServiceProvider.GetService<MainForm>();
+		var mainform = Program.ServiceProvider.GetRequiredService<MainForm>();
 		Application.Run(mainform);
 
 	exit:;
@@ -115,13 +116,14 @@ public static class Program
 
 		for (int i = 0; i <= lastSubKey; ++i)
 		{
-			key = key.OpenSubKey(path[i]);
-			if (key == null)
+			var subKey = key.OpenSubKey(path[i]);
+			if (subKey == null)
 			{
 				return string.Empty;
 			}
+			key = subKey;
 		}
 
-		return (string)key.GetValue(path[valueKey]);
+		return key.GetValue(path[valueKey]) as string ?? string.Empty;
 	}
 }
