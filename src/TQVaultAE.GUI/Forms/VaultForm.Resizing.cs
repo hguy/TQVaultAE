@@ -210,6 +210,25 @@ public partial class VaultForm
 		}
 	}
 
+	/// <summary>
+	/// The window moved to a monitor of another DPI and Windows Forms scaled it: the sizes kept for the user's resizing
+	/// follow, else the end of the move would read the new size as a zoom.
+	/// </summary>
+	protected override void OnDpiChanged(DpiChangedEventArgs e)
+	{
+		float factor = (float)e.DeviceDpiNew / e.DeviceDpiOld;
+		base.OnDpiChanged(e);
+		if (e.Cancel || factor == 1.0F)
+			return;
+
+		Size Scaled(Size size) => new((int)Math.Round(size.Width * factor), (int)Math.Round(size.Height * factor));
+		this.OriginalFormSize = Scaled(this.OriginalFormSize);
+		this.FormMaximumSize = Scaled(this.FormMaximumSize);
+		this.FormMinimumSize = Scaled(this.FormMinimumSize);
+		this.LastFormSize = this.Size;
+		this.PlaceButtons();
+	}
+
 	protected virtual void DoResizeEndCallback(object? sender, EventArgs e, bool fromMinimizedMaximized = false)
 	{
 		// Dragging the form will trigger this event.

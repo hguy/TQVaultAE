@@ -124,6 +124,34 @@ public partial class ComboBoxCharacter : UserControl
 		toolTip.SetToolTip(this.pictureBoxChar, Resources.MainFormLabel1);
 	}
 
+	/// <summary>
+	/// Row height: the bitmaps, or the name box when taller, so the name box is not cut and looks like the vault combo box
+	/// next to it (its text has the same font). The tools button fills it, keeping the bitmap proportions.
+	/// </summary>
+	private void ApplyRowHeight()
+	{
+		if (HUDCHARACTERBUTTONUP01 is null || HUDMENUSKILLBUTTONUP01 is null)
+			return;
+
+		var nameHeight = this.scalingLabelCharName.PreferredHeight + this.scalingLabelCharName.Margin.Vertical
+			+ (this.bufferedFlowLayoutPanelContent.Height - this.bufferedFlowLayoutPanelContent.ClientSize.Height);
+		var rowHeight = Math.Max(nameHeight, Math.Max(HUDCHARACTERBUTTONUP01.Height, HUDMENUSKILLBUTTONUP01.Height));
+		this.bufferedTableLayoutPanelSkeleton.Size = new Size(this.bufferedTableLayoutPanelSkeleton.Width, rowHeight);
+		// A fixed row: the picture docked in it takes this height, instead of growing the row with each DPI change.
+		this.bufferedTableLayoutPanelSkeleton.RowStyles[0] = new RowStyle(SizeType.Absolute, rowHeight);
+
+		var toolsWidth = (int)Math.Round(HUDMENUSKILLBUTTONUP01.Width * (float)rowHeight / HUDMENUSKILLBUTTONUP01.Height);
+		this.scalingButtonTools.Size = new Size(toolsWidth, rowHeight);
+		this.bufferedTableLayoutPanelSkeleton.ColumnStyles[2].Width = toolsWidth;
+	}
+
+	/// <summary>On a monitor of another DPI the name font changes: the row height follows it.</summary>
+	protected override void OnDpiChangedAfterParent(EventArgs e)
+	{
+		base.OnDpiChangedAfterParent(e);
+		this.ApplyRowHeight();
+	}
+
 	private void ApplyHeight()
 	{
 		if (this.DropDown is not null)
@@ -215,20 +243,8 @@ public partial class ComboBoxCharacter : UserControl
 			this.renameToolStripMenuItem.Text = Resources.GlobalRename;
 			this.colorToolStripMenuItem.Text = TranslationService.TranslateXTag("x3tagGraphicOption02");
 
-			this.scalingLabelCharName.Font = FontService.GetFontLight(13F, UIService.Zoom);
-
-			// Row height: the bitmaps, or the name box when taller, so the name box is not cut and looks like the vault
-			// combo box next to it (its text has the same font).
-			var nameHeight = this.scalingLabelCharName.PreferredHeight + this.scalingLabelCharName.Margin.Vertical
-				+ (this.bufferedFlowLayoutPanelContent.Height - this.bufferedFlowLayoutPanelContent.ClientSize.Height);
-			var size = this.bufferedTableLayoutPanelSkeleton.Size;
-			var rowHeight = Math.Max(nameHeight, Math.Max(HUDCHARACTERBUTTONUP01.Height, HUDMENUSKILLBUTTONUP01.Height));
-			this.bufferedTableLayoutPanelSkeleton.Size = new Size(size.Width, rowHeight);
-
-			// The tools button fills the row height, keeping the bitmap proportions, like the vault tools button.
-			var toolsWidth = (int)Math.Round(HUDMENUSKILLBUTTONUP01.Width * (float)rowHeight / HUDMENUSKILLBUTTONUP01.Height);
-			this.scalingButtonTools.Size = new Size(toolsWidth, rowHeight);
-			this.bufferedTableLayoutPanelSkeleton.ColumnStyles[2].Width = toolsWidth;
+			this.scalingLabelCharName.Font = FontService.GetFontLight(13F, UIService.FontZoom);
+			this.ApplyRowHeight();
 
 			this.archiveAllToolStripMenuItemGlobal.Font =
 			this.unarchiveAllToolStripMenuItemGlobal.Font =

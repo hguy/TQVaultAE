@@ -237,6 +237,8 @@ public partial class CheckGroupBox : GroupBox
 
     private void CheckGroupBox_FontChanged(object sender, EventArgs e)
     {
-        this.m_checkBox.Font = this.Font;
+        // The title inherits the group font rather than holding a copy: when the DPI changes, Windows Forms scales the
+        // group font, and would scale a copy a second time.
+        this.m_checkBox.ResetFont();
     }
 }

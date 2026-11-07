@@ -245,6 +245,19 @@ public class ScalingButton : Button, IScalingControl
 	/// <param name="specified">BoundsSpecified value.</param>
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
+		// A DPI scaling (at load, or on a monitor of another DPI): Windows Forms scales the font itself and disposes the
+		// fonts it made for the previous DPI, so no reference to them is kept; the text only fits the new width.
+		if (!ZoomScope.IsZooming)
+		{
+			this.baseFont = null;
+			this.Font = this.GetScaledButtonTextFont(this.Font, Convert.ToInt32((float)this.Width * factor.Width));
+			if (this.Image != null)
+				this.Image = this.UpBitmap;
+
+			base.ScaleControl(factor, specified);
+			return;
+		}
+
 		// Get a reference for scaling.
 		if (this.baseFont == null)
 			this.baseFont = this.Font;

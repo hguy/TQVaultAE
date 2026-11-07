@@ -164,14 +164,14 @@ public partial class ForgePanel : UserControl, IScalingControl
 		scalingRadioButtonGod.Font =
 		scalingRadioButtonRelax.Font =
 		scalingRadioButtonStrict.Font =
-			FontService.GetFont(10F, FontStyle.Regular, UIService.Zoom);
+			FontService.GetFont(10F, FontStyle.Regular, UIService.FontZoom);
 
 		scalingLabelBaseItem.Font =
 		scalingLabelPrefix.Font =
 		scalingLabelRelic1.Font =
 		scalingLabelRelic2.Font =
 		scalingLabelSuffix.Font =
-			FontService.GetFont(11F, FontStyle.Bold, UIService.Zoom);
+			FontService.GetFont(11F, FontStyle.Bold, UIService.FontZoom);
 
 		scalingLabelBaseItem.ForeColor =
 		scalingLabelPrefix.ForeColor =
@@ -196,7 +196,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 		comboBoxSuffix.Font =
 		comboBoxRelic1.Font =
 		comboBoxRelic2.Font =
-			FontService.GetFont(9.75F, FontStyle.Regular, UIService.Zoom);
+			FontService.GetFont(9.75F, FontStyle.Regular, UIService.FontZoom);
 
 		scalingRadioButtonGod.Text = Resources.ForgeGodMode;
 		scalingRadioButtonGod.ForeColor = TQColor.Indigo.Color();
@@ -243,9 +243,9 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private void SetModeToolTips()
 	{
 		this.modeToolTip = new RichToolTip(
-			FontService.GetFont(11F, FontStyle.Bold, UIService.Zoom),
-			FontService.GetFont(9.5F, FontStyle.Regular, UIService.Zoom),
-			FontService.GetFont(10F, FontStyle.Bold, UIService.Zoom),
+			FontService.GetFont(11F, FontStyle.Bold, UIService.FontZoom),
+			FontService.GetFont(9.5F, FontStyle.Regular, UIService.FontZoom),
+			FontService.GetFont(10F, FontStyle.Bold, UIService.FontZoom),
 			UIService.Scale);
 
 		static RichToolTip.Line Allow(string text) => new(text, true);

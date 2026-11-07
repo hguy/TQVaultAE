@@ -64,10 +64,10 @@ public static class Program
 			// Add the event handler for handling non-UI thread exceptions to the event.
 			AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
 
-			// Sharp at the system DPI: the designer layout scales by itself (AutoScaleMode.Dpi), and UIService.DpiScale
-			// carries the same factor to the panels and drawing built in code. Windows still stretches the window on a
-			// monitor whose DPI differs from the system one.
-			System.Windows.Forms.Application.SetHighDpiMode(HighDpiMode.SystemAware);
+			// Sharp on every monitor: the designer layout scales by itself (AutoScaleMode.Dpi), also when a window moves to a
+			// monitor of another DPI, and UIService.DpiScale carries the same factor to the panels and drawing built in code
+			// (see MainForm.OnDpiChanged).
+			System.Windows.Forms.Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
 			System.Windows.Forms.Application.EnableVisualStyles();
 			System.Windows.Forms.Application.SetCompatibleTextRenderingDefault(false);
 

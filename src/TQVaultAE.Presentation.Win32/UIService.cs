@@ -108,6 +108,27 @@ public class UIService : IUIService
 	/// </summary>
 	public float Zoom => this._Scale / this._DpiScale;
 
+	private float _SystemDpiScale;
+
+	/// <inheritdoc/>
+	public float SystemDpiScale
+	{
+		get
+		{
+			if (this._SystemDpiScale == 0F)
+			{
+				// The screen device context gives the system DPI, also in a per monitor DPI aware process.
+				using var g = Graphics.FromHwnd(IntPtr.Zero);
+				this._SystemDpiScale = g.DpiX > 0F ? g.DpiX / DESIGNDPI : 1.0F;
+			}
+
+			return this._SystemDpiScale;
+		}
+	}
+
+	/// <inheritdoc/>
+	public float FontZoom => this._Scale / this.SystemDpiScale;
+
 	public UIService(ILogger<UIService> log, IDatabase database, IBitmapService bitmapService, UserSettings uSettings)
 	{
 		this.Log = log;
@@ -117,7 +138,14 @@ public class UIService : IUIService
 
 		// Code here won't run in Visual Studio designer
 		if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
+		{
+			// Until the main window reads its own DPI and the zoom, the windows built before it are at the system DPI
+			// with no zoom: fonts made then (FontZoom) must not shrink by the system DPI.
+			this._DpiScale = this.SystemDpiScale;
+			this._Scale = this._DpiScale;
+
 			this.LoadRelicOverlayBitmap();
+		}
 	}
 
 	/// <summary>
