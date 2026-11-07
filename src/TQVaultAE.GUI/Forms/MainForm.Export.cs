@@ -35,9 +35,10 @@ public partial class MainForm
 				over = this.UIService.LoadBitmap(@"INGAMEUI\HUDMENUSKILLBUTTONOVER01.TEX");
 				down = this.UIService.LoadBitmap(@"INGAMEUI\HUDMENUSKILLBUTTONDOWN01.TEX");
 			}
-			catch
+			catch (Exception ex)
 			{
-				// fall through to default if game bitmaps unavailable
+				// Falls back to the default button when the game bitmaps are unavailable.
+				Log.LogWarning(ex, "Game bitmaps for the vault export button are unavailable");
 			}
 		}
 
