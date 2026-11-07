@@ -64,7 +64,8 @@ public class TranslationService : ITranslationService
 
 		if (string.IsNullOrWhiteSpace(resx))
 		{
-			translation = string.Empty;
+			// Like TranslateXTag: show the tag itself, so a missing translation is visible in the UI.
+			translation = xTagName;
 			return false;
 		}
 
