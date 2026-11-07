@@ -242,22 +242,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="item">item we are drawing</param>
 	/// <param name="screenLocation">Point containing the screen coordinates where the item will be drawn</param>
 	protected void DrawItem(Graphics graphics, Item item, Point screenLocation)
-	{
-		// Color matrix for drawing the image as-is
-		System.Drawing.Imaging.ColorMatrix colorMatrix = new System.Drawing.Imaging.ColorMatrix()
-		{
-			Matrix00 = 1.00f, // Red
-			Matrix11 = 1.00f, // Green
-			Matrix22 = 1.00f, // Blue
-			Matrix33 = 1.00f, // alpha
-			Matrix44 = 1.00f  // w
-		};
-
-		System.Drawing.Imaging.ImageAttributes imgAttr = new System.Drawing.Imaging.ImageAttributes();
-		imgAttr.SetColorMatrix(colorMatrix);
-
-		this.DrawItem(graphics, item, screenLocation, imgAttr);
-	}
+		=> this.DrawItem(graphics, item, screenLocation, null);
 
 	/// <summary>
 	/// Draws an item on the screen at the specified coordinates without background shading but with specific ImageAttributes.
@@ -265,8 +250,8 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="graphics">graphics instance</param>
 	/// <param name="item">item we are drawing</param>
 	/// <param name="screenLocation">Point containing the screen coordinates where the item will be drawn</param>
-	/// <param name="imageAttributes">ImageAttributes used for drawing the image.</param>
-	protected void DrawItem(Graphics graphics, Item item, Point screenLocation, System.Drawing.Imaging.ImageAttributes imageAttributes)
+	/// <param name="imageAttributes">ImageAttributes used for drawing the image, <see langword="null"/> to draw it as it is.</param>
+	protected void DrawItem(Graphics graphics, Item item, Point screenLocation, System.Drawing.Imaging.ImageAttributes? imageAttributes)
 	{
 		if (item == null || graphics == null || this.UIService.GetBitmap(item) is not { } ibmp)
 			return;
@@ -355,7 +340,7 @@ public partial class SackPanel : Panel, IScalingControl
 			Matrix44 = 1.00f                   // w
 		};
 
-		System.Drawing.Imaging.ImageAttributes imgAttr = new System.Drawing.Imaging.ImageAttributes();
+		using var imgAttr = new System.Drawing.Imaging.ImageAttributes();
 		imgAttr.SetColorMatrix(colorMatrix);
 
 		graphics.DrawImage(Images.ItemAccent, itemRectangle, 0, 0, Images.ItemAccent.Width, Images.ItemAccent.Height, GraphicsUnit.Pixel, imgAttr);

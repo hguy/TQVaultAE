@@ -19,6 +19,25 @@ namespace TQVaultAE.GUI.Components.Panels;
 public partial class EquipmentPanel
 {
 	/// <summary>
+	/// Dims the second picture of a two-handed weapon. Built once, as it never changes; only the UI thread draws with it.
+	/// </summary>
+	private static readonly System.Drawing.Imaging.ImageAttributes DimmedImage = CreateDimmedImage();
+
+	private static System.Drawing.Imaging.ImageAttributes CreateDimmedImage()
+	{
+		var attributes = new System.Drawing.Imaging.ImageAttributes();
+		attributes.SetColorMatrix(new System.Drawing.Imaging.ColorMatrix()
+		{
+			Matrix00 = 0.80f, // Red
+			Matrix11 = 0.80f, // Green
+			Matrix22 = 0.80f, // Blue
+			Matrix33 = 0.60f, // alpha
+			Matrix44 = 1.00f  // w
+		});
+		return attributes;
+	}
+
+	/// <summary>
 	/// Draws the background of the items in the panel during a Paint call.
 	/// </summary>
 	/// <param name="e">PaintEventArgs data</param>
@@ -377,19 +396,6 @@ public partial class EquipmentPanel
 		else
 			screenLocation = this.CellTopLeft(item.Location);
 
-		// Set the color matrix so that the item is dimmed
-		System.Drawing.Imaging.ColorMatrix colorMatrix = new System.Drawing.Imaging.ColorMatrix()
-		{
-			Matrix00 = 0.80f, // Red
-			Matrix11 = 0.80f, // Green
-			Matrix22 = 0.80f, // Blue
-			Matrix33 = 0.60f, // alpha
-			Matrix44 = 1.00f  // w
-		};
-
-		System.Drawing.Imaging.ImageAttributes imgAttr = new System.Drawing.Imaging.ImageAttributes();
-		imgAttr.SetColorMatrix(colorMatrix);
-
-		this.DrawItem(g, item2H, screenLocation, imgAttr);
+		this.DrawItem(g, item2H, screenLocation, DimmedImage);
 	}
 }
