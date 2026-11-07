@@ -294,6 +294,9 @@ public class ItemDatabaseService : IItemDatabaseService
         if (request.IsSetItem)
             results = results.Where(i => i.FriendlyNames?.ItemSet != null).ToList();
 
+        if (request.HasSkill)
+            results = results.Where(i => this._itemProvider.HasGrantedSkill(i.Item)).ToList();
+
         // Apply minimum requirements
         if (request.MinLevel > 0)
             results = results.Where(x =>

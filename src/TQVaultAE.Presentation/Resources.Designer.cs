@@ -5721,5 +5721,14 @@ namespace TQVaultAE.Presentation {
                 return ResourceManager.GetString("SettingTooltipShowSetPieceCountsTT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Having Skill.
+        /// </summary>
+        public static string SearchHavingSkill {
+            get {
+                return ResourceManager.GetString("SearchHavingSkill", resourceCulture);
+            }
+        }
     }
 }

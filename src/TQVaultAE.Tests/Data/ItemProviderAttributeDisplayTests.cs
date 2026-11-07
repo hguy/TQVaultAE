@@ -251,6 +251,40 @@ public class ItemProviderAttributeDisplayTests
 		this.GrantedSkills(item).Should().BeEmpty();
 	}
 
+	[Fact]
+	public void HasGrantedSkill_IsTrue_ForANamedSkillGrantedByARelic()
+	{
+		this.CreateRecord("""records\test\skill.dbr""", "Skill_Passive", Str("skillDisplayName", "tagSkillTest"));
+		this.CreateRecord("""records\test\relic.dbr""", "ItemRelic", Str("itemSkillName", """records\test\skill.dbr"""));
+		var item = this.CreateItem("ArmorJewelry_Amulet", Int("characterLife", 40));
+		item.relicID = RecordId.Create("""records\test\relic.dbr""");
+
+		this._provider.HasGrantedSkill(item).Should().BeTrue();
+	}
+
+	[Fact]
+	public void HasGrantedSkill_IsTrue_ForABuffSkillNamedByItsBuff()
+	{
+		this.CreateRecord("""records\test\skill.dbr""", "Skill_BuffRadiusToggled", Str("buffSkillName", """records\test\buff.dbr"""));
+		this.CreateRecord("""records\test\buff.dbr""", "SkillBuff_Passive", Str("skillDisplayName", "tagSkillTest"));
+		var item = this.CreateItem("ArmorJewelry_Amulet", Str("itemSkillName", """records\test\skill.dbr"""));
+
+		this._provider.HasGrantedSkill(item).Should().BeTrue();
+	}
+
+	[Fact]
+	public void HasGrantedSkill_IsFalse_WithoutSkill_OrWithAnUnnamedOrMissingOne()
+	{
+		this.CreateRecord("""records\test\hidden.dbr""", "Skill_Passive", Ints("characterLife", 10));
+		var plain = this.CreateItem("ArmorJewelry_Ring", Int("characterLife", 40));
+		var hidden = this.CreateItem("ArmorJewelry_Amulet", Str("itemSkillName", """records\test\hidden.dbr"""));
+		var missing = this.CreateItem("ArmorJewelry_Bracelet", Str("itemSkillName", """records\test\missing.dbr"""));
+
+		this._provider.HasGrantedSkill(plain).Should().BeFalse();
+		this._provider.HasGrantedSkill(hidden).Should().BeFalse();
+		this._provider.HasGrantedSkill(missing).Should().BeFalse();
+	}
+
 	private GrantedSkill[] GrantedSkills(Item item)
 		=> this._provider.GetFriendlyNames(item, FriendlyNamesExtraScopes.BaseAttributes | FriendlyNamesExtraScopes.GrantedSkills).GrantedSkills;
 

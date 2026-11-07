@@ -38,6 +38,11 @@ public class AdvancedSearchRequest
 	public bool IsSetItem { get; init; }
 
 	/// <summary>
+	/// Filter items that grant a skill.
+	/// </summary>
+	public bool HasSkill { get; init; }
+
+	/// <summary>
 	/// Minimum item level.
 	/// </summary>
 	public int MinLevel { get; init; }

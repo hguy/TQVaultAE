@@ -231,6 +231,7 @@ public partial class SearchDialogAdvanced
 				HasRelic = this.scalingCheckBoxHavingRelic.Checked,
 				HasCharm = this.scalingCheckBoxHavingCharm.Checked,
 				IsSetItem = this.scalingCheckBoxIsSetItem.Checked,
+				HasSkill = this.scalingCheckBoxHavingSkill.Checked,
 				MinLevel = MinRequierement ? MinLvl : 0,
 				MaxLevel = MaxRequierement ? MaxLvl : 0,
 				MinStrength = MinRequierement ? MinStr : 0,
@@ -470,6 +471,7 @@ public partial class SearchDialogAdvanced
 		this.scalingCheckBoxHavingRelic.Checked = searchQuery.HavingRelic;
 		this.scalingCheckBoxHavingCharm.Checked = searchQuery.HavingCharm;
 		this.scalingCheckBoxIsSetItem.Checked = searchQuery.IsSetItem;
+		this.scalingCheckBoxHavingSkill.Checked = searchQuery.HavingSkill;
 
 		// UI Behaviors
 		this.numericUpDownMaxElement.Value = searchQuery.MaxElement;

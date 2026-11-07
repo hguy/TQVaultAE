@@ -29,6 +29,7 @@ public class SearchQuery
 	public bool HavingRelic;
 	public bool HavingCharm;
 	public bool IsSetItem;
+	public bool HavingSkill;
 
 	public override string ToString()
 		=> this.QueryName;

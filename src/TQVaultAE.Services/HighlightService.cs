@@ -180,6 +180,9 @@ public class HighlightService : IHighlightService
 
                 if (filter.IsSetItem)
                     availableItems = availableItems.Where(i => i.FriendlyNames.ItemSet != null);
+
+                if (filter.HavingSkill)
+                    availableItems = availableItems.Where(i => this._itemProvider.HasGrantedSkill(i.Item));
             }
 
             this.HighlightedItems = availableItems.Select(i => i.Item).ToList();

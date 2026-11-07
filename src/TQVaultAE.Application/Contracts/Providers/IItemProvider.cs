@@ -133,6 +133,11 @@ public interface IItemProvider
 	/// <returns>Returns <see cref="SetItemInfo"/> containing the remaining set items or null if the item is not part of a set.</returns>
 	SetItemInfo? GetSetItems(Item itm);
 	/// <summary>
+	/// Tells whether the item grants a skill, by its base record, its affixes, its relics or their completion bonuses.
+	/// Only skills with a name count, as in the tooltip: the game's hidden helper skills do not.
+	/// </summary>
+	bool HasGrantedSkill(Item itm);
+	/// <summary>
 	/// Gets the level of a triggered skill
 	/// </summary>
 	/// <param name="record">DBRecord for the triggered skill</param>

@@ -1764,4 +1764,7 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
 	<data name="SettingTooltipShowSetPieceCountsTT" xml:space="preserve">
     <value>Affiche, en face de chaque pièce du set, combien en contiennent les coffres, personnages et réserves chargés</value>
   </data>
+	<data name="SearchHavingSkill" xml:space="preserve">
+    <value>Avec Compétence</value>
+  </data>
 </root>

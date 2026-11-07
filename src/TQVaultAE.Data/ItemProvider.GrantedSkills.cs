@@ -16,9 +16,29 @@ public partial class ItemProvider
 	/// <remarks>Must run inside <see cref="GetFriendlyNames"/>, which sets <see cref="Item.CurrentFriendlyNameResult"/>.</remarks>
 	private GrantedSkill[] GetGrantedSkills(Item itm)
 	{
+		var skills = new List<GrantedSkill>();
+		foreach (var (source, skillId) in this.GrantedSkillSources(itm))
+		{
+			int level = Math.Max(source.GetInt32("itemSkillLevel", 0), 1);
+			if (this.GetGrantedSkill(itm, skillId, level, source.GetString("itemSkillAutoController", 0)) is { } skill)
+				skills.Add(skill);
+		}
+
+		return skills.ToArray();
+	}
+
+	/// <inheritdoc/>
+	public bool HasGrantedSkill(Item itm)
+		=> this.GrantedSkillSources(itm).Any(s => this.DisplayedSkillRecord(s.SkillId) is not null);
+
+	/// <summary>
+	/// The records of an item that grant a skill (<c>itemSkillName</c>): its base, its affixes, its relics and their
+	/// completion bonuses, each once.
+	/// </summary>
+	private IEnumerable<(DBRecordCollection Source, RecordId SkillId)> GrantedSkillSources(Item itm)
+	{
 		RecordId?[] sources = [itm.BaseItemId, itm.prefixID, itm.suffixID, itm.relicID, itm.RelicBonusId, itm.relic2ID, itm.RelicBonus2Id];
 
-		var skills = new List<GrantedSkill>();
 		var seen = new HashSet<RecordId>();
 		foreach (var sourceId in sources)
 		{
@@ -29,15 +49,23 @@ public partial class ItemProvider
 				continue;
 
 			string skillName = source.GetString("itemSkillName", 0);
-			if (string.IsNullOrEmpty(skillName))
-				continue;
-
-			int level = Math.Max(source.GetInt32("itemSkillLevel", 0), 1);
-			if (this.GetGrantedSkill(itm, skillName.ToRecordId(), level, source.GetString("itemSkillAutoController", 0)) is { } skill)
-				skills.Add(skill);
+			if (!string.IsNullOrEmpty(skillName))
+				yield return (source, skillName.ToRecordId());
 		}
+	}
 
-		return skills.ToArray();
+	/// <summary>
+	/// The record that names a granted skill: its buff record (<c>buffSkillName</c>) when it has one, else the skill itself.
+	/// </summary>
+	/// <returns><see langword="null"/> when the skill record is missing or has no name, like the game's hidden helper skills.</returns>
+	private DBRecordCollection? DisplayedSkillRecord(RecordId skillId)
+	{
+		if (Database.GetRecordFromFile(skillId) is not { } skillRecord)
+			return null;
+
+		var buffId = skillRecord.GetString("buffSkillName", 0).ToRecordId();
+		var shown = (RecordId.IsNullOrEmpty(buffId) ? null : Database.GetRecordFromFile(buffId)) ?? skillRecord;
+		return string.IsNullOrEmpty(shown.GetString("skillDisplayName", 0)) ? null : shown;
 	}
 
 	/// <summary>
