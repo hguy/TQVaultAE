@@ -197,8 +197,6 @@ public partial class MainForm : VaultForm
 		ScaleControl(this.UIService, this.customMapText, false);
 		this.showVaulButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
 		ScaleControl(this.UIService, this.showVaulButton);
-		this.secondaryVaultListComboBox.Font = FontService.GetFontLight(11F, UIService.Zoom);
-		ScaleControl(this.UIService, this.secondaryVaultListComboBox, false);
 		this.aboutButton.Font = FontService.GetFontLight(8.25F, UIService.Zoom);
 		ScaleControl(this.UIService, this.aboutButton);
 		this.titleLabel.Font = FontService.GetFontLight(24F, UIService.Zoom);
