@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
@@ -30,7 +31,7 @@ public class UIService : IUIService
 	/// <summary>
 	/// Default bitmap when one cannot be found in the database.
 	/// </summary>
-	private Bitmap _DefaultBitmap;
+	private Bitmap? _DefaultBitmap;
 
 	/// <summary>
 	/// Scaling factor used to scale the UI for higher DPI values than the default of 96.
@@ -97,20 +98,20 @@ public class UIService : IUIService
 
 	public UIService(ILogger<UIService> log, IDatabase database, IBitmapService bitmapService, UserSettings uSettings)
 	{
+		this.Log = log;
+		this.Database = database;
+		this.BitmapService = bitmapService;
+		USettings = uSettings;
+
+		// Code here won't run in Visual Studio designer
 		if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
-		{
-			// Code here won't run in Visual Studio designer
-			this.Log = log;
-			this.Database = database;
-			this.BitmapService = bitmapService;
-			USettings = uSettings;
 			this.LoadRelicOverlayBitmap();
-		}
 	}
 
 	/// <summary>
 	/// Creates a default bitmap for use when a bitmap cannot be found.
 	/// </summary>
+	[MemberNotNull(nameof(_DefaultBitmap))]
 	private void CreateDefaultBitmap()
 	{
 		if (USettings.DatabaseDebugLevel > 0)
@@ -154,7 +155,7 @@ public class UIService : IUIService
 	/// </summary>
 	/// <param name="resourceId">Resource Id which we are looking up.</param>
 	/// <returns>Bitmap fetched from the database</returns>
-	public Bitmap LoadBitmap(RecordId resourceId)
+	public Bitmap? LoadBitmap(RecordId resourceId)
 	{
 		if (RecordId.IsNullOrEmpty(resourceId))
 			return null;
@@ -165,7 +166,7 @@ public class UIService : IUIService
 		Bitmap bitmap = _Bitmaps.GetOrAddAtomic(resourceId, k =>
 		{
 			// Load the resource
-			byte[] texData = Database.LoadResource(k);
+			byte[]? texData = Database.LoadResource(k);
 			return AddBitmap(k, texData);
 		});
 
@@ -181,7 +182,7 @@ public class UIService : IUIService
 	/// <param name="resourceId">Resource Id which we are looking up.</param>
 	/// <param name="texData">raw DDS image data</param>
 	/// <returns>Bitmap converted from <paramref name="texData"/></returns>
-	public Bitmap LoadBitmap(RecordId resourceId, byte[] texData)
+	public Bitmap? LoadBitmap(RecordId resourceId, byte[]? texData)
 	{
 		if (RecordId.IsNullOrEmpty(resourceId) || !(texData?.Any() ?? false))
 			return null;
@@ -206,10 +207,10 @@ public class UIService : IUIService
 	/// <param name="resourceId"></param>
 	/// <param name="texData">image content from resource game file</param>
 	/// <returns></returns>
-	private Bitmap AddBitmap(RecordId resourceId, byte[] texData)
+	private Bitmap AddBitmap(RecordId resourceId, byte[]? texData)
 	{
 		if (RecordId.IsNullOrEmpty(resourceId))
-			return null;
+			return this.DefaultBitmap;
 
 		Bitmap bitmap;
 		if (texData == null)
@@ -226,8 +227,10 @@ public class UIService : IUIService
 				Log.LogDebug("Loaded resource size={0}", texData.Length);
 
 			// Create the bitmap
-			bitmap = BitmapService.LoadFromTexMemory(texData, 0, texData.Length);
-			if (bitmap == null)
+			Bitmap? loaded = BitmapService.LoadFromTexMemory(texData, 0, texData.Length);
+			if (loaded is not null)
+				bitmap = loaded;
+			else
 			{
 				if (USettings.DatabaseDebugLevel > 0)
 					Log.LogDebug("Failure creating bitmap from resource data len={0}", texData.Length);
@@ -248,9 +251,9 @@ public class UIService : IUIService
 	/// Loads the relic overlay bitmap from the database.
 	/// </summary>
 	/// <returns>Relic overlay bitmap</returns>
-	public Bitmap LoadRelicOverlayBitmap()
+	public Bitmap? LoadRelicOverlayBitmap()
 	{
-		Bitmap relicOverlayBitmap = this.LoadBitmap(LoadRelicOverlayBitmapId);
+		Bitmap? relicOverlayBitmap = this.LoadBitmap(LoadRelicOverlayBitmapId);
 
 		// do not return the defaultbitmap
 		if (relicOverlayBitmap == this.DefaultBitmap)
@@ -262,12 +265,16 @@ public class UIService : IUIService
 	/// <summary>
 	/// Gets the item's bitmap
 	/// </summary>
-	public Bitmap GetBitmap(Item itm)
+	public Bitmap? GetBitmap(Item itm)
 	{
-		Bitmap bmp = null;
+		Bitmap? bmp = null;
 		if (itm.TexImageResourceId != null && itm.TexImage != null)
 		{
 			bmp = LoadBitmap(itm.TexImageResourceId, itm.TexImage);
+		}
+
+		if (bmp is not null)
+		{
 			if (USettings.ItemDebugLevel > 1)
 			{
 				Log.LogDebug("size = {0}x{1} (unitsize={2})"
@@ -303,14 +310,14 @@ public class UIService : IUIService
 		NotifyUserEvent?.Invoke(this, message, color);
 	}
 
-	public ShowMessageUserEventHandlerEventArgs ShowError(string message, Exception exception = null, ShowMessageButtons buttons = ShowMessageButtons.OKCancel)
+	public ShowMessageUserEventHandlerEventArgs ShowError(string message, Exception? exception = null, ShowMessageButtons buttons = ShowMessageButtons.OKCancel)
 	{
 		ShowMessageUserEventHandlerEventArgs mess = new() { Error = exception, Message = message, Level = LogLevel.Error, Buttons = buttons };
 		ShowMessageUserEvent?.Invoke(this, mess);
 		return mess;
 	}
 
-	public ShowMessageUserEventHandlerEventArgs ShowWarning(string message, Exception exception = null, ShowMessageButtons buttons = ShowMessageButtons.OKCancel)
+	public ShowMessageUserEventHandlerEventArgs ShowWarning(string message, Exception? exception = null, ShowMessageButtons buttons = ShowMessageButtons.OKCancel)
 	{
 		ShowMessageUserEventHandlerEventArgs mess = new() { Error = exception, Message = message, Level = LogLevel.Warning, Buttons = buttons };
 		ShowMessageUserEvent?.Invoke(this, mess);
@@ -323,9 +330,9 @@ public class UIService : IUIService
 		return mess;
 	}
 
-	public event NotifyUserEventHandler NotifyUserEvent;
+	public event NotifyUserEventHandler? NotifyUserEvent;
 
-	public event ShowMessageUserEventHandler ShowMessageUserEvent;
+	public event ShowMessageUserEventHandler? ShowMessageUserEvent;
 
 	#endregion
 

@@ -26,12 +26,12 @@ public interface IUserNotifier
 	/// <summary>
 	/// Notification event
 	/// </summary>
-	event NotifyUserEventHandler NotifyUserEvent;
+	event NotifyUserEventHandler? NotifyUserEvent;
 
 	/// <summary>
 	/// Notification event
 	/// </summary>
-	event ShowMessageUserEventHandler ShowMessageUserEvent;
+	event ShowMessageUserEventHandler? ShowMessageUserEvent;
 
 	/// <summary>
 	/// Display error to user

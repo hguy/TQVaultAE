@@ -37,7 +37,7 @@ public class BitmapService : IBitmapService
 	/// <param name="offset">offset into the array</param>
 	/// <param name="count">number of bytes</param>
 	/// <returns>bitmap of tex file.</returns>
-	public Bitmap LoadFromTexMemory(byte[] data, int offset, int count)
+	public Bitmap? LoadFromTexMemory(byte[] data, int offset, int count)
 	{
 		// AMS: Yet another hack to new offset needed for Atlantis and Eternal Ember Images...
 		int newTextureOffsetAdd = int.MinValue;
