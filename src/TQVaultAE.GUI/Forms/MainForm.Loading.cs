@@ -39,7 +39,8 @@ public partial class MainForm
 	/// Shows a progress dialog.
 	/// Used for the searching function.
 	/// </summary>
-	private void LoadAllFiles()
+	/// <param name="progress">Receives one step per loaded file.</param>
+	private void LoadAllFiles(IProgress<int> progress)
 	{
 		// Check to see if we failed the last time we tried loading all of the files.
 		// If we did fail then turn it off and skip it.
@@ -88,7 +89,7 @@ public partial class MainForm
 			// Get the player
 			var result = this.playerService.LoadPlayer(c);
 			bagPlayer.Add(result);
-			this.backgroundWorkerLoadAllFiles.ReportProgress(1);
+			progress.Report(1);
 		})).ToArray();
 
 		var lambdacharacterStashes = charactersIT.Select(c => (Action)(() =>
@@ -96,7 +97,7 @@ public partial class MainForm
 			// Get the player's stash
 			var result = this.stashService.LoadPlayerStash(c);
 			bagPlayerStashes.Add(result);
-			this.backgroundWorkerLoadAllFiles.ReportProgress(1);
+			progress.Report(1);
 		})).ToArray();
 
 		var lambdaVault = vaults.Select(c => (Action)(() =>
@@ -104,7 +105,7 @@ public partial class MainForm
 			// Load all of the vaults.
 			var result = this.vaultService.LoadVault(c);
 			bagVault.Add(result);
-			this.backgroundWorkerLoadAllFiles.ReportProgress(1);
+			progress.Report(1);
 		})).ToArray();
 
 		Parallel.Invoke(lambdacharactersIT.Concat(lambdacharacterStashes).Concat(lambdaVault).ToArray());// Parallel loading
@@ -122,8 +123,6 @@ public partial class MainForm
 			string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, file, error.Message);
 			MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
 		}
-
-		this.comboBoxCharacter.RefreshItems();
 
 		stopWatch.Stop();
 		// Get the elapsed time as a TimeSpan value.
@@ -178,7 +177,7 @@ public partial class MainForm
 		if (this.resourcesLoaded)
 		{
 			if (!this.loadingComplete)
-				this.backgroundWorkerLoadAllFiles.CancelAsync();
+				this.loadCancellation.Cancel();
 
 			this.ShowMainForm();
 		}
@@ -222,77 +221,34 @@ public partial class MainForm
 	#region Game Resources
 
 	/// <summary>
-	/// Loads the resources.
+	/// Cancelled when the splash screen is closed before the loading completes.
 	/// </summary>
-	/// <param name="worker">Background worker</param>
-	/// <param name="e">DoWorkEventArgs data</param>
-	/// <returns>true when resource loading has completed successfully</returns>
-	private bool LoadResources(BackgroundWorker worker, DoWorkEventArgs e)
-	{
-		// Abort the operation if the user has canceled.
-		// Note that a call to CancelAsync may have set
-		// CancellationPending to true just after the
-		// last invocation of this method exits, so this
-		// code will not have the opportunity to set the
-		// DoWorkEventArgs.Cancel flag to true. This means
-		// that RunWorkerCompletedEventArgs.Cancelled will
-		// not be set to true in your RunWorkerCompleted
-		// event handler. This is a race condition.
-		if (worker.CancellationPending)
-		{
-			e.Cancel = true;
-			return this.resourcesLoaded;
-		}
-		else
-		{
-			CommandLineArgs args = new CommandLineArgs();
-
-			// Check to see if we loaded something from the command line.
-			if (args.HasMapName)
-				GamePathResolver.MapName = args.MapName ?? string.Empty;
-
-			this.resourcesLoaded = true;
-			this.backgroundWorkerLoadAllFiles.ReportProgress(1);
-
-			if (USettings.LoadAllFiles)
-				this.LoadAllFiles();
-
-			// Notify the form that the resources are loaded.
-			return true;
-		}
-	}
+	private readonly CancellationTokenSource loadCancellation = new();
 
 	/// <summary>
-	/// Background worker call to load the resources.
+	/// Loads the resources off the UI thread, advancing the splash screen, then shows them.
 	/// </summary>
-	/// <param name="sender">sender object</param>
-	/// <param name="e">DoWorkEventArgs data</param>
-	private void BackgroundWorkerLoadAllFiles_DoWork(object? sender, DoWorkEventArgs e)
+	private async Task LoadResourcesAsync()
 	{
-		// Get the BackgroundWorker that raised this event.
-		var worker = (BackgroundWorker)sender!;
-
-		// Assign the result of the resource loader
-		// to the Result property of the DoWorkEventArgs
-		// object. This is will be available to the
-		// RunWorkerCompleted eventhandler.
-		e.Result = this.LoadResources(worker, e);
-	}
-
-	/// <summary>
-	/// Background worker has finished
-	/// </summary>
-	/// <param name="sender">sender object</param>
-	/// <param name="e">RunWorkerCompletedEventArgs data</param>
-	private void BackgroundWorkerLoadAllFiles_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
-	{
-		// First, handle the case where an exception was thrown.
-		if (e.Error != null)
+		// Created on the UI thread, so the splash screen is updated there.
+		var progress = new Progress<int>(_ => this.splashScreen.IncrementValue());
+		var token = this.loadCancellation.Token;
+		try
 		{
-			Log.LogError(e.Error, $"resourcesLoaded = {this.resourcesLoaded}");
+			await Task.Run(() => this.LoadResources(progress, token));
+		}
+		catch (OperationCanceledException) when (token.IsCancellationRequested)
+		{
+			if (!this.resourcesLoaded)
+				System.Windows.Forms.Application.Exit();
+			return;
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, $"resourcesLoaded = {this.resourcesLoaded}");
 
 			if (MessageBox.Show(
-				string.Concat(e.Error.Message, Resources.Form1BadLanguage)
+				string.Concat(ex.Message, Resources.Form1BadLanguage)
 				, Resources.Form1ErrorLoadingResources
 				, MessageBoxButtons.YesNo
 				, MessageBoxIcon.Exclamation
@@ -301,111 +257,120 @@ public partial class MainForm
 			) System.Windows.Forms.Application.Restart();
 			else
 				System.Windows.Forms.Application.Exit();
+			return;
 		}
-		else if (e.Cancelled && !this.resourcesLoaded)
-			System.Windows.Forms.Application.Exit();
-		else if (e.Result is true)
-		{
-			this.loadingComplete = true;
-			this.Enabled = true;
 
-			// Prepare the search data now, so the first search does not have to,
-			// then the bag button icons, so the bag button settings open at once.
-			var iconService = this.Services.IconService;
-			_ = this.Services.ItemDatabaseService.WarmUpAsync()
-				.ContinueWith(_ => iconService.GetIconDatabaseAsync(), TaskScheduler.Default);
-
-			this.LoadTransferStash();
-			this.LoadRelicVaultStash();
-
-			if (USettings.EnableHotReload)
-			{
-				var relicPath = GamePathResolver.RelicVaultStashFileFullPath;
-				var transferPath = GamePathResolver.TransferStashFileFullPath;
-
-				this.fileSystemWatcherRelicStash.EnableRaisingEvents = false;
-				if (FileIO.Exists(relicPath))
-				{
-					this.fileSystemWatcherRelicStash.Path = PathIO.GetDirectoryName(relicPath);
-					this.fileSystemWatcherRelicStash.Filter = PathIO.GetFileName(relicPath);
-					this.fileSystemWatcherRelicStash.EnableRaisingEvents = true;
-				}
-
-				this.fileSystemWatcherTransferStash.EnableRaisingEvents = false;
-				if (FileIO.Exists(transferPath))
-				{
-					this.fileSystemWatcherTransferStash.Path = PathIO.GetDirectoryName(transferPath);
-					this.fileSystemWatcherTransferStash.Filter = PathIO.GetFileName(transferPath);
-					this.fileSystemWatcherTransferStash.EnableRaisingEvents = true;
-				}
-			}
-
-			// Load last character here if selected
-			if (USettings.LoadLastCharacter)
-			{
-				var lastPlayerSave = this.comboBoxCharacter.Items.OfType<PlayerSave>()
-					.FirstOrDefault(ps => ps.Name == USettings.LastCharacterName);
-
-				if (lastPlayerSave != null)
-					this.comboBoxCharacter.SelectedItem = lastPlayerSave;
-			}
-
-			string currentVault = VaultService.MAINVAULT;
-
-			// See if we should load the last loaded vault
-			if (USettings.LoadLastVault)
-			{
-				currentVault = USettings.LastVaultName;
-
-				// Make sure there is something in the config file to load else load the Main Vault
-				// We do not want to create new here.
-				if (string.IsNullOrEmpty(currentVault) || !FileIO.Exists(GamePathResolver.GetVaultFile(currentVault)))
-					currentVault = VaultService.MAINVAULT;
-			}
-
-			this.vaultListComboBox.SelectedItem = currentVault;
-
-			// Finally load Vault
-			this.LoadVault(currentVault, false);
-
-			this.splashScreen.UpdateText();
-			this.splashScreen.ShowMainForm = true;
-
-			CommandLineArgs args = new CommandLineArgs();
-
-			// Allows skipping of title screen with setting
-			if (args.IsAutomatic || USettings.SkipTitle == true)
-			{
-				string? player = args.Player;
-				int index = this.comboBoxCharacter.FindString(player ?? string.Empty);
-				if (index != -1)
-					this.comboBoxCharacter.SelectedIndex = index;
-
-				this.splashScreen.CloseForm();
-			}
-		}
-		else
-		{
-			Log.LogError(e.Error, $"resourcesLoaded = {this.resourcesLoaded}");
-			// If for some reason the loading failed, but there was no error raised.
-			MessageBox.Show(
-				Resources.Form1ErrorLoadingResources,
-				Resources.Form1ErrorLoadingResources,
-				MessageBoxButtons.OK,
-				MessageBoxIcon.Exclamation,
-				MessageBoxDefaultButton.Button1,
-				RightToLeftOptions);
-			System.Windows.Forms.Application.Exit();
-		}
+		this.ResourcesLoaded();
 	}
 
 	/// <summary>
-	/// Handler for updating the splash screen progress bar.
+	/// Loads the resources. Runs off the UI thread.
 	/// </summary>
-	/// <param name="sender">sender object</param>
-	/// <param name="e">ProgressChangedEventArgs data</param>
-	private void BackgroundWorkerLoadAllFiles_ProgressChanged(object? sender, ProgressChangedEventArgs e)
-		=> this.splashScreen.IncrementValue();
+	/// <param name="progress">Receives one step per loaded resource.</param>
+	/// <param name="token">Cancelled when the splash screen is closed.</param>
+	private void LoadResources(IProgress<int> progress, CancellationToken token)
+	{
+		token.ThrowIfCancellationRequested();
+
+		CommandLineArgs args = new CommandLineArgs();
+
+		// Check to see if we loaded something from the command line.
+		if (args.HasMapName)
+			GamePathResolver.MapName = args.MapName ?? string.Empty;
+
+		this.resourcesLoaded = true;
+		progress.Report(1);
+
+		if (USettings.LoadAllFiles)
+			this.LoadAllFiles(progress);
+	}
+
+	/// <summary>
+	/// Shows the loaded resources: stashes, last character and vault.
+	/// </summary>
+	private void ResourcesLoaded()
+	{
+		this.loadingComplete = true;
+		this.Enabled = true;
+
+		// The characters may have been loaded by LoadAllFiles.
+		this.comboBoxCharacter.RefreshItems();
+
+		// Prepare the search data now, so the first search does not have to,
+		// then the bag button icons, so the bag button settings open at once.
+		var iconService = this.Services.IconService;
+		_ = this.Services.ItemDatabaseService.WarmUpAsync()
+			.ContinueWith(_ => iconService.GetIconDatabaseAsync(), TaskScheduler.Default);
+
+		this.LoadTransferStash();
+		this.LoadRelicVaultStash();
+
+		if (USettings.EnableHotReload)
+		{
+			var relicPath = GamePathResolver.RelicVaultStashFileFullPath;
+			var transferPath = GamePathResolver.TransferStashFileFullPath;
+
+			this.fileSystemWatcherRelicStash.EnableRaisingEvents = false;
+			if (FileIO.Exists(relicPath))
+			{
+				this.fileSystemWatcherRelicStash.Path = PathIO.GetDirectoryName(relicPath);
+				this.fileSystemWatcherRelicStash.Filter = PathIO.GetFileName(relicPath);
+				this.fileSystemWatcherRelicStash.EnableRaisingEvents = true;
+			}
+
+			this.fileSystemWatcherTransferStash.EnableRaisingEvents = false;
+			if (FileIO.Exists(transferPath))
+			{
+				this.fileSystemWatcherTransferStash.Path = PathIO.GetDirectoryName(transferPath);
+				this.fileSystemWatcherTransferStash.Filter = PathIO.GetFileName(transferPath);
+				this.fileSystemWatcherTransferStash.EnableRaisingEvents = true;
+			}
+		}
+
+		// Load last character here if selected
+		if (USettings.LoadLastCharacter)
+		{
+			var lastPlayerSave = this.comboBoxCharacter.Items.OfType<PlayerSave>()
+				.FirstOrDefault(ps => ps.Name == USettings.LastCharacterName);
+
+			if (lastPlayerSave != null)
+				this.comboBoxCharacter.SelectedItem = lastPlayerSave;
+		}
+
+		string currentVault = VaultService.MAINVAULT;
+
+		// See if we should load the last loaded vault
+		if (USettings.LoadLastVault)
+		{
+			currentVault = USettings.LastVaultName;
+
+			// Make sure there is something in the config file to load else load the Main Vault
+			// We do not want to create new here.
+			if (string.IsNullOrEmpty(currentVault) || !FileIO.Exists(GamePathResolver.GetVaultFile(currentVault)))
+				currentVault = VaultService.MAINVAULT;
+		}
+
+		this.vaultListComboBox.SelectedItem = currentVault;
+
+		// Finally load Vault
+		this.LoadVault(currentVault, false);
+
+		this.splashScreen.UpdateText();
+		this.splashScreen.ShowMainForm = true;
+
+		CommandLineArgs args = new CommandLineArgs();
+
+		// Allows skipping of title screen with setting
+		if (args.IsAutomatic || USettings.SkipTitle == true)
+		{
+			string? player = args.Player;
+			int index = this.comboBoxCharacter.FindString(player ?? string.Empty);
+			if (index != -1)
+				this.comboBoxCharacter.SelectedIndex = index;
+
+			this.splashScreen.CloseForm();
+		}
+	}
 
 	#endregion
 

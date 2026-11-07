@@ -315,9 +315,10 @@ public partial class SearchDialogAdvanced : VaultForm
 	/// Builds the categories on the first opening, and again only when the item database changed since then;
 	/// otherwise the dialog is shown as it was left.
 	/// </summary>
-	private void PrepareForSearch()
+	private async void PrepareForSearch()
 	{
-		System.Windows.Forms.Application.DoEvents();// Force control rendering (VaultForm stuff like custom borders etc...)
+		// Paint the dialog (VaultForm custom borders etc.) before the categories are built.
+		this.Update();
 
 		var database = this.ItemDatabaseService.ItemDatabase;
 		if (ReferenceEquals(database, this._builtDatabase) && database.Count == this._builtCount)
@@ -327,7 +328,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			return;
 		}
 
-		if (this.backgroundWorkerBuildDB.IsBusy)
+		if (this._buildingSearchData)
 			return;
 
 		if (this._builtDatabase is not null)
@@ -341,8 +342,29 @@ public partial class SearchDialogAdvanced : VaultForm
 		vaultProgressBar.Maximum = database.Count + this.UiBuildSteps.Length;
 		vaultProgressBar.Visible = true;
 
-		this.backgroundWorkerBuildDB.RunWorkerAsync();
+		this._buildingSearchData = true;
+		try
+		{
+			// Created on the UI thread, so the progress bar is updated there.
+			var progress = new Progress<int>(this.vaultProgressBar.Increment);
+			await Task.Run(() => this.InitItemDatabase(progress));
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Building the search data failed");
+			scalingLabelProgress.Text = ex.Message;
+			return;
+		}
+		finally
+		{
+			this._buildingSearchData = false;
+		}
+
+		this.SearchEngineReady();
 	}
+
+	/// <summary>True while <see cref="InitItemDatabase"/> runs.</summary>
+	private bool _buildingSearchData;
 
 	/// <summary>Empties the categories and the current selection, which refer to the previous items.</summary>
 	private void ClearForRebuild()
@@ -385,11 +407,11 @@ public partial class SearchDialogAdvanced : VaultForm
 	}
 
 	/// <summary>
-	/// Load item data & display progress
+	/// Load item data & display progress. Runs off the UI thread, so it must not change UI controls.
 	/// </summary>
-	private void InitItemDatabase()
+	/// <param name="progress">Receives the number of items loaded since the last report.</param>
+	private void InitItemDatabase(IProgress<int> progress)
 	{
-		// Must not change UI Controls. Just update backgroundWorker which handle this for you through his event pipeline.
 
 		// Parallel lazy loading for much faster database initialization
 		var items = this.ItemDatabaseService.ItemDatabase.ToList();
@@ -401,38 +423,15 @@ public partial class SearchDialogAdvanced : VaultForm
 		{
 			item.LazyLoad();
 			if (Interlocked.Increment(ref processedCount) % batch == 0)
-				this.backgroundWorkerBuildDB.ReportProgress(batch);
+				progress.Report(batch);
 		});
 		if (processedCount % batch != 0)
-			this.backgroundWorkerBuildDB.ReportProgress(processedCount % batch);
+			progress.Report(processedCount % batch);
 
 		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
 		var validItems = items.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
 
 		this.ItemDatabaseService.ResetAllItemDatabase(validItems);
-	}
-
-	#endregion
-
-	#region backgroundWorkerBuildDB
-
-	private void backgroundWorkerBuildDB_DoWork(object? sender, System.ComponentModel.DoWorkEventArgs e)
-		=> InitItemDatabase();
-
-	/// <summary>Items loaded by the worker; <see cref="ProgressChangedEventArgs.ProgressPercentage"/> carries the batch size.</summary>
-	private void backgroundWorkerBuildDB_ProgressChanged(object? sender, System.ComponentModel.ProgressChangedEventArgs e)
-		=> vaultProgressBar.Increment(e.ProgressPercentage);
-
-	private void backgroundWorkerBuildDB_RunWorkerCompleted(object? sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
-	{
-		if (e.Error is not null)
-		{
-			this.Log.LogError(e.Error, "Building the search data failed");
-			scalingLabelProgress.Text = e.Error.Message;
-			return;
-		}
-
-		SearchEngineReady();
 	}
 
 	#endregion
