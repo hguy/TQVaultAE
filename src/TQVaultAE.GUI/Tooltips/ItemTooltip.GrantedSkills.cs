@@ -19,56 +19,131 @@ public partial class ItemTooltip
 	private const int SkillIconSize = 32;
 
 	/// <summary>
-	/// Builds the skills panel next to the item panel, then shows both as one image with a transparent gap,
-	/// and caches that image under <paramref name="key"/>.
+	/// Draws the skills next to the item panel, in columns no taller than the screen, then shows them with the item panel
+	/// as one image with transparent gaps, and caches that image under <paramref name="key"/>.
 	/// </summary>
 	private void ShowWithGrantedSkills((Item Item, float Scale, bool AltView, bool InGameValues) key, GrantedSkill[] skills)
 	{
 		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
+		var scale = this.UIService.Scale;
+		var gap = (int)(SkillsPanelGap * scale);
+		var pad = this.flowLayoutPanelFriendlyNames.Padding.Left + 1;
+		var separator = (int)(9 * scale);
+
+		using var itemImage = Rasterize(this.flowLayoutPanelFriendlyNames);
+
+		// A window cannot be taller than the screen: the skills that do not fit go in another column.
+		var screen = Screen.FromControl(this.Owner as Control ?? this).WorkingArea;
+		var maxHeight = Math.Max(screen.Height - 2 - (2 * pad), 1);
+
+		var blocks = skills.Select(skill => this.RasterizeSkill(skill, bg)).ToList();
+		try
+		{
+			var columns = new List<List<Bitmap>>();
+			int height = 0;
+			foreach (var block in blocks)
+			{
+				if (columns.Count == 0 || height + separator + block.Height > maxHeight)
+				{
+					columns.Add([]);
+					height = -separator;
+				}
+				columns[^1].Add(block);
+				height += separator + block.Height;
+			}
+
+			var columnImages = columns.Select(column => DrawColumn(column, bg, pad, separator)).ToList();
+			try
+			{
+				var border = TQColor.DarkGray.Color();
+				var width = itemImage.Width + 2 + columnImages.Sum(c => gap + c.Width + 2);
+				var composite = new Bitmap(width, Math.Max(itemImage.Height, columnImages.Max(c => c.Height)) + 2);
+				using (var g = Graphics.FromImage(composite))
+				{
+					g.Clear(SkillsTransparencyKey);
+					DrawFramed(g, itemImage, 0, border);
+					int x = itemImage.Width + 2;
+					foreach (var column in columnImages)
+					{
+						x += gap;
+						DrawFramed(g, column, x, border);
+						x += column.Width + 2;
+					}
+				}
+
+				ToImage.Add(key, composite, this.Data!);
+			}
+			finally
+			{
+				columnImages.ForEach(c => c.Dispose());
+			}
+		}
+		finally
+		{
+			blocks.ForEach(b => b.Dispose());
+		}
+
+		if (ToImage.TryGetCopy(key, out var shown, out _))
+			this.ShowSkillsImage(shown);
+	}
+
+	/// <summary>Lays out the rows of one skill on the form and draws them.</summary>
+	private Bitmap RasterizeSkill(GrantedSkill skill, Color bg)
+	{
 		var panel = new FlowLayoutPanel()
 		{
 			AutoSize = true,
 			AutoSizeMode = AutoSizeMode.GrowAndShrink,
 			BackColor = bg,
-			BorderStyle = BorderStyle.FixedSingle,
 			FlowDirection = FlowDirection.TopDown,
 			WrapContents = false,
-			Padding = this.flowLayoutPanelFriendlyNames.Padding,
+			Padding = new Padding(0),
 			Margin = new Padding(0),
 		};
 
 		panel.SuspendLayout();
-		for (int i = 0; i < skills.Length; i++)
-		{
-			if (i > 0)
-				panel.Controls.Add(MakeRow(this.UIService, this.FontService, TOOLTIPDELIM, BGColor: bg)!);
-
-			this.AddSkillRows(panel, skills[i], bg);
-		}
+		this.AddSkillRows(panel, skill, bg);
 		panel.ResumeLayout();
 
-		// Lay the panel out off the visible area of the form, then draw both panels side by side.
 		this.Controls.Add(panel);
 		panel.PerformLayout();
-
-		using var itemImage = Rasterize(this.flowLayoutPanelFriendlyNames);
-		using var skillsImage = Rasterize(panel);
-		this.Controls.Remove(panel);
-		panel.Dispose();
-
-		var gap = (int)(SkillsPanelGap * this.UIService.Scale);
-		var border = TQColor.DarkGray.Color();
-		var composite = new Bitmap(itemImage.Width + skillsImage.Width + gap + 4, Math.Max(itemImage.Height, skillsImage.Height) + 2);
-		using (var g = Graphics.FromImage(composite))
+		try
 		{
-			g.Clear(SkillsTransparencyKey);
-			DrawFramed(g, itemImage, 0, border);
-			DrawFramed(g, skillsImage, itemImage.Width + 2 + gap, border);
+			return Rasterize(panel);
+		}
+		finally
+		{
+			this.Controls.Remove(panel);
+			panel.Dispose();
+		}
+	}
+
+	/// <summary>Stacks skill images in a panel like the item one: padded, with a line between two skills.</summary>
+	private static Bitmap DrawColumn(List<Bitmap> blocks, Color bg, int pad, int separator)
+	{
+		var width = blocks.Max(b => b.Width) + (2 * pad);
+		var height = blocks.Sum(b => b.Height) + (separator * (blocks.Count - 1)) + (2 * pad);
+		var image = new Bitmap(width, height);
+		using var g = Graphics.FromImage(image);
+		g.Clear(bg);
+		using (var frame = new Pen(Color.Black))
+			g.DrawRectangle(frame, 0, 0, width - 1, height - 1);
+
+		using var line = new Pen(TQColor.DarkGray.Color());
+		int y = pad;
+		for (int i = 0; i < blocks.Count; i++)
+		{
+			if (i > 0)
+			{
+				var middle = y + (separator / 2) - 1;
+				g.DrawLine(line, pad, middle, width - pad - 1, middle);
+				y += separator;
+			}
+			g.DrawImageUnscaled(blocks[i], pad, y);
+			y += blocks[i].Height;
 		}
 
-		ToImage.Add(key, composite, this.Data!);
-		if (ToImage.TryGetCopy(key, out var shown, out _))
-			this.ShowSkillsImage(shown);
+		return image;
 	}
 
 	/// <summary>Shows an image of the item and skills panels, with the space around them transparent.</summary>
