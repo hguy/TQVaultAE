@@ -14,6 +14,9 @@ namespace TQVaultAE.GUI.Components.Panels;
 /// They feed the panel's own mouse handlers with synthetic events and a <see cref="VirtualCursor"/>,
 /// so the regular pick / drag / drop logic runs without touching the real mouse.
 /// </summary>
+/// <summary>A context menu entry read by <see cref="SackPanel.AutomationContextMenu"/>.</summary>
+internal sealed record AutomationMenuEntry(string Text, IReadOnlyList<AutomationMenuEntry>? Items);
+
 public partial class SackPanel
 {
 	internal ItemDragInfo AutomationDragInfo => this.DragInfo;
@@ -60,6 +63,30 @@ public partial class SackPanel
 		this.MouseDownCallback(this, args);
 		this.MouseUpCallback(this, args);
 		this.AutomationPaintNow();
+	}
+
+	/// <summary>
+	/// Right-clicks a cell through the regular mouse handlers, reads the context menu they built, then closes it.
+	/// </summary>
+	/// <returns>The menu entries, <c>-</c> for separators, with the entries of their sub menus.</returns>
+	internal IReadOnlyList<AutomationMenuEntry> AutomationContextMenu(Point cell)
+	{
+		this.AutomationMouseDown(this.AutomationCellCenter(cell), MouseButtons.Right);
+		try
+		{
+			return Describe(this.CustomContextMenu.Items);
+		}
+		finally
+		{
+			this.CustomContextMenu.Close();
+		}
+
+		static IReadOnlyList<AutomationMenuEntry> Describe(ToolStripItemCollection items)
+			=> items.Cast<ToolStripItem>()
+				.Select(i => new AutomationMenuEntry(
+					i is ToolStripSeparator ? "-" : i.Text ?? string.Empty
+					, i is ToolStripMenuItem { HasDropDownItems: true } menu ? Describe(menu.DropDownItems) : null))
+				.ToList();
 	}
 
 	/// <summary>
