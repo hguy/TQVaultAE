@@ -8,6 +8,7 @@ using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
+using TQVaultAE.GameFiles;
 
 namespace TQVaultAE.Services.Win32;
 
@@ -18,14 +19,6 @@ public partial class GamePathServiceWin : IGamePathService
 {
 	[GeneratedRegex(@"^(?<SteamappsRoot>.+steamapps).*", RegexOptions.IgnoreCase)]
 	private static partial Regex SteamappsRootRegex();
-
-	/// <summary>Old libraryfolders.vdf format: <c>"2"		"D:\\games\\Steam"</c>.</summary>
-	[GeneratedRegex(@"""\d+""\t+""([^""]+)""")]
-	private static partial Regex VdfOldPathRegex();
-
-	/// <summary>New libraryfolders.vdf format: <c>"path"		"D:\\games\\Steam"</c>.</summary>
-	[GeneratedRegex(@"""path""\s+""(?<path>[^""]+)""")]
-	private static partial Regex VdfPathRegex();
 
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
@@ -593,81 +586,14 @@ public partial class GamePathServiceWin : IGamePathService
 
 		// We are either autodetecting or the path has not been set
 		//
-		// Detection logic for a GOG install of the anniversary edition ~Malgardian
+		// GOG install of the anniversary edition
 		if (string.IsNullOrEmpty(titanQuestGamePath))
-		{
-			string[] path = { "SOFTWARE", "GOG.com", "Games", "1196955511", "PATH" };
-			titanQuestGamePath = ReadRegistryKey(Microsoft.Win32.Registry.LocalMachine, path);
-		}
+			titanQuestGamePath = InstallLocations.GogCandidates().FirstOrDefault();
 
+		// Steam install of the anniversary edition, in the Steam folder or one of its libraries
 		if (string.IsNullOrEmpty(titanQuestGamePath))
-		{
-			string[] path = { "SOFTWARE", "WOW6432Node", "GOG.com", "Games", "1196955511", "PATH" };
-			titanQuestGamePath = ReadRegistryKey(Microsoft.Win32.Registry.LocalMachine, path);
-		}
-
-		// Detection logic for a Steam install of the anniversary edition ~Malgardian
-		if (string.IsNullOrEmpty(titanQuestGamePath))
-		{
-			string steamTQPath = "SteamApps\\common\\Titan Quest Anniversary Edition";
-
-			string[] registryPath = { "Software", "Valve", "Steam", "SteamPath" };
-			string steamPath = ReadRegistryKey(Microsoft.Win32.Registry.CurrentUser, registryPath).Replace("/", "\\");
-
-			string fullPath = this.PathIO.Combine(steamPath, steamTQPath);
-			string fullPathExe = this.PathIO.Combine(fullPath, @"TQ.exe");
-			if (this.FileIO.Exists(fullPathExe))
-				titanQuestGamePath = fullPath;
-			else
-			{
-				//further looking for Steam library
-				//read libraryfolders.vdf
-				var vdfFile = this.PathIO.Combine(steamPath, @"SteamApps\libraryfolders.vdf");
-				if (this.FileIO.Exists(vdfFile))
-				{
-					string[] libFile = this.FileIO.ReadAllLines(vdfFile);
-
-					// TODO Old file format ? Is it obsolete ?
-					foreach (var line in libFile)
-					{
-						if (VdfOldPathRegex().Match(line.Trim()) is { Success: true } match)
-						{
-							var vdfPathValue = match.Groups[1].Value.Replace(@"\\", @"\");
-							fullPath = this.PathIO.Combine(vdfPathValue, steamTQPath);
-							if (DirectoryIO.Exists(fullPath))
-							{
-								titanQuestGamePath = fullPath;
-								break;
-							}
-						}
-					}
-
-					if (string.IsNullOrWhiteSpace(titanQuestGamePath))
-					{
-						// New File Format
-						var gameIdMarkup = @"""475150""";
-						steamPath = string.Empty;
-						foreach (var line in libFile)
-						{
-							// Match "path"
-							if (VdfPathRegex().Match(line) is { Success: true } match)
-								steamPath = match.Groups["path"].Value.Replace(@"\\", @"\");// Backslashes ares escaped in this file
-
-							// Match gameId
-							if (line.Contains(gameIdMarkup))
-								break;
-						}
-
-						if (steamPath != string.Empty)
-						{
-							var fullpath = this.PathIO.Combine(steamPath, steamTQPath);
-							if (DirectoryIO.Exists(fullpath))
-								titanQuestGamePath = fullpath;
-						}
-					}
-				}
-			}
-		}
+			titanQuestGamePath = InstallLocations.SteamCandidates()
+				.FirstOrDefault(p => this.FileIO.Exists(this.PathIO.Combine(p, "TQ.exe")));
 
 		// Disc version detection logic -old
 		if (string.IsNullOrEmpty(titanQuestGamePath))

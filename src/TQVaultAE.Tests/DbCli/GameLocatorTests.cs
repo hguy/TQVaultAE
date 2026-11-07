@@ -33,7 +33,23 @@ public sealed class GameLocatorTests : IDisposable
 			}
 			""";
 
-		GameLocator.ParseLibraryFolders(vdf).Should().Equal("""C:\Program Files (x86)\Steam""", """E:\GAMES\Steam""");
+		InstallLocations.ParseLibraryFolders(vdf).Should().Equal("""C:\Program Files (x86)\Steam""", """E:\GAMES\Steam""");
+	}
+
+	[Fact]
+	public void ParseLibraryFolders_OldFormat_ReadsTheNumberedEntries()
+	{
+		var vdf = """
+			"LibraryFolders"
+			{
+				"TimeNextStatsReport"		"1561832478"
+				"ContentStatsID"		"-158337411110787451"
+				"1"		"D:\\games\\Steam"
+				"2"		"E:\\SteamLibrary"
+			}
+			""";
+
+		InstallLocations.ParseLibraryFolders(vdf).Should().Equal("""D:\games\Steam""", """E:\SteamLibrary""");
 	}
 
 	[Fact]
