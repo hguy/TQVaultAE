@@ -138,7 +138,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			(panelSize.Width * UIService.ItemUnitSize) + Convert.ToInt32(10.0F * UIService.Scale) + autosortOffset + BorderPad,
 			(panelSize.Height * UIService.ItemUnitSize) + Convert.ToInt32(56.0F * UIService.Scale) + BorderPad);
 
-		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.Scale, this.Font.Style);
+		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.Zoom, this.Font.Style);
 
 		this.BagPanelOffset = 0; // bag panel starts with bag #0
 		this.BagSackPanel = new SackPanel(panelSize.Width, panelSize.Height, this.DragInfo, autoMoveLocation, this.Services);
@@ -174,7 +174,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 			this.BagSackPanel.SackType = SackType.Vault;
 		}
 
-		this.contextMenu.Font = FontService.GetFont(9.0F * UIService.Scale);
+		this.contextMenu.Font = FontService.GetFont(9.0F * UIService.Zoom);
 
 		this.PropertyChanged += new PropertyChangedEventHandler(this.PropertyChangedCallback);
 
@@ -500,8 +500,8 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <param name="specified">BoundsSpecified value.</param>
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
-		this.contextMenu.Font = new Font(this.contextMenu.Font.FontFamily, 9.0F * UIService.Scale);
-		this.Font = new Font(this.Font.Name, this.Font.SizeInPoints * factor.Height, this.Font.Style);
+		this.contextMenu.Font = new Font(this.contextMenu.Font.FontFamily, 9.0F * UIService.Zoom);
+		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
 
 		base.ScaleControl(factor, specified);
 	}

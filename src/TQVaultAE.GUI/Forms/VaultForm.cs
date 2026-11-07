@@ -214,19 +214,19 @@ public partial class VaultForm : Form, IScalingControl
 		this.systemMenu.MinimizeEnabled = this.MinimizeBox;
 	}
 
-	public static void ScaleControl(IUIService uiService, System.Windows.Forms.Control ctrl, bool isAbsolutePositioning = true)
+	/// <summary>
+	/// Applies the user's zoom to a designer control, which Windows Forms already scaled to the DPI; a control built in
+	/// code, at design size, also needs the DPI (<paramref name="builtInCode"/>).
+	/// </summary>
+	public static void ScaleControl(IUIService uiService, System.Windows.Forms.Control ctrl, bool isAbsolutePositioning = true, bool builtInCode = false)
 	{
+		float factor = uiService is null ? 1.0F : builtInCode ? uiService.Scale : uiService.Zoom;
+
 		if (isAbsolutePositioning)
-			ctrl.Location = ScalePoint(uiService, ctrl.Location);
+			ctrl.Location = new Point((int)System.Math.Round(ctrl.Location.X * factor), (int)System.Math.Round(ctrl.Location.Y * factor));
 
-		ctrl.Size = ScaleSize(uiService, ctrl.Size);
+		ctrl.Size = new Size((int)System.Math.Round(ctrl.Size.Width * factor), (int)System.Math.Round(ctrl.Size.Height * factor));
 	}
-
-	public static Size ScaleSize(IUIService uiService, Size size)
-		=> new Size((int)System.Math.Round(size.Width * uiService?.Scale ?? 1.0F), (int)System.Math.Round(size.Height * uiService?.Scale ?? 1.0F));
-
-	public static Point ScalePoint(IUIService uiService, Point point)
-		=> new Point((int)System.Math.Round(point.X * uiService?.Scale ?? 1.0F), (int)System.Math.Round(point.Y * uiService?.Scale ?? 1.0F));
 
 	/// <summary>
 	/// Gets or sets a value indicating whether or not the resize border boxes are shown.
@@ -315,7 +315,7 @@ public partial class VaultForm : Form, IScalingControl
 	{
 		if (this.DrawCustomBorder)
 		{
-			if (this.titleFont != null)
+			if (this.titleFont != null && ZoomScope.IsZooming && factor.Width != 1.0F)
 			{
 				var previous = this.titleFont;
 				this.titleFont = new Font(previous.Name, previous.SizeInPoints * factor.Width);

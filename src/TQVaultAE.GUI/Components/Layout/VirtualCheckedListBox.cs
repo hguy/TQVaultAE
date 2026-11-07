@@ -310,7 +310,7 @@ public class VirtualCheckedListBox : Control, IScalingControl
 	/// <summary>Scales the font like the other scaling controls.</summary>
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
-		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * factor.Height, this.Font.Style);
+		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
 		base.ScaleControl(factor, specified);
 	}
 

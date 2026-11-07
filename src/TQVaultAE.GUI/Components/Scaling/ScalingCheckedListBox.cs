@@ -26,7 +26,7 @@ public class ScalingCheckedListBox : System.Windows.Forms.CheckedListBox, IScali
 	/// <param name="specified">BoundsSpecified value.</param>
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
-		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * factor.Height, this.Font.Style);
+		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
 		base.ScaleControl(factor, specified);
 	}
 }

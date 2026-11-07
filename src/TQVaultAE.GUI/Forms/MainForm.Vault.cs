@@ -8,6 +8,7 @@ using TQVaultAE.Presentation;
 using TQVaultAE.Logs;
 using TQVaultAE.Services;
 using TQVaultAE.Application;
+using TQVaultAE.GUI.Components.Scaling;
 
 namespace TQVaultAE.GUI.Forms;
 
@@ -200,7 +201,8 @@ public partial class MainForm
 			this.SaveAllModifiedFiles();
 
 			var dlg = this.Services.Forms.Create<VaultMaintenanceDialog>();
-			dlg.Scale(new SizeF(UIService.Scale, UIService.Scale));
+			using (ZoomScope.Enter())
+				dlg.Scale(new SizeF(UIService.Zoom, UIService.Zoom));
 
 			if (dlg.ShowDialog() == DialogResult.OK)
 			{
