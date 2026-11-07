@@ -333,7 +333,9 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.SuspendLayout();
 
 		//this.ShowResizeBorders = false;
-		//this.NormalizeBox = false;
+		// As in the other dialogs: the zoom reset of this button belongs to the main window, here it reset the
+		// zoom of the whole application without resizing the main window.
+		this.NormalizeBox = false;
 		//this.DrawCustomBorder = true;
 		//this.ResizeCustomAllowed = false;
 		//this.ScaleOnResize = false;
