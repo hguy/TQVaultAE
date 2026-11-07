@@ -693,8 +693,9 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 
 	private void SettingsDialog_Shown(object? sender, EventArgs e)
 	{
-		//Adjust width to inner table
+		// Adjust the size to the inner table, so a taller column does not push the buttons out
 		this.Width = this.bufferedTableLayoutPanelSkeleton.Location.X + this.bufferedTableLayoutPanelSkeleton.Width + this.Padding.Right + 5;
+		this.Height = Math.Max(this.Height, this.bufferedTableLayoutPanelSkeleton.Location.Y + this.bufferedTableLayoutPanelSkeleton.Height + this.Padding.Bottom + 5);
 	}
 
 	private void scalingTextBoxGitRepository_TextChanged(object? sender, EventArgs e)
