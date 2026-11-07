@@ -48,7 +48,7 @@ public class PlayerInfo
 			if (ActiveMasteries.HasValue)
 			{
 				var actives = ActiveMasteries.Value;
-				ret = Enums.GetValues<Masteries>().Where(v => actives.HasFlag(v)).Select(s => s.AsString(EnumFormat.Description)).ToArray();
+				ret = Enums.GetValues<Masteries>().Where(v => actives.HasFlag(v)).Select(s => s.AsString(EnumFormat.Description)!).ToArray();
 			}
 			return ret;
 		}
@@ -79,12 +79,12 @@ public class PlayerInfo
 	/// <summary>
 	/// Gets or sets the PlayerStatBonus which contains the cululative stat bonus for the character's skills.
 	/// </summary>
-	public PlayerStatBonus SkillBonus { get; set; }
+	public PlayerStatBonus? SkillBonus { get; set; }
 
 	/// <summary>
 	/// Gets or sets the PlayerStatBonus which contains the cululative stat bonus for the character's equipped gear.
 	/// </summary>
-	public PlayerStatBonus GearBonus { get; set; }
+	public PlayerStatBonus? GearBonus { get; set; }
 
 	/// <summary>
 	/// Released skill points from masteries reset
@@ -259,7 +259,7 @@ public class PlayerInfo
 	/// <summary>
 	/// Greatest Monster killed
 	/// </summary>
-	public string GreatestMonster { get; set; }
+	public string GreatestMonster { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Critical Hits Inflicted
@@ -274,7 +274,7 @@ public class PlayerInfo
 	/// <summary>
 	/// Character Class
 	/// </summary>
-	public string Class { get; set; }
+	public string? Class { get; set; }
 
 	/// <summary>
 	/// Character difficulty unlocked
@@ -323,7 +323,7 @@ public class PlayerInfo
 	/// <summary>
 	/// Class name
 	/// </summary>
-	public string PlayerCharacterClass { get; set; }
+	public string PlayerCharacterClass { get; set; } = string.Empty;
 
 	public int GreatestMonsterKilledLevel { get; set; }
 

@@ -38,13 +38,13 @@ public interface IUserNotifier
 	/// </summary>
 	/// <param name="exception"></param>
 	/// <param name="message"></param>
-	ShowMessageUserEventHandlerEventArgs ShowError(string message, Exception exception = null, ShowMessageButtons Buttons = ShowMessageButtons.OKCancel);
+	ShowMessageUserEventHandlerEventArgs ShowError(string message, Exception? exception = null, ShowMessageButtons Buttons = ShowMessageButtons.OKCancel);
 	/// <summary>
 	/// Display warning to user
 	/// </summary>
 	/// <param name="exception"></param>
 	/// <param name="message"></param>
-	ShowMessageUserEventHandlerEventArgs ShowWarning(string message, Exception exception = null, ShowMessageButtons Buttons = ShowMessageButtons.OKCancel);
+	ShowMessageUserEventHandlerEventArgs ShowWarning(string message, Exception? exception = null, ShowMessageButtons Buttons = ShowMessageButtons.OKCancel);
 	/// <summary>
 	/// Display error to user
 	/// </summary>
@@ -73,8 +73,8 @@ public delegate void ShowMessageUserEventHandler(object sender, ShowMessageUserE
 public class ShowMessageUserEventHandlerEventArgs
 {
 	public LogLevel Level;
-	public Exception Error;
-	public string Message;
+	public Exception? Error;
+	public string Message = string.Empty;
 	public bool IsOK;
 	public ShowMessageButtons Buttons;
 }

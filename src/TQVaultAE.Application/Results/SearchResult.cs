@@ -45,8 +45,8 @@ public class SearchResult
 	public StashType? StashType => this.Item?.Place?.StashType;
 
 	private readonly Lazy<ToFriendlyNameResult> FriendlyNamesLazyLoader;
-	public ToFriendlyNameResult FriendlyNames { get; private set; }
-	public string ItemName { get; private set; }
+	public ToFriendlyNameResult? FriendlyNames { get; private set; }
+	public string ItemName { get; private set; } = string.Empty;
 	public ItemStyle ItemStyle { get; private set; }
 	public TQColor TQColor { get; private set; }
 	public int RequiredLevel { get; private set; }

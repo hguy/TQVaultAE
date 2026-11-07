@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application.Results;
@@ -7,16 +8,17 @@ public class StashLoadResult
 	/// <summary>
 	/// The loaded stash.
 	/// </summary>
-	public Stash Stash { get; set; }
+	public Stash? Stash { get; set; }
 
 	/// <summary>
 	/// Path to the stash file.
 	/// </summary>
-	public string StashFile { get; set; }
+	public string? StashFile { get; set; }
 
 	/// <summary>
 	/// Indicates whether the stash was loaded successfully.
 	/// </summary>
+	[MemberNotNullWhen(true, nameof(Stash), nameof(StashFile))]
 	public bool IsSuccess => Stash != null;
 
 	/// <summary>

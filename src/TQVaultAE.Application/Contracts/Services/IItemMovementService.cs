@@ -57,5 +57,5 @@ public interface IItemMovementService
     /// <param name="destinationSackNumber">The destination sack number.</param>
     /// <param name="destinationStashType">The destination stash type (if applicable).</param>
     /// <param name="containerName">The display name of the container.</param>
-    void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, int destinationSackNumber, StashType? destinationStashType = null, string containerName = null);
+    void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, int destinationSackNumber, StashType? destinationStashType = null, string? containerName = null);
 }

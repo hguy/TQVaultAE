@@ -13,13 +13,13 @@ public class SessionContext
 	/// <summary>
 	/// Currently selected player
 	/// </summary>
-	public PlayerCollection CurrentPlayer { get; set; }
+	public PlayerCollection? CurrentPlayer { get; set; }
 
-	private BagButtonIconInfo iconInfoCopy;
+	private BagButtonIconInfo? iconInfoCopy;
 	/// <summary>
 	/// Last icon info copied
 	/// </summary>
-	public BagButtonIconInfo IconInfoCopy
+	public BagButtonIconInfo? IconInfoCopy
 	{
 		get => iconInfoCopy;
 		set

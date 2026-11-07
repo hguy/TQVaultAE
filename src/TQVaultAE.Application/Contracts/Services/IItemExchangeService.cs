@@ -13,6 +13,6 @@ public interface IItemExchangeService
 	void ImportVaultInto(PlayerCollection vault, ImportResult importData);
 	bool IsPasteBinUrl(string text);
 	bool HasPasteBinApiKey { get; }
-	Task<string> ExportToPasteBinAsync(string json, string pasteName = null);
+	Task<string> ExportToPasteBinAsync(string json, string? pasteName = null);
 	Task<string> ImportFromPasteBinAsync(string pasteUrl);
 }
