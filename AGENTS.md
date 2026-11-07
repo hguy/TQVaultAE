@@ -31,7 +31,7 @@ dotnet test --project src/TQVaultAE.Tests --filter-class "*TagServiceTests"
 # Run single test method
 dotnet test --project src/TQVaultAE.Tests --filter-method "*TagServiceTests.AddTag_WithNewTagName_ReturnsTrue"
 
-# Run with coverage (coverlet.MTP, written to TestResults/)
+# Run with coverage (coverlet.MTP, written to TestResults/; src/testconfig.json limits it to our assemblies)
 dotnet test --project src/TQVaultAE.Tests --coverlet --coverlet-output-format opencover
 
 # Build before testing
