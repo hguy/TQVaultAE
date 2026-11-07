@@ -1,14 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net48</TargetFramework>
+		<TargetFramework>net10.0-windows</TargetFramework>
 		<OutputType>WinExe</OutputType>
 		<RootNamespace>TQ.SaveFilesExplorer</RootNamespace>
 		<AssemblyName>TQ.SaveFilesExplorer</AssemblyName>
+		<!-- Legacy code, not annotated for nullable reference types. -->
 		<Nullable>disable</Nullable>
 		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 		<Platforms>AnyCPU;x64;x86</Platforms>
 		<UseWindowsForms>true</UseWindowsForms>
+		<EnableWindowsTargeting>true</EnableWindowsTargeting>
+		<NoWarn>$(NoWarn);WFO1000</NoWarn>
 		<AssemblyTitle>Titan Quest Save Files Explorer</AssemblyTitle>
 		<AssemblyDescription>Tool for exploring Titan Quest's save files.</AssemblyDescription>
 		<AssemblyCompany>titanquest.net community</AssemblyCompany>
@@ -20,9 +23,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Enums.NET" />
-		<PackageReference Include="System.Configuration.ConfigurationManager" />
-		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
-		<PackageReference Include="System.Resources.Extensions" />
 	</ItemGroup>
 
 	<ItemGroup>
