@@ -138,6 +138,10 @@ public interface IItemProvider
 	/// </summary>
 	bool HasGrantedSkill(Item itm);
 	/// <summary>
+	/// The translated names of the skills the item grants (see <see cref="HasGrantedSkill"/>), each once.
+	/// </summary>
+	IReadOnlyList<string> GetGrantedSkillNames(Item itm);
+	/// <summary>
 	/// Gets the level of a triggered skill
 	/// </summary>
 	/// <param name="record">DBRecord for the triggered skill</param>

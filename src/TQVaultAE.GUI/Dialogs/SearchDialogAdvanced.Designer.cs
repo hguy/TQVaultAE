@@ -94,6 +94,9 @@ namespace TQVaultAE.GUI.Dialogs
 			flowLayoutPanelSetItems = new FlowLayoutPanel();
 			scalingLabelSetItems = new ScalingLabel();
 			scalingCheckedListBoxSetItems = new VirtualCheckedListBox();
+			flowLayoutPanelSkills = new FlowLayoutPanel();
+			scalingLabelSkills = new ScalingLabel();
+			scalingCheckedListBoxSkills = new VirtualCheckedListBox();
 			flowLayoutPanelWithCharm = new FlowLayoutPanel();
 			scalingLabelWithCharm = new ScalingLabel();
 			scalingCheckedListBoxWithCharm = new VirtualCheckedListBox();
@@ -166,6 +169,7 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingButtonMenuQuality = new ScalingButton();
 			scalingButtonMenuStyle = new ScalingButton();
 			scalingButtonMenuSetItems = new ScalingButton();
+			scalingButtonMenuSkills = new ScalingButton();
 			scalingButtonMenuWithCharm = new ScalingButton();
 			scalingButtonMenuWithRelic = new ScalingButton();
 			scalingButtonMenuAttribute = new ScalingButton();
@@ -191,6 +195,7 @@ namespace TQVaultAE.GUI.Dialogs
 			flowLayoutPanelQuality.SuspendLayout();
 			flowLayoutPanelStyle.SuspendLayout();
 			flowLayoutPanelSetItems.SuspendLayout();
+			flowLayoutPanelSkills.SuspendLayout();
 			flowLayoutPanelWithCharm.SuspendLayout();
 			flowLayoutPanelWithRelic.SuspendLayout();
 			flowLayoutPanelPrefixName.SuspendLayout();
@@ -673,6 +678,7 @@ namespace TQVaultAE.GUI.Dialogs
 			flowLayoutPanelMain.Controls.Add(flowLayoutPanelQuality);
 			flowLayoutPanelMain.Controls.Add(flowLayoutPanelStyle);
 			flowLayoutPanelMain.Controls.Add(flowLayoutPanelSetItems);
+			flowLayoutPanelMain.Controls.Add(flowLayoutPanelSkills);
 			flowLayoutPanelMain.Controls.Add(flowLayoutPanelWithCharm);
 			flowLayoutPanelMain.Controls.Add(flowLayoutPanelWithRelic);
 			flowLayoutPanelMain.Controls.Add(flowLayoutPanelItemAttributes);
@@ -927,6 +933,54 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingCheckedListBoxSetItems.TabIndex = 7;
 			scalingCheckedListBoxSetItems.SelectedValueChanged += scalingCheckedListBox_SelectedValueChanged;
 			scalingCheckedListBoxSetItems.MouseMove += scalingCheckedListBox_MouseMove;
+			//
+			// flowLayoutPanelSkills
+			//
+			flowLayoutPanelSkills.AutoSize = true;
+			flowLayoutPanelSkills.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+			flowLayoutPanelSkills.BorderStyle = BorderStyle.FixedSingle;
+			flowLayoutPanelSkills.Controls.Add(scalingLabelSkills);
+			flowLayoutPanelSkills.Controls.Add(scalingCheckedListBoxSkills);
+			flowLayoutPanelSkills.FlowDirection = FlowDirection.TopDown;
+			flowLayoutPanelSkills.Location = new Point(463, 219);
+			flowLayoutPanelSkills.MinimumSize = new Size(50, 10);
+			flowLayoutPanelSkills.Name = "flowLayoutPanelSkills";
+			flowLayoutPanelSkills.Padding = new Padding(1, 2, 0, 0);
+			flowLayoutPanelSkills.Size = new Size(224, 102);
+			flowLayoutPanelSkills.TabIndex = 24;
+			//
+			// scalingLabelSkills
+			//
+			scalingLabelSkills.AutoSize = true;
+			scalingLabelSkills.Font = new Font("Microsoft Sans Serif", 9F);
+			scalingLabelSkills.ForeColor = Color.Gold;
+			scalingLabelSkills.Location = new Point(4, 2);
+			scalingLabelSkills.Name = "scalingLabelSkills";
+			scalingLabelSkills.Size = new Size(76, 18);
+			scalingLabelSkills.TabIndex = 0;
+			scalingLabelSkills.Text = "Item Skills";
+			scalingLabelSkills.UseMnemonic = false;
+			scalingLabelSkills.MouseClick += scalingLabelCategory_MouseClick;
+			//
+			// scalingCheckedListBoxSkills
+			//
+			scalingCheckedListBoxSkills.BackColor = Color.FromArgb(46, 31, 21);
+			scalingCheckedListBoxSkills.BorderStyle = BorderStyle.None;
+			scalingCheckedListBoxSkills.CheckOnClick = true;
+			scalingCheckedListBoxSkills.Font = new Font("Microsoft Sans Serif", 9F);
+			scalingCheckedListBoxSkills.ForeColor = Color.White;
+			scalingCheckedListBoxSkills.FormattingEnabled = true;
+			scalingCheckedListBoxSkills.HorizontalScrollbar = true;
+			scalingCheckedListBoxSkills.IntegralHeight = false;
+			scalingCheckedListBoxSkills.Items.AddRange(new object[] { "Skill 1", "Skill 2", "Skill 3" });
+			scalingCheckedListBoxSkills.Location = new Point(4, 20);
+			scalingCheckedListBoxSkills.Margin = new Padding(3, 0, 3, 0);
+			scalingCheckedListBoxSkills.MultiColumn = true;
+			scalingCheckedListBoxSkills.Name = "scalingCheckedListBoxSkills";
+			scalingCheckedListBoxSkills.Size = new Size(215, 80);
+			scalingCheckedListBoxSkills.TabIndex = 7;
+			scalingCheckedListBoxSkills.SelectedValueChanged += scalingCheckedListBox_SelectedValueChanged;
+			scalingCheckedListBoxSkills.MouseMove += scalingCheckedListBox_MouseMove;
 			// 
 			// flowLayoutPanelWithCharm
 			// 
@@ -1873,6 +1927,7 @@ namespace TQVaultAE.GUI.Dialogs
 			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuQuality);
 			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuStyle);
 			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuSetItems);
+			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuSkills);
 			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuWithCharm);
 			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuWithRelic);
 			flowLayoutPanelLeftColumn.Controls.Add(scalingButtonMenuAttribute);
@@ -2071,6 +2126,29 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingButtonMenuSetItems.UseCustomGraphic = true;
 			scalingButtonMenuSetItems.UseVisualStyleBackColor = false;
 			scalingButtonMenuSetItems.Click += scalingButtonMenu_Click;
+			//
+			// scalingButtonMenuSkills
+			//
+			scalingButtonMenuSkills.BackColor = Color.Transparent;
+			scalingButtonMenuSkills.DownBitmap = (Bitmap)resources.GetObject("scalingButtonMenuSetItems.DownBitmap");
+			scalingButtonMenuSkills.FlatAppearance.BorderSize = 0;
+			scalingButtonMenuSkills.FlatAppearance.MouseDownBackColor = Color.FromArgb(0, 51, 44, 28);
+			scalingButtonMenuSkills.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 51, 44, 28);
+			scalingButtonMenuSkills.FlatStyle = FlatStyle.Flat;
+			scalingButtonMenuSkills.Font = new Font("Microsoft Sans Serif", 7.5F);
+			scalingButtonMenuSkills.ForeColor = Color.FromArgb(51, 44, 28);
+			scalingButtonMenuSkills.Image = (Image)resources.GetObject("scalingButtonMenuSetItems.Image");
+			scalingButtonMenuSkills.Location = new Point(3, 291);
+			scalingButtonMenuSkills.Name = "scalingButtonMenuSkills";
+			scalingButtonMenuSkills.OverBitmap = (Bitmap)resources.GetObject("scalingButtonMenuSetItems.OverBitmap");
+			scalingButtonMenuSkills.Size = new Size(120, 30);
+			scalingButtonMenuSkills.SizeToGraphic = false;
+			scalingButtonMenuSkills.TabIndex = 24;
+			scalingButtonMenuSkills.Text = "Item Skills";
+			scalingButtonMenuSkills.UpBitmap = (Bitmap)resources.GetObject("scalingButtonMenuSetItems.UpBitmap");
+			scalingButtonMenuSkills.UseCustomGraphic = true;
+			scalingButtonMenuSkills.UseVisualStyleBackColor = false;
+			scalingButtonMenuSkills.Click += scalingButtonMenu_Click;
 			// 
 			// scalingButtonMenuWithCharm
 			// 
@@ -2318,6 +2396,8 @@ namespace TQVaultAE.GUI.Dialogs
 			flowLayoutPanelStyle.PerformLayout();
 			flowLayoutPanelSetItems.ResumeLayout(false);
 			flowLayoutPanelSetItems.PerformLayout();
+			flowLayoutPanelSkills.ResumeLayout(false);
+			flowLayoutPanelSkills.PerformLayout();
 			flowLayoutPanelWithCharm.ResumeLayout(false);
 			flowLayoutPanelWithCharm.PerformLayout();
 			flowLayoutPanelWithRelic.ResumeLayout(false);
@@ -2485,6 +2565,10 @@ namespace TQVaultAE.GUI.Dialogs
         private VirtualCheckedListBox scalingCheckedListBoxSetItems;
         private ScalingButton scalingButtonMenuOrigin;
         private ScalingButton scalingButtonMenuSetItems;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanelSkills;
+        private ScalingLabel scalingLabelSkills;
+        private VirtualCheckedListBox scalingCheckedListBoxSkills;
+        private ScalingButton scalingButtonMenuSkills;
         private BufferedFlowLayoutPanel bufferedFlowLayoutPanelRequierements;
     }
 }

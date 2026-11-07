@@ -1767,4 +1767,7 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
 	<data name="SearchHavingSkill" xml:space="preserve">
     <value>Avec Compétence</value>
   </data>
+	<data name="SearchItemSkills" xml:space="preserve">
+    <value>Compétences d'objet</value>
+  </data>
 </root>

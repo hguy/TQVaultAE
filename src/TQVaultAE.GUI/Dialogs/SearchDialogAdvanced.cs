@@ -137,6 +137,9 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.scalingButtonMenuSetItems.Text
 			= this.scalingLabelSetItems.Text
 			= Resources.SearchSetItem;
+		this.scalingButtonMenuSkills.Text
+			= this.scalingLabelSkills.Text
+			= Resources.SearchItemSkills;
 
 		scalingCheckBoxMinReq.Text = $"{Resources.GlobalMin} {Resources.GlobalRequirements} :";
 		scalingCheckBoxMaxReq.Text = $"{Resources.GlobalMax} {Resources.GlobalRequirements} :";
@@ -177,6 +180,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				(this.scalingButtonMenuQuality, this.flowLayoutPanelQuality),
 				(this.scalingButtonMenuOrigin, this.flowLayoutPanelOrigin),
 				(this.scalingButtonMenuSetItems, this.flowLayoutPanelSetItems),
+				(this.scalingButtonMenuSkills, this.flowLayoutPanelSkills),
 			};
 		}
 
@@ -265,6 +269,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.PopulateWithRelic,
 		this.PopulateOrigin,
 		this.PopulateSetItems,
+		this.PopulateSkills,
 		this.PopulateItemAttributes,
 		this.PopulateBaseAttributes,
 		this.PopulatePrefixName,

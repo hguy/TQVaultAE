@@ -31,6 +31,27 @@ public partial class ItemProvider
 	public bool HasGrantedSkill(Item itm)
 		=> this.GrantedSkillSources(itm).Any(s => this.DisplayedSkillRecord(s.SkillId) is not null);
 
+	/// <inheritdoc/>
+	public IReadOnlyList<string> GetGrantedSkillNames(Item itm)
+	{
+		var names = new List<string>();
+		foreach (var (_, skillId) in this.GrantedSkillSources(itm))
+		{
+			if (this.DisplayedSkillRecord(skillId) is not { } shown)
+				continue;
+
+			if (!TranslationService.TryTranslateXTag(shown.GetString("skillDisplayName", 0), out var name))
+				name = PathIO.GetFileNameWithoutExtension(skillId.Raw);
+
+			// Plain text for lists: some translations carry formatting tags, e.g. "{^I}".
+			name = name.RemoveAllTQTags().Trim();
+			if (name.Length != 0 && !names.Contains(name))
+				names.Add(name);
+		}
+
+		return names;
+	}
+
 	/// <summary>
 	/// The records of an item that grant a skill (<c>itemSkillName</c>): its base, its affixes, its relics and their
 	/// completion bonuses, each once.
