@@ -17,7 +17,6 @@ using TQVaultAE.Presentation.Win32;
 namespace TQVaultAE.GUI.Components.Panels;
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.GUI.Models;
@@ -224,7 +223,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 		foreach (var bag in this.BagButtons)
 			bag.ContextMenuStrip = this.buttonContextMenuStrip;
-
 	}
 
 	/// <summary>
@@ -263,160 +261,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		// Force an update of the Player Info Panel.
 		DisplayPlayerInfoLastName = null;
 		DisplayPlayerInfo();
-	}
-
-	/// <summary>
-	/// Calculates the stat bonuses for the equipped gear and updates the player
-	/// </summary>
-	private void GetSkillStatBonus()
-	{
-		if (Database == null || Player == null)
-			return;
-
-		SortedList<string, int> statBonuses = new SortedList<string, int>();
-
-		if (Player.PlayerInfo is null)
-			return;
-
-		foreach (SkillRecord skill in Player.PlayerInfo.SkillRecordList)
-			ItemProvider.GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(skill.skillName), skill.skillLevel);
-
-
-		Player.ClearPlayerSkillBonuses();
-		Player.UpdatePlayerSkillBonuses(statBonuses);
-	}
-
-	private void DisplayPlayerInfo()
-	{
-		if (this.Player == null || !this.equipmentPanel.Visible || this.BagButtons[this.CurrentBag].ButtonText != Resources.StashPanelBtnEquipment)
-		{
-			this.PlayerPanel.Visible = false;
-			return;
-		}
-
-		this.PlayerPanel.Visible = true;
-
-		if (DisplayPlayerInfoLastName == this.Player.PlayerName) return;
-
-		this.SuspendLayout();
-		this.PlayerPanel.SuspendLayout();
-
-		this.PlayerPanel.Visible = false;
-		this.PlayerPanel.Controls.Clear();
-
-		if (this.Player?.PlayerInfo != null)
-		{
-			DisplayPlayerInfoLastName = this.Player.PlayerName;
-			var pclass = TranslationService.TranslateXTag(this.Player.PlayerInfo.Class ?? string.Empty, true, true) ?? string.Empty;
-			var mclass = TranslationService.TranslateMastery(this.Player.PlayerInfo.Class ?? string.Empty) ?? string.Empty;
-			mclass = mclass == Resources.Masteries ? string.Empty : mclass;
-
-			var pi = new Dictionary<string, string>
-			{
-				[Resources.CurrentLevel] = this.Player.PlayerInfo.CurrentLevel.ToString(),
-				[Resources.Class] = pclass,
-				[Resources.Masteries] = mclass,
-				[Resources.CurrentXP] = this.Player.PlayerInfo.CurrentXP.ToString(),
-				[Resources.DifficultyUnlocked] = TranslationService.TranslateDifficulty(this.Player.PlayerInfo.DifficultyUnlocked) ?? "unknown",
-				[Resources.Money] = this.Player.PlayerInfo.Money.ToString(),
-				[Resources.SkillPoints] = this.Player.PlayerInfo.SkillPoints.ToString(),
-				[Resources.AttributesPoints] = this.Player.PlayerInfo.AttributesPoints.ToString(),
-				////[Resources.BaseStrength] = this.Player.PlayerInfo.BaseStrength.ToString(),
-				[Resources.CEStrength] = this.Player.PlayerInfo.CalculatedStrength.ToString(),
-				////[Resources.BaseDexterity] = this.Player.PlayerInfo.BaseDexterity.ToString(),
-				[Resources.CEDexterity] = this.Player.PlayerInfo.CalculatedDexterity.ToString(),
-				////[Resources.BaseIntelligence] = this.Player.PlayerInfo.BaseIntelligence.ToString(),
-				[Resources.CEIntelligence] = this.Player.PlayerInfo.CalculatedIntelligence.ToString(),
-				////[Resources.BaseHealth] = this.Player.PlayerInfo.BaseHealth.ToString(),
-				[Resources.CEHealth] = this.Player.PlayerInfo.CalculatedHealth.ToString(),
-				////[Resources.BaseMana] = this.Player.PlayerInfo.BaseMana.ToString(),
-				[Resources.CEMana] = this.Player.PlayerInfo.CalculatedMana.ToString(),
-				[Resources.PlayTimeInSeconds] = this.Player.PlayerInfo.PlayTimeInSeconds.ToString(),
-				[Resources.NumberOfDeaths] = this.Player.PlayerInfo.NumberOfDeaths.ToString(),
-				[Resources.NumberOfKills] = this.Player.PlayerInfo.NumberOfKills.ToString(),
-				[Resources.ExperienceFromKills] = this.Player.PlayerInfo.ExperienceFromKills.ToString(),
-				[Resources.HealthPotionsUsed] = this.Player.PlayerInfo.HealthPotionsUsed.ToString(),
-				[Resources.ManaPotionsUsed] = this.Player.PlayerInfo.ManaPotionsUsed.ToString(),
-				[Resources.NumHitsReceived] = this.Player.PlayerInfo.NumHitsReceived.ToString(),
-				[Resources.NumHitsInflicted] = this.Player.PlayerInfo.NumHitsInflicted.ToString(),
-				[Resources.CriticalHitsInflicted] = this.Player.PlayerInfo.CriticalHitsInflicted.ToString(),
-				[Resources.CriticalHitsReceived] = this.Player.PlayerInfo.CriticalHitsReceived.ToString(),
-			};
-
-			var labStyle = BorderStyle.None;
-			var mg = new Padding(0, 0, 0, 1);
-			var pd = new Padding(0);
-			int rowIdx = 0;
-			var labFnt = new Font(this.Font.FontFamily, 7.5f * UIService.Scale);
-
-			// Add Edit Button
-			var editButton = new ScalingButton()
-			{
-				Anchor = AnchorStyles.Top | AnchorStyles.Right,
-				BackColor = Color.Transparent,
-				DialogResult = DialogResult.OK,
-				DownBitmap = Images.MainButtonDown,
-				FlatStyle = FlatStyle.Flat,
-				ForeColor = Color.FromArgb(51, 44, 28),
-				Image = Images.MainButtonUp,
-				Name = "editButton",
-				OverBitmap = Images.MainButtonOver,
-				Size = new Size(137, 30),
-				SizeToGraphic = false,
-				Text = Resources.CharacterEditBtn,
-				UpBitmap = Images.MainButtonUp,
-				UseCustomGraphic = true,
-				UseVisualStyleBackColor = false,
-				Font = FontService.GetFontLight(11F),
-				Margin = new Padding(0, 0, 0, 5),
-				Padding = new Padding(10, 0, 10, 0),
-				Visible = this.USettings.AllowCharacterEdit,
-			};
-			editButton.FlatAppearance.BorderSize = 0;
-			editButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(0, 51, 44, 28);
-			editButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 51, 44, 28);
-			editButton.Click += EditButton_Click;
-
-			this.PlayerPanel.SetColumnSpan(editButton, 2);
-			this.PlayerPanel.Controls.Add(editButton, 0, rowIdx++);
-
-			// Add Player Data
-			foreach (var row in pi)
-			{
-				// Add Row
-				this.PlayerPanel.Controls.Add(new ScalingLabel()
-				{
-					Margin = mg,
-					Padding = pd,
-					BorderStyle = labStyle,
-					AutoSize = true,
-					TextAlign = ContentAlignment.TopRight,
-					Anchor = AnchorStyles.Top | AnchorStyles.Right,
-					ForeColor = Color.White,
-					Font = labFnt,
-					Text = row.Key
-				}, 0, rowIdx);
-				this.PlayerPanel.Controls.Add(new ScalingLabel()
-				{
-					Margin = mg,
-					Padding = pd,
-					BorderStyle = labStyle,
-					AutoSize = true,
-					TextAlign = ContentAlignment.TopLeft,
-					Anchor = AnchorStyles.Top | AnchorStyles.Left,
-					ForeColor = Color.YellowGreen,
-					Font = labFnt,
-					Text = row.Value
-				}, 1, rowIdx);
-
-				rowIdx++;
-			}
-		}
-
-		this.PlayerPanel.ResumeLayout();
-		this.ResumeLayout();
-
-		this.PlayerPanel.Visible = true;
 	}
 
 	private void EditButton_Click(object? sender, EventArgs e)
@@ -656,52 +500,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	}
 
 	/// <summary>
-	/// Creates a new stash button
-	/// </summary>
-	/// <param name="bagNumber">The bag number for button that is being created.</param>
-	/// <param name="numberOfBags">The total number of bags which is used for scaling.</param>
-	/// <returns>The new StashButton that is created.</returns>
-	protected StashButton CreateBagButton(int bagNumber, int numberOfBags)
-	{
-		StashButton button = new StashButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.Services);
-
-		float buttonWidth = (float)Images.StashTabUp.Width;
-		float buttonHeight = (float)Images.StashTabUp.Height;
-		float pad = 2.0F;
-		float slotWidth = buttonWidth + (2.0F * pad);
-
-		// we need to scale down the button size depending on the # we have
-		float scale = this.GetBagButtonScale(slotWidth, numberOfBags);
-		float bagSlotWidth = scale * slotWidth;
-
-		// We are using tabs so only scale horizontally
-		button.Size = new Size((int)Math.Round(scale * buttonWidth), Convert.ToInt32(buttonHeight * UIService.Scale));
-		float offset = (bagSlotWidth * bagNumber) + ((bagSlotWidth - button.Width) / 2.0F);
-
-		button.Location = new Point(this.SackPanel.Location.X + (int)Math.Round(offset), this.SackPanel.Location.Y - button.Height);
-		button.Visible = false;
-		button.MouseDown += new MouseEventHandler(this.BagButtonClick);
-
-		button.ButtonText = buttonNames[bagNumber];
-
-		return button;
-	}
-
-	/// <summary>
-	/// Creates all of the stash buttons.
-	/// </summary>
-	/// <param name="numberOfBags">The total number of buttons to create.</param>
-	/// <remarks>We need this override since the CreateBagButton() method above has a different return type than the base class.</remarks>
-	protected override void CreateBagButtons(int numberOfBags)
-	{
-		for (int i = 0; i < numberOfBags; ++i)
-		{
-			this.BagButtons.Insert(i, this.CreateBagButton(i, numberOfBags));
-			this.Controls.Add(this.BagButtons[i]);
-		}
-	}
-
-	/// <summary>
 	/// Updates the text for the group box.  Override the base method since we do not need to change it based on the player name.
 	/// </summary>
 	protected override void UpdateText()
@@ -813,40 +611,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	}
 
 	/// <summary>
-	/// Handler for clicking on a bag button
-	/// </summary>
-	/// <param name="sender">sender object</param>
-	/// <param name="e">EventArgs data</param>
-	protected override void BagButtonClick(object? sender, MouseEventArgs e)
-	{
-		BagButtonBase? button = (BagButtonBase)sender!;
-
-		int bagID = button.ButtonNumber;
-
-		// filter the bagID
-		if (bagID < 0)
-			bagID = BagIdConstants.BAGID_EQUIPMENTPANEL;
-
-		if (bagID >= 4)
-			bagID = BagIdConstants.BAGID_RELICVAULTSTASH;
-
-		if (bagID != this.currentBag)
-		{
-			// turn off the current bag and turn on the new bag
-			this.BagButtons[this.currentBag].IsOn = false;
-			this.BagButtons[bagID].IsOn = true;
-
-			// set the current bag to the selected bag
-			this.CurrentBag = bagID;
-			this.SackPanel.ClearSelectedItems();
-		}
-
-		DisplayPlayerInfo();
-
-		//this.BagButtons[bagID].ContextMenuStrip.Show();
-	}
-
-	/// <summary>
 	/// Paint callback
 	/// </summary>
 	/// <param name="sender">sender object</param>
@@ -865,30 +629,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	#endregion StashPanel Protected Methods
 
 	#region StashPanel Private Methods
-
-
-	/// <summary>
-	/// Gets the tooltip for a sack.  Summarizes the items within the sack
-	/// </summary>
-	/// <param name="button">button the mouse is over.  Corresponds to a sack</param>
-	/// <returns>string to be displayed in the tooltip</returns>
-	private void GetSackToolTip(BagButtonBase button)
-	{
-		// Get the list of items and return them as a string
-		int bagID = button.ButtonNumber;
-		SackCollection? sack;
-
-		if (bagID == BagIdConstants.BAGID_EQUIPMENTPANEL)
-			sack = this.Player?.EquipmentSack;
-		else if (bagID == BagIdConstants.BAGID_TRANSFERSTASH)
-			sack = this.transferStash?.Sack;
-		else if (bagID == BagIdConstants.BAGID_PLAYERSTASH)
-			sack = this.stash?.Sack;
-		else
-			sack = this.relicVaultStash?.Sack;
-
-		button.Sack = sack;
-	}
 
 	/// <summary>
 	/// Gets a rectangle scaled by the size of the child vault panels.
@@ -948,84 +688,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		this.toolStripMenuItemDisableTooltip.Visible = true;
 		this.buttonContextMenuStrip.ResumeLayout(false);
 		this.ResumeLayout(false);
-
 	}
 
-	private void contextMenuStrip_ItemClicked(object? sender, ToolStripItemClickedEventArgs e)
-	{
-		if (e.ClickedItem == this.toolStripMenuItemDisableTooltip)
-		{
-			switch (this.CurrentBag)
-			{
-				case BagIdConstants.BAGID_EQUIPMENTPANEL:
-					this.USettings.DisableTooltipEquipment = true;
-					break;
-				case BagIdConstants.BAGID_PLAYERSTASH:
-					this.USettings.DisableTooltipStash = true;
-					break;
-				case BagIdConstants.BAGID_RELICVAULTSTASH:
-					this.USettings.DisableTooltipRelic = true;
-					break;
-				case BagIdConstants.BAGID_TRANSFERSTASH:
-					this.USettings.DisableTooltipTransfer = true;
-					break;
-			}
-		}
-
-		if (e.ClickedItem == this.toolStripMenuItemEnableTooltip)
-		{
-			switch (this.CurrentBag)
-			{
-				case BagIdConstants.BAGID_EQUIPMENTPANEL:
-					this.USettings.DisableTooltipEquipment = false;
-					break;
-				case BagIdConstants.BAGID_PLAYERSTASH:
-					this.USettings.DisableTooltipStash = false;
-					break;
-				case BagIdConstants.BAGID_RELICVAULTSTASH:
-					this.USettings.DisableTooltipRelic = false;
-					break;
-				case BagIdConstants.BAGID_TRANSFERSTASH:
-					this.USettings.DisableTooltipTransfer = false;
-					break;
-			}
-		}
-
-		this.USettings.Save();
-	}
-
-	private void buttonContextMenuStrip_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
-	{
-		void SetMenuItemDisableTooltip(bool disabled)
-		{
-			if (disabled)
-			{
-				this.toolStripMenuItemDisableTooltip.Visible = false;
-				this.toolStripMenuItemEnableTooltip.Visible = true;
-				return;
-			}
-			this.toolStripMenuItemDisableTooltip.Visible = true;
-			this.toolStripMenuItemEnableTooltip.Visible = false;
-		}
-
-		if (((ContextMenuStrip)sender!).SourceControl is not StashButton sourceButton)
-			return;
-
-		// Adjust menu items display
-		switch (sourceButton.ButtonNumber)
-		{
-			case BagIdConstants.BAGID_EQUIPMENTPANEL:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipEquipment);
-				break;
-			case BagIdConstants.BAGID_PLAYERSTASH:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipStash);
-				break;
-			case BagIdConstants.BAGID_RELICVAULTSTASH:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipRelic);
-				break;
-			case BagIdConstants.BAGID_TRANSFERSTASH:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipTransfer);
-				break;
-		}
-	}
 }

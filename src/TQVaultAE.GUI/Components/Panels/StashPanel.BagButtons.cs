@@ -1,0 +1,208 @@
+//-----------------------------------------------------------------------
+// <copyright file="StashPanel.BagButtons.cs" company="None">
+//     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+/// <summary>
+/// Class for handling the stash panel ui functions
+/// </summary>
+
+using TQVaultAE.Application;
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.GUI.Components.Buttons;
+using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Dialogs;
+using TQVaultAE.Presentation.Win32;
+
+namespace TQVaultAE.GUI.Components.Panels;
+
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Presentation;
+
+public partial class StashPanel
+{
+	/// <summary>
+	/// Creates a new stash button
+	/// </summary>
+	/// <param name="bagNumber">The bag number for button that is being created.</param>
+	/// <param name="numberOfBags">The total number of bags which is used for scaling.</param>
+	/// <returns>The new StashButton that is created.</returns>
+	protected StashButton CreateBagButton(int bagNumber, int numberOfBags)
+	{
+		StashButton button = new StashButton(bagNumber, new GetToolTip(this.GetSackToolTip), this.Services);
+
+		float buttonWidth = (float)Images.StashTabUp.Width;
+		float buttonHeight = (float)Images.StashTabUp.Height;
+		float pad = 2.0F;
+		float slotWidth = buttonWidth + (2.0F * pad);
+
+		// we need to scale down the button size depending on the # we have
+		float scale = this.GetBagButtonScale(slotWidth, numberOfBags);
+		float bagSlotWidth = scale * slotWidth;
+
+		// We are using tabs so only scale horizontally
+		button.Size = new Size((int)Math.Round(scale * buttonWidth), Convert.ToInt32(buttonHeight * UIService.Scale));
+		float offset = (bagSlotWidth * bagNumber) + ((bagSlotWidth - button.Width) / 2.0F);
+
+		button.Location = new Point(this.SackPanel.Location.X + (int)Math.Round(offset), this.SackPanel.Location.Y - button.Height);
+		button.Visible = false;
+		button.MouseDown += new MouseEventHandler(this.BagButtonClick);
+
+		button.ButtonText = buttonNames[bagNumber];
+
+		return button;
+	}
+
+	/// <summary>
+	/// Creates all of the stash buttons.
+	/// </summary>
+	/// <param name="numberOfBags">The total number of buttons to create.</param>
+	/// <remarks>We need this override since the CreateBagButton() method above has a different return type than the base class.</remarks>
+	protected override void CreateBagButtons(int numberOfBags)
+	{
+		for (int i = 0; i < numberOfBags; ++i)
+		{
+			this.BagButtons.Insert(i, this.CreateBagButton(i, numberOfBags));
+			this.Controls.Add(this.BagButtons[i]);
+		}
+	}
+
+	/// <summary>
+	/// Handler for clicking on a bag button
+	/// </summary>
+	/// <param name="sender">sender object</param>
+	/// <param name="e">EventArgs data</param>
+	protected override void BagButtonClick(object? sender, MouseEventArgs e)
+	{
+		BagButtonBase? button = (BagButtonBase)sender!;
+
+		int bagID = button.ButtonNumber;
+
+		// filter the bagID
+		if (bagID < 0)
+			bagID = BagIdConstants.BAGID_EQUIPMENTPANEL;
+
+		if (bagID >= 4)
+			bagID = BagIdConstants.BAGID_RELICVAULTSTASH;
+
+		if (bagID != this.currentBag)
+		{
+			// turn off the current bag and turn on the new bag
+			this.BagButtons[this.currentBag].IsOn = false;
+			this.BagButtons[bagID].IsOn = true;
+
+			// set the current bag to the selected bag
+			this.CurrentBag = bagID;
+			this.SackPanel.ClearSelectedItems();
+		}
+
+		DisplayPlayerInfo();
+
+		//this.BagButtons[bagID].ContextMenuStrip.Show();
+	}
+
+	/// <summary>
+	/// Gets the tooltip for a sack.  Summarizes the items within the sack
+	/// </summary>
+	/// <param name="button">button the mouse is over.  Corresponds to a sack</param>
+	/// <returns>string to be displayed in the tooltip</returns>
+	private void GetSackToolTip(BagButtonBase button)
+	{
+		// Get the list of items and return them as a string
+		int bagID = button.ButtonNumber;
+		SackCollection? sack;
+
+		if (bagID == BagIdConstants.BAGID_EQUIPMENTPANEL)
+			sack = this.Player?.EquipmentSack;
+		else if (bagID == BagIdConstants.BAGID_TRANSFERSTASH)
+			sack = this.transferStash?.Sack;
+		else if (bagID == BagIdConstants.BAGID_PLAYERSTASH)
+			sack = this.stash?.Sack;
+		else
+			sack = this.relicVaultStash?.Sack;
+
+		button.Sack = sack;
+	}
+
+	private void contextMenuStrip_ItemClicked(object? sender, ToolStripItemClickedEventArgs e)
+	{
+		if (e.ClickedItem == this.toolStripMenuItemDisableTooltip)
+		{
+			switch (this.CurrentBag)
+			{
+				case BagIdConstants.BAGID_EQUIPMENTPANEL:
+					this.USettings.DisableTooltipEquipment = true;
+					break;
+				case BagIdConstants.BAGID_PLAYERSTASH:
+					this.USettings.DisableTooltipStash = true;
+					break;
+				case BagIdConstants.BAGID_RELICVAULTSTASH:
+					this.USettings.DisableTooltipRelic = true;
+					break;
+				case BagIdConstants.BAGID_TRANSFERSTASH:
+					this.USettings.DisableTooltipTransfer = true;
+					break;
+			}
+		}
+
+		if (e.ClickedItem == this.toolStripMenuItemEnableTooltip)
+		{
+			switch (this.CurrentBag)
+			{
+				case BagIdConstants.BAGID_EQUIPMENTPANEL:
+					this.USettings.DisableTooltipEquipment = false;
+					break;
+				case BagIdConstants.BAGID_PLAYERSTASH:
+					this.USettings.DisableTooltipStash = false;
+					break;
+				case BagIdConstants.BAGID_RELICVAULTSTASH:
+					this.USettings.DisableTooltipRelic = false;
+					break;
+				case BagIdConstants.BAGID_TRANSFERSTASH:
+					this.USettings.DisableTooltipTransfer = false;
+					break;
+			}
+		}
+
+		this.USettings.Save();
+	}
+
+	private void buttonContextMenuStrip_Opening(object? sender, System.ComponentModel.CancelEventArgs e)
+	{
+		void SetMenuItemDisableTooltip(bool disabled)
+		{
+			if (disabled)
+			{
+				this.toolStripMenuItemDisableTooltip.Visible = false;
+				this.toolStripMenuItemEnableTooltip.Visible = true;
+				return;
+			}
+			this.toolStripMenuItemDisableTooltip.Visible = true;
+			this.toolStripMenuItemEnableTooltip.Visible = false;
+		}
+
+		if (((ContextMenuStrip)sender!).SourceControl is not StashButton sourceButton)
+			return;
+
+		// Adjust menu items display
+		switch (sourceButton.ButtonNumber)
+		{
+			case BagIdConstants.BAGID_EQUIPMENTPANEL:
+				SetMenuItemDisableTooltip(this.USettings.DisableTooltipEquipment);
+				break;
+			case BagIdConstants.BAGID_PLAYERSTASH:
+				SetMenuItemDisableTooltip(this.USettings.DisableTooltipStash);
+				break;
+			case BagIdConstants.BAGID_RELICVAULTSTASH:
+				SetMenuItemDisableTooltip(this.USettings.DisableTooltipRelic);
+				break;
+			case BagIdConstants.BAGID_TRANSFERSTASH:
+				SetMenuItemDisableTooltip(this.USettings.DisableTooltipTransfer);
+				break;
+		}
+	}
+}
