@@ -90,7 +90,7 @@ public partial class ItemProvider : IItemProvider
 		items = items.Where(i => i != null).ToList();
 		var keylist = this.FriendlyNamesCache.Where(i => items.Contains(i.Key.Item)).Select(i => i.Key).ToList();
 		foreach (var k in keylist) this.FriendlyNamesCache.TryRemove(k, out var outVal);
-		return keylist.Any();
+		return keylist.Count != 0;
 	}
 
 	/// <summary>
@@ -407,7 +407,7 @@ public partial class ItemProvider : IItemProvider
 				if (k.Item.prefixInfo != null)
 					res.PrefixInfoRecords = Database.GetRecordFromFile(k.Item.prefixID);
 
-				if (res.PrefixInfoRecords?.Any() ?? false)
+				if (res.PrefixInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, inGame?.Prefix ?? res.PrefixInfoRecords, k.FilterExtra, k.Item.prefixID, results
 						, valueRanges: inGame?.RangesOf(RollSource.Prefix), lineRanges: ranges);
 
@@ -423,7 +423,7 @@ public partial class ItemProvider : IItemProvider
 				if (k.Item.suffixInfo != null)
 					res.SuffixInfoRecords = Database.GetRecordFromFile(k.Item.suffixID);
 
-				if (res.SuffixInfoRecords?.Any() ?? false)
+				if (res.SuffixInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, inGame?.Suffix ?? res.SuffixInfoRecords, k.FilterExtra, k.Item.suffixID, results
 						, valueRanges: inGame?.RangesOf(RollSource.Suffix), lineRanges: ranges);
 
@@ -437,7 +437,7 @@ public partial class ItemProvider : IItemProvider
 				ranges.Clear();
 
 				// res.baseItemInfoRecords should be already loaded
-				if (res.BaseItemInfoRecords?.Any() ?? false)
+				if (res.BaseItemInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, inGame?.Base ?? res.BaseItemInfoRecords, k.FilterExtra, k.Item.BaseItemId, results
 						, valueRanges: inGame?.RangesOf(RollSource.Base), lineRanges: ranges);
 			}
@@ -452,7 +452,7 @@ public partial class ItemProvider : IItemProvider
 				if (k.Item.RelicInfo != null)
 					res.RelicInfoRecords = Database.GetRecordFromFile(k.Item.relicID);
 
-				if (res.RelicInfoRecords?.Any() ?? false)
+				if (res.RelicInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.RelicInfoRecords, k.FilterExtra, k.Item.relicID, tmp);
 
 				res.Relic1Attributes = tmp.ToArray();
@@ -465,7 +465,7 @@ public partial class ItemProvider : IItemProvider
 				if (k.Item.Relic2Info != null)
 					res.Relic2InfoRecords = Database.GetRecordFromFile(k.Item.relic2ID);
 
-				if (res.Relic2InfoRecords?.Any() ?? false)
+				if (res.Relic2InfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.Relic2InfoRecords, k.FilterExtra, k.Item.relic2ID, tmp);
 
 				res.Relic2Attributes = tmp.ToArray();
@@ -522,7 +522,7 @@ public partial class ItemProvider : IItemProvider
 
 				res.RelicBonus1InfoRecords = Database.GetRecordFromFile(k.Item.RelicBonusId);
 
-				if (res.RelicBonus1InfoRecords?.Any() ?? false)
+				if (res.RelicBonus1InfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.RelicBonus1InfoRecords, k.FilterExtra, k.Item.RelicBonusId, tmp);
 
 				res.RelicBonus1Attributes = tmp.ToArray();
@@ -534,7 +534,7 @@ public partial class ItemProvider : IItemProvider
 				var tmp = new List<string>();
 				res.RelicBonus2InfoRecords = Database.GetRecordFromFile(k.Item.RelicBonus2Id);
 
-				if (res.RelicBonus2InfoRecords?.Any() ?? false)
+				if (res.RelicBonus2InfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.RelicBonus2InfoRecords, k.FilterExtra, k.Item.RelicBonus2Id, tmp);
 
 				res.RelicBonus2Attributes = tmp.ToArray();

@@ -6,7 +6,7 @@ namespace TQVaultAE.Tests.Services;
 /// <summary>
 /// Unit tests for DirectoryIO wrapper class
 /// </summary>
-public class DirectoryIOTests : IDisposable
+public sealed class DirectoryIOTests : IDisposable
 {
 	private readonly DirectoryIO _directoryIO;
 	private readonly PathIO _pathIO;

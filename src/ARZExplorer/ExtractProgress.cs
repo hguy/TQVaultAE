@@ -18,7 +18,7 @@ using TQVaultAE.Domain.Entities;
 /// <summary>
 /// ARZ file extraction progress dialog
 /// </summary>
-internal partial class ExtractProgress : Form
+internal sealed partial class ExtractProgress : Form
 {
 	/// <summary>
 	/// MessageBoxOptions for right to left reading.

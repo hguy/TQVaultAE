@@ -72,7 +72,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 	public static SearchFiltersTooltip? ShowTooltip(GuiServices services, Control anchorControl, List<BoxItem> filters, SearchOperator ope)
 	{
 		if (anchorControl is null) return null;
-		if (!(filters?.Any() ?? false)) return null;
+		if (filters is not { Count: > 0 }) return null;
 
 		SearchFiltersTooltip newTT;
 		lock (syncObj)

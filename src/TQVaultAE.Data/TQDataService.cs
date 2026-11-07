@@ -332,7 +332,7 @@ public class TQDataService : ITQDataService
 		int level = 0;
 		var keybegin_block = "begin_block";
 		var keyend_block = "end_block";
-		var noMatch = (-1, 0, 0, new byte[] { }, 0);
+		var noMatch = (-1, 0, 0, Array.Empty<byte>(), 0);
 
 		var startPoint = BinaryFindKey(playerFileContent, keyToLookFor, offset);
 		if (startPoint.indexOf == -1)

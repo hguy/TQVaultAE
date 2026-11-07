@@ -13,7 +13,7 @@ namespace TQVaultAE.Tests.Data;
 /// <summary>
 /// Testable derived Database class that exposes protected members for testing
 /// </summary>
-internal class TestableDatabase : Database
+internal sealed class TestableDatabase : Database
 {
 	public TestableDatabase(
 		ILogger<Database> log,

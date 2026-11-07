@@ -1,6 +1,6 @@
 ﻿namespace TQ.SaveFilesExplorer.Components
 {
-	internal class ComboBoxItem
+	internal sealed class ComboBoxItem
 	{
 		public string DisplayName;
 		public string Value;

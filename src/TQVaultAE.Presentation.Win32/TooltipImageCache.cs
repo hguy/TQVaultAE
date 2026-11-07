@@ -39,7 +39,7 @@ public sealed class TooltipImageCache<TKey, TPayload> : IDisposable where TKey :
 	}
 
 	/// <summary>Bytes of pixels of a bitmap as rendered by the tooltips (32 bits per pixel).</summary>
-	public static long SizeOf(Bitmap image) => (long)image.Width * image.Height * 4;
+	private static long SizeOf(Bitmap image) => (long)image.Width * image.Height * 4;
 
 	/// <summary>
 	/// Stores <paramref name="image"/> for <paramref name="key"/>; the cache takes ownership of it.

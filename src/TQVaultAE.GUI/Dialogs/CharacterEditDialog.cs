@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 /// <summary>
 /// Dialog box class for the Item Seed Dialog
 /// </summary>
-internal partial class CharacterEditDialog : VaultForm
+internal sealed partial class CharacterEditDialog : VaultForm
 {
 	private struct DifficultData
 	{
@@ -220,7 +220,7 @@ internal partial class CharacterEditDialog : VaultForm
 					= this.Mastery2ValueScalingLabel.Visible = false;
 
 		var dbr = Info.ActiveMasteriesRecordNames;
-		if (dbr.Any())
+		if (dbr.Length != 0)
 		{
 			for (int i = 0; i < dbr.Length; i++)
 			{

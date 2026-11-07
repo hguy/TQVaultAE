@@ -511,9 +511,8 @@ public partial class Database : IDatabase
 						{
 							var num = variable.Name.Substring(varname.Length);
 
-							if (dico.Keys.Contains(num))
+							if (dico.TryGetValue(num, out var val))
 							{// ValueTuple are not ref
-								var val = dico[num];
 								val.brokenRandomizerName = brokenTable;
 								dico[num] = val;
 							}
@@ -531,9 +530,8 @@ public partial class Database : IDatabase
 						{
 							var num = variable.Name.Substring(varname.Length);
 
-							if (dico.Keys.Contains(num))
+							if (dico.TryGetValue(num, out var val))
 							{// ValueTuple are not ref
-								var val = dico[num];
 								val.prefixRandomizerName = prefixTable;
 								dico[num] = val;
 							}
@@ -551,9 +549,8 @@ public partial class Database : IDatabase
 						{
 							var num = variable.Name.Substring(varname.Length);
 
-							if (dico.Keys.Contains(num))
+							if (dico.TryGetValue(num, out var val))
 							{// ValueTuple are not ref
-								var val = dico[num];
 								val.suffixRandomizerName = suffixTable;
 								dico[num] = val;
 							}
@@ -668,7 +665,7 @@ public partial class Database : IDatabase
 
 		byte[]? cachedArcFileData = this.resourcesData.GetOrAddAtomic(resourceId, key =>
 		{
-			var resourceIdSplited = key.Normalized.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);// hguy : easier to understand than substring everywhere
+			var resourceIdSplited = key.Normalized.Split('\\', StringSplitOptions.RemoveEmptyEntries);// hguy : easier to understand than substring everywhere
 
 			// not a proper resourceID.
 			if (resourceIdSplited.Length == 1)
@@ -919,17 +916,17 @@ public partial class Database : IDatabase
 			// Added null check to fix exception when there is no culture found.
 			if (cultureID != null)
 			{
-				if (cultureID.ToUpperInvariant() == "CS")
+				if (cultureID.Equals("CS", StringComparison.OrdinalIgnoreCase))
 				{
 					// Force Czech to use CZ instead of CS for the 2 letter code.
 					cultureID = "CZ";
 				}
-				else if (cultureID.ToUpperInvariant() == "PT")
+				else if (cultureID.Equals("PT", StringComparison.OrdinalIgnoreCase))
 				{
 					// Force brazilian portuguese to use BR instead of PT
 					cultureID = "BR";
 				}
-				else if (cultureID.ToUpperInvariant() == "ZH")
+				else if (cultureID.Equals("ZH", StringComparison.OrdinalIgnoreCase))
 				{
 					// Force chinese to use CH instead of ZH
 					cultureID = "CH";
@@ -1164,7 +1161,7 @@ public partial class Database : IDatabase
 		}
 
 		// Added this check to see if anything was loaded.
-		if (this.textDB.Count == 0)
+		if (textDB.IsEmpty)
 		{
 			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Exception - Could not load Text DB.");

@@ -17,7 +17,7 @@ using TQVaultAE.Presentation;
 /// <summary>
 /// Class for inital form which load the resources.
 /// </summary>
-internal partial class SplashScreenForm : VaultForm
+internal sealed partial class SplashScreenForm : VaultForm
 {
 	/// <summary>
 	/// Holds the width of the border pen.

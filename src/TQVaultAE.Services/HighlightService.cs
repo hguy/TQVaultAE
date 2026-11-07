@@ -147,20 +147,20 @@ public class HighlightService : IHighlightService
                     }
                 }
 
-                if (filter.ClassItem.Any())
+                if (filter.ClassItem.Count != 0)
                 {
                     availableItems = availableItems.Where(i =>
                         filter.ClassItem
                             .Any(ci => ci.Equals(i.Item.ItemClass, StringComparison.OrdinalIgnoreCase)));
                 }
 
-                if (filter.Rarity.Any())
+                if (filter.Rarity.Count != 0)
                 {
                     availableItems = availableItems.Where(i =>
                         filter.Rarity.Contains(i.Item.Rarity));
                 }
 
-                if (filter.Origin.Any())
+                if (filter.Origin.Count != 0)
                 {
                     availableItems = availableItems.Where(i =>
                         filter.Origin.Contains(i.Item.GameDlc));

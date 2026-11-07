@@ -30,6 +30,7 @@ internal enum WhereOp
 /// </summary>
 internal sealed class WhereClause
 {
+	private static readonly System.Buffers.SearchValues<char> OperatorChars = System.Buffers.SearchValues.Create("=!<>~?");
 	private readonly Pattern? _fieldPattern;
 	private readonly Pattern? _like;
 	private readonly double _number;
@@ -77,7 +78,7 @@ internal sealed class WhereClause
 			text = text[1..].TrimStart();
 		}
 
-		int opAt = text.AsSpan().IndexOfAny("=!<>~?");
+		int opAt = text.AsSpan().IndexOfAny(OperatorChars);
 		if (opAt <= 0)
 			throw new UsageException($"--where '{expression}': expected <field><op><value> with op one of = != > >= < <= ~ or a trailing ?.");
 

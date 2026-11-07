@@ -1,4 +1,5 @@
-﻿using System.Xml.Serialization;
+﻿using System.Xml;
+using System.Xml.Serialization;
 
 namespace TQVaultAE.Config;
 
@@ -243,7 +244,7 @@ public class UserSettings
 	public static UserSettings ParseSettings(string xmlData)
 	{
 		XmlSerializer serializer = new XmlSerializer(typeof(UserSettings));
-		using var reader = new StringReader(xmlData);
+		using var reader = XmlReader.Create(new StringReader(xmlData), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
 		return (UserSettings?)serializer.Deserialize(reader) ?? new UserSettings();
 	}
 

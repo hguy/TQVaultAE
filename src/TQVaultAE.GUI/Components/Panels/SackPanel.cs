@@ -1455,7 +1455,7 @@ public partial class SackPanel : Panel, IScalingControl
 	{
 		var reqs = this.ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.Requirements).RequirementVariables;
 		var currPlayer = this.userContext.CurrentPlayer;
-		if (currPlayer != null && reqs != null && reqs.Any() && !currPlayer.IsPlayerMeetRequierements(reqs))
+		if (currPlayer != null && reqs != null && reqs.Count != 0 && !currPlayer.IsPlayerMeetRequierements(reqs))
 			return false;
 
 		return true;

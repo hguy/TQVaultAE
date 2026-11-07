@@ -28,9 +28,9 @@ public partial class MainForm
 	/// <returns>Total number of files that LoadAllFiles() will load.</returns>
 	private int LoadAllFilesTotal()
 	{
-		int numIT = GamePathResolver.GetCharacterList().Count();
+		int numIT = GamePathResolver.GetCharacterList().Length;
 		numIT = numIT * 2;// Assuming that there is 1 stash file per character
-		int numVaults = GamePathResolver.GetVaultList().Count();
+		int numVaults = GamePathResolver.GetVaultList().Length;
 		return Math.Max(0, numIT + numVaults - 1);
 	}
 
@@ -390,7 +390,7 @@ public partial class MainForm
 		{
 			// Changed by VillageIdiot
 			// Now check to see if the value is changed since the Main Vault would never auto load
-			if (this.vaultListComboBox.SelectedItem != null && this.vaultListComboBox.SelectedItemText().ToUpperInvariant() != USettings.LastVaultName.ToUpperInvariant())
+			if (this.vaultListComboBox.SelectedItem != null && !this.vaultListComboBox.SelectedItemText().Equals(USettings.LastVaultName, StringComparison.OrdinalIgnoreCase))
 			{
 				USettings.LastVaultName = this.vaultListComboBox.SelectedItemText();
 				this.configChanged = true;
@@ -405,7 +405,7 @@ public partial class MainForm
 
 			if (ps is not null) name = ps.Name;
 
-			if (name is not null && name.ToUpperInvariant() != USettings.LastCharacterName.ToUpperInvariant())
+			if (name is not null && !name.Equals(USettings.LastCharacterName, StringComparison.OrdinalIgnoreCase))
 			{
 				// Clear the value if no character is selected
 				if (name == Resources.MainFormSelectCharacter)

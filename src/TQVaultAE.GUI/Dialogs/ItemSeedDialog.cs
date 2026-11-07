@@ -16,7 +16,7 @@ using TQVaultAE.Presentation;
 /// <summary>
 /// Dialog box class for the Item Seed Dialog
 /// </summary>
-internal partial class ItemSeedDialog : VaultForm
+internal sealed partial class ItemSeedDialog : VaultForm
 {
 	/// <summary>
 	/// MessageBoxOptions for right to left reading.

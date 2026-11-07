@@ -101,7 +101,7 @@ public class TranslationService : ITranslationService
 			return TranslateXTag(characterXtagClass);
 
 		var dualclass = tags.Split('-');
-		return dualclass.Count() > 1
+		return dualclass.Length > 1
 			? $"{TranslateXTag(dualclass.First())}-{TranslateXTag(dualclass.Last())}"
 			: TranslateXTag(dualclass.First());
 	}

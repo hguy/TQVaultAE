@@ -184,7 +184,7 @@ public class UIService : IUIService
 	/// <returns>Bitmap converted from <paramref name="texData"/></returns>
 	public Bitmap? LoadBitmap(RecordId resourceId, byte[]? texData)
 	{
-		if (RecordId.IsNullOrEmpty(resourceId) || !(texData?.Any() ?? false))
+		if (RecordId.IsNullOrEmpty(resourceId) || texData is not { Length: > 0 })
 			return null;
 
 		if (USettings.DatabaseDebugLevel > 0)

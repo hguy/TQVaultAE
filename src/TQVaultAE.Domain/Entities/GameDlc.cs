@@ -39,7 +39,8 @@ public static class GameDlcExtension
 	}
 }
 
-public class GameDlcDescriptionAttribute : Attribute
+[AttributeUsage(AttributeTargets.Field)]
+public sealed class GameDlcDescriptionAttribute : Attribute
 {
 	public readonly string Code;
 	public readonly string TranslationTag;

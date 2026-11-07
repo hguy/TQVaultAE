@@ -602,7 +602,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 							this.AddMenuItem(Resources.PlayerPanelMenuDisableAllTooltip, this.DisableTooltipClicked);
 						}
 
-						if (this.Vault.DisabledTooltipBagId.Any())
+						if (this.Vault.DisabledTooltipBagId.Count != 0)
 						{
 							this.AddMenuItem(Resources.PlayerPanelMenuEnableAllTooltip, this.DisableTooltipClicked);
 						}
@@ -1332,7 +1332,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// Class for rendering the context menu.
 	/// </summary>
-	private class CustomProfessionalRenderer : ToolStripProfessionalRenderer
+	private sealed class CustomProfessionalRenderer : ToolStripProfessionalRenderer
 	{
 		/// <summary>
 		/// Handler for rendering the context menu items

@@ -1,6 +1,6 @@
 ﻿namespace ArzExplorer.Models;
 
-public class TreeViewUpdateScope : IDisposable
+public sealed class TreeViewUpdateScope : IDisposable
 {
 	private readonly MainForm _form;
 

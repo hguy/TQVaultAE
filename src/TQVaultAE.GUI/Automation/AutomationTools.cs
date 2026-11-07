@@ -454,6 +454,7 @@ internal static partial class AutomationTools
 	private static List<Tooltips.BaseTooltip> OpenTooltips()
 		=> System.Windows.Forms.Application.OpenForms.OfType<Tooltips.BaseTooltip>().Where(t => t.Visible).ToList();
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "Anonymous JSON payload.")]
 	private static object DescribeTooltips()
 		=> OpenTooltips().Select(t => new { type = t.GetType().Name, width = t.Width, height = t.Height }).ToList();
 
@@ -554,6 +555,7 @@ internal static partial class AutomationTools
 		};
 	}
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1859", Justification = "Anonymous JSON payload.")]
 	private static object? DescribeEquipmentSlots(SackCollection? sack)
 	{
 		if (sack is null)

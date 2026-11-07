@@ -54,7 +54,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	{
 		if (pc.PlayerInfo == null) return;
 		if (playerInfo == null) return;
-		if (pc.rawData == null || !pc.rawData.Any()) return;
+		if (pc.rawData == null || pc.rawData.Length == 0) return;
 
 		pc.PlayerInfo.CurrentLevel = playerInfo.CurrentLevel;
 		pc.PlayerInfo.MasteriesAllowed = playerInfo.MasteriesAllowed;

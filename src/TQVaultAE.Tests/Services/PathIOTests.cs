@@ -6,7 +6,7 @@ namespace TQVaultAE.Tests.Services;
 /// <summary>
 /// Unit tests for PathIO wrapper class
 /// </summary>
-public class PathIOTests : IDisposable
+public sealed class PathIOTests : IDisposable
 {
 	private readonly PathIO _pathIO;
 	private readonly string _testBasePath;

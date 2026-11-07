@@ -151,10 +151,10 @@ public class PlayerLevel
 
 	public static int GetLevelMinXP(int level)
 	{
-		if (_levelKey.ContainsKey(level))
+		if (_levelKey.TryGetValue(level, out int value))
 		{
-			return (_levelKey[level]);
+			return (value);
 		}
-		throw new ArgumentOutOfRangeException("Level does not exist or is not supported");
+		throw new ArgumentOutOfRangeException(nameof(level), level, "Level does not exist or is not supported");
 	}
 }

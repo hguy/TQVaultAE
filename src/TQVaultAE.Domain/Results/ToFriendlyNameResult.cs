@@ -393,7 +393,7 @@ public partial class ToFriendlyNameResult
 					, RelicBonus2Attributes
 					, FormulaeArtifactAttributes
 				];
-				_AttributesAll = groups.Where(c => c?.Any() ?? false)
+				_AttributesAll = groups.Where(c => c is { Length: > 0 })
 				.SelectMany(a => a)
 				.Where(a => !(string.IsNullOrWhiteSpace(a) || a.IsColorTagOnly()))
 				.Select(a => a.RemoveAllTQTags())

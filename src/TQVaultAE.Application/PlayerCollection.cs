@@ -79,7 +79,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		this.PlayerName = playerName;
 	}
 
-	public bool IsPlayer { get => this.PlayerFile.EndsWith("player.chr", System.StringComparison.InvariantCultureIgnoreCase); }
+	public bool IsPlayer { get => this.PlayerFile.EndsWith("player.chr", System.StringComparison.OrdinalIgnoreCase); }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether this file is a vault
@@ -334,30 +334,20 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		if (PlayerInfo.GearBonus == null)
 			PlayerInfo.GearBonus = new PlayerStatBonus();
 
-		if (statBonusVariables.ContainsKey("CHARACTERSTRENGTH"))
-			PlayerInfo.GearBonus.StrengthBonus += statBonusVariables["CHARACTERSTRENGTH"];
-		if (statBonusVariables.ContainsKey("CHARACTERSTRENGTHMODIFIER"))
-			PlayerInfo.GearBonus.StrengthModifier += statBonusVariables["CHARACTERSTRENGTHMODIFIER"];
+		PlayerInfo.GearBonus.StrengthBonus += statBonusVariables.GetValueOrDefault("CHARACTERSTRENGTH");
+		PlayerInfo.GearBonus.StrengthModifier += statBonusVariables.GetValueOrDefault("CHARACTERSTRENGTHMODIFIER");
 
-		if (statBonusVariables.ContainsKey("CHARACTERDEXTERITY"))
-			PlayerInfo.GearBonus.DexterityBonus += statBonusVariables["CHARACTERDEXTERITY"];
-		if (statBonusVariables.ContainsKey("CHARACTERDEXTERITYMODIFIER"))
-			PlayerInfo.GearBonus.DexterityModifier += statBonusVariables["CHARACTERDEXTERITYMODIFIER"];
+		PlayerInfo.GearBonus.DexterityBonus += statBonusVariables.GetValueOrDefault("CHARACTERDEXTERITY");
+		PlayerInfo.GearBonus.DexterityModifier += statBonusVariables.GetValueOrDefault("CHARACTERDEXTERITYMODIFIER");
 
-		if (statBonusVariables.ContainsKey("CHARACTERINTELLIGENCE"))
-			PlayerInfo.GearBonus.IntelligenceBonus += statBonusVariables["CHARACTERINTELLIGENCE"];
-		if (statBonusVariables.ContainsKey("CHARACTERINTELLIGENCEMODIFIER"))
-			PlayerInfo.GearBonus.IntelligenceModifier += statBonusVariables["CHARACTERINTELLIGENCEMODIFIER"];
+		PlayerInfo.GearBonus.IntelligenceBonus += statBonusVariables.GetValueOrDefault("CHARACTERINTELLIGENCE");
+		PlayerInfo.GearBonus.IntelligenceModifier += statBonusVariables.GetValueOrDefault("CHARACTERINTELLIGENCEMODIFIER");
 
-		if (statBonusVariables.ContainsKey("CHARACTERLIFE"))
-			PlayerInfo.GearBonus.HealthBonus += statBonusVariables["CHARACTERLIFE"];
-		if (statBonusVariables.ContainsKey("CHARACTERLIFEMODIFIER"))
-			PlayerInfo.GearBonus.HealthModifier += statBonusVariables["CHARACTERLIFEMODIFIER"];
+		PlayerInfo.GearBonus.HealthBonus += statBonusVariables.GetValueOrDefault("CHARACTERLIFE");
+		PlayerInfo.GearBonus.HealthModifier += statBonusVariables.GetValueOrDefault("CHARACTERLIFEMODIFIER");
 
-		if (statBonusVariables.ContainsKey("CHARACTERMANA"))
-			PlayerInfo.GearBonus.ManaBonus += statBonusVariables["CHARACTERMANA"];
-		if (statBonusVariables.ContainsKey("CHARACTERMANAMODIFIER"))
-			PlayerInfo.GearBonus.ManaModifier += statBonusVariables["CHARACTERMANAMODIFIER"];
+		PlayerInfo.GearBonus.ManaBonus += statBonusVariables.GetValueOrDefault("CHARACTERMANA");
+		PlayerInfo.GearBonus.ManaModifier += statBonusVariables.GetValueOrDefault("CHARACTERMANAMODIFIER");
 	}
 
 	/// <summary>
@@ -371,30 +361,20 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		if (PlayerInfo.SkillBonus == null)
 			PlayerInfo.SkillBonus = new PlayerStatBonus();
 
-		if (skillStatBonusVariables.ContainsKey("CHARACTERSTRENGTH"))
-			PlayerInfo.SkillBonus.StrengthBonus += skillStatBonusVariables["CHARACTERSTRENGTH"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERSTRENGTHMODIFIER"))
-			PlayerInfo.SkillBonus.StrengthModifier += skillStatBonusVariables["CHARACTERSTRENGTHMODIFIER"];
+		PlayerInfo.SkillBonus.StrengthBonus += skillStatBonusVariables.GetValueOrDefault("CHARACTERSTRENGTH");
+		PlayerInfo.SkillBonus.StrengthModifier += skillStatBonusVariables.GetValueOrDefault("CHARACTERSTRENGTHMODIFIER");
 
-		if (skillStatBonusVariables.ContainsKey("CHARACTERDEXTERITY"))
-			PlayerInfo.SkillBonus.DexterityBonus += skillStatBonusVariables["CHARACTERDEXTERITY"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERDEXTERITYMODIFIER"))
-			PlayerInfo.SkillBonus.DexterityModifier += skillStatBonusVariables["CHARACTERDEXTERITYMODIFIER"];
+		PlayerInfo.SkillBonus.DexterityBonus += skillStatBonusVariables.GetValueOrDefault("CHARACTERDEXTERITY");
+		PlayerInfo.SkillBonus.DexterityModifier += skillStatBonusVariables.GetValueOrDefault("CHARACTERDEXTERITYMODIFIER");
 
-		if (skillStatBonusVariables.ContainsKey("CHARACTERINTELLIGENCE"))
-			PlayerInfo.SkillBonus.IntelligenceBonus += skillStatBonusVariables["CHARACTERINTELLIGENCE"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERINTELLIGENCEMODIFIER"))
-			PlayerInfo.SkillBonus.IntelligenceModifier += skillStatBonusVariables["CHARACTERINTELLIGENCEMODIFIER"];
+		PlayerInfo.SkillBonus.IntelligenceBonus += skillStatBonusVariables.GetValueOrDefault("CHARACTERINTELLIGENCE");
+		PlayerInfo.SkillBonus.IntelligenceModifier += skillStatBonusVariables.GetValueOrDefault("CHARACTERINTELLIGENCEMODIFIER");
 
-		if (skillStatBonusVariables.ContainsKey("CHARACTERLIFE"))
-			PlayerInfo.SkillBonus.HealthBonus += skillStatBonusVariables["CHARACTERLIFE"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERLIFEMODIFIER"))
-			PlayerInfo.SkillBonus.HealthModifier += skillStatBonusVariables["CHARACTERLIFEMODIFIER"];
+		PlayerInfo.SkillBonus.HealthBonus += skillStatBonusVariables.GetValueOrDefault("CHARACTERLIFE");
+		PlayerInfo.SkillBonus.HealthModifier += skillStatBonusVariables.GetValueOrDefault("CHARACTERLIFEMODIFIER");
 
-		if (skillStatBonusVariables.ContainsKey("CHARACTERMANA"))
-			PlayerInfo.SkillBonus.ManaBonus += skillStatBonusVariables["CHARACTERMANA"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERMANAMODIFIER"))
-			PlayerInfo.SkillBonus.ManaModifier += skillStatBonusVariables["CHARACTERMANAMODIFIER"];
+		PlayerInfo.SkillBonus.ManaBonus += skillStatBonusVariables.GetValueOrDefault("CHARACTERMANA");
+		PlayerInfo.SkillBonus.ManaModifier += skillStatBonusVariables.GetValueOrDefault("CHARACTERMANAMODIFIER");
 	}
 
 
@@ -403,24 +383,16 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		if (this.IsVault || this.PlayerInfo is null) return true;
 
 		// "LevelRequirement"
-		int LevelRequirement = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_LEVELREQ))
-			LevelRequirement = requirementVariables[Variable.KEY_LEVELREQ].GetInt32();
+		int LevelRequirement = requirementVariables.TryGetValue(Variable.KEY_LEVELREQ, out Variable? levelRequirementVariable) ? levelRequirementVariable.GetInt32() : 0;
 
 		// "Strength"
-		int Strength = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_STRENGTH))
-			Strength = requirementVariables[Variable.KEY_STRENGTH].GetInt32();
+		int Strength = requirementVariables.TryGetValue(Variable.KEY_STRENGTH, out Variable? strengthVariable) ? strengthVariable.GetInt32() : 0;
 
 		// Dexterity
-		int Dexterity = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_DEXTERITY))
-			Dexterity = requirementVariables[Variable.KEY_DEXTERITY].GetInt32();
+		int Dexterity = requirementVariables.TryGetValue(Variable.KEY_DEXTERITY, out Variable? dexterityVariable) ? dexterityVariable.GetInt32() : 0;
 
 		// Intelligence
-		int Intelligence = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_INTELLIGENCE))
-			Intelligence = requirementVariables[Variable.KEY_INTELLIGENCE].GetInt32();
+		int Intelligence = requirementVariables.TryGetValue(Variable.KEY_INTELLIGENCE, out Variable? intelligenceVariable) ? intelligenceVariable.GetInt32() : 0;
 
 		return
 			LevelRequirement <= this.PlayerInfo.CurrentLevel

@@ -25,10 +25,7 @@ public class TextExceptionFormatter
 	/// <param name="exception"></param>
 	public TextExceptionFormatter(Exception exception)
 	{
-		if (exception == null)
-		{
-			throw new ArgumentNullException("exception");
-		}
+		ArgumentNullException.ThrowIfNull(exception);
 		this.exception = exception;
 	}
 
@@ -58,7 +55,7 @@ public class TextExceptionFormatter
 	{
 		for (int i = 0; i < this.innerDepth; i++)
 		{
-			this.stringBuilder.Append("\t");
+			this.stringBuilder.Append('\t');
 		}
 	}
 
@@ -81,10 +78,7 @@ public class TextExceptionFormatter
 
 	private void WriteException2(Exception exceptionToFormat, Exception? outerException)
 	{
-		if (exceptionToFormat == null)
-		{
-			throw new ArgumentNullException("exceptionToFormat");
-		}
+		ArgumentNullException.ThrowIfNull(exceptionToFormat);
 		this.WriteExceptionType(exceptionToFormat.GetType());
 		this.WriteMessage(exceptionToFormat.Message);
 		this.WriteSource(exceptionToFormat.Source);
@@ -125,8 +119,7 @@ public class TextExceptionFormatter
 	private void WriteReflectionInfo(Exception exceptionToFormat)
 	{
 		object? propertyAccessFailed;
-		if (exceptionToFormat == null)
-			throw new ArgumentNullException("exceptionToFormat");
+		ArgumentNullException.ThrowIfNull(exceptionToFormat);
 
 		Type type = exceptionToFormat.GetType();
 		PropertyInfo[] properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
@@ -215,7 +208,7 @@ public class TextExceptionFormatter
 			this.stringBuilder.Append(str);
 			this.stringBuilder.Append(" : ");
 			this.stringBuilder.Append(additionalInformation[str]);
-			this.stringBuilder.Append("\n");
+			this.stringBuilder.Append('\n');
 		}
 	}
 

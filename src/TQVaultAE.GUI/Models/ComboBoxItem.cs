@@ -1,6 +1,6 @@
 ﻿namespace TQVaultAE.GUI.Models;
 
-internal class ComboBoxItem
+internal sealed class ComboBoxItem
 {
 	public string DisplayName = string.Empty;
 	public string Value = string.Empty;
@@ -12,7 +12,7 @@ internal class ComboBoxItem
 	}
 }
 
-internal class ComboBoxItem<TComboValue, TValue>
+internal sealed class ComboBoxItem<TComboValue, TValue>
 {
 	public required string DisplayName;
 	public required TComboValue ComboValue;
