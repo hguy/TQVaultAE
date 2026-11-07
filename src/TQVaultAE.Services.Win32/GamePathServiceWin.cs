@@ -14,8 +14,19 @@ namespace TQVaultAE.Services.Win32;
 /// <summary>
 /// Win32 IGamePathResolver implementation
 /// </summary>
-public class GamePathServiceWin : IGamePathService
+public partial class GamePathServiceWin : IGamePathService
 {
+	[GeneratedRegex(@"^(?<SteamappsRoot>.+steamapps).*", RegexOptions.IgnoreCase)]
+	private static partial Regex SteamappsRootRegex();
+
+	/// <summary>Old libraryfolders.vdf format: <c>"2"		"D:\\games\\Steam"</c>.</summary>
+	[GeneratedRegex(@"""\d+""\t+""([^""]+)""")]
+	private static partial Regex VdfOldPathRegex();
+
+	/// <summary>New libraryfolders.vdf format: <c>"path"		"D:\\games\\Steam"</c>.</summary>
+	[GeneratedRegex(@"""path""\s+""(?<path>[^""]+)""")]
+	private static partial Regex VdfPathRegex();
+
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
 	internal const string LOCAL_GIT_REPOSITORY_DIRNAME = "LocalGitRepository";
@@ -513,7 +524,7 @@ public class GamePathServiceWin : IGamePathService
 		{
 			// Get all folders in the Steam\steamapps\workshop\content directory.
 			string TQITFolder = GamePathTQIT;
-			var steamworkshopRootDir = Regex.Replace(TQITFolder, @"(?i)^(?<SteamappsRoot>.+steamapps).*", @"${SteamappsRoot}\workshop\content\475150");
+			var steamworkshopRootDir = SteamappsRootRegex().Replace(TQITFolder, @"${SteamappsRoot}\workshop\content\475150");
 
 			if (steamworkshopRootDir == TQITFolder)// regex failed ! This is not a steamapps path
 				return [];
@@ -617,10 +628,9 @@ public class GamePathServiceWin : IGamePathService
 					string[] libFile = this.FileIO.ReadAllLines(vdfFile);
 
 					// TODO Old file format ? Is it obsolete ?
-					Regex vdfPathRegex = new Regex(@"""\d+""\t+""([^""]+)""");  // "2"		"D:\\games\\Steam"
 					foreach (var line in libFile)
 					{
-						if (vdfPathRegex.Match(line.Trim()) is { Success: true } match)
+						if (VdfOldPathRegex().Match(line.Trim()) is { Success: true } match)
 						{
 							var vdfPathValue = match.Groups[1].Value.Replace(@"\\", @"\");
 							fullPath = this.PathIO.Combine(vdfPathValue, steamTQPath);
@@ -635,13 +645,12 @@ public class GamePathServiceWin : IGamePathService
 					if (string.IsNullOrWhiteSpace(titanQuestGamePath))
 					{
 						// New File Format
-						var regExPath = new Regex(@"""path""\s+""(?<path>[^""]+)""");
 						var gameIdMarkup = @"""475150""";
 						steamPath = string.Empty;
 						foreach (var line in libFile)
 						{
 							// Match "path"
-							if (regExPath.Match(line) is { Success: true } match)
+							if (VdfPathRegex().Match(line) is { Success: true } match)
 								steamPath = match.Groups["path"].Value.Replace(@"\\", @"\");// Backslashes ares escaped in this file
 
 							// Match gameId

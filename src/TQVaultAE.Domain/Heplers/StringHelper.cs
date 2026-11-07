@@ -368,7 +368,8 @@ public static partial class StringHelper
 	[GeneratedRegex(@"\s+")]
 	private static partial Regex AllContiguousSpaceRegEx();
 
-	static readonly Regex InsertAfterColorPrefixRegEx = new Regex(TQColorHelper.RegExStartingColorTagOrEmpty + @"(?<Content>.+)", RegexOptions.Compiled);
+	[GeneratedRegex(TQColorHelper.RegExStartingColorTagOrEmpty + @"(?<Content>.+)")]
+	private static partial Regex InsertAfterColorPrefixRegEx();
 	/// <summary>
 	/// Insert <paramref name="insertedText"/> between the color tag prefix and the text.
 	/// </summary>
@@ -379,7 +380,7 @@ public static partial class StringHelper
 	{
 		if (TQText is null) return insertedText;
 		if (string.IsNullOrEmpty(insertedText)) return TQText;
-		return InsertAfterColorPrefixRegEx.Replace(TQText
+		return InsertAfterColorPrefixRegEx().Replace(TQText
 				, string.Concat(@"${ColorTag}", insertedText, @"${Content}")
 			).Trim();
 	}
