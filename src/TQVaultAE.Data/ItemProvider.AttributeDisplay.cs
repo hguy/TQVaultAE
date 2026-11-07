@@ -2194,7 +2194,7 @@ public partial class ItemProvider
 				if (string.IsNullOrEmpty(buffSkillName))
 				{
 					record = skillRecord1;
-					skillNameTag = skillRecord.GetString("skillDisplayName", 0);
+					skillNameTag = skillRecord1?.GetString("skillDisplayName", 0);
 					if (!string.IsNullOrWhiteSpace(skillNameTag))
 						TranslationService.TryTranslateXTag(skillNameTag, out skillName);
 				}
