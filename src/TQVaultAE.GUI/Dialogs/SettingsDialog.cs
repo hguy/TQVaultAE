@@ -693,11 +693,20 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.ConfigurationChanged = this.ItemBGColorOpacityChanged = true;
 	}
 
-	private void SettingsDialog_Shown(object? sender, EventArgs e)
+	private void SettingsDialog_Shown(object? sender, EventArgs e) => this.FitToContent();
+
+	/// <summary>On a monitor of another DPI the layout is scaled again: the size follows it.</summary>
+	protected override void OnDpiChanged(DpiChangedEventArgs e)
 	{
-		// Adjust the size to the inner table, so a taller column does not push the buttons out
+		base.OnDpiChanged(e);
+		this.FitToContent();
+	}
+
+	/// <summary>Adjusts the size to the inner table, so a taller column does not push the buttons out.</summary>
+	private void FitToContent()
+	{
 		this.Width = this.bufferedTableLayoutPanelSkeleton.Location.X + this.bufferedTableLayoutPanelSkeleton.Width + this.Padding.Right + 5;
-		this.Height = Math.Max(this.Height, this.bufferedTableLayoutPanelSkeleton.Location.Y + this.bufferedTableLayoutPanelSkeleton.Height + this.Padding.Bottom + 5);
+		this.Height = this.bufferedTableLayoutPanelSkeleton.Location.Y + this.bufferedTableLayoutPanelSkeleton.Height + this.Padding.Bottom + 5;
 	}
 
 	private void scalingTextBoxGitRepository_TextChanged(object? sender, EventArgs e)

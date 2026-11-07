@@ -62,7 +62,7 @@ public partial class MainForm
 		{
 			vaultExportButton.Text = "...";
 			vaultExportButton.FlatStyle = FlatStyle.Flat;
-			vaultExportButton.Font = FontService.GetFontLight(10F, UIService.Zoom);
+			vaultExportButton.Font = FontService.GetFontLight(10F, UIService.FontZoom);
 			vaultExportButton.FlatAppearance.BorderSize = 0;
 		}
 

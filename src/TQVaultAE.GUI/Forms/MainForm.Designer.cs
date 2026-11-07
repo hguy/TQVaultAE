@@ -374,8 +374,7 @@ namespace TQVaultAE.GUI.Forms
             // 
             // tableLayoutPanelHighlight
             // 
-            this.tableLayoutPanelHighlight.AutoSize = true;
-            this.tableLayoutPanelHighlight.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.tableLayoutPanelHighlight.AutoSize = false;
             this.tableLayoutPanelHighlight.ColumnCount = 2;
             this.tableLayoutPanelHighlight.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanelHighlight.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -387,7 +386,7 @@ namespace TQVaultAE.GUI.Forms
             this.tableLayoutPanelHighlight.Name = "tableLayoutPanelHighlight";
             this.tableLayoutPanelHighlight.RowCount = 1;
             this.tableLayoutPanelHighlight.RowStyles.Add(new System.Windows.Forms.RowStyle());
-            this.tableLayoutPanelHighlight.Size = new System.Drawing.Size(598, 22);
+            this.tableLayoutPanelHighlight.Size = new System.Drawing.Size(300, 22);
             this.tableLayoutPanelHighlight.TabIndex = 24;
             // 
             // scalingLabelHighlight

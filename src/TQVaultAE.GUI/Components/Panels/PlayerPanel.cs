@@ -44,7 +44,7 @@ public class PlayerPanel : VaultPanel
 			((panel1Size.Width + panel2Size.Width) * UIService.ItemUnitSize) + Convert.ToInt32(24.0F * UIService.Scale),
 			(Math.Max(panel1Size.Height, panel2Size.Height) * UIService.ItemUnitSize) + Convert.ToInt32(58.0F * UIService.Scale));
 		this.TabStop = false;
-		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.Zoom, this.Font.Style);
+		this.Font = new Font(this.Font.FontFamily, this.Font.SizeInPoints * UIService.FontZoom, this.Font.Style);
 
 		int borderPad = Convert.ToInt32(2.0F * UIService.Scale);
 

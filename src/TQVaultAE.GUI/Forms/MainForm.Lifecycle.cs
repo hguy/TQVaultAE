@@ -238,6 +238,22 @@ public partial class MainForm
 	#region Scaling
 
 	/// <summary>
+	/// The main window moved to a monitor of another DPI. Before Windows Forms scales the layout, UIService takes the new
+	/// DPI with the same zoom, so the panels and drawing built in code follow; the other windows open on this monitor.
+	/// </summary>
+	protected override void OnDpiChanged(DpiChangedEventArgs e)
+	{
+		var zoom = UIService.Zoom;
+		UIService.DpiScale = e.DeviceDpiNew / UIService.DESIGNDPI;
+		UIService.Scale = zoom * UIService.DpiScale;
+		this.Log.LogDebug("DPI {Old} -> {New}: scale {Scale}", e.DeviceDpiOld, e.DeviceDpiNew, UIService.Scale);
+
+		Tooltips.ItemTooltip.HideTooltip();
+		base.OnDpiChanged(e);
+		this.Invalidate(true);
+	}
+
+	/// <summary>
 	/// Scales the main form according to the scale factor.
 	/// </summary>
 	/// <param name="scaleFactor">Float which signifies the scale factor of the form.  This is an absolute from the original size unless useRelativeScaling is set to true.</param>

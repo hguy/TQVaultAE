@@ -198,6 +198,47 @@ internal static partial class AutomationTools
 			});
 		});
 
+	[McpServerTool(Name = "move_window", Destructive = true)]
+	[Description("Moves the main window to a screen position (virtual screen pixels, so negative on a monitor left of the primary one), like dragging it there (the size is left to Windows): on a monitor of another DPI, Windows sends the DPI change. Returns the monitors (bounds and DPI) and the window's DPI and scales after the move. Move it back to its monitor when done.")]
+	public static async Task<string> MoveWindow(
+		[Description("Left of the window in virtual screen pixels.")] int x,
+		[Description("Top of the window in virtual screen pixels.")] int y)
+	{
+		AutomationHost.OnUi(main =>
+		{
+			AutomationHost.MarkDriving();
+			// Without the size: Location would send the old size too, over the one the DPI change gives.
+			NativeWindows.MoveTo(main.Handle, x, y);
+			return 0;
+		});
+
+		// The DPI change comes as a posted window message.
+		await Task.Delay(500);
+
+		return AutomationHost.OnUi(main =>
+		{
+			var ui = main.Services.UIService;
+			return Serialize(new
+			{
+				location = new { main.Location.X, main.Location.Y },
+				size = new { main.Width, main.Height },
+				clientSize = new { main.ClientSize.Width, main.ClientSize.Height },
+				deviceDpi = main.DeviceDpi,
+				zoom = ui.Zoom,
+				dpiScale = ui.DpiScale,
+				systemDpiScale = ui.SystemDpiScale,
+				scale = ui.Scale,
+				fontZoom = ui.FontZoom,
+				monitors = Screen.AllScreens.Select(s => new
+				{
+					s.DeviceName,
+					bounds = new { s.Bounds.X, s.Bounds.Y, s.Bounds.Width, s.Bounds.Height },
+					s.Primary,
+				}),
+			});
+		});
+	}
+
 	private static IEnumerable<Type> FormTypes()
 	{
 		var check = Program.ServiceProvider.GetRequiredService<IServiceProviderIsService>();

@@ -141,6 +141,16 @@ internal static class NativeWindows
 
 	private const uint GW_OWNER = 4;
 
+	private const uint SWP_NOSIZE = 0x0001;
+	private const uint SWP_NOZORDER = 0x0004;
+	private const uint SWP_NOACTIVATE = 0x0010;
+
+	[DllImport("user32.dll")]
+	private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
+
+	/// <summary>Moves a window without resizing it, as Windows does while the user drags it.</summary>
+	public static void MoveTo(IntPtr hwnd, int x, int y) => SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
 	private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
 	[DllImport("user32.dll")]

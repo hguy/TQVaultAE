@@ -180,38 +180,38 @@ public partial class MainForm : VaultForm
 
 		#region Apply custom font & scaling
 
-		this.exitButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
+		this.exitButton.Font = FontService.GetFontLight(12F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.exitButton);
 
 		ScaleControl(this.UIService, this.comboBoxCharacter, false);
 
-		this.NotificationText.Font = FontService.GetFontLight(11F, FontStyle.Bold, UIService.Zoom);
+		this.NotificationText.Font = FontService.GetFontLight(11F, FontStyle.Bold, UIService.FontZoom);
 
-		this.vaultListComboBox.Font = FontService.GetFontLight(13F, UIService.Zoom);
+		this.vaultListComboBox.Font = FontService.GetFontLight(13F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.vaultListComboBox, false);
-		this.secondaryVaultListComboBox.Font = FontService.GetFontLight(13F, UIService.Zoom);
+		this.secondaryVaultListComboBox.Font = FontService.GetFontLight(13F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.secondaryVaultListComboBox, false);
-		this.configureButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
+		this.configureButton.Font = FontService.GetFontLight(12F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.configureButton);
-		this.customMapText.Font = FontService.GetFont(11.25F, UIService.Zoom);
+		this.customMapText.Font = FontService.GetFont(11.25F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.customMapText, false);
-		this.showVaulButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
+		this.showVaulButton.Font = FontService.GetFontLight(12F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.showVaulButton);
-		this.aboutButton.Font = FontService.GetFontLight(8.25F, UIService.Zoom);
+		this.aboutButton.Font = FontService.GetFontLight(8.25F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.aboutButton);
-		this.titleLabel.Font = FontService.GetFontLight(24F, UIService.Zoom);
+		this.titleLabel.Font = FontService.GetFontLight(24F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.titleLabel);
-		this.searchButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
+		this.searchButton.Font = FontService.GetFontLight(12F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.searchButton);
 		ScaleControl(this.UIService, this.tableLayoutPanelMain);
 
-		this.saveButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
+		this.saveButton.Font = FontService.GetFontLight(12F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.saveButton);
-		this.forgeButton.Font = FontService.GetFontLight(12F, UIService.Zoom);
+		this.forgeButton.Font = FontService.GetFontLight(12F, UIService.FontZoom);
 		ScaleControl(this.UIService, this.forgeButton);
 
-		this.scalingLabelHighlight.Font = FontService.GetFontLight(10F, UIService.Zoom);
-		this.scalingTextBoxHighlight.Font = FontService.GetFontLight(10F, UIService.Zoom);
+		this.scalingLabelHighlight.Font = FontService.GetFontLight(10F, UIService.FontZoom);
+		this.scalingTextBoxHighlight.Font = FontService.GetFontLight(10F, UIService.FontZoom);
 
 		#endregion
 

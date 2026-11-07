@@ -44,6 +44,15 @@ public interface IUIService : IUserNotifier
 	/// <summary>The user's zoom: <see cref="Scale"/> without <see cref="DpiScale"/>.</summary>
 	float Zoom { get; }
 
+	/// <summary>The system DPI over <see cref="DESIGNDPI"/>: what Windows sizes fonts in points for.</summary>
+	float SystemDpiScale { get; }
+
+	/// <summary>
+	/// What fonts sized in points are multiplied by: the zoom, and the monitor DPI over the system DPI, since Windows sizes
+	/// those fonts for the system DPI. Equal to <see cref="Zoom"/> on a monitor at the system DPI.
+	/// </summary>
+	float FontZoom { get; }
+
 	/// <summary>
 	/// Gets the item's bitmap
 	/// </summary>

@@ -457,6 +457,16 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.scalingTextBoxSearchTerm.Focus();
 	}
 
+	/// <summary>
+	/// On a monitor of another DPI the fonts change: the category lists, sized from their text in code, are sized again.
+	/// </summary>
+	protected override void OnDpiChanged(DpiChangedEventArgs e)
+	{
+		base.OnDpiChanged(e);
+		this.AdjustCheckBoxesWidth();
+		this.AdjustCheckBoxesHeight();
+	}
+
 	private void AdjustCheckBoxesWidth()
 	{
 		if (this.CachedCheckedListBoxes.Count == 0)
