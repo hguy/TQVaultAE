@@ -135,6 +135,7 @@ public partial class SearchDialogAdvanced
 			from reldesc in new[] { id.LoadedFriendlyNames.RelicInfo1Description, id.LoadedFriendlyNames.RelicInfo2Description }
 			where !string.IsNullOrWhiteSpace(reldesc)
 			let attClean = reldesc.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -166,6 +167,7 @@ public partial class SearchDialogAdvanced
 			from reldesc in new[] { id.LoadedFriendlyNames.RelicInfo1Description, id.LoadedFriendlyNames.RelicInfo2Description }
 			where !string.IsNullOrWhiteSpace(reldesc)
 			let attClean = reldesc.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -204,6 +206,7 @@ public partial class SearchDialogAdvanced
 			let att = id.LoadedFriendlyNames.BaseItemInfoQuality
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -224,6 +227,7 @@ public partial class SearchDialogAdvanced
 			let att = id.LoadedFriendlyNames.SuffixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -244,6 +248,7 @@ public partial class SearchDialogAdvanced
 			from att in id.LoadedFriendlyNames.SuffixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -264,6 +269,7 @@ public partial class SearchDialogAdvanced
 			let att = id.LoadedFriendlyNames.BaseItemInfoStyle
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -293,6 +299,7 @@ public partial class SearchDialogAdvanced
 			let att = id.LoadedFriendlyNames.BaseItemRarity
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -313,6 +320,7 @@ public partial class SearchDialogAdvanced
 			let att = id.LoadedFriendlyNames.PrefixInfoDescription
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.TQCleanup().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -333,6 +341,7 @@ public partial class SearchDialogAdvanced
 			from att in id.LoadedFriendlyNames.PrefixAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -372,6 +381,7 @@ public partial class SearchDialogAdvanced
 			let att = id.LoadedFriendlyNames.BaseItemInfoClass ?? id.LoadedFriendlyNames.Item.ItemClass
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -392,6 +402,7 @@ public partial class SearchDialogAdvanced
 			from att in id.LoadedFriendlyNames.AttributesAll
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
@@ -412,6 +423,7 @@ public partial class SearchDialogAdvanced
 			from att in id.LoadedFriendlyNames.BaseAttributes
 			where !string.IsNullOrWhiteSpace(att)
 			let attClean = att.RemoveAllTQTags().Trim()
+			where !string.IsNullOrEmpty(attClean)
 			orderby attClean
 			group id by attClean into grp
 			select new BoxItem
