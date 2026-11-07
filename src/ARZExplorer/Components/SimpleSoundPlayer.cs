@@ -5,10 +5,10 @@ namespace ArzExplorer.Components;
 
 public partial class SimpleSoundPlayer : UserControl
 {
-	private RecordId _CurrentSoundId;
-	private SoundPlayer _CurrentSoundPlayer;
+	private RecordId? _CurrentSoundId;
+	private SoundPlayer? _CurrentSoundPlayer;
 
-	public SoundPlayer CurrentSoundPlayer
+	public SoundPlayer? CurrentSoundPlayer
 	{
 		get => _CurrentSoundPlayer;
 		set
@@ -20,7 +20,7 @@ public partial class SimpleSoundPlayer : UserControl
 			buttonPlay.PerformClick();
 		}
 	}
-	public RecordId CurrentSoundId
+	public RecordId? CurrentSoundId
 	{
 		get => _CurrentSoundId;
 		set
@@ -32,7 +32,7 @@ public partial class SimpleSoundPlayer : UserControl
 		}
 	}
 
-	public byte[] CurrentSoundWavData { get; set; }
+	public byte[]? CurrentSoundWavData { get; set; }
 
 	public bool MustLoop => this.buttonLoop.BackColor == SystemColors.ActiveCaption;
 

@@ -28,7 +28,7 @@ internal partial class ExtractProgress : Form
 	/// <summary>
 	/// Base extraction folder for database
 	/// </summary>
-	internal string BaseFolder;
+	internal string BaseFolder = string.Empty;
 	private readonly MainForm MainForm;
 	private readonly IArcFileProvider arcProv;
 	private readonly IArzFileProvider arzProv;
@@ -37,12 +37,12 @@ internal partial class ExtractProgress : Form
 	/// <summary>
 	/// ID for current records
 	/// </summary>
-	private RecordId recordIdBeingProcessed;
+	private RecordId? recordIdBeingProcessed;
 
 	/// <summary>
 	/// Holds any exception we have encountered
 	/// </summary>
-	private Exception exception;
+	private Exception? exception;
 
 	/// <summary>
 	/// Holds cancel status
@@ -86,11 +86,11 @@ internal partial class ExtractProgress : Form
 		// Setup the progress bar
 		if (this.MainForm.SelectedFile.FileType == CompressedFileType.ArcFile)
 		{
-			this.progressBar1.Maximum = this.MainForm.SelectedFile.ARCFile.Count;
+			this.progressBar1.Maximum = this.MainForm.SelectedFile.Arc.Count;
 		}
 		else
 		{
-			this.progressBar1.Maximum = this.MainForm.SelectedFile.ARZFile.Count;
+			this.progressBar1.Maximum = this.MainForm.SelectedFile.Arz.Count;
 		}
 
 		this.progressBar1.Value = 0;
@@ -119,7 +119,7 @@ internal partial class ExtractProgress : Form
 		try
 		{
 			bool canceled = false;
-			foreach (RecordId recordID in this.MainForm.SelectedFile.ARZFile.Keys)
+			foreach (RecordId recordID in this.MainForm.SelectedFile.Arz.Keys)
 			{
 				if (canceled)
 					break;
@@ -129,7 +129,7 @@ internal partial class ExtractProgress : Form
 				this.Invoke(new MethodInvoker(this.UpdateLabel));
 
 				// Write the record
-				var dbc = arzProv.GetRecordNotCached(this.MainForm.SelectedFile.ARZFile, recordID);
+				var dbc = arzProv.GetRecordNotCached(this.MainForm.SelectedFile.Arz, recordID);
 				DBRecordCollectionProvider.Write(dbc, this.BaseFolder);
 
 				// Update progressbar
@@ -162,7 +162,7 @@ internal partial class ExtractProgress : Form
 		{
 			bool canceled = false;
 
-			foreach (RecordId recordID in this.MainForm.SelectedFile.ARCFile.Keys)
+			foreach (RecordId recordID in this.MainForm.SelectedFile.Arc.Keys)
 			{
 				if (canceled)
 					break;
@@ -172,7 +172,7 @@ internal partial class ExtractProgress : Form
 				this.Invoke(new MethodInvoker(this.UpdateLabel));
 
 				// Write the record
-				arcProv.Write(this.MainForm.SelectedFile.ARCFile, this.BaseFolder, recordID, recordID.Normalized);
+				arcProv.Write(this.MainForm.SelectedFile.Arc, this.BaseFolder, recordID, recordID.Normalized);
 
 				// Update progressbar
 				this.Invoke(new MethodInvoker(this.IncrementProgress));
@@ -203,7 +203,7 @@ internal partial class ExtractProgress : Form
 		this.DialogResult = DialogResult.Abort;
 
 		MessageBox.Show(
-			this.exception.ToString(),
+			this.exception?.ToString() ?? string.Empty,
 			Resources.ARZProgressFailedText,
 			MessageBoxButtons.OK,
 			MessageBoxIcon.Error,

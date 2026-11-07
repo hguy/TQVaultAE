@@ -132,7 +132,7 @@ public partial class MainForm : Form
 		this.toolStripStatusLabel.Text = string.Format("PixelFormat : {0}, Size : {1}", bitmap.PixelFormat, bitmap.Size);
 	}
 
-	private void ShowSoundPlayer(RecordId soundId, SoundPlayer soundPlayer, byte[] soundWavData)
+	private void ShowSoundPlayer(RecordId soundId, SoundPlayer soundPlayer, byte[]? soundWavData)
 	{
 		StopSoundPlayer();
 
@@ -182,7 +182,7 @@ public partial class MainForm : Form
 
 	#region Open File
 
-	internal TQFileInfo SelectedFile;
+	internal TQFileInfo SelectedFile = new();
 
 	/// <summary>
 	/// Resolve database file
@@ -194,7 +194,7 @@ public partial class MainForm : Form
 	/// <summary>
 	/// Found Arc Files
 	/// </summary>
-	Dictionary<RecordId, string> ArcFileList;
+	Dictionary<RecordId, string> ArcFileList = new();
 
 	private void toolStripButtonLoadDataBase_Click(object sender, EventArgs e)
 	{
@@ -348,11 +348,10 @@ public partial class MainForm : Form
 	private void Form1_DragDrop(object sender, DragEventArgs e)
 	{
 		// Handle FileDrop data.
-		if (e.Data.GetDataPresent(DataFormats.FileDrop))
+		if (e.Data?.GetData(DataFormats.FileDrop) is string[] { Length: > 0 } files)
 		{
 			// Assign the file names to a string array, in
 			// case the user has selected multiple files.
-			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 			try
 			{
 				using var scope = new TreeViewUpdateScope(this);
@@ -374,7 +373,7 @@ public partial class MainForm : Form
 	private void Form1_DragEnter(object sender, DragEventArgs e)
 	{
 		// If the data is a file display the copy cursor.
-		e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+		e.Effect = (e.Data?.GetDataPresent(DataFormats.FileDrop) ?? false) ? DragDropEffects.Copy : DragDropEffects.None;
 	}
 
 	#endregion
@@ -391,7 +390,7 @@ public partial class MainForm : Form
 		if (string.IsNullOrEmpty(this.SelectedFile.DestFile) || this.SelectedFile.FileType == CompressedFileType.Unknown)
 			return;
 
-		string filename = null;
+		string? filename = null;
 		using SaveFileDialog saveFileDialog = new SaveFileDialog();
 
 		saveFileDialog.Filter = "TQ files (*.txt;*.dbr;*.tex;*.msh;*.anm;*.fnt;*.qst;*.pfx;*.ssh)|*.txt;*.dbr;*.tex;*.msh;*.anm;*.fnt;*.qst;*.pfx;*.ssh|All files (*.*)|*.*";
@@ -408,13 +407,14 @@ public partial class MainForm : Form
 
 			if (this.SelectedFile.FileType == CompressedFileType.ArzFile)
 			{
-				DBRecordCollectionProvider.Write(this.SelectedFile.Records, Path.GetDirectoryName(filename), Path.GetFileName(filename));
+				if (this.SelectedFile.Records is not null)
+					DBRecordCollectionProvider.Write(this.SelectedFile.Records, Path.GetDirectoryName(filename) ?? string.Empty, Path.GetFileName(filename));
 			}
 			else if (this.SelectedFile.FileType == CompressedFileType.ArcFile)
 			{
 				arcProv.Write(
-					this.SelectedFile.ARCFile
-					, Path.GetDirectoryName(filename)
+					this.SelectedFile.Arc
+					, Path.GetDirectoryName(filename) ?? string.Empty
 					, this.SelectedFile.DestFile
 					, Path.GetFileName(filename)
 				);
@@ -458,7 +458,7 @@ public partial class MainForm : Form
 			this.SelectedFile.DestDirectory = browseDialog.SelectedPath;
 		}
 
-		string fullDestPath = null;
+		string? fullDestPath = null;
 
 		if (string.IsNullOrEmpty(this.SelectedFile.DestDirectory))
 		{
@@ -471,6 +471,9 @@ public partial class MainForm : Form
 		{
 			fullDestPath = Path.GetFullPath(this.SelectedFile.DestDirectory);
 		}
+
+		if (fullDestPath is null)
+			return;
 
 		if (File.Exists(fullDestPath))
 		{
@@ -491,7 +494,7 @@ public partial class MainForm : Form
 		}
 
 
-		var form = Program.ServiceProvider.GetService<ExtractProgress>();
+		var form = Program.ServiceProvider.GetRequiredService<ExtractProgress>();
 		form.BaseFolder = fullDestPath;
 		form.ShowDialog();
 	}
@@ -515,7 +518,7 @@ public partial class MainForm : Form
 
 	#region TreeViewTOC
 
-	NodeTag SelectedTag => this.treeViewTOC.SelectedNode.Tag as NodeTag;
+	NodeTag? SelectedTag => this.treeViewTOC.SelectedNode?.Tag as NodeTag;
 
 	/// <summary>
 	/// Treeview node database
@@ -537,9 +540,9 @@ public partial class MainForm : Form
 		List<RecordId> dataRecords;
 
 		if (currentFileInfo.FileType == CompressedFileType.ArzFile)
-			dataRecords = currentFileInfo.ARZFile.Keys.ToList();
+			dataRecords = currentFileInfo.Arz.Keys.ToList();
 		else if (currentFileInfo.FileType == CompressedFileType.ArcFile)
-			dataRecords = currentFileInfo.ARCFile.Keys.ToList();
+			dataRecords = currentFileInfo.Arc.Keys.ToList();
 		else
 			return;
 
@@ -550,7 +553,7 @@ public partial class MainForm : Form
 		// Track if this is the first file being loaded
 		bool isFirstFile = dicoNodes.Count == 0;
 
-		TreeNode arcRootNode = null, rootNode = new();
+		TreeNode? arcRootNode = null, rootNode = new();
 
 		string arcPrefix = string.Empty;
 		var rootNodeKey = string.Empty;
@@ -579,7 +582,7 @@ public partial class MainForm : Form
 			else
 			{
 				arcPrefix = arcPrefixXpack + '\\' + arcPrefix;
-				GetRootNode(currentFileInfo, arcPrefix, arcRootNode, out arcRootNode);
+				GetRootNode(currentFileInfo, arcPrefix, arcRootNode ?? rootNode, out arcRootNode);
 			}
 		}
 
@@ -634,7 +637,7 @@ public partial class MainForm : Form
 	{
 		var arcPrefixId = arcPrefix.ToRecordId();
 		var nodeKey = $"{currentFileInfo.SourceFileId};{arcPrefixId}";
-		if (!dicoNodes.TryGetValue(nodeKey, out arcRootNode))
+		if (!dicoNodes.TryGetValue(nodeKey, out var existingNode))
 		{
 			arcRootNode = new TreeNode()
 			{
@@ -663,6 +666,8 @@ public partial class MainForm : Form
 
 			rootNode.Nodes.Add(arcRootNode);
 		}
+		else
+			arcRootNode = existingNode;
 	}
 
 	/// <summary>
@@ -674,9 +679,10 @@ public partial class MainForm : Form
 	{
 		// Make sure we have selected the last child
 		// otherwise this will be a directory.
-		if (this.treeViewTOC.SelectedNode.GetNodeCount(false) == 0)
+		if (this.treeViewTOC.SelectedNode?.GetNodeCount(false) == 0)
 		{
-			var tag = this.SelectedTag;
+			if (this.SelectedTag is not { } tag)
+				return;
 
 			this.SelectedFile = tag.File;
 
@@ -691,7 +697,7 @@ public partial class MainForm : Form
 				List<string> recordText = new List<string>();
 				if (this.SelectedFile.FileType == CompressedFileType.ArzFile)
 				{
-					this.SelectedFile.Records = arzProv.GetRecordNotCached(this.SelectedFile.ARZFile, this.SelectedFile.DestFile);
+					this.SelectedFile.Records = arzProv.GetRecordNotCached(this.SelectedFile.Arz, this.SelectedFile.DestFile);
 					foreach (Variable variable in this.SelectedFile.Records)
 					{
 						if (variable.IsValueNonZero() || !hideZeroValuesToolStripMenuItem.Checked)
@@ -715,7 +721,7 @@ public partial class MainForm : Form
 						case ".TXT":
 							if (!tag.RecordText.Any())
 							{
-								tag.RawData = arcProv.GetData(this.SelectedFile.ARCFile, arcDataRecordId);
+								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 
 								if (tag.RawData == null)
 									return;
@@ -723,7 +729,7 @@ public partial class MainForm : Form
 								// now read it like a text file
 								using (StreamReader reader = new StreamReader(new MemoryStream(tag.RawData), Encoding.Default))
 								{
-									string line;
+									string? line;
 									while ((line = reader.ReadLine()) != null)
 									{
 										tag.RecordText.Add(line);
@@ -738,7 +744,7 @@ public partial class MainForm : Form
 						case ".TEX":
 							if (tag.Bitmap is null)
 							{
-								tag.RawData = arcProv.GetData(this.SelectedFile.ARCFile, arcDataRecordId);
+								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 
 								if (tag.RawData == null)
 									return;
@@ -756,7 +762,7 @@ public partial class MainForm : Form
 						case ".WAV":
 							if (tag.SoundPlayer is null)
 							{
-								tag.RawData = arcProv.GetData(this.SelectedFile.ARCFile, arcDataRecordId);
+								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 
 								if (tag.RawData == null)
 									return;
@@ -890,7 +896,7 @@ public partial class MainForm : Form
 	private void copyDBRToolStripMenuItem_Click(object sender, EventArgs e)
 	{
 		// DataGridView into Clipboard
-		DataGridViewCell currCell = null;
+		DataGridViewCell? currCell = null;
 		if (this.dataGridViewDetails.SelectedCells.Count > 0)
 			currCell = this.dataGridViewDetails.SelectedCells[0];
 
@@ -900,10 +906,11 @@ public partial class MainForm : Form
 		this.dataGridViewDetails.SelectAll();
 
 		// Copy selected cells to DataObject
-		DataObject dataObject = this.dataGridViewDetails.GetClipboardContent();
+		DataObject? dataObject = this.dataGridViewDetails.GetClipboardContent();
 
 		// Get the text of the DataObject, and serialize it to a file
-		Clipboard.SetDataObject(dataObject);
+		if (dataObject is not null)
+			Clipboard.SetDataObject(dataObject);
 
 		// Restore normal state
 		this.dataGridViewDetails.MultiSelect = false;
@@ -914,12 +921,14 @@ public partial class MainForm : Form
 
 	private void copyBitmapToolStripMenuItem_Click(object sender, EventArgs e)
 	{
-		Clipboard.SetImage(this.pictureBoxItem.Image);
+		if (this.pictureBoxItem.Image is not null)
+			Clipboard.SetImage(this.pictureBoxItem.Image);
 	}
 
 	private void copySoundToolStripMenuItem_Click(object sender, EventArgs e)
 	{
-		Clipboard.SetAudio(this.simpleSoundPlayer.CurrentSoundWavData);
+		if (this.simpleSoundPlayer.CurrentSoundWavData is not null)
+			Clipboard.SetAudio(this.simpleSoundPlayer.CurrentSoundWavData);
 	}
 
 	#endregion
@@ -944,7 +953,7 @@ public partial class MainForm : Form
 		{
 			if (node.Key != string.Empty)
 			{
-				var tag = node.Value.Tag as NodeTag;
+				var tag = (NodeTag)node.Value.Tag!;
 				tag.thisNode.Text = toolStripButtonCaps.Checked
 					? tag.TextU
 					: tag.Text;
@@ -968,7 +977,8 @@ public partial class MainForm : Form
 		if (_StackNavigationDisabled)
 			return;
 
-		NavHistory.Add(this.treeViewTOC.SelectedNode);
+		if (this.treeViewTOC.SelectedNode is not null)
+			NavHistory.Add(this.treeViewTOC.SelectedNode);
 		NavHistoryIndex = NavHistory.Count - 1;
 	}
 
@@ -981,7 +991,7 @@ public partial class MainForm : Form
 		var cell = dataGridViewDetails.Rows[e.RowIndex].Cells[e.ColumnIndex];
 		if (cell.Style == PopulateGridView_hyperLinkCellStyle)
 		{
-			var value = cell.Value.ToString();
+			var value = cell.Value?.ToString() ?? string.Empty;
 			NavigateTo(value);
 		}
 	}
@@ -1118,7 +1128,7 @@ public partial class MainForm : Form
 
 	private void NavHistoryGoto()
 	{
-		var tag = NavHistory[NavHistoryIndex].Tag as NodeTag;
+		var tag = (NodeTag)NavHistory[NavHistoryIndex].Tag!;
 		this.SelectedFile = tag.File;
 		this.treeViewTOC.SelectedNode = NavHistory[NavHistoryIndex];
 		this.treeViewTOC.Focus();

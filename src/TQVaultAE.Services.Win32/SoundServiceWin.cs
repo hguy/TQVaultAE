@@ -15,7 +15,7 @@ namespace TQVaultAE.Services.Win32;
 public class SoundServiceWin : ISoundService, IDisposable
 {
 	private readonly ILogger Log;
-	private readonly IDatabase DataBase;
+	private readonly IDatabase? DataBase;
 	private readonly UserSettings USettings;
 
 	#region Predefined sounds
@@ -69,7 +69,7 @@ public class SoundServiceWin : ISoundService, IDisposable
 	private static Dictionary<RecordId, byte[]> SoundData = new();
 	private static Dictionary<RecordId, (SoundPlayer Player, MemoryStream MS)> LoadedPlayers = new();
 
-	public SoundServiceWin(ILogger<SoundServiceWin> log, IDatabase database, UserSettings uSettings)
+	public SoundServiceWin(ILogger<SoundServiceWin> log, IDatabase? database, UserSettings uSettings)
 	{
 		this.Log = log;
 		this.DataBase = database;
