@@ -22,11 +22,6 @@ using TQVaultAE.Services;
 internal sealed partial class VaultMaintenanceDialog : VaultForm
 {
 	/// <summary>
-	/// MessageBoxOptions for right to left reading.
-	/// </summary>
-	private static MessageBoxOptions rightToLeftOptions = (MessageBoxOptions)0;
-
-	/// <summary>
 	/// Invalid filename characters
 	/// </summary>
 	private char[] invalidChars;
@@ -88,11 +83,6 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 		this.sourceLabel.Text = Resources.MaintenanceSource;
 		this.targetLabel.Text = Resources.MaintenanceTarget;
 
-		// Set options for Right to Left reading.
-		if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-		{
-			rightToLeftOptions = MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
-		}
 
 		this.DrawCustomBorder = true;
 
@@ -291,23 +281,17 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 
 			if (string.IsNullOrEmpty(target))
 			{
-				MessageBox.Show(Resources.MaintenanceBadName, Resources.MaintenanceInvalidName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadName, Resources.MaintenanceInvalidName);
 			}
 			else if (target.IndexOfAny(this.invalidChars) != -1)
 			{
-				MessageBox.Show(Resources.MaintenanceBadChars, Resources.MaintenanceInvalidName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadChars, Resources.MaintenanceInvalidName);
 			}
 			else
 			{
 				if (this.IsInList(target))
 				{
-					MessageBox.Show(
-						string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target),
-						Resources.MaintenanceDuplicate,
-						MessageBoxButtons.OK,
-						MessageBoxIcon.None,
-						MessageBoxDefaultButton.Button1,
-						rightToLeftOptions);
+					this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
 					this.targetTextBox.SelectAll();
 					this.targetTextBox.Focus();
 				}
@@ -332,23 +316,17 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 
 			if (string.IsNullOrEmpty(target))
 			{
-				MessageBox.Show(Resources.MaintenanceNoCopyTarget, Resources.MaintenanceInvalidName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceNoCopyTarget, Resources.MaintenanceInvalidName);
 			}
 			else if (source == null || !this.IsInList(source))
 			{
-				MessageBox.Show(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName);
 			}
 			else
 			{
 				if (this.IsInList(target))
 				{
-					MessageBox.Show(
-						string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target),
-						Resources.MaintenanceDuplicate,
-						MessageBoxButtons.OK,
-						MessageBoxIcon.None,
-						MessageBoxDefaultButton.Button1,
-						rightToLeftOptions);
+					this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
 					this.targetTextBox.SelectAll();
 					this.targetTextBox.Focus();
 				}
@@ -372,7 +350,7 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 
 			if (!this.IsInList(source))
 			{
-				MessageBox.Show(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName);
 			}
 			else
 			{
@@ -394,23 +372,17 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 
 			if (string.IsNullOrEmpty(target))
 			{
-				MessageBox.Show(Resources.MaintenanceBadName, Resources.MaintenanceInvalidName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadName, Resources.MaintenanceInvalidName);
 			}
 			else if (source == null || !this.IsInList(source))
 			{
-				MessageBox.Show(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, rightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName);
 			}
 			else
 			{
 				if (this.IsInList(target))
 				{
-					MessageBox.Show(
-						string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target),
-						Resources.MaintenanceDuplicate,
-						MessageBoxButtons.OK,
-						MessageBoxIcon.None,
-						MessageBoxDefaultButton.Button1,
-						rightToLeftOptions);
+					this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
 					this.targetTextBox.SelectAll();
 					this.targetTextBox.Focus();
 				}

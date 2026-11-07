@@ -179,7 +179,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 		catch (Exception ex)
 		{
 			this.Log.ErrorException(ex);
-			MessageBox.Show(ex.Message);
+			this.Services.MessageBoxes.Inform(ex.Message, string.Empty);
 		}
 	}
 

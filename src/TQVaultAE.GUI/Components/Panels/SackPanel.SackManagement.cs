@@ -34,13 +34,7 @@ public partial class SackPanel : Panel, IScalingControl
 		// Check to see if something is picked up.
 		if (this.DragInfo.IsActive)
 		{
-			MessageBox.Show(
-				Resources.SackPanelAutoSortMsg,
-				Resources.SackPanelAutoSort,
-				MessageBoxButtons.OK,
-				MessageBoxIcon.None,
-				MessageBoxDefaultButton.Button1,
-				RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(Resources.SackPanelAutoSortMsg, Resources.SackPanelAutoSort);
 
 			return;
 		}

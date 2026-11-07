@@ -294,13 +294,7 @@ public partial class VaultPanel
 		string? selectedItem = e.ClickedItem?.Text;
 		if (selectedItem == Resources.PlayerPanelMenuEmpty)
 		{
-			if (this.USettings.SuppressWarnings || MessageBox.Show(
-				Resources.PlayerPanelEmptyMsg,
-				Resources.PlayerPanelEmpty,
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question,
-				MessageBoxDefaultButton.Button1,
-				PlayerPanel.RightToLeftOptions) == DialogResult.Yes)
+			if (this.USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.PlayerPanelEmptyMsg, Resources.PlayerPanelEmpty))
 			{
 				this.BagSackPanel.ShownSack.EmptySack();
 				this.BagSackPanel.Refresh();
@@ -402,13 +396,7 @@ public partial class VaultPanel
 
 			if (!(this.ShownPlayer.GetSack(destinationIndex + this.BagPanelOffset)?.IsEmpty ?? true))
 			{
-				if (this.USettings.SuppressWarnings || MessageBox.Show(
-					Resources.PlayerOverwriteSackMsg,
-					Resources.PlayerOverwriteSack,
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question,
-					MessageBoxDefaultButton.Button1,
-					RightToLeftOptions) != DialogResult.Yes)
+				if (this.USettings.SuppressWarnings || !this.Services.MessageBoxes.Confirm(Resources.PlayerOverwriteSackMsg, Resources.PlayerOverwriteSack))
 				{
 					return;
 				}

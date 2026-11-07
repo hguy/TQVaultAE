@@ -177,7 +177,7 @@ public partial class MainForm
 			if (result.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.Filename, result.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 			}
 
 			vault = result.Vault;
@@ -329,7 +329,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			Log.ErrorException(exception);
-			MessageBox.Show(Log.FormatException(exception), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 		}
 	}
 
@@ -374,7 +374,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			Log.ErrorException(exception);
-			MessageBox.Show(Log.FormatException(exception), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 
 			// put the vault back to what it was
 			if (this.vaultPanel.Player != null)
@@ -414,7 +414,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			Log.ErrorException(exception);
-			MessageBox.Show(Log.FormatException(exception), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 
 			// put the vault back to what it was
 			if (this.secondaryVaultPanel.Player != null)

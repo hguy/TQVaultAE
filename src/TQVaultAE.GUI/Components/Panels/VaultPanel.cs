@@ -190,23 +190,6 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	#region VaultPanel Properties
 
 	/// <summary>
-	/// Gets the Right to left reading options.
-	/// </summary>
-	public static MessageBoxOptions RightToLeftOptions
-	{
-		get
-		{
-			// Set options for Right to Left reading.
-			if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-			{
-				return MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
-			}
-
-			return (MessageBoxOptions)0;
-		}
-	}
-
-	/// <summary>
 	/// Gets the scaled border pad.
 	/// </summary>
 	public int BorderPad => Convert.ToInt32(2.0F * UIService.Scale);

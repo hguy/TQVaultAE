@@ -58,7 +58,7 @@ public partial class MainForm
 			// Make sure we are not dragging anything
 			if (this.DragInfo.IsActive)
 			{
-				MessageBox.Show(Resources.MainFormHoldingItem, Resources.MainFormHoldingItem2, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.MainFormHoldingItem, Resources.MainFormHoldingItem2);
 				return false;
 			}
 
@@ -81,7 +81,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			Log.LogError(exception, "Save files failed !");
-			MessageBox.Show(Log.FormatException(exception), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.None, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 		}
 
 		return ok;

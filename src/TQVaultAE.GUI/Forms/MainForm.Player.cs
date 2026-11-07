@@ -232,7 +232,7 @@ public partial class MainForm
 			if (resultDTO.Player?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, resultDTO.PlayerFile, resultDTO.Player.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 			}
 
 			if (!fromFileWatcher)
@@ -246,7 +246,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, resultDTO.PlayerFile, exception.ToString());
-			MessageBox.Show(msg, Resources.MainFormPlayerReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(msg, Resources.MainFormPlayerReadError, MessageBoxIcon.Error);
 			Log.LogError(exception, "{Message}", msg);
 			this.playerPanel.Player = null;
 			this.comboBoxCharacter.SelectedIndex = 0;
@@ -273,13 +273,13 @@ public partial class MainForm
 			if (resultStash.Stash is { StashFound: false })
 			{
 				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nCharacter : ", selectedSave);
-				MessageBox.Show(msg, Resources.StashNotFound, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.StashNotFound, MessageBoxIcon.Information);
 			}
 
 			if (resultStash.Stash?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, resultStash.StashFile, resultStash.Stash.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 			}
 
 			if (!fromFileWatcher) this.stashPanel.Stash = resultStash.Stash;
@@ -287,7 +287,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			string msg = string.Concat(Resources.MainFormReadError, resultStash.StashFile, exception.ToString());
-			MessageBox.Show(msg, Resources.MainFormStashReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(msg, Resources.MainFormStashReadError, MessageBoxIcon.Error);
 			Log.LogError(exception, "{Message}", msg);
 			this.stashPanel.Stash = null;
 		}
@@ -312,7 +312,7 @@ public partial class MainForm
 		{
 			string title = string.Format(CultureInfo.InvariantCulture, Resources.MainFormSaveError, playerIfError?.PlayerName);
 			Log.LogError(exception, "{Message}", title);
-			switch (MessageBox.Show(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation, MessageBoxDefaultButton.Button1, RightToLeftOptions))
+			switch (this.Services.MessageBoxes.Ask(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation))
 			{
 				case DialogResult.Abort:
 					// rethrow the exception
@@ -347,14 +347,14 @@ public partial class MainForm
 			char[] invalidChars = this.PathIO.GetInvalidPathChars().Concat(this.PathIO.GetInvalidFileNameChars()).ToArray();
 			if (string.IsNullOrWhiteSpace(newname) || newname.IndexOfAny(invalidChars) > -1)
 			{
-				MessageBox.Show(Resources.DuplicateCharacter_NewNameMustBeValid, Resources.DuplicateCharacter_ModalTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.DuplicateCharacter_NewNameMustBeValid, Resources.DuplicateCharacter_ModalTitle, MessageBoxIcon.Error);
 				goto askAgain;
 			}
 
 			var alreadyUsed = this.comboBoxCharacter.Items.OfType<PlayerSave>().Any(ps => newname.Equals(ps.Name, StringComparison.OrdinalIgnoreCase));
 			if (alreadyUsed)
 			{
-				MessageBox.Show(Resources.DuplicateCharacter_NewNameAlreadyUsed, Resources.DuplicateCharacter_ModalTitle, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(Resources.DuplicateCharacter_NewNameAlreadyUsed, Resources.DuplicateCharacter_ModalTitle, MessageBoxIcon.Error);
 				goto askAgain;
 			}
 
@@ -369,7 +369,7 @@ public partial class MainForm
 			{
 				// Display Error
 				Log.LogError(ex, "{Message}", Resources.DuplicateCharacter_Error);
-				MessageBox.Show(Log.FormatException(ex), Resources.DuplicateCharacter_Error, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.ShowException(ex, Resources.DuplicateCharacter_Error, MessageBoxIcon.Error);
 				// Rollback IO
 				try
 				{
@@ -388,6 +388,6 @@ public partial class MainForm
 		}
 
 		// Player must be selected
-		MessageBox.Show(Resources.DuplicateCharacter_SourceRequired, Resources.DuplicateCharacter_ModalTitle, MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+		this.Services.MessageBoxes.Inform(Resources.DuplicateCharacter_SourceRequired, Resources.DuplicateCharacter_ModalTitle, MessageBoxIcon.Warning);
 	}
 }

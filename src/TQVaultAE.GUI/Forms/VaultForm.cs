@@ -229,21 +229,6 @@ public partial class VaultForm : Form, IScalingControl
 		=> new Point((int)System.Math.Round(point.X * uiService?.Scale ?? 1.0F), (int)System.Math.Round(point.Y * uiService?.Scale ?? 1.0F));
 
 	/// <summary>
-	/// Gets the MessageBoxOptions for right to left reading.
-	/// </summary>
-	public static MessageBoxOptions RightToLeftOptions
-	{
-		get
-		{
-			// Set options for Right to Left reading.
-			if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-				return MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
-
-			return (MessageBoxOptions)0;
-		}
-	}
-
-	/// <summary>
 	/// Gets or sets a value indicating whether or not the resize border boxes are shown.
 	/// </summary>
 	public bool ShowResizeBorders { get; set; }

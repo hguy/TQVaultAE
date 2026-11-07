@@ -61,13 +61,13 @@ public partial class MainForm
 			if (result.Stash is { StashFound: false })
 			{
 				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nTransfer Stash\n\n", result.StashFile);
-				MessageBox.Show(msg, Resources.StashNotFound, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.StashNotFound, MessageBoxIcon.Information);
 			}
 
 			if (result.Stash?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 			}
 
 			if (!fromFileWatcher)
@@ -76,7 +76,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, result.StashFile, exception.ToString());
-			MessageBox.Show(msg, Resources.MainFormStashReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(msg, Resources.MainFormStashReadError, MessageBoxIcon.Error);
 			Log.LogError(exception, "{Message}", msg);
 			this.stashPanel.TransferStash = null;
 		}
@@ -106,13 +106,13 @@ public partial class MainForm
 			if (result.Stash is { StashFound: false })
 			{
 				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nRelic Stash\n\n", result.StashFile);
-				MessageBox.Show(msg, Resources.StashNotFound, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.StashNotFound, MessageBoxIcon.Information);
 			}
 
 			if (result.Stash?.ArgumentException != null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
-				MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 			}
 
 			if (!fromFileWatcher)
@@ -121,7 +121,7 @@ public partial class MainForm
 		catch (IOException exception)
 		{
 			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, result.StashFile, exception.ToString());
-			MessageBox.Show(msg, Resources.MainFormStashReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(msg, Resources.MainFormStashReadError, MessageBoxIcon.Error);
 
 			this.stashPanel.RelicVaultStash = null;
 		}

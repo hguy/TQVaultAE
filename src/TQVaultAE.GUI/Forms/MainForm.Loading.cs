@@ -46,13 +46,7 @@ public partial class MainForm
 		// If we did fail then turn it off and skip it.
 		if (!USettings.LoadAllFilesCompleted)
 		{
-			if (MessageBox.Show(
-				Resources.MainFormDisableLoadAllFiles,
-				Resources.MainFormDisableLoadAllFilesCaption,
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Information,
-				MessageBoxDefaultButton.Button1,
-				RightToLeftOptions) == DialogResult.Yes)
+			if (this.Services.MessageBoxes.Confirm(Resources.MainFormDisableLoadAllFiles, Resources.MainFormDisableLoadAllFilesCaption, MessageBoxIcon.Information))
 			{
 				USettings.LoadAllFilesCompleted = true;
 				USettings.LoadAllFiles = false;
@@ -121,7 +115,7 @@ public partial class MainForm
 				continue;
 
 			string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, file, error.Message);
-			MessageBox.Show(msg, Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+			this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 		}
 
 		stopWatch.Stop();
@@ -247,13 +241,7 @@ public partial class MainForm
 		{
 			Log.LogError(ex, "resourcesLoaded = {ResourcesLoaded}", this.resourcesLoaded);
 
-			if (MessageBox.Show(
-				string.Concat(ex.Message, Resources.Form1BadLanguage)
-				, Resources.Form1ErrorLoadingResources
-				, MessageBoxButtons.YesNo
-				, MessageBoxIcon.Exclamation
-				, MessageBoxDefaultButton.Button1
-				, RightToLeftOptions) == DialogResult.Yes
+			if (this.Services.MessageBoxes.Confirm(string.Concat(ex.Message, Resources.Form1BadLanguage), Resources.Form1ErrorLoadingResources, MessageBoxIcon.Exclamation)
 			) System.Windows.Forms.Application.Restart();
 			else
 				System.Windows.Forms.Application.Exit();
@@ -451,7 +439,7 @@ public partial class MainForm
 	private void ConfigureButtonClick(object? sender, EventArgs e)
 	{
 		SettingsDialog settingsDialog = new SettingsDialog(this);
-		DialogResult result = DialogResult.Cancel;
+		bool restart = false;
 		settingsDialog.Scale(new SizeF(UIService.Scale, UIService.Scale));
 
 		string title = string.Empty;
@@ -504,7 +492,7 @@ public partial class MainForm
 					message = Resources.MainFormLanguageChangedMsg;
 				}
 
-				result = MessageBox.Show(message, title, MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1, RightToLeftOptions);
+				restart = this.Services.MessageBoxes.Confirm(message, title);
 			}
 
 			if (settingsDialog.ItemBGColorOpacityChanged || settingsDialog.EnableItemRequirementRestrictionChanged)
@@ -519,7 +507,7 @@ public partial class MainForm
 
 			AdjustMenuButtonVisibility();
 
-			if (result == DialogResult.Yes)
+			if (restart)
 			{
 				if (this.DoCloseStuff())
 					System.Windows.Forms.Application.Restart();

@@ -433,21 +433,6 @@ public partial class SackPanel : Panel, IScalingControl
 		?? throw new InvalidOperationException("The panel shows no sack.");
 
 	/// <summary>
-	/// Gets MessageBoxOptions for right to left reading.
-	/// </summary>
-	protected static MessageBoxOptions RightToLeftOptions
-	{
-		get
-		{
-			// Set options for Right to Left reading.
-			if (CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft)
-				return MessageBoxOptions.RightAlign | MessageBoxOptions.RtlReading;
-
-			return (MessageBoxOptions)0;
-		}
-	}
-
-	/// <summary>
 	/// Gets the Point (-1, -1) which is used to indicate an invalid location when dragging.
 	/// </summary>
 	protected static Point InvalidDragLocation => new Point(-1, -1);

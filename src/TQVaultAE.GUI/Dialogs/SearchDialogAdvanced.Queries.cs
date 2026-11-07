@@ -123,7 +123,7 @@ public partial class SearchDialogAdvanced
 	private void scalingButtonQuerySave_Click(object? sender, EventArgs e)
 	{
 		var input = scalingComboBoxQueryList.Text.Trim();
-		DialogResult? overrideIt = null;
+		bool overwrite = false;
 		SearchQuery? foundIt = null;
 
 		#region Validation
@@ -131,28 +131,14 @@ public partial class SearchDialogAdvanced
 		// You must have text
 		if (string.IsNullOrWhiteSpace(input))
 		{
-			MessageBox.Show(
-				Resources.SearchQueryNameMustBeSet
-				, Resources.GlobalInputWarning
-				, MessageBoxButtons.OK
-				, MessageBoxIcon.Error
-				, MessageBoxDefaultButton.Button1
-				, RightToLeftOptions
-			);
+			this.Services.MessageBoxes.Inform(Resources.SearchQueryNameMustBeSet, Resources.GlobalInputWarning, MessageBoxIcon.Error);
 			return;
 		}
 
 		// You must have filters
 		if (!HaveFilters())
 		{
-			MessageBox.Show(
-				Resources.SearchTermRequired
-				, Resources.GlobalInputWarning
-				, MessageBoxButtons.OK
-				, MessageBoxIcon.Error
-				, MessageBoxDefaultButton.Button1
-				, RightToLeftOptions
-			);
+			this.Services.MessageBoxes.Inform(Resources.SearchTermRequired, Resources.GlobalInputWarning, MessageBoxIcon.Error);
 			return;
 		}
 
@@ -160,22 +146,15 @@ public partial class SearchDialogAdvanced
 		foundIt = this.SQueries.FirstOrDefault(q => q.QueryName.Equals(input, StringComparison.OrdinalIgnoreCase));
 		if (foundIt != null)
 		{
-			overrideIt = MessageBox.Show(
-				Resources.SearchQueryNameAlreadyExist
-				, Resources.GlobalInputWarning
-				, MessageBoxButtons.YesNo
-				, MessageBoxIcon.Warning
-				, MessageBoxDefaultButton.Button1
-				, RightToLeftOptions
-			);
-
-			if (overrideIt == DialogResult.No)
+			if (!this.Services.MessageBoxes.Confirm(Resources.SearchQueryNameAlreadyExist, Resources.GlobalInputWarning, MessageBoxIcon.Warning))
 				return;
+
+			overwrite = true;
 		}
 
 		#endregion
 
-		if (overrideIt == DialogResult.Yes && foundIt is not null)
+		if (overwrite && foundIt is not null)
 		{
 			UpdateQuery(input, foundIt);
 			SavePersonnalQueries();
@@ -270,16 +249,7 @@ public partial class SearchDialogAdvanced
 
 		var item = scalingComboBoxQueryList.SelectedItem;
 
-		var deleteIt = MessageBox.Show(
-			string.Format(Resources.GlobalDeleteConfirm, item)
-			, Resources.GlobalInputWarning
-			, MessageBoxButtons.YesNo
-			, MessageBoxIcon.Question
-			, MessageBoxDefaultButton.Button1
-			, RightToLeftOptions
-		);
-
-		if (deleteIt == DialogResult.No)
+		if (!this.Services.MessageBoxes.Confirm(string.Format(Resources.GlobalDeleteConfirm, item), Resources.GlobalInputWarning))
 			return;
 
 
