@@ -123,6 +123,9 @@ internal partial class SettingsDialog
 			USettings.BaseFont = this.BaseFont;
 			USettings.EnableDetailedTooltipView = this.enableDetailedTooltipView;
 			USettings.ShowInGameValues = this.showInGameValues;
+			USettings.TooltipShowInGameRolls = this.tooltipShowInGameRolls;
+			USettings.TooltipShowValueRanges = this.tooltipShowValueRanges;
+			USettings.TooltipShowGrantedSkills = this.tooltipShowGrantedSkills;
 			USettings.ItemBGColorOpacity = this.itemBGColorOpacity;
 			USettings.EnableItemRequirementRestriction = this.enableItemRequirementRestriction;
 			USettings.EnableHotReload = this.enableHotReload;
@@ -554,20 +557,39 @@ internal partial class SettingsDialog
 		}
 	}
 
-	private void EnableDetailedTooltipViewCheckBox_CheckedChanged(object? sender, EventArgs e)
+	private void checkGroupBoxTooltipEnhanced_CheckedChanged(object? sender, EventArgs e)
 	{
-		if (this.EnableDetailedTooltipViewCheckBox.Checked)
+		if (this.checkGroupBoxTooltipEnhanced.Checked != this.enableDetailedTooltipView)
 		{
-			if (!this.enableDetailedTooltipView)
-				this.enableDetailedTooltipView = this.ConfigurationChanged = true;
+			this.enableDetailedTooltipView = this.checkGroupBoxTooltipEnhanced.Checked;
+			this.ConfigurationChanged = true;
 		}
-		else
+	}
+
+	private void scalingCheckBoxTooltipInGameRolls_CheckedChanged(object? sender, EventArgs e)
+	{
+		if (this.scalingCheckBoxTooltipInGameRolls.Checked != this.tooltipShowInGameRolls)
 		{
-			if (this.enableDetailedTooltipView)
-			{
-				this.enableDetailedTooltipView = false;
-				this.ConfigurationChanged = true;
-			}
+			this.tooltipShowInGameRolls = this.scalingCheckBoxTooltipInGameRolls.Checked;
+			this.ConfigurationChanged = true;
+		}
+	}
+
+	private void scalingCheckBoxTooltipValueRanges_CheckedChanged(object? sender, EventArgs e)
+	{
+		if (this.scalingCheckBoxTooltipValueRanges.Checked != this.tooltipShowValueRanges)
+		{
+			this.tooltipShowValueRanges = this.scalingCheckBoxTooltipValueRanges.Checked;
+			this.ConfigurationChanged = true;
+		}
+	}
+
+	private void scalingCheckBoxTooltipGrantedSkills_CheckedChanged(object? sender, EventArgs e)
+	{
+		if (this.scalingCheckBoxTooltipGrantedSkills.Checked != this.tooltipShowGrantedSkills)
+		{
+			this.tooltipShowGrantedSkills = this.scalingCheckBoxTooltipGrantedSkills.Checked;
+			this.ConfigurationChanged = true;
 		}
 	}
 

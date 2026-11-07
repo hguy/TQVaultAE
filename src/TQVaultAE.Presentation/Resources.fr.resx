@@ -1088,12 +1088,6 @@ Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
 	<data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>Activer toutes les infobulles</value>
   </data>
-	<data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>Activer la vue détaillée de l'infobulle</value>
-  </data>
-	<data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>Divise l'affichage des attributs dans les catégories Prefix/Base/Suffix</value>
-  </data>
 	<data name="SettingsPlayerReadonly" xml:space="preserve">
     <value>Equipement du personnage en lecture seule</value>
   </data>
@@ -1739,5 +1733,29 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
   </data>
 	<data name="ForgeCapResetOnStricter" xml:space="preserve">
     <value>Passer à un mode plus strict vide les emplacements</value>
+  </data>
+	<data name="SettingTooltipEnhanced" xml:space="preserve">
+    <value>Infobulle enrichie</value>
+  </data>
+	<data name="SettingTooltipEnhancedTT" xml:space="preserve">
+    <value>Divise les attributs de l'infobulle d'objet en catégories Préfixe/Base/Suffixe, avec les ajouts ci-dessous</value>
+  </data>
+	<data name="SettingTooltipShowInGameRolls" xml:space="preserve">
+    <value>Afficher les tirages en jeu</value>
+  </data>
+	<data name="SettingTooltipShowInGameRollsTT" xml:space="preserve">
+    <value>Liste chaque valeur tirée par le jeu (base de données -&gt; en jeu). Nécessite « Afficher les valeurs en jeu ».</value>
+  </data>
+	<data name="SettingTooltipShowValueRanges" xml:space="preserve">
+    <value>Afficher les valeurs min/max</value>
+  </data>
+	<data name="SettingTooltipShowValueRangesTT" xml:space="preserve">
+    <value>Affiche à droite de chaque attribut tiré son minimum et son maximum possibles. Nécessite « Afficher les valeurs en jeu ».</value>
+  </data>
+	<data name="SettingTooltipShowGrantedSkills" xml:space="preserve">
+    <value>Afficher les compétences de l'objet</value>
+  </data>
+	<data name="SettingTooltipShowGrantedSkillsTT" xml:space="preserve">
+    <value>Affiche dans un panneau à côté de l'infobulle les compétences accordées par l'objet, ses affixes et ses reliques</value>
   </data>
 </root>

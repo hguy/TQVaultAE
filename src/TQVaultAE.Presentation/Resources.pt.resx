@@ -1290,12 +1290,6 @@ Quando ativado, o equipamento do personagem será somente leitura, você não po
   <data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>Ativar todas as dicas de ferramentas</value>
   </data>
-  <data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>Ativar exibição de dica de ferramenta detalhada</value>
-  </data>
-  <data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>Dividir atributos da dica de ferramenta em categorias Prefixo/Base/Sufixo</value>
-  </data>
   <data name="SettingsItemBGColorOpacityLabel" xml:space="preserve">
     <value> Cor do item BG Alpha :</value>
   </data>

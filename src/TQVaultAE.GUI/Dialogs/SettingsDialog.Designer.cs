@@ -187,8 +187,12 @@ namespace TQVaultAE.GUI.Dialogs
 			suppressWarningsCheckBox = new ScalingCheckBox();
 			playerReadonlyCheckbox = new ScalingCheckBox();
 			characterEditCheckBox = new ScalingCheckBox();
-			EnableDetailedTooltipViewCheckBox = new ScalingCheckBox();
 			ShowInGameValuesCheckBox = new ScalingCheckBox();
+			checkGroupBoxTooltipEnhanced = new CheckGroupBox();
+			bufferedFlowLayoutPanelTooltipEnhanced = new BufferedFlowLayoutPanel();
+			scalingCheckBoxTooltipInGameRolls = new ScalingCheckBox();
+			scalingCheckBoxTooltipValueRanges = new ScalingCheckBox();
+			scalingCheckBoxTooltipGrantedSkills = new ScalingCheckBox();
 			ItemBGColorOpacityLabel = new ScalingLabel();
 			EnableItemRequirementRestrictionCheckBox = new ScalingCheckBox();
 			hotReloadCheckBox = new ScalingCheckBox();
@@ -256,6 +260,8 @@ namespace TQVaultAE.GUI.Dialogs
 			bufferedFlowLayoutPanelGeneralSettings.SuspendLayout();
 			checkGroupBoxAllowCheats.SuspendLayout();
 			bufferedFlowLayoutPanelCheats.SuspendLayout();
+			checkGroupBoxTooltipEnhanced.SuspendLayout();
+			bufferedFlowLayoutPanelTooltipEnhanced.SuspendLayout();
 			groupBoxGfxAndAudio.SuspendLayout();
 			bufferedFlowLayoutPanelGfxAndAudio.SuspendLayout();
 			detectLanguageCheckBox.SuspendLayout();
@@ -526,20 +532,71 @@ namespace TQVaultAE.GUI.Dialogs
 			characterEditCheckBox.UseVisualStyleBackColor = true;
 			characterEditCheckBox.CheckedChanged += CharacterEditCheckBox_CheckedChanged;
 			// 
-			// EnableDetailedTooltipViewCheckBox
-			// 
-			EnableDetailedTooltipViewCheckBox.AutoSize = true;
-			EnableDetailedTooltipViewCheckBox.Font = new Font("Microsoft Sans Serif", 11.25F);
-			EnableDetailedTooltipViewCheckBox.ForeColor = Color.White;
-			EnableDetailedTooltipViewCheckBox.Location = new Point(3, 169);
-			EnableDetailedTooltipViewCheckBox.Name = "EnableDetailedTooltipViewCheckBox";
-			EnableDetailedTooltipViewCheckBox.Size = new Size(213, 22);
-			EnableDetailedTooltipViewCheckBox.TabIndex = 38;
-			EnableDetailedTooltipViewCheckBox.Text = "Enable Detailed Tooltip View";
-			toolTip.SetToolTip(EnableDetailedTooltipViewCheckBox, "Split tooltip attributes into Prefix/Base/Suffix categories");
-			EnableDetailedTooltipViewCheckBox.UseVisualStyleBackColor = true;
-			EnableDetailedTooltipViewCheckBox.CheckedChanged += EnableDetailedTooltipViewCheckBox_CheckedChanged;
-			// 
+			// checkGroupBoxTooltipEnhanced
+			//
+			checkGroupBoxTooltipEnhanced.AutoSize = true;
+			checkGroupBoxTooltipEnhanced.Checked = false;
+			checkGroupBoxTooltipEnhanced.CheckedBehavior = UIToolbox.CheckGroupBoxCheckedBehavior.Enable;
+			checkGroupBoxTooltipEnhanced.CheckState = CheckState.Unchecked;
+			checkGroupBoxTooltipEnhanced.Controls.Add(bufferedFlowLayoutPanelTooltipEnhanced);
+			checkGroupBoxTooltipEnhanced.ForeColor = Color.Gold;
+			checkGroupBoxTooltipEnhanced.Name = "checkGroupBoxTooltipEnhanced";
+			checkGroupBoxTooltipEnhanced.Size = new Size(263, 107);
+			checkGroupBoxTooltipEnhanced.TabIndex = 52;
+			checkGroupBoxTooltipEnhanced.TabStop = false;
+			checkGroupBoxTooltipEnhanced.Text = "Tooltip Enhanced";
+			toolTip.SetToolTip(checkGroupBoxTooltipEnhanced, "Split item tooltip attributes into Prefix/Base/Suffix categories, with the extras below");
+			checkGroupBoxTooltipEnhanced.CheckedChanged += checkGroupBoxTooltipEnhanced_CheckedChanged;
+			//
+			// bufferedFlowLayoutPanelTooltipEnhanced
+			//
+			bufferedFlowLayoutPanelTooltipEnhanced.AutoSize = true;
+			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipInGameRolls);
+			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipValueRanges);
+			bufferedFlowLayoutPanelTooltipEnhanced.Controls.Add(scalingCheckBoxTooltipGrantedSkills);
+			bufferedFlowLayoutPanelTooltipEnhanced.Dock = DockStyle.Fill;
+			bufferedFlowLayoutPanelTooltipEnhanced.FlowDirection = FlowDirection.TopDown;
+			bufferedFlowLayoutPanelTooltipEnhanced.Location = new Point(3, 20);
+			bufferedFlowLayoutPanelTooltipEnhanced.Name = "bufferedFlowLayoutPanelTooltipEnhanced";
+			bufferedFlowLayoutPanelTooltipEnhanced.Size = new Size(257, 84);
+			bufferedFlowLayoutPanelTooltipEnhanced.TabIndex = 1;
+			//
+			// scalingCheckBoxTooltipInGameRolls
+			//
+			scalingCheckBoxTooltipInGameRolls.AutoSize = true;
+			scalingCheckBoxTooltipInGameRolls.Font = new Font("Microsoft Sans Serif", 11.25F);
+			scalingCheckBoxTooltipInGameRolls.ForeColor = Color.White;
+			scalingCheckBoxTooltipInGameRolls.Name = "scalingCheckBoxTooltipInGameRolls";
+			scalingCheckBoxTooltipInGameRolls.Size = new Size(213, 22);
+			scalingCheckBoxTooltipInGameRolls.TabIndex = 0;
+			scalingCheckBoxTooltipInGameRolls.Text = "Display in game rolls";
+			scalingCheckBoxTooltipInGameRolls.UseVisualStyleBackColor = true;
+			scalingCheckBoxTooltipInGameRolls.CheckedChanged += scalingCheckBoxTooltipInGameRolls_CheckedChanged;
+			//
+			// scalingCheckBoxTooltipValueRanges
+			//
+			scalingCheckBoxTooltipValueRanges.AutoSize = true;
+			scalingCheckBoxTooltipValueRanges.Font = new Font("Microsoft Sans Serif", 11.25F);
+			scalingCheckBoxTooltipValueRanges.ForeColor = Color.White;
+			scalingCheckBoxTooltipValueRanges.Name = "scalingCheckBoxTooltipValueRanges";
+			scalingCheckBoxTooltipValueRanges.Size = new Size(213, 22);
+			scalingCheckBoxTooltipValueRanges.TabIndex = 1;
+			scalingCheckBoxTooltipValueRanges.Text = "Display min/max values";
+			scalingCheckBoxTooltipValueRanges.UseVisualStyleBackColor = true;
+			scalingCheckBoxTooltipValueRanges.CheckedChanged += scalingCheckBoxTooltipValueRanges_CheckedChanged;
+			//
+			// scalingCheckBoxTooltipGrantedSkills
+			//
+			scalingCheckBoxTooltipGrantedSkills.AutoSize = true;
+			scalingCheckBoxTooltipGrantedSkills.Font = new Font("Microsoft Sans Serif", 11.25F);
+			scalingCheckBoxTooltipGrantedSkills.ForeColor = Color.White;
+			scalingCheckBoxTooltipGrantedSkills.Name = "scalingCheckBoxTooltipGrantedSkills";
+			scalingCheckBoxTooltipGrantedSkills.Size = new Size(213, 22);
+			scalingCheckBoxTooltipGrantedSkills.TabIndex = 2;
+			scalingCheckBoxTooltipGrantedSkills.Text = "Display item skills";
+			scalingCheckBoxTooltipGrantedSkills.UseVisualStyleBackColor = true;
+			scalingCheckBoxTooltipGrantedSkills.CheckedChanged += scalingCheckBoxTooltipGrantedSkills_CheckedChanged;
+			//
 			// ShowInGameValuesCheckBox
 			// 
 			ShowInGameValuesCheckBox.AutoSize = true;
@@ -987,7 +1044,6 @@ namespace TQVaultAE.GUI.Dialogs
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(loadAllFilesCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(hotReloadCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(suppressWarningsCheckBox);
-			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(EnableDetailedTooltipViewCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(ShowInGameValuesCheckBox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(playerReadonlyCheckbox);
 			bufferedFlowLayoutPanelGeneralSettings.Controls.Add(scalingCheckBoxDisableAutoStacking);
@@ -1313,6 +1369,7 @@ namespace TQVaultAE.GUI.Dialogs
 			bufferedFlowLayoutPanelSkeletonCenter.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			bufferedFlowLayoutPanelSkeletonCenter.Controls.Add(groupBoxGeneral);
 			bufferedFlowLayoutPanelSkeletonCenter.Controls.Add(checkGroupBoxAllowCheats);
+			bufferedFlowLayoutPanelSkeletonCenter.Controls.Add(checkGroupBoxTooltipEnhanced);
 			bufferedFlowLayoutPanelSkeletonCenter.Dock = DockStyle.Fill;
 			bufferedFlowLayoutPanelSkeletonCenter.FlowDirection = FlowDirection.TopDown;
 			bufferedFlowLayoutPanelSkeletonCenter.Location = new Point(486, 3);
@@ -1364,6 +1421,10 @@ namespace TQVaultAE.GUI.Dialogs
 			checkGroupBoxAllowCheats.PerformLayout();
 			bufferedFlowLayoutPanelCheats.ResumeLayout(false);
 			bufferedFlowLayoutPanelCheats.PerformLayout();
+			checkGroupBoxTooltipEnhanced.ResumeLayout(false);
+			checkGroupBoxTooltipEnhanced.PerformLayout();
+			bufferedFlowLayoutPanelTooltipEnhanced.ResumeLayout(false);
+			bufferedFlowLayoutPanelTooltipEnhanced.PerformLayout();
 			groupBoxGfxAndAudio.ResumeLayout(false);
 			groupBoxGfxAndAudio.PerformLayout();
 			bufferedFlowLayoutPanelGfxAndAudio.ResumeLayout(false);
@@ -1409,8 +1470,12 @@ namespace TQVaultAE.GUI.Dialogs
 		private ScalingLabel baseFontLabel;
 		private ScalingComboBox baseFontComboBox;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelButtons;
-		private ScalingCheckBox EnableDetailedTooltipViewCheckBox;
 		private ScalingCheckBox ShowInGameValuesCheckBox;
+		private TQVaultAE.GUI.Components.CheckGroupBox checkGroupBoxTooltipEnhanced;
+		private BufferedFlowLayoutPanel bufferedFlowLayoutPanelTooltipEnhanced;
+		private ScalingCheckBox scalingCheckBoxTooltipInGameRolls;
+		private ScalingCheckBox scalingCheckBoxTooltipValueRanges;
+		private ScalingCheckBox scalingCheckBoxTooltipGrantedSkills;
 		private System.Windows.Forms.TrackBar ItemBGColorOpacityTrackBar;
 		private ScalingLabel ItemBGColorOpacityLabel;
 		private ScalingCheckBox EnableItemRequirementRestrictionCheckBox;

@@ -88,6 +88,9 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	private bool enableDetailedTooltipView;
 	private bool showInGameValues;
+	private bool tooltipShowInGameRolls;
+	private bool tooltipShowValueRanges;
+	private bool tooltipShowGrantedSkills;
 
 	/// <summary>
 	/// Value Range (0-255) for item background color opacity
@@ -374,7 +377,9 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.mapListComboBox.Font =
 		this.baseFontLabel.Font =
 		this.baseFontComboBox.Font =
-		this.EnableDetailedTooltipViewCheckBox.Font =
+		this.scalingCheckBoxTooltipInGameRolls.Font =
+		this.scalingCheckBoxTooltipValueRanges.Font =
+		this.scalingCheckBoxTooltipGrantedSkills.Font =
 		this.ShowInGameValuesCheckBox.Font =
 		this.EnableItemRequirementRestrictionCheckBox.Font =
 		this.ItemBGColorOpacityLabel.Font =
@@ -419,8 +424,14 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.toolTip.SetToolTip(this.playerReadonlyCheckbox, Resources.SettingsPlayerReadonlyTT);
 		this.resetButton.Text = Resources.SettingsReset;
 		this.toolTip.SetToolTip(this.resetButton, Resources.SettingsResetTT);
-		this.EnableDetailedTooltipViewCheckBox.Text = Resources.SettingEnableDetailedTooltipView;
-		this.toolTip.SetToolTip(this.EnableDetailedTooltipViewCheckBox, Resources.SettingEnableDetailedTooltipViewTT);
+		this.checkGroupBoxTooltipEnhanced.Text = Resources.SettingTooltipEnhanced;
+		this.toolTip.SetToolTip(this.checkGroupBoxTooltipEnhanced, Resources.SettingTooltipEnhancedTT);
+		this.scalingCheckBoxTooltipInGameRolls.Text = Resources.SettingTooltipShowInGameRolls;
+		this.toolTip.SetToolTip(this.scalingCheckBoxTooltipInGameRolls, Resources.SettingTooltipShowInGameRollsTT);
+		this.scalingCheckBoxTooltipValueRanges.Text = Resources.SettingTooltipShowValueRanges;
+		this.toolTip.SetToolTip(this.scalingCheckBoxTooltipValueRanges, Resources.SettingTooltipShowValueRangesTT);
+		this.scalingCheckBoxTooltipGrantedSkills.Text = Resources.SettingTooltipShowGrantedSkills;
+		this.toolTip.SetToolTip(this.scalingCheckBoxTooltipGrantedSkills, Resources.SettingTooltipShowGrantedSkillsTT);
 		this.ShowInGameValuesCheckBox.Text = Resources.SettingShowInGameValues;
 		this.toolTip.SetToolTip(this.ShowInGameValuesCheckBox, Resources.SettingShowInGameValuesTT);
 		this.ItemBGColorOpacityLabel.Text = Resources.SettingsItemBGColorOpacityLabel;
@@ -506,6 +517,9 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.detectLanguage = USettings.AutoDetectLanguage;
 		this.enableDetailedTooltipView = USettings.EnableDetailedTooltipView;
 		this.showInGameValues = USettings.ShowInGameValues;
+		this.tooltipShowInGameRolls = USettings.TooltipShowInGameRolls;
+		this.tooltipShowValueRanges = USettings.TooltipShowValueRanges;
+		this.tooltipShowGrantedSkills = USettings.TooltipShowGrantedSkills;
 		this.itemBGColorOpacity = USettings.ItemBGColorOpacity;
 		this.enableItemRequirementRestriction = USettings.EnableItemRequirementRestriction;
 		this.enableHotReload = USettings.EnableHotReload;
@@ -587,7 +601,10 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.loadAllFilesCheckBox.Checked = this.loadAllFiles;
 		this.suppressWarningsCheckBox.Checked = this.suppressWarnings;
 		this.playerReadonlyCheckbox.Checked = this.playerReadonly;
-		this.EnableDetailedTooltipViewCheckBox.Checked = this.enableDetailedTooltipView;
+		this.checkGroupBoxTooltipEnhanced.Checked = this.enableDetailedTooltipView;
+		this.scalingCheckBoxTooltipInGameRolls.Checked = this.tooltipShowInGameRolls;
+		this.scalingCheckBoxTooltipValueRanges.Checked = this.tooltipShowValueRanges;
+		this.scalingCheckBoxTooltipGrantedSkills.Checked = this.tooltipShowGrantedSkills;
 		this.ShowInGameValuesCheckBox.Checked = this.showInGameValues;
 		this.ItemBGColorOpacityTrackBar.Value = this.itemBGColorOpacity;
 		this.EnableItemRequirementRestrictionCheckBox.Checked = this.enableItemRequirementRestriction;

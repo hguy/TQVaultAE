@@ -1275,12 +1275,6 @@ Change this value to match program version when new keys are added.  Will trigge
     <data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>启用所有提示信息</value>
   </data>
-    <data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>启用详细提示信息面板</value>
-  </data>
-    <data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>将提示信息分为前缀/基础/后缀</value>
-  </data>
   <data name="SettingsItemBGColorOpacityLabel" xml:space="preserve">
     <value>物品背景颜色不透明度：</value>
   </data>
