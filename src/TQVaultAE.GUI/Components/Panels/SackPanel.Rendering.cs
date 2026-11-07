@@ -25,9 +25,15 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="e">PaintEventArgs data</param>
 	protected void PaintCallback(object? sender, PaintEventArgs e)
 	{
-		// Assign the clipping to the rectangle
-		Region oldClip = e.Graphics.Clip;
-		e.Graphics.Clip = new Region(e.ClipRectangle);
+		// A paint can still arrive while the form closes. Reading the cursor position then needs the handle,
+		// which a disposed control cannot recreate (ObjectDisposedException).
+		if (this.IsDisposed || this.Disposing)
+			return;
+
+		// Assign the clipping to the rectangle. Graphics.Clip returns and stores copies, so both regions are ours to dispose.
+		using Region oldClip = e.Graphics.Clip;
+		using (Region clip = new Region(e.ClipRectangle))
+			e.Graphics.Clip = clip;
 
 		try
 		{
@@ -54,14 +60,18 @@ public partial class SackPanel : Panel, IScalingControl
 				// Draw the items.
 				this.PaintItems(e);
 
+				// The cursor position is only needed to draw a dragged item.
+				if (this.DragInfo.IsActive)
+				{
 #if DEBUG
-				// Automation drives drags with a virtual cursor instead of the real one.
-				Point cursorPosition = Automation.VirtualCursor.GetClientPosition(this);
+					// Automation drives drags with a virtual cursor instead of the real one.
+					Point cursorPosition = Automation.VirtualCursor.GetClientPosition(this);
 #else
-				Point cursorPosition = this.PointToClient(Cursor.Position);
+					Point cursorPosition = this.PointToClient(Cursor.Position);
 #endif
-				if (this.DragInfo.IsActive && this.ClientRectangle.Contains(cursorPosition))
-					this.RedrawDragItem(e.Graphics, new Point(cursorPosition.X - this.DragInfo.MouseOffset.X, cursorPosition.Y - this.DragInfo.MouseOffset.Y));
+					if (this.ClientRectangle.Contains(cursorPosition))
+						this.RedrawDragItem(e.Graphics, new Point(cursorPosition.X - this.DragInfo.MouseOffset.X, cursorPosition.Y - this.DragInfo.MouseOffset.Y));
+				}
 
 				if (mouseDraw)
 					e.Graphics.DrawRectangle(Pens.White, GetMouseDragRectangle());
