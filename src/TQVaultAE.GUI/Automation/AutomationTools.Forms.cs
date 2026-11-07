@@ -12,7 +12,7 @@ namespace TQVaultAE.GUI.Automation;
 internal static partial class AutomationTools
 {
 	[McpServerTool(Name = "zoom", Destructive = true)]
-	[Description("Zooms the main window like its keyboard shortcuts: 'in' (Ctrl +, +10 %), 'out' (Ctrl -, -10 %) or 'reset' (Ctrl Home, 100 %). Returns the zoom, the DPI factor, the resulting scale and the client size. The zoom is a user setting: the save guard keeps it from being written while automation drives the app.")]
+	[Description("Zooms the main window like its keyboard shortcuts: 'in' (Ctrl +, +10 %), 'out' (Ctrl -, -10 %) or 'reset' (Ctrl Home, 100 %). Returns the zoom, the DPI factor, the resulting scale and the client size. The zoom is saved to UserConfig.xml like a user zoom (the save guard does not cover it): end with 'reset'.")]
 	public static string Zoom([Description("in, out or reset.")] string step)
 		=> AutomationHost.OnUi(main =>
 		{
