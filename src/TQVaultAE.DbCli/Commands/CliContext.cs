@@ -56,7 +56,10 @@ internal sealed class CliContext : IDisposable
 					return this._install ??= GameLocator.Locate(this.GamePath);
 				}
 				catch (DirectoryNotFoundException ex) {
-					throw new NotFoundException($"Titan Quest install not found ({ex.Message}). Use --game <path> or set TQ_GAME_PATH.");
+					// With --game, only that folder is tried: say why it is not an install, without suggesting --game.
+					throw new NotFoundException(string.IsNullOrWhiteSpace(this.GamePath)
+						? $"{ex.Message.TrimEnd('.')}. Use --game <path> or set TQ_GAME_PATH."
+						: ex.Message);
 				}
 			}
 		}
