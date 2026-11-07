@@ -17,6 +17,9 @@ public partial class MainForm
 {
 	internal ItemDragInfo AutomationDragInfo => this.DragInfo;
 
+	/// <summary>Zooms like Ctrl + / Ctrl - (delta 0.1 / -0.1) or Ctrl Home (delta 1, back to 100 %).</summary>
+	internal void AutomationZoom(float delta) => this.ResizeFormCallback(this, new ResizeEventArgs(delta));
+
 	internal UserSettings AutomationSettings => this.USettings;
 
 	internal string? AutomationSelectedVault => this.vaultListComboBox?.SelectedItem?.ToString();

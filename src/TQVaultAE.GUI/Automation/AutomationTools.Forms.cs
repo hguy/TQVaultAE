@@ -11,6 +11,62 @@ namespace TQVaultAE.GUI.Automation;
 /// </summary>
 internal static partial class AutomationTools
 {
+	[McpServerTool(Name = "zoom", Destructive = true)]
+	[Description("Zooms the main window like its keyboard shortcuts: 'in' (Ctrl +, +10 %), 'out' (Ctrl -, -10 %) or 'reset' (Ctrl Home, 100 %). Returns the zoom, the DPI factor, the resulting scale and the client size. The zoom is a user setting: the save guard keeps it from being written while automation drives the app.")]
+	public static string Zoom([Description("in, out or reset.")] string step)
+		=> AutomationHost.OnUi(main =>
+		{
+			float delta = step.ToLowerInvariant() switch
+			{
+				"in" => 0.1F,
+				"out" => -0.1F,
+				"reset" => 1.0F,
+				_ => throw new McpException("step must be in, out or reset."),
+			};
+
+			AutomationHost.MarkDriving();
+			main.AutomationZoom(delta);
+			var ui = main.Services.UIService;
+			return Serialize(new { zoom = ui.Zoom, dpiScale = ui.DpiScale, scale = ui.Scale, clientSize = new { main.ClientSize.Width, main.ClientSize.Height } });
+		});
+
+	[McpServerTool(Name = "control_tree", ReadOnly = true)]
+	[Description("Lists the controls of an open form with their type, bounds (client coordinates of their parent, in pixels), font and visibility, to check layout and scaling. Also reports the form's DPI and TQVault's scale, zoom and DPI factor.")]
+	public static string ControlTree(
+		[Description("Part of the form title (case-insensitive); empty for the main window.")] string form = "",
+		[Description("Maximum depth below the form (default 3).")] int depth = 3)
+		=> AutomationHost.OnUi(main =>
+		{
+			Form target = string.IsNullOrEmpty(form)
+				? main
+				: System.Windows.Forms.Application.OpenForms.Cast<Form>().FirstOrDefault(f => f.Text.Contains(form, StringComparison.OrdinalIgnoreCase))
+					?? throw new McpException($"No open form has '{form}' in its title.");
+
+			object Describe(Control c, int level) => new
+			{
+				name = c.Name,
+				type = c.GetType().Name,
+				bounds = new { c.Left, c.Top, c.Width, c.Height },
+				font = $"{c.Font.Name} {c.Font.SizeInPoints:0.##}pt",
+				visible = c.Visible,
+				controls = level < depth && c.Controls.Count > 0
+					? c.Controls.Cast<Control>().Select(child => Describe(child, level + 1)).ToList()
+					: null,
+			};
+
+			var ui = main.Services.UIService;
+			return Serialize(new
+			{
+				form = target.Text,
+				deviceDpi = target.DeviceDpi,
+				clientSize = new { target.ClientSize.Width, target.ClientSize.Height },
+				scale = ui.Scale,
+				zoom = ui.Zoom,
+				dpiScale = ui.DpiScale,
+				controls = target.Controls.Cast<Control>().Select(c => Describe(c, 1)).ToList(),
+			});
+		});
+
 	[McpServerTool(Name = "list_forms", ReadOnly = true)]
 	[Description("Lists the form and dialog types registered in the container, which open_form can create.")]
 	public static string ListForms()
