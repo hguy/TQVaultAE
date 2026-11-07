@@ -2083,16 +2083,20 @@ public partial class ItemProvider
 			results.Add(valueStr);
 			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
 
-			// Time to live
-			if (!TranslationService.TryTranslateXTag("tagSkillPetTimeToLive", out formatSpec))
-				formatSpec = "Life Time {0} Seconds";
-			else
-				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+			// Time to live: 0 is a permanent pet, which has no life time line.
+			float timeToLive = skillRecord.GetSingle("spawnObjectsTimeToLive", 0);
+			if (timeToLive > 0)
+			{
+				if (!TranslationService.TryTranslateXTag("tagSkillPetTimeToLive", out formatSpec))
+					formatSpec = "Life Time {0} Seconds";
+				else
+					formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 
-			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, skillRecord.GetSingle("spawnObjectsTimeToLive", 0));
-			valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
-			results.Add(valueStr);
-			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+				petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, timeToLive);
+				valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+				results.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+			}
 
 			// Health
 			value = petRecord.GetSingle("characterLife", 0);
