@@ -49,6 +49,8 @@ public partial class VaultForm
 
 				this.buttonMinimize.Visible = this.MinimizeBox;
 				this.buttonMinimize.Enabled = this.MinimizeBox;
+
+				this.PlaceButtons();
 			}
 			else
 			{
@@ -94,7 +96,7 @@ public partial class VaultForm
 	/// </summary>
 	public virtual bool NormalizeBox
 	{
-		get => _NormalizeBox && (this.UIService?.Scale ?? 1.0F) != 1.0F;
+		get => _NormalizeBox && (this.UIService?.Zoom ?? 1.0F) != 1.0F;
 		set
 		{
 			_NormalizeBox = value;
@@ -104,7 +106,7 @@ public partial class VaultForm
 
 	private void RefreshNormalizeBox()
 	{
-		var val = _NormalizeBox && (this.UIService?.Scale ?? 1.0F) != 1.0F;
+		var val = _NormalizeBox && (this.UIService?.Zoom ?? 1.0F) != 1.0F;
 		if (this.systemMenu != null)
 			this.systemMenu.NormalizeEnabled = val;
 
@@ -112,6 +114,7 @@ public partial class VaultForm
 		{
 			this.ButtonScaleTo1.Visible = val;
 			this.ButtonScaleTo1.Enabled = val;
+			this.PlaceButtons();
 		}
 	}
 
@@ -235,22 +238,52 @@ public partial class VaultForm
 	/// <summary>
 	/// Sets the location for the minimize, maximize and close buttons for the custom border.
 	/// </summary>
-	private void PlaceButtons()
+	/// <summary>Minimize, maximize and normalize button size at 96 DPI, zoom 1.</summary>
+	private const float CaptionButtonSize = 15.0F;
+
+	/// <summary>Close button size at 96 DPI, zoom 1.</summary>
+	private const float CloseButtonSize = 26.0F;
+
+	/// <summary>Space between the caption buttons at 96 DPI, zoom 1.</summary>
+	private const float CaptionButtonGap = 5.0F;
+
+	protected void PlaceButtons()
 	{
-		// The buttons are created by InitializeComponent.
+		// The buttons are created by InitializeComponent; the border can be set while it runs.
+		if (this.buttonClose is null || this.buttonMaximize is null || this.ButtonScaleTo1 is null || this.buttonMinimize is null)
+			return;
+
+		// Sizes from the design (15 and 26 pixels at 96 DPI) times the scale, the same in every form whatever its
+		// autoscaling, and without the rounding drift of repeated zooms.
+		float scale = this.UIService?.Scale ?? 1.0F;
+		var small = new Size((int)Math.Round(CaptionButtonSize * scale), (int)Math.Round(CaptionButtonSize * scale));
+		this.buttonClose.Size = new Size((int)Math.Round(CloseButtonSize * scale), (int)Math.Round(CloseButtonSize * scale));
+		this.buttonMaximize.Size = this.ButtonScaleTo1.Size = this.buttonMinimize.Size = small;
+
 		this.buttonClose.Text = Resources.GlobalClose;
 		this.buttonClose.Location = new Point(
-			this.ClientRectangle.Right - (this.buttonClose.Width + this.sideBorder.Width)
+			this.ClientRectangle.Right - (this.buttonClose.Width + (this.sideBorder?.Width ?? 0))
 			, this.ClientRectangle.Top);
 
 		this.buttonMaximize.Text = Resources.GlobalMaximize;
-		this.buttonMaximize.Location = new Point(this.buttonClose.Location.X - 5 - this.buttonMaximize.Width, this.ClientRectangle.Top);
-
 		this.ButtonScaleTo1.Text = Resources.GlobalNormalize;
-		this.ButtonScaleTo1.Location = new Point(this.buttonMaximize.Location.X - 5 - this.ButtonScaleTo1.Width, this.ClientRectangle.Top);
-
 		this.buttonMinimize.Text = Resources.GlobalMinimize;
-		this.buttonMinimize.Location = new Point(this.ButtonScaleTo1.Location.X - 5 - this.buttonMinimize.Width, this.ClientRectangle.Top);
+
+		// Right to left from the close button, only the buttons shown, so a hidden one leaves no hole. Shown is read from
+		// the form's settings: Visible is false until the form shows, and Enabled while it is disabled (during loading).
+		int gap = Math.Max(1, (int)Math.Round(CaptionButtonGap * scale));
+		int right = this.buttonClose.Left;
+		foreach (var (button, shown) in new[] {
+			(this.buttonMaximize, this.MaximizeBox),
+			(this.ButtonScaleTo1, this.NormalizeBox),
+			(this.buttonMinimize, this.MinimizeBox) })
+		{
+			if (!this.DrawCustomBorder || !shown)
+				continue;
+
+			button.Location = new Point(right - gap - button.Width, this.ClientRectangle.Top);
+			right = button.Left;
+		}
 	}
 
 	/// <summary>

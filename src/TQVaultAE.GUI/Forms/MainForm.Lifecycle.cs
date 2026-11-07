@@ -275,6 +275,9 @@ public partial class MainForm
 		UIService.Scale = USettings.Scale * UIService.DpiScale;
 		this.Log.LogDebug("Zoom {Zoom} at {Dpi} times the design DPI: scale {Scale}", UIService.Zoom, UIService.DpiScale, UIService.Scale);
 
+		// The caption buttons were placed for the previous scale.
+		this.PlaceButtons();
+
 		// Save the height / width ratio for resizing.
 		this.FormDesignRatio = (float)this.Height / (float)this.Width;
 		this.FormMaximumSize = new Size(this.Width * 2, this.Height * 2);
