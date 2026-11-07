@@ -241,12 +241,7 @@ public class Item
 	public Info? RelicBonus2Info { get; set; }
 
 	/// <summary>
-	/// Raw image data from game resource file
-	/// </summary>
-	public byte[]? TexImage { get; set; }
-
-	/// <summary>
-	/// ResourceId related to <see cref="TexImage"/>
+	/// Resource id of the item's picture, read from the game files when the item is first drawn.
 	/// </summary>
 	public RecordId? TexImageResourceId { get; set; }
 

@@ -148,32 +148,18 @@ public partial class ItemProvider
 				, (itm.baseItemInfo == null) ? string.Empty : "NOT"
 			);
 
-		// Extract image raw data
+		// Picture resource: its data is read when the item is first drawn (UIService.GetBitmap).
 		if (itm.baseItemInfo != null)
 		{
-			if (itm.IsRelicOrCharm && !itm.IsRelicComplete)
-			{
-				itm.TexImageResourceId = itm.baseItemInfo.ShardBitmap;
-				itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
-				if (USettings.ItemDebugLevel > 1)
-					Log.LogDebug("Loaded shardbitmap ({ShardBitmap})", itm.baseItemInfo.ShardBitmap);
-			}
-			else
-			{
-				itm.TexImageResourceId = itm.baseItemInfo.Bitmap;
-				itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
-				if (USettings.ItemDebugLevel > 1)
-					Log.LogDebug("Loaded regular bitmap ({Bitmap})", itm.baseItemInfo.Bitmap);
-			}
+			itm.TexImageResourceId = itm.IsRelicOrCharm && !itm.IsRelicComplete
+				? itm.baseItemInfo.ShardBitmap
+				: itm.baseItemInfo.Bitmap;
 		}
 		else
 		{
 			// Added by VillageIdiot
 			// Try showing something so unknown items are not invisible.
 			itm.TexImageResourceId = "DefaultBitmap";
-			itm.TexImage = Database.LoadResource(itm.TexImageResourceId);
-			if (USettings.ItemDebugLevel > 1)
-				Log.LogDebug("Try loading (DefaultBitmap)");
 		}
 
 		if (USettings.ItemDebugLevel > 0)
