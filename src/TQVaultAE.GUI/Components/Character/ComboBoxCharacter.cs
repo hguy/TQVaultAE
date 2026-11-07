@@ -195,9 +195,6 @@ public partial class ComboBoxCharacter : UserControl
 			this.pictureBoxChar.Dock = DockStyle.Fill;
 			this.pictureBoxChar.SizeMode = PictureBoxSizeMode.Zoom;
 
-			// Set row height to match the actual bitmap height for proper alignment
-			var size = this.bufferedTableLayoutPanelSkeleton.Size;
-			this.bufferedTableLayoutPanelSkeleton.Size = new Size(size.Width, Math.Max(HUDCHARACTERBUTTONUP01.Height, HUDMENUSKILLBUTTONUP01.Height));
 
 			this.scalingButtonTools.Image = HUDMENUSKILLBUTTONUP01;
 			this.scalingButtonTools.Size = HUDMENUSKILLBUTTONUP01.Size;
@@ -219,6 +216,14 @@ public partial class ComboBoxCharacter : UserControl
 			this.colorToolStripMenuItem.Text = TranslationService.TranslateXTag("x3tagGraphicOption02");
 
 			this.scalingLabelCharName.Font = FontService.GetFontLight(13F, UIService.Zoom);
+
+			// Row height: the bitmaps, or the name box when taller, so the name box is not cut and looks like the vault
+			// combo box next to it (its text has the same font).
+			var nameHeight = this.scalingLabelCharName.PreferredHeight + this.scalingLabelCharName.Margin.Vertical
+				+ (this.bufferedFlowLayoutPanelContent.Height - this.bufferedFlowLayoutPanelContent.ClientSize.Height);
+			var size = this.bufferedTableLayoutPanelSkeleton.Size;
+			this.bufferedTableLayoutPanelSkeleton.Size = new Size(size.Width
+				, Math.Max(nameHeight, Math.Max(HUDCHARACTERBUTTONUP01.Height, HUDMENUSKILLBUTTONUP01.Height)));
 
 			this.archiveAllToolStripMenuItemGlobal.Font =
 			this.unarchiveAllToolStripMenuItemGlobal.Font =
