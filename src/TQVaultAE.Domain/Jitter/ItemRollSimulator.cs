@@ -351,7 +351,7 @@ public static class ItemRollSimulator
 		if (record is null)
 			return null;
 
-		var copy = new DBRecordCollection(record.Id, record.RecordType);
+		var copy = new DBRecordCollection(record.Id, record.RecordType, record.Count);
 		foreach (var variable in record)
 			copy.Set(variable.Clone());
 

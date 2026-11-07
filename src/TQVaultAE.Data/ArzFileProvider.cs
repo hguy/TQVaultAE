@@ -98,7 +98,7 @@ public class ArzFileProvider : IArzFileProvider
 			throw error;
 		}
 
-		var result = new DBRecordCollection(info.ID, info.RecordType);
+		var result = new DBRecordCollection(info.ID, info.RecordType, record.Variables.Count);
 		foreach (var source in record.Variables)
 		{
 			if (source.Values.Length == 0)
