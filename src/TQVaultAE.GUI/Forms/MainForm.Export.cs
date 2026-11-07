@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
+using TQVaultAE.GUI.Components.Rendering;
 
 
 namespace TQVaultAE.GUI.Forms;
@@ -67,8 +68,8 @@ public partial class MainForm
 
 		vaultExportContextMenu = new ContextMenuStrip
 		{
-			BackColor = Color.FromArgb(46, 41, 31),
-			ForeColor = Color.FromArgb(200, 200, 200),
+			BackColor = Theme.Background,
+			ForeColor = Theme.MenuText,
 			ShowImageMargin = false
 		};
 

@@ -22,6 +22,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
+using TQVaultAE.GUI.Components.Rendering;
 
 public partial class StashPanel
 {
@@ -117,7 +118,7 @@ public partial class StashPanel
 				DialogResult = DialogResult.OK,
 				DownBitmap = Images.MainButtonDown,
 				FlatStyle = FlatStyle.Flat,
-				ForeColor = Color.FromArgb(51, 44, 28),
+				ForeColor = Theme.ButtonText,
 				Image = Images.MainButtonUp,
 				Name = "editButton",
 				OverBitmap = Images.MainButtonOver,
@@ -133,8 +134,8 @@ public partial class StashPanel
 				Visible = this.USettings.AllowCharacterEdit,
 			};
 			editButton.FlatAppearance.BorderSize = 0;
-			editButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(0, 51, 44, 28);
-			editButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, 51, 44, 28);
+			editButton.FlatAppearance.MouseDownBackColor = Theme.TransparentButton;
+			editButton.FlatAppearance.MouseOverBackColor = Theme.TransparentButton;
 			editButton.Click += EditButton_Click;
 
 			this.PlayerPanel.SetColumnSpan(editButton, 2);

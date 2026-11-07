@@ -248,7 +248,7 @@ public partial class ComboBoxCharacter : UserControl
 			this.deleteToolStripMenuItem.BackColor =
 			this.renameToolStripMenuItem.BackColor =
 			this.colorToolStripMenuItem.BackColor =
-			this.contextMenuStrip.BackColor = Color.FromArgb(46, 41, 31);
+			this.contextMenuStrip.BackColor = Theme.Background;
 
 			this.archiveAllToolStripMenuItemGlobal.ForeColor =
 			this.unarchiveAllToolStripMenuItemGlobal.ForeColor =
@@ -263,7 +263,7 @@ public partial class ComboBoxCharacter : UserControl
 			this.deleteToolStripMenuItem.ForeColor =
 			this.renameToolStripMenuItem.ForeColor =
 			this.colorToolStripMenuItem.ForeColor =
-			this.contextMenuStrip.ForeColor = Color.FromArgb(200, 200, 200);
+			this.contextMenuStrip.ForeColor = Theme.MenuText;
 
 			this.contextMenuStrip.Renderer = new CustomProfessionalRenderer();
 			//this.contextMenuStrip.Opacity = 0.8D;
