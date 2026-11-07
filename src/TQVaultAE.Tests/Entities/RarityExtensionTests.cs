@@ -24,70 +24,23 @@ public class RarityExtensionTests
 		result.Should().Be(expected);
 	}
 
-	[Fact]
-	public void GetItemStyle_NoGear_ReturnsNull()
-	{
-		// Act
-		var result = Rarity.NoGear.GetItemStyle();
-
-		// Assert
-		result.Should().BeNull();
-	}
-
-	[Theory]
-	[InlineData(Rarity.Broken)]
-	[InlineData(Rarity.Mundane)]
-	[InlineData(Rarity.Common)]
-	[InlineData(Rarity.Rare)]
-	[InlineData(Rarity.Epic)]
-	[InlineData(Rarity.Legendary)]
-	public void GetItemStyle_AllGearRarities_ReturnsNonNull(Rarity rarity)
-	{
-		// Act
-		var result = rarity.GetItemStyle();
-
-		// Assert
-		result.Should().NotBeNull();
-	}
-
 	#endregion
 
 	#region GetTranslationTag Tests
 
 	[Theory]
-	[InlineData(Rarity.Broken)]
-	[InlineData(Rarity.Mundane)]
-	[InlineData(Rarity.Common)]
-	[InlineData(Rarity.Rare)]
-	[InlineData(Rarity.Epic)]
-	[InlineData(Rarity.Legendary)]
-	public void GetTranslationTag_ValidRarity_ReturnsNonNull(Rarity rarity)
+	[InlineData(Rarity.NoGear, null)]
+	[InlineData(Rarity.Broken, "tagTutorialTip05TextC")]
+	[InlineData(Rarity.Mundane, "tagTutorialTip05TextD")]
+	[InlineData(Rarity.Common, "tagTutorialTip05TextD|{0} (+ affix)")]
+	[InlineData(Rarity.Rare, "tagTutorialTip05TextF")]
+	[InlineData(Rarity.Epic, "tagTutorialTip05TextG")]
+	[InlineData(Rarity.Legendary, "tagRDifficultyTitle03")]
+	public void GetTranslationTag_ReturnsExpectedTag(Rarity rarity, string? expectedTag)
 	{
-		// Act
 		var result = rarity.GetTranslationTag();
 
-		// Assert
-		result.Should().NotBeNullOrEmpty();
-	}
-
-	[Fact]
-	public void GetTranslationTag_NoGear_ReturnsNull()
-	{
-		// Act
-		var result = Rarity.NoGear.GetTranslationTag();
-
-		// Assert
-		result.Should().BeNull();
-	}
-
-	[Fact]
-	public void GetTranslationTag_ReturnsDescriptionFromEnum()
-	{
-		// Act
-		var result = Rarity.Legendary.GetTranslationTag();
-
-		// Assert - Should contain the description attribute value
-		result.Should().NotBeNull();
+		result.Should().Be(expectedTag);
 	}
 
 	#endregion

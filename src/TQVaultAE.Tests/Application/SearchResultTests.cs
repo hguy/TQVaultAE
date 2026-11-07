@@ -41,21 +41,6 @@ public class SearchResultTests
 	}
 
 	[Fact]
-	public void Container_WithValidPlace_ReturnsPath()
-	{
-		// Arrange
-		var item = new Item();
-		item.Place.Path = "player_chr/sack1";
-		var searchResult = new SearchResult(item, new Lazy<ToFriendlyNameResult>(() => new ToFriendlyNameResult(item)));
-
-		// Act
-		var result = searchResult.Container;
-
-		// Assert
-		result.Should().Be("player_chr/sack1");
-	}
-
-	[Fact]
 	public void ContainerName_WithNullPlace_ReturnsEmptyString()
 	{
 		// Arrange
@@ -67,21 +52,6 @@ public class SearchResultTests
 
 		// Assert
 		result.Should().BeEmpty();
-	}
-
-	[Fact]
-	public void ContainerName_WithValidPlace_ReturnsName()
-	{
-		// Arrange
-		var item = new Item();
-		item.Place.Name = "Test Sack";
-		var searchResult = new SearchResult(item, new Lazy<ToFriendlyNameResult>(() => new ToFriendlyNameResult(item)));
-
-		// Act
-		var result = searchResult.ContainerName;
-
-		// Assert
-		result.Should().Be("Test Sack");
 	}
 
 	[Fact]

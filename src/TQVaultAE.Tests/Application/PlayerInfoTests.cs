@@ -520,7 +520,7 @@ public class PlayerInfoTests
 		var result = _playerInfo.ActiveMasteries;
 
 		// Assert
-		result.Should().NotBeNull();
+		result.Should().Be(Masteries.Defensive | Masteries.Storm);
 	}
 
 	[Fact]
@@ -546,7 +546,7 @@ public class PlayerInfoTests
 		var result = _playerInfo.ActiveMasteriesRecordNames;
 
 		// Assert
-		result.Should().NotBeEmpty();
+		result.Should().ContainSingle().Which.Should().Be("""Records\Skills\Defensive\DefensiveMastery.dbr""");
 	}
 
 	#endregion

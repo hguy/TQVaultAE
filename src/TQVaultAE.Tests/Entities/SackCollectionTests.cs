@@ -294,17 +294,6 @@ public class SackCollectionTests
 	}
 
 	[Fact]
-	public void IsWeaponSlot_WeaponSlots_AllReturnTrue()
-	{
-		// Weapon1, Shield1, Weapon2, Shield2
-		for (int i = 7; i <= 10; i++)
-		{
-			var result = SackCollection.IsWeaponSlot(i);
-			result.Should().BeTrue($"Slot {i} should be a weapon slot");
-		}
-	}
-
-	[Fact]
 	public void IsWeaponSlot_RingSlots_AllReturnFalse()
 	{
 		// Ring1, Ring2

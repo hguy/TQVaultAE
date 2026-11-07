@@ -55,7 +55,7 @@ public class DBRecordCollectionTests
 		var result = record["TESTVAR"];
 
 		// Assert
-		result.Should().NotBeNull();
+		result.Should().BeSameAs(variable);
 	}
 
 	[Fact]

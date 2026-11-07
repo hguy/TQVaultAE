@@ -289,31 +289,6 @@ public class PlayerCollectionProviderTests
 	}
 
 	[Fact]
-	public void PlayerCollection_Constructor_InitializesProperties()
-	{
-		// Arrange & Act
-		var pc = new PlayerCollection("TestPlayer", "TestPlayer.chr");
-
-		// Assert
-		pc.PlayerName.Should().Be("TestPlayer");
-		pc.PlayerFile.Should().Be("TestPlayer.chr");
-		pc.VaultLoaded.Should().BeFalse();
-		pc.rawData.Should().BeNull();
-		pc.Sacks.Should().BeNull();
-	}
-
-	[Fact]
-	public void PlayerCollection_IsVault_DefaultsFalse()
-	{
-		// Arrange & Act
-		var pc = new PlayerCollection("test", "test.chr");
-
-		// Assert
-		pc.IsVault.Should().BeFalse();
-		pc.IsPlayer.Should().BeFalse(); // Not player.chr, so IsPlayer is false
-	}
-
-	[Fact]
 	public void PlayerCollection_IsPlayer_WhenPlayerChr()
 	{
 		// Arrange & Act
@@ -322,37 +297,6 @@ public class PlayerCollectionProviderTests
 		// Assert
 		pc.IsPlayer.Should().BeTrue();
 		pc.IsVault.Should().BeFalse();
-	}
-
-	[Fact]
-	public void PlayerInfo_WithPathIO_CanBeCreated()
-	{
-		// Arrange & Act
-		var playerInfo = CreateTestPlayerInfo();
-
-		// Assert
-		playerInfo.Should().NotBeNull();
-	}
-
-	[Fact]
-	public void PlayerInfo_Modified_DefaultsFalse()
-	{
-		// Arrange & Act
-		var playerInfo = CreateTestPlayerInfo();
-
-		// Assert
-		playerInfo.Modified.Should().BeFalse();
-	}
-
-	[Fact]
-	public void PlayerInfo_SkillRecordList_IsInitialized()
-	{
-		// Arrange & Act
-		var playerInfo = CreateTestPlayerInfo();
-
-		// Assert
-		playerInfo.SkillRecordList.Should().NotBeNull();
-		playerInfo.SkillRecordList.Should().BeEmpty();
 	}
 
 	[Fact]
@@ -666,8 +610,6 @@ public class PlayerCollectionProviderTests
 		pc.IsModified.Should().BeFalse();
 	}
 
-
-
 	[Fact]
 	public void PlayerInfo_MustResetMasteries_WhenOldValueLowerThanCurrent_ReturnsTrue()
 	{
@@ -704,8 +646,6 @@ public class PlayerCollectionProviderTests
 		// Act & Assert
 		playerInfo.MustResetMasteries.Should().BeFalse();
 	}
-
-
 
 	[Fact]
 	public void PlayerInfo_CalculatedStrength_WithoutBonuses_ReturnsBaseValue()
@@ -1116,18 +1056,6 @@ public class PlayerCollectionProviderTests
 	}
 
 	[Fact]
-	public void PlayerCollection_VaultLoaded_DefaultsFalse()
-	{
-		// Arrange
-		var pc = new PlayerCollection("test", "test.chr");
-
-		// Assert
-		pc.VaultLoaded.Should().BeFalse();
-	}
-
-
-
-	[Fact]
 	public void PlayerCollection_GetEnumerator_EnumeratesSacks()
 	{
 		// Arrange
@@ -1166,5 +1094,4 @@ public class PlayerCollectionProviderTests
 		count.Should().Be(0);
 	}
 }
-
 

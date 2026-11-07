@@ -176,16 +176,6 @@ public class GearTypeExtensionTests
 	#region GearTypeMap Tests
 
 	[Fact]
-	public void GearTypeMap_NotNull()
-	{
-		// Act
-		var result = GearTypeExtension.GearTypeMap;
-
-		// Assert
-		result.Should().NotBeNull();
-	}
-
-	[Fact]
 	public void GearTypeMap_ContainsWeaponTypes()
 	{
 		// Act

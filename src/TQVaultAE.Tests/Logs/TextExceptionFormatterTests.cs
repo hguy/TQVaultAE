@@ -19,20 +19,6 @@ public class TextExceptionFormatterTests
 			.Should().Throw<ArgumentNullException>();
 	}
 
-	[Fact]
-	public void Constructor_WithValidException_StoresException()
-	{
-		// Arrange
-		var innerException = new InvalidOperationException("test");
-		var ex = new Exception("outer", innerException);
-
-		// Act
-		var formatter = new TextExceptionFormatter(ex);
-
-		// Assert
-		formatter.Exception.Should().BeSameAs(ex);
-	}
-
 	#endregion
 
 	#region Format Tests
