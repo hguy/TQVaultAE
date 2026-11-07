@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.Presentation;
+using TQVaultAE.GUI.Components.Rendering;
 
 /// <summary>
 /// Button class to support skinning and scaling of the fonts.
@@ -75,8 +76,8 @@ public class ScalingButton : Button, IScalingControl
 				this.BackColor = Color.Transparent;
 				this.FlatStyle = FlatStyle.Flat;
 				this.FlatAppearance.BorderSize = 0;
-				this.FlatAppearance.MouseOverBackColor = Color.FromArgb(0, (int)((byte)51), (int)((byte)44), (int)((byte)28));
-				this.FlatAppearance.MouseDownBackColor = Color.FromArgb(0, (int)((byte)51), (int)((byte)44), (int)((byte)28));
+				this.FlatAppearance.MouseOverBackColor = Theme.TransparentButton;
+				this.FlatAppearance.MouseDownBackColor = Theme.TransparentButton;
 				if (this.UpBitmap != null)
 					this.Image = this.UpBitmap;
 			}

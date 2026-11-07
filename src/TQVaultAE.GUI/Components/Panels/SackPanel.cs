@@ -266,7 +266,7 @@ public partial class SackPanel : Panel, IScalingControl
 		this.Size = new Size(
 			(Convert.ToInt32(this.borderPen.Width) * 2) + (UIService.ItemUnitSize * sackWidth),
 			(Convert.ToInt32(this.borderPen.Width) * 2) + (UIService.ItemUnitSize * sackHeight));
-		this.BackColor = Color.FromArgb(46, 41, 31);
+		this.BackColor = Theme.Background;
 
 		this.CustomContextMenu.Renderer = new CustomProfessionalRenderer();
 		this.CustomContextMenu.Font = FontService.GetFont(9.0F * UIService.Scale);
