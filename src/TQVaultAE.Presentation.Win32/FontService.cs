@@ -162,4 +162,15 @@ public class FontService : IFontService
 
 	public Font GetFontLight(float fontSize, FontStyle fontStyle, float? scale = null)
 		=> this.Get(true, fontSize * (scale ?? 1F), fontStyle);
+
+	private readonly ConcurrentDictionary<(string Family, float Size, FontStyle Style, GraphicsUnit Unit, byte CharSet), Font> _styled = new();
+
+	public Font WithStyle(Font font, FontStyle style)
+	{
+		ArgumentNullException.ThrowIfNull(font);
+		if (font.Style == style)
+			return font;
+
+		return this._styled.GetOrAdd((font.FontFamily.Name, font.Size, style, font.Unit, font.GdiCharSet), _ => new Font(font, style));
+	}
 }

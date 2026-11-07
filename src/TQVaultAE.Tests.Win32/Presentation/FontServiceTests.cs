@@ -40,4 +40,18 @@ public class FontServiceTests
 		font.Unit.Should().Be(GraphicsUnit.Pixel);
 		font.FontFamily.Name.Should().Be("Arial");
 	}
+
+	[Fact]
+	public void WithStyle_ReturnsOneSharedCopyInTheNewStyle_AndTheFontItselfForItsOwnStyle()
+	{
+		var regular = this._service.GetFontLight(20F, FontStyle.Regular, GraphicsUnit.Pixel);
+
+		var bold = this._service.WithStyle(regular, FontStyle.Bold);
+
+		bold.Style.Should().Be(FontStyle.Bold);
+		bold.Size.Should().Be(20F);
+		bold.Unit.Should().Be(GraphicsUnit.Pixel);
+		this._service.WithStyle(regular, FontStyle.Bold).Should().BeSameAs(bold);
+		this._service.WithStyle(regular, FontStyle.Regular).Should().BeSameAs(regular);
+	}
 }
