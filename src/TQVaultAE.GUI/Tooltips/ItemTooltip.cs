@@ -441,11 +441,12 @@ public partial class ItemTooltip : BaseTooltip
 			return;
 		}
 
-		// Rasterize flowLayoutPanelFriendlyNames and cache it for fast redraw
-		var w = this.flowLayoutPanelFriendlyNames.Width;
-		var h = this.flowLayoutPanelFriendlyNames.Height;
-		var raster = new Bitmap(w, h);
-		this.flowLayoutPanelFriendlyNames.DrawToBitmap(raster, new Rectangle(0, 0, w, h));
+		// Rasterize flowLayoutPanelFriendlyNames and cache it for fast redraw,
+		// with the gray frame the form padding draws around it: the cached redraw has no padding.
+		using var panel = Rasterize(this.flowLayoutPanelFriendlyNames);
+		var raster = new Bitmap(panel.Width + 2, panel.Height + 2);
+		using (var g = Graphics.FromImage(raster))
+			DrawFramed(g, panel, 0, this.BackColor);
 		ToImage.Add(key, raster, Data);
 	}
 
