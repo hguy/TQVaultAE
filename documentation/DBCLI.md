@@ -28,17 +28,28 @@ It is the scriptable counterpart of [ARZ Explorer](ARZEXPLORER.md): no UI, fast,
 ---
 
 ## <a id="Exec"></a>Executable
-`tqdb.exe` is built from `src/TQVaultAE.DbCli` and requires the .NET 10 runtime. Run it from a terminal (`cmd`, PowerShell, Windows Terminal...).
+`tqdb` is built from `src/TQVaultAE.DbCli`. Run it from a terminal (`cmd`, PowerShell, Windows Terminal, a Linux shell...).
+
+Each GitHub Release ships it as a self-contained single-file executable, which needs no .NET runtime:
+
+| Archive | Platform | Executable |
+|---|---|---|
+| `tqdb-win-x64-<version>.zip` | Windows x64 | `tqdb.exe`, next to `Magick.Native-Q8-x64.dll` |
+| `tqdb-linux-x64-<version>.zip` | Linux x64 | `tqdb` (run `chmod +x tqdb` once: zip archives do not keep the executable bit), next to `Magick.Native-Q8-x64.dll.so` |
+
+Keep the two files of the archive together: the Magick.NET native library is loaded from the executable's folder.
+
+To build it yourself (needs the .NET 10 SDK; the result needs the .NET 10 runtime):
 
 ```
 dotnet build src/TQVaultAE.DbCli/TQVaultAE.DbCli.csproj --configuration Release
 src\TQVaultAE.DbCli\bin\Release\net10.0\tqdb.exe --help
 ```
 
-For a single self-contained executable (no .NET runtime needed on the target machine):
+To publish the same single files as the releases:
 
 ```
-dotnet publish src/TQVaultAE.DbCli/TQVaultAE.DbCli.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
+pwsh -File .github/scripts/Publish-Release.ps1 -OutputDir publish
 ```
 
 The game is found automatically (in this order): `--game <path>`, the `TQ_GAME_PATH` environment variable, Steam (app 475150, every Steam library), GOG, well-known install folders.
