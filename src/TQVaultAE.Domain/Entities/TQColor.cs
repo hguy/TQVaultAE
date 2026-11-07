@@ -156,7 +156,8 @@ public static partial class TQColorHelper
 		return map.Any() ? map.First() : 'W';
 	}
 
-	static Regex GetColorFromTaggedStringRegEx = new Regex(RegExStartingColorTagOrEmpty + ".*", RegexOptions.Compiled);
+	[GeneratedRegex(RegExStartingColorTagOrEmpty + ".*")]
+	private static partial Regex GetColorFromTaggedStringRegEx();
 	/// <summary>
 	/// Return the TQColor corresponding to color tag prefix
 	/// </summary>
@@ -166,7 +167,7 @@ public static partial class TQColorHelper
 	{
 		if (string.IsNullOrWhiteSpace(text)) return null;
 		TQColor? res = null;
-		string ColorId = GetColorFromTaggedStringRegEx.Replace(text, @"${ColorId}").ToUpperInvariant();
+		string ColorId = GetColorFromTaggedStringRegEx().Replace(text, @"${ColorId}").ToUpperInvariant();
 		if (ColorId.Any())
 			res = GetColorFromTagIdentifier(ColorId.First());
 		return res;

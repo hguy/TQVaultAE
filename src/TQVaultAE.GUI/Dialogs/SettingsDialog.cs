@@ -726,8 +726,8 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		this.PerformLayout();
 	}
 
-	// lang=regex
-	const string gitUrlRegex = @"((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?";
+	[GeneratedRegex(@"((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?")]
+	private static partial Regex GitUrlRegex();
 
 	/// <summary>
 	/// Handler for clicking the OK button
@@ -739,7 +739,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 		// Validation
 		if (enableGitBackup)
 		{
-			if (string.IsNullOrEmpty(gitBackupRepository) || !Regex.IsMatch(gitBackupRepository, gitUrlRegex))
+			if (string.IsNullOrEmpty(gitBackupRepository) || !GitUrlRegex().IsMatch(gitBackupRepository))
 			{
 				this.UIService.ShowError("You must enter a valid Git Url.", Buttons: Application.Contracts.Services.ShowMessageButtons.OK);
 				this.DialogResult = DialogResult.None;
