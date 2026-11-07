@@ -83,7 +83,7 @@ jobs:
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
 
       - name: Run tests
-        run: dotnet test ${{ env.SOLUTION_FILE }} --configuration Release --verbosity normal --no-build --logger "trx;LogFileName=test-results.trx"
+        run: dotnet test --solution ${{ env.SOLUTION_FILE }} --configuration Release --no-build --report-xunit-trx
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

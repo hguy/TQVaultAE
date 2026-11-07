@@ -3,21 +3,15 @@
 	<!-- Tests of the Windows-only projects. Platform-agnostic tests go in TQVaultAE.Tests. -->
 	<PropertyGroup>
 		<TargetFramework>net10.0-windows</TargetFramework>
+		<!-- xunit v3 test projects are executables run by Microsoft.Testing.Platform. -->
+		<OutputType>Exe</OutputType>
 		<IsPackable>false</IsPackable>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="AwesomeAssertions" />
-		<PackageReference Include="coverlet.collector">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="coverlet.MTP" />
 		<PackageReference Include="Moq" />
-		<PackageReference Include="xunit.runner.visualstudio">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>
 		<PackageReference Include="xunit.v3" />
 	</ItemGroup>
 
