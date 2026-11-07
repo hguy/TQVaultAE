@@ -19,6 +19,8 @@ internal static partial class AutomationTools
 		[Description("Suffix record (LootRandomizer), or empty.")] string? suffix = null,
 		[Description("Relic or charm socketed in the first slot, or empty.")] string? relic = null,
 		[Description("Completion bonus of the first relic, or empty.")] string? relicBonus = null,
+		[Description("Relic or charm socketed in the second slot, or empty.")] string? relic2 = null,
+		[Description("Completion bonus of the second relic, or empty.")] string? relicBonus2 = null,
 		[Description("Item seed; 0 picks a random one.")] int seed = 0)
 		=> AutomationHost.OnUi(form =>
 		{
@@ -38,6 +40,10 @@ internal static partial class AutomationTools
 			item.relicID = relic ?? string.Empty;
 			item.RelicBonusId = relicBonus ?? string.Empty;
 			item.Var1 = RecordId.IsNullOrEmpty(item.relicID) ? 0 : 1;
+			item.relic2ID = relic2 ?? string.Empty;
+			item.RelicBonus2Id = relicBonus2 ?? string.Empty;
+			if (!RecordId.IsNullOrEmpty(item.relic2ID))
+				item.Var2 = 1;
 			if (seed != 0)
 				item.Seed = seed;
 
@@ -46,7 +52,7 @@ internal static partial class AutomationTools
 				throw new McpException($"No item record '{baseItem}' in the database.");
 
 			string Missing(string? id, object? info, string what) => !string.IsNullOrEmpty(id) && info is null ? $"{what} '{id}' " : string.Empty;
-			var missing = Missing(prefix, item.prefixInfo, "prefix") + Missing(suffix, item.suffixInfo, "suffix") + Missing(relic, item.RelicInfo, "relic");
+			var missing = Missing(prefix, item.prefixInfo, "prefix") + Missing(suffix, item.suffixInfo, "suffix") + Missing(relic, item.RelicInfo, "relic") + Missing(relic2, item.Relic2Info, "relic2");
 			if (missing.Length != 0)
 				throw new McpException($"Unknown records: {missing.Trim()}.");
 
