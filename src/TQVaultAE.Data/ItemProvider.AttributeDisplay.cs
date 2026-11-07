@@ -34,7 +34,7 @@ public partial class ItemProvider
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
-			Log.LogDebug("Item.GetAttributesFromRecord({0}, {1}, {2}, {3}, {4})"
+			Log.LogDebug("Item.GetAttributesFromRecord({Record}, {Filtering}, {RecordId}, {Results}, {ConvertStrings})"
 				, record, filtering, recordId, results, convertStrings
 			);
 		}
@@ -51,7 +51,7 @@ public partial class ItemProvider
 		}
 
 		if (USettings.ItemDebugLevel > 1)
-			Log.LogDebug(record.Id);
+			Log.LogDebug("{RecordId}", record.Id);
 
 		// Added by Village Idiot
 		// To keep track of groups so they are not counted twice
@@ -60,7 +60,7 @@ public partial class ItemProvider
 		foreach (Variable variable in record)
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug(variable.Name);
+				Log.LogDebug("{VariableName}", variable.Name);
 
 
 			if (this.FilterValue(variable, !filtering))
@@ -269,7 +269,7 @@ public partial class ItemProvider
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
-			Log.LogDebug("Item.ConvertAttrListToString ({0}, {1}, {2}, {3})"
+			Log.LogDebug("Item.ConvertAttrListToString ({Record}, {AttributeList}, {RecordId}, {Results})"
 				, record, attributeList, recordId, results
 			);
 		}
@@ -338,7 +338,7 @@ public partial class ItemProvider
 		{
 			tag = "DamageInfluenceRangeFormat";
 		}
-		else if (data.Effect.Equals("defensiveBlock"))
+		else if (data.Effect.Equals("defensiveBlock", StringComparison.Ordinal))
 			tag = "DefenseBlock";
 
 		if (!TranslationService.TryTranslateXTag(tag, out var formatSpec))
@@ -349,7 +349,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (range) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (range) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -420,7 +420,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (single) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (single) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -501,7 +501,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (time range) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (time range) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -531,7 +531,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (time single) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (time single) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -571,7 +571,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (percent) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (percent) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -599,7 +599,7 @@ public partial class ItemProvider
 		}
 
 		if (USettings.ItemDebugLevel > 2)
-			Log.LogDebug("Item.formatspec (chance) = " + formatSpec);
+			Log.LogDebug("Item.formatspec (chance) = {FormatSpec}", formatSpec);
 
 		formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		if (chanceVar != null)
@@ -642,7 +642,7 @@ public partial class ItemProvider
 			else
 			{
 				if (USettings.ItemDebugLevel > 2)
-					Log.LogDebug("Item.formatspec (percent) = " + formatSpec);
+					Log.LogDebug("Item.formatspec (percent) = {FormatSpec}", formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 			}
@@ -673,7 +673,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (improved time) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (improved time) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -702,7 +702,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (chance) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (chance) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
@@ -744,7 +744,7 @@ public partial class ItemProvider
 			else
 			{
 				if (USettings.ItemDebugLevel > 2)
-					Log.LogDebug("Item.formatspec (chance of one) = " + formatSpec);
+					Log.LogDebug("Item.formatspec (chance of one) = {FormatSpec}", formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 				font = ItemStyle.Epic.TQColor();
@@ -785,7 +785,7 @@ public partial class ItemProvider
 					finalRace = races[j];
 
 					if (USettings.DebugEnabled)
-						Log.LogDebug("missing racialBonusRace={0}", finalRace);
+						Log.LogDebug("missing racialBonusRace={FinalRace}", finalRace);
 				}
 
 				// Optimized: use span-based ToFirstCharUpperCase
@@ -796,7 +796,7 @@ public partial class ItemProvider
 				else
 				{
 					if (USettings.ItemDebugLevel > 2)
-						Log.LogDebug("Item.formatspec (race bonus) = " + formatSpec);
+						Log.LogDebug("Item.formatspec (race bonus) = {FormatSpec}", formatSpec);
 
 					formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 				}
@@ -852,7 +852,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (augment level) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (augment level) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 			color = ItemStyle.Epic.TQColor();
@@ -906,7 +906,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (augment mastery) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (augment mastery) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 			if (!font.HasValue)
@@ -1009,7 +1009,7 @@ public partial class ItemProvider
 			else
 			{
 				if (USettings.ItemDebugLevel > 2)
-					Log.LogDebug("Item.formatspec (item skill) = " + formatSpec);
+					Log.LogDebug("Item.formatspec (item skill) = {FormatSpec}", formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 				font = ItemStyle.Epic.TQColor();
@@ -1049,7 +1049,7 @@ public partial class ItemProvider
 				}
 			}
 		}
-		else if (attributeData.FullAttribute.Equals("artifactCreationCost"))
+		else if (attributeData.FullAttribute.Equals("artifactCreationCost", StringComparison.Ordinal))
 		{
 			if (!TranslationService.TryTranslateXTag("xtagArtifactCost", out var formatSpec))
 				formatSpec = "Gold Cost: {0}";
@@ -1057,7 +1057,7 @@ public partial class ItemProvider
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (Artifact cost) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (Artifact cost) = {FormatSpec}", formatSpec);
 
 			font = ItemStyle.Rare.TQColor();
 			results.Add(string.Empty);
@@ -1221,7 +1221,7 @@ public partial class ItemProvider
 		else
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Item.formatspec (pet bonus) = " + formatSpec);
+				Log.LogDebug("Item.formatspec (pet bonus) = {FormatSpec}", formatSpec);
 
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 			color = ItemStyle.Relic.TQColor();
@@ -1257,7 +1257,7 @@ public partial class ItemProvider
 		}
 
 		if (USettings.ItemDebugLevel > 2)
-			Log.LogDebug("Item.label (scroll) = " + label);
+			Log.LogDebug("Item.label (scroll) = {Label}", label);
 
 		label = ItemAttributeProvider.ConvertFormat(label);
 
@@ -1283,7 +1283,7 @@ public partial class ItemProvider
 			else
 			{
 				if (USettings.ItemDebugLevel > 2)
-					Log.LogDebug("Item.formatspec (2 parameter) = " + formatSpec);
+					Log.LogDebug("Item.formatspec (2 parameter) = {FormatSpec}", formatSpec);
 
 				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 				color = ItemStyle.Epic.TQColor();
@@ -1360,7 +1360,7 @@ public partial class ItemProvider
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
-			Log.LogDebug("Item.ConvertOffenseAttrToString({0}, {1}, {2}, {3}, {4})"
+			Log.LogDebug("Item.ConvertOffenseAttrToString({Record}, {AttributeList}, {Data}, {RecordId}, {Results})"
 				, record, attributeList, data, recordId, results
 			);
 		}
@@ -1499,8 +1499,8 @@ public partial class ItemProvider
 
 		if (USettings.ItemDebugLevel > 1)
 		{
-			Log.LogDebug("Full attribute = " + data.FullAttribute);
-			Log.LogDebug("Item.label = " + label);
+			Log.LogDebug("Full attribute = {FullAttribute}", data.FullAttribute);
+			Log.LogDebug("Item.label = {Label}", label);
 		}
 
 		if (label is not null)
@@ -1584,7 +1584,7 @@ public partial class ItemProvider
 			// Figure out what color to use
 			TQColor? fontColor = null;
 			if (!isGlobal
-				&& (string.IsNullOrEmpty(chance) || data.Effect.Equals("defensiveBlock"))
+				&& (string.IsNullOrEmpty(chance) || data.Effect.Equals("defensiveBlock", StringComparison.Ordinal))
 				&& recordId == itm.BaseItemId
 				&& string.IsNullOrEmpty(duration)
 				&& !string.IsNullOrEmpty(amount)
@@ -1592,12 +1592,12 @@ public partial class ItemProvider
 			{
 				if (itm.IsWeapon)
 				{
-					if (data.Effect.Equals("offensivePierceRatio")
-						|| data.Effect.Equals("offensivePhysical")
-						|| data.Effect.Equals("offensiveBaseFire")
-						|| data.Effect.Equals("offensiveBaseCold")
-						|| data.Effect.Equals("offensiveBaseLightning")
-						|| data.Effect.Equals("offensiveBaseLife")
+					if (data.Effect.Equals("offensivePierceRatio", StringComparison.Ordinal)
+						|| data.Effect.Equals("offensivePhysical", StringComparison.Ordinal)
+						|| data.Effect.Equals("offensiveBaseFire", StringComparison.Ordinal)
+						|| data.Effect.Equals("offensiveBaseCold", StringComparison.Ordinal)
+						|| data.Effect.Equals("offensiveBaseLightning", StringComparison.Ordinal)
+						|| data.Effect.Equals("offensiveBaseLife", StringComparison.Ordinal)
 					)
 					{
 						// mundane effect
@@ -1607,9 +1607,9 @@ public partial class ItemProvider
 
 				if (itm.IsShield)
 				{
-					if (data.Effect.Equals("defensiveBlock")
-						|| data.Effect.Equals("blockRecoveryTime")
-						|| data.Effect.Equals("offensivePhysical")
+					if (data.Effect.Equals("defensiveBlock", StringComparison.Ordinal)
+						|| data.Effect.Equals("blockRecoveryTime", StringComparison.Ordinal)
+						|| data.Effect.Equals("offensivePhysical", StringComparison.Ordinal)
 					)
 					{
 						fontColor = ItemStyle.Mundane.TQColor();
@@ -1800,7 +1800,7 @@ public partial class ItemProvider
 					else
 					{
 						if (USettings.ItemDebugLevel > 2)
-							Log.LogDebug("Item.formatspec (Damage type) = " + formatSpec);
+							Log.LogDebug("Item.formatspec (Damage type) = {FormatSpec}", formatSpec);
 
 						formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 					}
@@ -2174,7 +2174,7 @@ public partial class ItemProvider
 			for (int i = 0; i < numSkills; i++)
 			{
 				string recordID = skills[i];
-				if (recordID != null && !recordID.ToLower().StartsWith("records"))
+				if (recordID != null && !recordID.StartsWith("records", StringComparison.OrdinalIgnoreCase))
 					continue;
 
 				DBRecordCollection? skillRecord1 = Database.GetRecordFromFile(recordID);

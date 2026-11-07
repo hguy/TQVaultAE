@@ -59,7 +59,7 @@ public class TQDataService : ITQDataService
 	public void ValidateNextString(string value, BinaryReader reader)
 	{
 		string label = ReadCString(reader);
-		if (!label.ToUpperInvariant().Equals(value.ToUpperInvariant()))
+		if (!string.Equals(label, value, StringComparison.OrdinalIgnoreCase))
 		{
 			var ex = new ArgumentException(string.Format(
 				CultureInfo.InvariantCulture,
@@ -79,7 +79,7 @@ public class TQDataService : ITQDataService
 		string label = ReadCString(reader);
 		reader.BaseStream.Position = readerPosition;
 
-		if (!label.ToUpperInvariant().Equals(value.ToUpperInvariant()))
+		if (!string.Equals(label, value, StringComparison.OrdinalIgnoreCase))
 			return false;
 
 		return true;

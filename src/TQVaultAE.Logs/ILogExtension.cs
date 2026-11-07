@@ -15,7 +15,7 @@ public static class ILogExtension
 	/// <param name="ex"></param>
 	public static void ErrorException(this ILogger Log, Exception ex)
 	{
-		Log.LogError(ex, ex.Message);
+		Log.LogError(ex, "{Message}", ex.Message);
 	}
 
 	/// <summary>

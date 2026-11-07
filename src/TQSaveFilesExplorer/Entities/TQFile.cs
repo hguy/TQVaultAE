@@ -49,13 +49,13 @@ namespace TQ.SaveFilesExplorer.Entities
 
 		public bool IsStashFile
 		{
-			get => this.Ext.Equals(Ext_SharedStash, StringComparison.InvariantCultureIgnoreCase)
-				|| this.Ext.Equals(Ext_SharedStashBackup, StringComparison.InvariantCultureIgnoreCase);
+			get => this.Ext.Equals(Ext_SharedStash, StringComparison.OrdinalIgnoreCase)
+				|| this.Ext.Equals(Ext_SharedStashBackup, StringComparison.OrdinalIgnoreCase);
 		}
 
 		public bool IsPlayerFile
 		{
-			get => this.Ext.Equals(Ext_Player, StringComparison.InvariantCultureIgnoreCase);
+			get => this.Ext.Equals(Ext_Player, StringComparison.OrdinalIgnoreCase);
 		}
 		private TQFile()
 		{
@@ -66,7 +66,7 @@ namespace TQ.SaveFilesExplorer.Entities
 			return new TQFile()
 			{
 				Path = path,
-				Ext = System.IO.Path.GetExtension(path).ToLower(),
+				Ext = System.IO.Path.GetExtension(path).ToLowerInvariant(),
 				Content = File.ReadAllBytes(path),
 			};
 		}

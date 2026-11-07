@@ -289,7 +289,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		try
 		{
 			var path = filePathToUse ?? pc.PlayerFile;
-			if (path.EndsWith(".json"))
+			if (path.EndsWith(".json", StringComparison.Ordinal))
 			{
 				ParseJsonData(pc, path);
 				return;
@@ -467,23 +467,23 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 					currentOffset = (int)stream.Position;
 
 					// See if we accidentally got a begin_block or end_block
-					if (blockName.Equals("BEGIN_BLOCK"))
+					if (blockName.Equals("BEGIN_BLOCK", StringComparison.Ordinal))
 					{
 						blockName = "(NONAME)";
 						currentOffset -= beginBlockPattern.Length;
 					}
-					else if (blockName.Equals("END_BLOCK"))
+					else if (blockName.Equals("END_BLOCK", StringComparison.Ordinal))
 					{
 						blockName = "(NONAME)";
 						currentOffset -= endBlockPattern.Length;
 					}
-					else if (blockName.Equals("ITEMPOSITIONSSAVEDASGRIDCOORDS"))
+					else if (blockName.Equals("ITEMPOSITIONSSAVEDASGRIDCOORDS", StringComparison.Ordinal))
 					{
 						currentOffset += 4;
 						itemOffset = currentOffset; // skip value for itemPositionsSavedAsGridCoords
 						foundItems = true;
 					}
-					else if (blockName.Equals("USEALTERNATE"))
+					else if (blockName.Equals("USEALTERNATE", StringComparison.Ordinal))
 					{
 						currentOffset += 4;
 						equipmentOffset = currentOffset; // skip value for useAlternate
@@ -849,7 +849,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		}
 		catch (ArgumentException ex)
 		{
-			Log.LogError(ex, $"ParseEquipmentBlock fail ! offset={offset}");
+			Log.LogError(ex, "ParseEquipmentBlock fail ! offset={Offset}", offset);
 			throw;
 		}
 	}

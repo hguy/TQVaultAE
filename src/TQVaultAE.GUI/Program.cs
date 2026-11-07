@@ -227,8 +227,8 @@ public static class Program
 		titanQuestGamePath = gamePathResolver.GamePathTQIT;
 		if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
 
-		Log.LogInformation("Selected TQ path {0}", gamePathResolver.GamePathTQ);
-		Log.LogInformation("Selected TQIT path {0}", gamePathResolver.GamePathTQIT);
+		Log.LogInformation("Selected TQ path {GamePathTQ}", gamePathResolver.GamePathTQ);
+		Log.LogInformation("Selected TQIT path {GamePathTQIT}", gamePathResolver.GamePathTQIT);
 
 		// Show a message that the default path is going to be used.
 		if (string.IsNullOrEmpty(userSettings.VaultPath))
@@ -282,7 +282,7 @@ public static class Program
 			string? myCulture = null;
 			foreach (CultureInfo ci in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
 			{
-				if (ci.EnglishName.Equals(settingsCulture, StringComparison.InvariantCultureIgnoreCase))
+				if (ci.EnglishName.Equals(settingsCulture, StringComparison.OrdinalIgnoreCase))
 				{
 					myCulture = ci.TextInfo.CultureName;
 					break;

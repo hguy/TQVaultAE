@@ -94,7 +94,7 @@ public class ArcFileProvider : IArcFileProvider
 	public byte[]? GetData(ArcFile file, RecordId dataId)
 	{
 		if (USettings.ARCFileDebugLevel > 0)
-			Log.LogDebug("ARCFile.GetData({0})", dataId);
+			Log.LogDebug("ARCFile.GetData({DataId})", dataId);
 
 		if (!file.FileHasBeenRead)
 			this.ReadARCToC(file);
@@ -102,13 +102,13 @@ public class ArcFileProvider : IArcFileProvider
 		if (!file.DirectoryEntries.Any())
 		{
 			if (USettings.ARCFileDebugLevel > 1)
-				Log.LogDebug("Error - Could not read {0}", file.FileName);
+				Log.LogDebug("Error - Could not read {FileName}", file.FileName);
 
 			return null;
 		}
 
 		if (USettings.ARCFileDebugLevel > 1)
-			Log.LogDebug("Normalized dataID = {0}", dataId);
+			Log.LogDebug("Normalized dataID = {DataId}", dataId);
 
 		int firstPathDelim = dataId.Normalized.IndexOf('\\');
 		if (firstPathDelim != -1)
@@ -121,7 +121,7 @@ public class ArcFileProvider : IArcFileProvider
 		else
 		{
 			if (USettings.ARCFileDebugLevel > 1)
-				Log.LogDebug("Error - {0} not found.", dataId);
+				Log.LogDebug("Error - {DataId} not found.", dataId);
 
 			return null;
 		}
@@ -158,8 +158,8 @@ public class ArcFileProvider : IArcFileProvider
 
 				if (USettings.ARCFileDebugLevel > 1)
 				{
-					Log.LogDebug($"Directory Filename = {dirEntry.FileName}");
-					Log.LogDebug($"dataID = {dataID}");
+					Log.LogDebug("Directory Filename = {DirEntryFileName}", dirEntry.FileName);
+					Log.LogDebug("dataID = {DataID}", dataID);
 				}
 
 				byte[]? data = this.GetData(file, dataID);
@@ -178,7 +178,7 @@ public class ArcFileProvider : IArcFileProvider
 					DirectoryIO.CreateDirectory(dirName);
 
 				if (USettings.ARCFileDebugLevel > 1)
-					Log.LogDebug($"Creating File - {filename}");
+					Log.LogDebug("Creating File - {Filename}", filename);
 
 				using (FileStream outStream = new FileStream(filename, FileMode.Create, FileAccess.Write))
 				{

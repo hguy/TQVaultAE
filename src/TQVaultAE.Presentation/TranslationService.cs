@@ -1,4 +1,5 @@
-﻿using EnumsNET;
+﻿using System.Globalization;
+using EnumsNET;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
@@ -79,10 +80,10 @@ public class TranslationService : ITranslationService
 	private string? LookFortranslation(string xTagName)
 	{
 		// all xtag substitute must have a "TextTag_" prefix in resource file (avoid colision & strong naming rule).
-		var resx = Resources.ResourceManager.GetString($"TextTag_{xTagName}");
+		var resx = Resources.ResourceManager.GetString($"TextTag_{xTagName}", CultureInfo.CurrentUICulture);
 
 		// Check if the value is a @redirectTag 
-		if (resx != null && resx.StartsWith("@"))
+		if (resx != null && resx.StartsWith('@'))
 			resx = this.Database.GetFriendlyName(resx.TrimStart('@'));
 
 		if (resx is null)
@@ -95,7 +96,7 @@ public class TranslationService : ITranslationService
 
 	public string TranslateMastery(string characterXtagClass)
 	{
-		var tags = Resources.ResourceManager.GetString($"Masteries{characterXtagClass}");
+		var tags = Resources.ResourceManager.GetString($"Masteries{characterXtagClass}", CultureInfo.CurrentUICulture);
 		if (string.IsNullOrEmpty(tags))
 			return TranslateXTag(characterXtagClass);
 

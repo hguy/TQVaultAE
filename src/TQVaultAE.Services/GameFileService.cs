@@ -142,7 +142,7 @@ public partial class GameFileService : IGameFileService
 		catch (Exception ex)
 		{
 			errMess += Environment.NewLine + ex.Message;
-			this.Log.LogError(ex, errMess);
+			this.Log.LogError(ex, "{Message}", errMess);
 			this.UserNotifier.ShowError(errMess, Buttons: ShowMessageButtons.OK);
 		}
 		return false;
@@ -360,7 +360,7 @@ public partial class GameFileService : IGameFileService
 		}
 		catch (Exception ex)
 		{
-			this.Log.LogError(ex, errMess);
+			this.Log.LogError(ex, "{Message}", errMess);
 			errLog = ex.Message;
 		}
 		finally
@@ -368,7 +368,7 @@ public partial class GameFileService : IGameFileService
 			if (errLog != string.Empty)
 			{
 				errMess += Environment.NewLine + errLog;
-				this.Log.LogError(errMess);
+				this.Log.LogError("{Message}", errMess);
 				this.UserNotifier.ShowError(errMess, Buttons: ShowMessageButtons.OK);
 			}
 		}
@@ -574,7 +574,7 @@ public partial class GameFileService : IGameFileService
 		{
 			ex = exx;
 			var errMess = "Error during move directory!";
-			this.Log.LogError(ex, errMess);
+			this.Log.LogError(ex, "{Message}", errMess);
 			this.UserNotifier.ShowError(errMess, ex, Buttons: ShowMessageButtons.OK);
 		}
 		finally
@@ -632,7 +632,7 @@ public partial class GameFileService : IGameFileService
 		{
 			ex = exx;
 			var errMess = "Error during move directory!";
-			this.Log.LogError(ex, errMess);
+			this.Log.LogError(ex, "{Message}", errMess);
 			this.UserNotifier.ShowError(errMess, ex, Buttons: ShowMessageButtons.OK);
 		}
 		finally

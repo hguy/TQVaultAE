@@ -687,7 +687,7 @@ internal partial class SettingsDialog : VaultForm, IScalingControl
 
 		this.mapListComboBox.Enabled = this.enableMods;
 
-		this.languageComboBox.SelectedItem = languages.FirstOrDefault(cb => cb.Value.Equals(this.titanQuestLanguage, StringComparison.InvariantCultureIgnoreCase));
+		this.languageComboBox.SelectedItem = languages.FirstOrDefault(cb => cb.Value.Equals(this.titanQuestLanguage, StringComparison.OrdinalIgnoreCase));
 
 		this.languageComboBox.Enabled = !this.detectLanguage;
 

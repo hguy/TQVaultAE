@@ -7,7 +7,7 @@ internal class NodeTag
 {
 	internal RecordId? Thread;
 	internal string Text = string.Empty;
-	internal string TextU => Text.ToUpper();
+	internal string TextU => Text.ToUpperInvariant();
 
 	internal int TokIdx;
 	internal RecordId Key = RecordId.Empty;

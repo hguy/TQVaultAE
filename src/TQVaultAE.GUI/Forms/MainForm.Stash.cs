@@ -77,7 +77,7 @@ public partial class MainForm
 		{
 			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, result.StashFile, exception.ToString());
 			MessageBox.Show(msg, Resources.MainFormStashReadError, MessageBoxButtons.OK, MessageBoxIcon.Error, MessageBoxDefaultButton.Button1, RightToLeftOptions);
-			Log.LogError(exception, msg);
+			Log.LogError(exception, "{Message}", msg);
 			this.stashPanel.TransferStash = null;
 		}
 

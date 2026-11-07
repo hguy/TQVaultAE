@@ -497,7 +497,7 @@ public partial class GamePathServiceWin : IGamePathService
 			// Pure Json vaults
 			foreach (string newfile in filesJson)
 			{
-				if (!filesOld.Any(oldfile => newfile.StartsWith(oldfile)))
+				if (!filesOld.Any(oldfile => newfile.StartsWith(oldfile, StringComparison.Ordinal)))
 				{
 					var remain = this.PathIO.GetFileNameWithoutExtension(this.PathIO.GetFileNameWithoutExtension(newfile));
 					vaultList.Add(remain);

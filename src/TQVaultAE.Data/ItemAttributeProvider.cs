@@ -577,7 +577,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 			var alpha = m.Groups["alpha"].Value;
 			var formatNumber = m.Groups["formatNumber"].Value;
 
-			if (alpha.Equals("d") || alpha.Equals("f"))
+			if (alpha.Equals("d", StringComparison.Ordinal) || alpha.Equals("f", StringComparison.Ordinal))
 			{
 				// a number
 				if (!precis.Any())
@@ -722,7 +722,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		if (data == null)
 			return false;
 
-		return data.Variable.ToUpperInvariant().Equals(variableName.ToUpperInvariant());
+		return string.Equals(data.Variable, variableName, StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -740,7 +740,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		if (data == null)
 			return false;
 
-		return data.Effect.ToUpperInvariant().Equals(effect.ToUpperInvariant());
+		return string.Equals(data.Effect, effect, StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>

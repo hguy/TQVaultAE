@@ -325,7 +325,7 @@ public partial class ComboBoxCharacter : UserControl
 				if (tagItem is ToolStripSeparator)
 					continue;
 
-				if (tagItem is ToolStripMenuItem mi && (tagItem.Name?.StartsWith(TAGKEY) ?? false))
+				if (tagItem is ToolStripMenuItem mi && (tagItem.Name?.StartsWith(TAGKEY, StringComparison.Ordinal) ?? false))
 				{
 					mi.Checked = false;
 					foreach (var tag in ps.Tags)

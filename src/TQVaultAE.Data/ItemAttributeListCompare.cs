@@ -95,7 +95,7 @@ public class ItemAttributeListCompare : IComparer<List<Variable?>>
 		ItemAttributesData? aa = ItemAttributeProvider.GetAttributeData(v.Name);
 
 		// put granted skills at the end
-		if (v.Name.Equals("itemSkillName"))
+		if (v.Name.Equals("itemSkillName", StringComparison.Ordinal))
 			return 4000000;
 
 		if (aa == null)
@@ -105,24 +105,24 @@ public class ItemAttributeListCompare : IComparer<List<Variable?>>
 		int order = this.CalcBaseOrder(aa.EffectType, aa.Suborder);
 
 		// now some special cases
-		if (aa.FullAttribute.Equals("characterBaseAttackSpeedTag"))
+		if (aa.FullAttribute.Equals("characterBaseAttackSpeedTag", StringComparison.Ordinal))
 		{
 			// put it right after the base piercing stat
 			ItemAttributesData? piercing = ItemAttributeProvider.GetAttributeData("offensivePierceRatioMin");
 			if (piercing is not null)
 				order = this.CalcBaseOrder(piercing.EffectType, piercing.Suborder) + 1;
 		}
-		else if (aa.FullAttribute.Equals("retaliationGlobalChance"))
+		else if (aa.FullAttribute.Equals("retaliationGlobalChance", StringComparison.Ordinal))
 		{
 			// Put this guy at the beginning of the retaliation global group
 			order = MakeGlobal(this.CalcBaseOrder(ItemAttributesEffectType.Retaliation, 0) - 1);
 		}
-		else if (aa.FullAttribute.Equals("offensiveGlobalChance"))
+		else if (aa.FullAttribute.Equals("offensiveGlobalChance", StringComparison.Ordinal))
 		{
 			// put this guy at the beginning of the offensive global group
 			order = MakeGlobal(this.CalcBaseOrder(ItemAttributesEffectType.Offense, 0) - 1);
 		}
-		else if (this.isArmor && aa.FullAttribute.Equals("offensivePhysicalMin"))
+		else if (this.isArmor && aa.FullAttribute.Equals("offensivePhysicalMin", StringComparison.Ordinal))
 		{
 			// put it right after the block recovery time stat
 			ItemAttributesData? blockRecovery = ItemAttributeProvider.GetAttributeData("blockRecoveryTime");

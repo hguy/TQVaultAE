@@ -411,7 +411,7 @@ public partial class BagButtonSettings : VaultForm
 	{
 		var picName = this.PathIO.GetFileNameWithoutExtension(cell.Id.Raw);
 		if (picName.Length > 0)
-			picName = picName[0] + picName[1..].ToLower();// Titlecase
+			picName = picName[0] + picName[1..].ToLowerInvariant();// Titlecase
 
 		var loc = this.PointToClient(screenLocation);
 		this.iconMagnifier.Location = new Point(loc.X, loc.Y + iconHeight);// Locate below icon

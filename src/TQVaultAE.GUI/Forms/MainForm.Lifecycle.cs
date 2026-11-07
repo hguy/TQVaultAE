@@ -266,7 +266,7 @@ public partial class MainForm
 		this.ScaleOnResize = true;
 
 		UIService.Scale = USettings.Scale;
-		this.Log.LogDebug("Config.Settings.Default.Scale changed to {0} !", UIService.Scale);
+		this.Log.LogDebug("Config.Settings.Default.Scale changed to {Scale} !", UIService.Scale);
 
 		// Save the height / width ratio for resizing.
 		this.FormDesignRatio = (float)this.Height / (float)this.Width;

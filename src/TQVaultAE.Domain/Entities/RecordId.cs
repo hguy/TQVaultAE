@@ -135,7 +135,7 @@ public partial class RecordId : IEquatable<RecordId>, IComparable, IComparable<R
 		get
 		{
 			if (_TokensNormalized is null)
-				_TokensNormalized = this.TokensRaw.Select(t => t.ToUpper()).ToList().AsReadOnly();
+				_TokensNormalized = this.TokensRaw.Select(t => t.ToUpperInvariant()).ToList().AsReadOnly();
 
 			return _TokensNormalized;
 		}

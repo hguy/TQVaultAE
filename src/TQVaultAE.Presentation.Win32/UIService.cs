@@ -161,7 +161,7 @@ public class UIService : IUIService
 			return this.DefaultBitmap;
 
 		if (USettings.DatabaseDebugLevel > 0)
-			Log.LogDebug("Database.LoadBitmap({0})", resourceId);
+			Log.LogDebug("Database.LoadBitmap({ResourceId})", resourceId);
 
 		Bitmap bitmap = _Bitmaps.GetOrAddAtomic(resourceId, k =>
 		{
@@ -188,7 +188,7 @@ public class UIService : IUIService
 			return null;
 
 		if (USettings.DatabaseDebugLevel > 0)
-			Log.LogDebug("Database.LoadBitmap({0})", resourceId);
+			Log.LogDebug("Database.LoadBitmap({ResourceId})", resourceId);
 
 		Bitmap bitmap = _Bitmaps.GetOrAddAtomic(resourceId, k =>
 		{
@@ -224,7 +224,7 @@ public class UIService : IUIService
 		else
 		{
 			if (USettings.DatabaseDebugLevel > 1)
-				Log.LogDebug("Loaded resource size={0}", texData.Length);
+				Log.LogDebug("Loaded resource size={TexDataLength}", texData.Length);
 
 			// Create the bitmap
 			Bitmap? loaded = BitmapService.LoadFromTexMemory(texData, 0, texData.Length);
@@ -233,14 +233,14 @@ public class UIService : IUIService
 			else
 			{
 				if (USettings.DatabaseDebugLevel > 0)
-					Log.LogDebug("Failure creating bitmap from resource data len={0}", texData.Length);
+					Log.LogDebug("Failure creating bitmap from resource data len={TexDataLength}", texData.Length);
 
 				// could not create the bitmap
 				bitmap = this.DefaultBitmap;
 			}
 
 			if (USettings.DatabaseDebugLevel > 1)
-				Log.LogDebug("Created Bitmap {0} x {1}", bitmap.Width, bitmap.Height);
+				Log.LogDebug("Created Bitmap {BitmapWidth} x {BitmapHeight}", bitmap.Width, bitmap.Height);
 		}
 
 		return bitmap;
@@ -277,7 +277,7 @@ public class UIService : IUIService
 		{
 			if (USettings.ItemDebugLevel > 1)
 			{
-				Log.LogDebug("size = {0}x{1} (unitsize={2})"
+				Log.LogDebug("size = {BmpWidth}x{BmpHeight} (unitsize={ItemUnitSize})"
 					, bmp.Width
 					, bmp.Height
 					, this.ItemUnitSize

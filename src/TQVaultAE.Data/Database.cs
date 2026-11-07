@@ -247,7 +247,7 @@ public partial class Database : IDatabase
 		bool result = false;
 
 		if (USettings.DatabaseDebugLevel > 0)
-			Log.LogDebug("Database.ExtractARCFile('{0}', '{1}')", arcFileName, destination);
+			Log.LogDebug("Database.ExtractARCFile('{ArcFileName}', '{Destination}')", arcFileName, destination);
 
 		try
 		{
@@ -263,7 +263,7 @@ public partial class Database : IDatabase
 		}
 
 		if (USettings.DatabaseDebugLevel > 1)
-			Log.LogDebug("Extraction Result = {0}", result);
+			Log.LogDebug("Extraction Result = {Result}", result);
 
 		if (USettings.DatabaseDebugLevel > 0)
 			Log.LogDebug("Exiting Database.ReadARCFile()");
@@ -322,14 +322,14 @@ public partial class Database : IDatabase
 		ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(itemAttribute);
 		if (data == null)
 		{
-			this.Log.LogDebug($"Attribute unknown : {itemAttribute}");
+			this.Log.LogDebug("Attribute unknown : {ItemAttribute}", itemAttribute);
 			return string.Concat("?", itemAttribute, "?");
 		}
 
 		string attributeTextTag = ItemAttributeProvider.GetAttributeTextTag(data);
 		if (string.IsNullOrEmpty(attributeTextTag))
 		{
-			this.Log.LogDebug($"Attribute unknown : {itemAttribute}");
+			this.Log.LogDebug("Attribute unknown : {ItemAttribute}", itemAttribute);
 			return string.Concat("?", itemAttribute, "?");
 		}
 
@@ -661,10 +661,10 @@ public partial class Database : IDatabase
 			return null;
 
 		if (USettings.DatabaseDebugLevel > 0)
-			Log.LogDebug("Database.LoadResource({0})", resourceId);
+			Log.LogDebug("Database.LoadResource({ResourceId})", resourceId);
 
 		if (USettings.DatabaseDebugLevel > 1)
-			Log.LogDebug(" Normalized({0})", resourceId);
+			Log.LogDebug(" Normalized({ResourceId})", resourceId);
 
 		byte[]? cachedArcFileData = this.resourcesData.GetOrAddAtomic(resourceId, key =>
 		{
@@ -683,7 +683,7 @@ public partial class Database : IDatabase
 			string arcFileBase = resourceIdSplited.First();
 
 			if (USettings.DatabaseDebugLevel > 1)
-				Log.LogDebug("arcFileBase = {0}", arcFileBase);
+				Log.LogDebug("arcFileBase = {ArcFileBase}", arcFileBase);
 
 			// Added by VillageIdiot
 			// Check's mod folder for's image resource.
@@ -828,7 +828,7 @@ public partial class Database : IDatabase
 		try
 		{
 			if (USettings.DatabaseDebugLevel > 0)
-				Log.LogDebug("Database.ReadARCFile('{0}', '{1}')", arcFileName, dataId);
+				Log.LogDebug("Database.ReadARCFile('{ArcFileName}', '{DataId}')", arcFileName, dataId);
 
 			ArcFile? arcFile = ReadARCFile(arcFileName);
 
@@ -893,8 +893,8 @@ public partial class Database : IDatabase
 		string? gameLanguage = this.GameLanguage;
 		if (USettings.DatabaseDebugLevel > 1)
 		{
-			Log.LogDebug("gameLanguage = {0}", gameLanguage == null ? "NULL" : gameLanguage);
-			Log.LogDebug("baseFile = {0}", baseFile);
+			Log.LogDebug("gameLanguage = {GameLanguage}", gameLanguage ?? "NULL");
+			Log.LogDebug("baseFile = {BaseFile}", baseFile);
 		}
 
 		if (gameLanguage != null)
@@ -906,9 +906,9 @@ public partial class Database : IDatabase
 			foreach (CultureInfo cultureInfo in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
 			{
 				if (USettings.DatabaseDebugLevel > 2)
-					Log.LogDebug("Trying {0}", cultureInfo.EnglishName.ToUpperInvariant());
+					Log.LogDebug("Trying {EnglishName}", cultureInfo.EnglishName.ToUpperInvariant());
 
-				if (cultureInfo.EnglishName.ToUpperInvariant().Equals(gameLanguage.ToUpperInvariant()) || cultureInfo.DisplayName.ToUpperInvariant().Equals(gameLanguage.ToUpperInvariant()))
+				if (string.Equals(cultureInfo.EnglishName, gameLanguage, StringComparison.OrdinalIgnoreCase) || string.Equals(cultureInfo.DisplayName, gameLanguage, StringComparison.OrdinalIgnoreCase))
 				{
 					cultureID = cultureInfo.TwoLetterISOLanguageName;
 					break;
@@ -937,7 +937,7 @@ public partial class Database : IDatabase
 			}
 
 			if (USettings.DatabaseDebugLevel > 1)
-				Log.LogDebug("cultureID = {0}", cultureID);
+				Log.LogDebug("cultureID = {CultureID}", cultureID);
 
 			// Moved this inital check for the file into the loop
 			// and added a check to verify that we actually have a cultureID
@@ -947,7 +947,7 @@ public partial class Database : IDatabase
 				if (USettings.DatabaseDebugLevel > 1)
 				{
 					Log.LogDebug("Detected cultureID from gameLanguage");
-					Log.LogDebug("filename = {0}", filename);
+					Log.LogDebug("filename = {Filename}", filename);
 				}
 
 				if (this.FileIO.Exists(filename))
@@ -965,7 +965,7 @@ public partial class Database : IDatabase
 		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("Using cultureID from OS");
-			Log.LogDebug("cultureID = {0}", cultureID);
+			Log.LogDebug("cultureID = {CultureID}", cultureID);
 		}
 
 		// Added a check to verify that we actually have a cultureID
@@ -974,7 +974,7 @@ public partial class Database : IDatabase
 		{
 			filename = string.Concat(baseFile, cultureID, suffix);
 			if (USettings.DatabaseDebugLevel > 1)
-				Log.LogDebug("filename = {0}", filename);
+				Log.LogDebug("filename = {Filename}", filename);
 
 			if (this.FileIO.Exists(filename))
 			{
@@ -991,8 +991,8 @@ public partial class Database : IDatabase
 		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("Forcing English Language");
-			Log.LogDebug("cultureID = {0}", cultureID);
-			Log.LogDebug("filename = {0}", filename);
+			Log.LogDebug("cultureID = {CultureID}", cultureID);
+			Log.LogDebug("filename = {Filename}", filename);
 		}
 
 		if (this.FileIO.Exists(filename))
@@ -1015,7 +1015,7 @@ public partial class Database : IDatabase
 			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Found some files");
-				Log.LogDebug("filename = {0}", files[0]);
+				Log.LogDebug("filename = {File}", files[0]);
 			}
 
 			if (USettings.DatabaseDebugLevel > 0)
@@ -1156,7 +1156,7 @@ public partial class Database : IDatabase
 			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Find Custom Map text file");
-				Log.LogDebug("dbFile = {0}", databaseFile);
+				Log.LogDebug("dbFile = {DatabaseFile}", databaseFile);
 			}
 
 			if (databaseFile != null)
@@ -1213,7 +1213,7 @@ public partial class Database : IDatabase
 	private void ParseTextDB(string databaseFile, string filename)
 	{
 		if (USettings.DatabaseDebugLevel > 0)
-			Log.LogDebug("Database.ParseTextDB({0}, {1})", databaseFile, filename);
+			Log.LogDebug("Database.ParseTextDB({DatabaseFile}, {Filename})", databaseFile, filename);
 
 		byte[]? data = this.ReadARCFile(databaseFile, filename);
 
@@ -1221,7 +1221,7 @@ public partial class Database : IDatabase
 		{
 			// Changed for mod support.  Sometimes the text file has more entries than just the x or non-x prefix files.
 			if (USettings.DatabaseDebugLevel > 0)
-				Log.LogDebug("Error in ARC File: {0} does not contain an entry for '{1}'", databaseFile, filename);
+				Log.LogDebug("Error in ARC File: {DatabaseFile} does not contain an entry for '{Filename}'", databaseFile, filename);
 
 			return;
 		}
@@ -1289,7 +1289,7 @@ public partial class Database : IDatabase
 		if (USettings.DatabaseDebugLevel > 1)
 		{
 			Log.LogDebug("Load Titan Quest database arz file");
-			Log.LogDebug("file = {0}", file);
+			Log.LogDebug("file = {File}", file);
 		}
 
 		this.ArzFileIT = this.ArzFile;
@@ -1305,7 +1305,7 @@ public partial class Database : IDatabase
 			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Load Titan Quest database arz file");
-				Log.LogDebug("file = {0}", file);
+				Log.LogDebug("file = {File}", file);
 			}
 		}
 
@@ -1317,7 +1317,7 @@ public partial class Database : IDatabase
 			if (USettings.DatabaseDebugLevel > 1)
 			{
 				Log.LogDebug("Load Custom Map database arz file");
-				Log.LogDebug("file = {0}", file);
+				Log.LogDebug("file = {File}", file);
 			}
 
 			if (this.FileIO.Exists(file))

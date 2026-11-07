@@ -225,7 +225,7 @@ public class BitmapService : IBitmapService
 		catch (Exception ex)
 		{
 			// You need to install ImageMagick on your computer and restart Visual Studio. Command "winget install ImageMagick.Q8"
-			Log.LogError($"Failed to load DDS image with ImageSharp: {ex.Message}");
+			Log.LogError("Failed to load DDS image with ImageSharp: {Error}", ex.Message);
 			throw new InvalidOperationException("Unable to load image data", ex);
 		}
 	}

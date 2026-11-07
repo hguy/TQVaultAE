@@ -129,7 +129,7 @@ public partial class MainForm
 		TimeSpan ts = stopWatch.Elapsed;
 
 		// Format and display the TimeSpan value.
-		Log.LogInformation("LoadTime {0:00}:{1:00}:{2:00}.{3:00}",
+		Log.LogInformation("LoadTime {Hours:00}:{Minutes:00}:{Seconds:00}.{Centiseconds:00}",
 			ts.Hours, ts.Minutes, ts.Seconds,
 			ts.Milliseconds / 10);
 
@@ -245,7 +245,7 @@ public partial class MainForm
 		}
 		catch (Exception ex)
 		{
-			Log.LogError(ex, $"resourcesLoaded = {this.resourcesLoaded}");
+			Log.LogError(ex, "resourcesLoaded = {ResourcesLoaded}", this.resourcesLoaded);
 
 			if (MessageBox.Show(
 				string.Concat(ex.Message, Resources.Form1BadLanguage)
