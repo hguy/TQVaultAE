@@ -1294,12 +1294,6 @@ Here is a complex example: 'arctic &amp; of frost @ring $rare | common'</value>
 	<data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>Enable all tooltips</value>
   </data>
-	<data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>Enable Detailed Tooltip View</value>
-  </data>
-	<data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>Split tooltip attributes into Prefix/Base/Suffix categories</value>
-  </data>
 	<data name="SettingsItemBGColorOpacityLabel" xml:space="preserve">
     <value>Item BG Alpha Color :</value>
   </data>
@@ -2104,5 +2098,29 @@ You still have to close TQVaultAE to apply your changes.
   </data>
 	<data name="ForgeCapResetOnStricter" xml:space="preserve">
     <value>Switching to a stricter mode empties the slots</value>
+  </data>
+	<data name="SettingTooltipEnhanced" xml:space="preserve">
+    <value>Tooltip Enhanced</value>
+  </data>
+	<data name="SettingTooltipEnhancedTT" xml:space="preserve">
+    <value>Split item tooltip attributes into Prefix/Base/Suffix categories, with the extras below</value>
+  </data>
+	<data name="SettingTooltipShowInGameRolls" xml:space="preserve">
+    <value>Display in game rolls</value>
+  </data>
+	<data name="SettingTooltipShowInGameRollsTT" xml:space="preserve">
+    <value>List each value rolled by the game (database -&gt; in-game). Needs Show In-Game Values.</value>
+  </data>
+	<data name="SettingTooltipShowValueRanges" xml:space="preserve">
+    <value>Display min/max values</value>
+  </data>
+	<data name="SettingTooltipShowValueRangesTT" xml:space="preserve">
+    <value>Show the possible min/max of each rolled attribute on its right. Needs Show In-Game Values.</value>
+  </data>
+	<data name="SettingTooltipShowGrantedSkills" xml:space="preserve">
+    <value>Display item skills</value>
+  </data>
+	<data name="SettingTooltipShowGrantedSkillsTT" xml:space="preserve">
+    <value>Show the skills granted by the item, its affixes and its relics in a panel next to the tooltip</value>
   </data>
 </root>

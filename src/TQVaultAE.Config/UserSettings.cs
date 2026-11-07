@@ -83,8 +83,24 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(BaseFont))]
 	public string BaseFont { get; set; } = "AlbertusMT";
 
+	/// <summary>
+	/// "Tooltip Enhanced": item tooltips split their attributes into prefix, base and suffix,
+	/// with the extras chosen by the <c>Tooltip*</c> settings below.
+	/// </summary>
 	[XmlElement(ElementName = nameof(EnableDetailedTooltipView))]
 	public bool EnableDetailedTooltipView { get; set; } = false;
+
+	/// <summary>The enhanced tooltip lists each value rolled by the in-game jitter (database -> in-game).</summary>
+	[XmlElement(ElementName = nameof(TooltipShowInGameRolls))]
+	public bool TooltipShowInGameRolls { get; set; } = true;
+
+	/// <summary>The enhanced tooltip shows the possible min/max of each rolled attribute on its right.</summary>
+	[XmlElement(ElementName = nameof(TooltipShowValueRanges))]
+	public bool TooltipShowValueRanges { get; set; } = true;
+
+	/// <summary>The enhanced tooltip shows the skills granted by the item in a panel on its right.</summary>
+	[XmlElement(ElementName = nameof(TooltipShowGrantedSkills))]
+	public bool TooltipShowGrantedSkills { get; set; } = true;
 
 	/// <summary>
 	/// Show item attributes with the in-game jitter applied (issue #552) instead of the database values.

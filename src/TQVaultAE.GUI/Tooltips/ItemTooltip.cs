@@ -14,13 +14,29 @@ using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Tooltips;
 
+/// <summary>What an item tooltip shows beyond the classic display ("Tooltip Enhanced" settings).</summary>
+[Flags]
+internal enum ItemTooltipView
+{
+	/// <summary>Classic display.</summary>
+	Classic = 0,
+	/// <summary>Attributes split into prefix, base and suffix.</summary>
+	Detailed = 1,
+	/// <summary>Each value rolled by the in-game jitter (database -> in-game).</summary>
+	InGameRolls = 2,
+	/// <summary>The possible min/max of each rolled attribute, on its right.</summary>
+	ValueRanges = 4,
+	/// <summary>The skills granted by the item in a panel on the right.</summary>
+	GrantedSkills = 8,
+}
+
 public partial class ItemTooltip : BaseTooltip
 {
 	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();
 	/// <summary>Rendered item tooltips and their text, up to 48 MB.</summary>
-	private static readonly TooltipImageCache<(Item Item, float Scale, bool AltView, bool InGameValues), ToFriendlyNameResult> ToImage = new(48L << 20);
+	private static readonly TooltipImageCache<(Item Item, float Scale, ItemTooltipView View, bool InGameValues), ToFriendlyNameResult> ToImage = new(48L << 20);
 
-	internal bool EnableDetailedTooltipView { get; set; }
+	internal ItemTooltipView View { get; set; }
 	internal bool ShowInGameValues { get; set; }
 	internal Item FocusedItem { get; set; }
 	internal SackPanel? SackPanel { get; set; }
@@ -121,7 +137,7 @@ public partial class ItemTooltip : BaseTooltip
 				, focusedItem)
 			{
 				SackPanel = sackPanel,
-				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
+				View = ViewOf(userSettings, enableDetailedTooltipView),
 				ShowInGameValues = userSettings.ShowInGameValues
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
@@ -153,7 +169,7 @@ public partial class ItemTooltip : BaseTooltip
 				, focusedItem)
 			{
 				ResultsDialog = resultsDialog,
-				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
+				View = ViewOf(userSettings, enableDetailedTooltipView),
 				ShowInGameValues = userSettings.ShowInGameValues
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
@@ -185,7 +201,7 @@ public partial class ItemTooltip : BaseTooltip
 				, focusedItem)
 			{
 				PictureBox = picBox,
-				EnableDetailedTooltipView = enableDetailedTooltipView ?? userSettings.EnableDetailedTooltipView,
+				View = ViewOf(userSettings, enableDetailedTooltipView),
 				ShowInGameValues = userSettings.ShowInGameValues
 			};
 			ItemTooltipOpened.Add(focusedItem, _Current);
@@ -197,11 +213,31 @@ public partial class ItemTooltip : BaseTooltip
 	#endregion
 
 	/// <summary>
+	/// The display chosen in the settings: the classic one, or the detailed one with the extras checked in "Tooltip Enhanced".
+	/// </summary>
+	/// <param name="enableDetailedTooltipView">Forces the detailed display on or off, whatever the settings.</param>
+	internal static ItemTooltipView ViewOf(UserSettings settings, bool? enableDetailedTooltipView = null)
+	{
+		if (!(enableDetailedTooltipView ?? settings.EnableDetailedTooltipView))
+			return ItemTooltipView.Classic;
+
+		var view = ItemTooltipView.Detailed;
+		if (settings.TooltipShowInGameRolls)
+			view |= ItemTooltipView.InGameRolls;
+		if (settings.TooltipShowValueRanges)
+			view |= ItemTooltipView.ValueRanges;
+		if (settings.TooltipShowGrantedSkills)
+			view |= ItemTooltipView.GrantedSkills;
+		return view;
+	}
+
+	/// <summary>
 	/// Init the tooltip content.
 	/// </summary>
 	public void FillToolTip()
 	{
-		var key = (this.FocusedItem, UIService.Scale, this.EnableDetailedTooltipView, this.ShowInGameValues);
+		var key = (this.FocusedItem, UIService.Scale, this.View, this.ShowInGameValues);
+		bool detailed = this.View.HasFlag(ItemTooltipView.Detailed);
 
 		// Redraw
 		if (ToImage.TryGetCopy(key, out var cached, out var data))
@@ -215,7 +251,11 @@ public partial class ItemTooltip : BaseTooltip
 		this.flowLayoutPanelFriendlyNames.SuspendLayout();
 		this.rangeRows.Clear();
 
-		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, FriendlyNamesExtraScopes.ItemFullDisplay | FriendlyNamesExtraScopes.GrantedSkills);
+		// Without the skills panel, the granted skills are described inline as before.
+		var scopes = FriendlyNamesExtraScopes.ItemFullDisplay;
+		if (this.View.HasFlag(ItemTooltipView.GrantedSkills))
+			scopes |= FriendlyNamesExtraScopes.GrantedSkills;
+		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, scopes);
 
 		// Fullname
 		AddRow(Data.FullName, FocusedItem.ExtractTextColorOrItemColor(Data.BaseItemInfoDescription), style: FontStyle.Bold);
@@ -251,7 +291,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 
 		// Attributes
-		if (this.EnableDetailedTooltipView)
+		if (detailed)
 		{
 			string AdjustColor(string? TQText, string label)
 			{
@@ -288,7 +328,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 
 		// In-game jitter comparison (database -> in-game), detailed view only
-		if (this.EnableDetailedTooltipView && Data.InGameRolls.Length != 0)
+		if (this.View.HasFlag(ItemTooltipView.InGameRolls) && Data.InGameRolls.Length != 0)
 		{
 			AddRow(TOOLTIPSPACER);
 			AddRow(Resources.ItemPropertiesLabelInGameRolls, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);
@@ -421,6 +461,9 @@ public partial class ItemTooltip : BaseTooltip
 	/// </summary>
 	private void AddAttributeRows(string[] lines, string?[] ranges)
 	{
+		if (!this.View.HasFlag(ItemTooltipView.ValueRanges))
+			ranges = [];
+
 		for (int i = 0; i < lines.Length; i++)
 		{
 			var range = i < ranges.Length ? ranges[i] : null;

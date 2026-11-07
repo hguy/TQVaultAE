@@ -67,7 +67,7 @@ public partial class ItemTooltip
 	/// Shows the item panel with, on its right, the relic column if any and the granted skills in columns no taller than
 	/// the screen, as one image with transparent gaps; caches that image under <paramref name="key"/>.
 	/// </summary>
-	private void ShowComposite((Item Item, float Scale, bool AltView, bool InGameValues) key, FlowLayoutPanel? relicColumn, GrantedSkill[] skills)
+	private void ShowComposite((Item Item, float Scale, ItemTooltipView View, bool InGameValues) key, FlowLayoutPanel? relicColumn, GrantedSkill[] skills)
 	{
 		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
 		var scale = this.UIService.Scale;

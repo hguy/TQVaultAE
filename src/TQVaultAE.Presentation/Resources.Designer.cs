@@ -4344,24 +4344,6 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Detailed Tooltip View.
-        /// </summary>
-        public static string SettingEnableDetailedTooltipView {
-            get {
-                return ResourceManager.GetString("SettingEnableDetailedTooltipView", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Split tooltip attributes into Prefix/Base/Suffix categories.
-        /// </summary>
-        public static string SettingEnableDetailedTooltipViewTT {
-            get {
-                return ResourceManager.GetString("SettingEnableDetailedTooltipViewTT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Allow Cheats.
         /// </summary>
         public static string SettingsAllowCheats {
@@ -5647,6 +5629,78 @@ namespace TQVaultAE.Presentation {
         public static string SettingShowInGameValuesTT {
             get {
                 return ResourceManager.GetString("SettingShowInGameValuesTT", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Tooltip Enhanced.
+        /// </summary>
+        public static string SettingTooltipEnhanced {
+            get {
+                return ResourceManager.GetString("SettingTooltipEnhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Split item tooltip attributes into Prefix/Base/Suffix categories, with the extras below.
+        /// </summary>
+        public static string SettingTooltipEnhancedTT {
+            get {
+                return ResourceManager.GetString("SettingTooltipEnhancedTT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display in game rolls.
+        /// </summary>
+        public static string SettingTooltipShowInGameRolls {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowInGameRolls", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List each value rolled by the game (database -&gt; in-game). Needs Show In-Game Values..
+        /// </summary>
+        public static string SettingTooltipShowInGameRollsTT {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowInGameRollsTT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display min/max values.
+        /// </summary>
+        public static string SettingTooltipShowValueRanges {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowValueRanges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the possible min/max of each rolled attribute on its right. Needs Show In-Game Values..
+        /// </summary>
+        public static string SettingTooltipShowValueRangesTT {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowValueRangesTT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display item skills.
+        /// </summary>
+        public static string SettingTooltipShowGrantedSkills {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowGrantedSkills", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show the skills granted by the item, its affixes and its relics in a panel next to the tooltip.
+        /// </summary>
+        public static string SettingTooltipShowGrantedSkillsTT {
+            get {
+                return ResourceManager.GetString("SettingTooltipShowGrantedSkillsTT", resourceCulture);
             }
         }
     }
