@@ -20,8 +20,6 @@ public class VirtualCheckedListBox : Control, IScalingControl
 	/// <summary>Index returned by <see cref="IndexFromPoint"/> outside any item, as <see cref="ListBox.NoMatches"/>.</summary>
 	public const int NoMatches = ListBox.NoMatches;
 
-	private const int GlyphTextGap = 3;
-
 	private readonly List<object> _items = [];
 	private readonly List<bool> _checked = [];
 	private readonly HScrollBar _scroll = new() { Dock = DockStyle.Bottom, Visible = false, TabStop = false };
@@ -155,6 +153,12 @@ public class VirtualCheckedListBox : Control, IScalingControl
 
 	private static Size CheckBoxGlyph => new(13, 13);
 
+	/// <summary>Space between the check box and the text: a third of the font height, so it follows the zoom.</summary>
+	private int GlyphTextGap => Math.Max(4, this.Font.Height / 3);
+
+	/// <summary>Where the item text starts, from the left of its column: the check box and the space after it.</summary>
+	public int TextLeft => 1 + CheckBoxGlyph.Width + this.GlyphTextGap;
+
 	private int ScrollBarHeight => this._scroll.Visible ? this._scroll.Height : 0;
 
 	private int RowsPerColumn => Math.Max(1, (this.ClientSize.Height - this.ScrollBarHeight) / this.ItemHeight);
@@ -241,7 +245,7 @@ public class VirtualCheckedListBox : Control, IScalingControl
 			var glyphPoint = new Point(bounds.X + 1, bounds.Y + (bounds.Height - glyph.Height) / 2);
 			CheckBoxRenderer.DrawCheckBox(g, glyphPoint, this._checked[i] ? CheckBoxState.CheckedNormal : CheckBoxState.UncheckedNormal);
 
-			var textBounds = Rectangle.FromLTRB(glyphPoint.X + glyph.Width + GlyphTextGap, bounds.Top, bounds.Right, bounds.Bottom);
+			var textBounds = Rectangle.FromLTRB(glyphPoint.X + glyph.Width + this.GlyphTextGap, bounds.Top, bounds.Right, bounds.Bottom);
 			TextRenderer.DrawText(g, this._items[i]?.ToString() ?? string.Empty, this.Font, textBounds, this.ForeColor, flags);
 		}
 

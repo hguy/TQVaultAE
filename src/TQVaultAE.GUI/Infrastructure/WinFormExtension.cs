@@ -46,7 +46,7 @@ public static class WinFormExtension
 	public static void AdjustToMaxTextWidth(this Components.Layout.VirtualCheckedListBox ctrl, int? maxVerticalItems)
 	{
 		// Check box, the gap before the text and a little room after it.
-		var width = ctrl.GetMaxTextWidth() + SystemInformation.VerticalScrollBarWidth + 4;
+		var width = ctrl.TextLeft + ctrl.GetMaxTextWidth() + 6;
 
 		ctrl.Width = ctrl.ColumnWidth = width;// The control must fit the size of the column
 	}
