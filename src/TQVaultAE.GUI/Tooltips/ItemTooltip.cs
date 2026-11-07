@@ -51,6 +51,9 @@ public partial class ItemTooltip : BaseTooltip
 
 		SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
 
+		// A layered window, so that WS_EX_TRANSPARENT lets the mouse through (see CreateParams).
+		this.TransparencyKey = SkillsTransparencyKey;
+
 		var wa = Screen.FromControl(this).WorkingArea;
 
 		// Fill it outside of screen to avoid flickering
@@ -65,6 +68,21 @@ public partial class ItemTooltip : BaseTooltip
 
 	// to avoid Mainform lost focus with this.TopMost = false
 	protected override bool ShowWithoutActivation => true;
+
+	/// <summary>
+	/// The mouse goes through the tooltip. A tooltip wider than the room beside the item covers the cursor:
+	/// catching the mouse made the sack panel lose it and close the tooltip at once.
+	/// </summary>
+	protected override CreateParams CreateParams
+	{
+		get
+		{
+			const int WS_EX_TRANSPARENT = 0x20;
+			var cp = base.CreateParams;
+			cp.ExStyle |= WS_EX_TRANSPARENT;
+			return cp;
+		}
+	}
 
 	public static void HideTooltip()
 	{
@@ -508,12 +526,17 @@ public partial class ItemTooltip : BaseTooltip
 			}
 
 			// Adjust position to avoid flickering if the tooltip appears on top of the cursor.
+			var itemLeft = x - (this.FocusedItem.Size.Width * usize);
 			x += Cursor.Size.Width;
 
-			// The skills panel makes the tooltip wide: keep it on the screen of the panel.
+			// The skills panel makes the tooltip wide: keep it on the screen of the panel,
+			// on the left of the item when only that side has room, else as far right as it fits.
 			var screen = Screen.FromPoint(loc).WorkingArea;
 			if (x + this.Width > screen.Right)
-				x = Math.Max(screen.Left, screen.Right - this.Width);
+			{
+				var left = itemLeft - Cursor.Size.Width - this.Width;
+				x = left >= screen.Left ? left : Math.Max(screen.Left, screen.Right - this.Width);
+			}
 
 			// Ajust position if tooltip size goes offscreen
 			var bottom = y + this.Height;
