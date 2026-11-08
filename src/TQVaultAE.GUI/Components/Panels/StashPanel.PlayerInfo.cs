@@ -27,24 +27,12 @@ using TQVaultAE.GUI.Components.Rendering;
 public partial class StashPanel
 {
 	/// <summary>
-	/// Calculates the stat bonuses for the equipped gear and updates the player
+	/// Calculates the stat bonuses for the skills and updates the player
 	/// </summary>
 	private void GetSkillStatBonus()
 	{
-		if (Database == null || Player == null)
-			return;
-
-		SortedList<string, int> statBonuses = new SortedList<string, int>();
-
-		if (Player.PlayerInfo is null)
-			return;
-
-		foreach (SkillRecord skill in Player.PlayerInfo.SkillRecordList)
-			ItemProvider.GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(skill.skillName), skill.skillLevel);
-
-
-		Player.ClearPlayerSkillBonuses();
-		Player.UpdatePlayerSkillBonuses(statBonuses);
+		if (this.Player is not null)
+			this.Services.PlayerService.UpdateSkillStatBonuses(this.Player);
 	}
 
 	private void DisplayPlayerInfo()
@@ -68,41 +56,7 @@ public partial class StashPanel
 		if (this.Player?.PlayerInfo != null)
 		{
 			DisplayPlayerInfoLastName = this.Player.PlayerName;
-			var pclass = TranslationService.TranslateXTag(this.Player.PlayerInfo.Class ?? string.Empty, true, true) ?? string.Empty;
-			var mclass = TranslationService.TranslateMastery(this.Player.PlayerInfo.Class ?? string.Empty) ?? string.Empty;
-			mclass = mclass == Resources.Masteries ? string.Empty : mclass;
-
-			var pi = new Dictionary<string, string>
-			{
-				[Resources.CurrentLevel] = this.Player.PlayerInfo.CurrentLevel.ToString(),
-				[Resources.Class] = pclass,
-				[Resources.Masteries] = mclass,
-				[Resources.CurrentXP] = this.Player.PlayerInfo.CurrentXP.ToString(),
-				[Resources.DifficultyUnlocked] = TranslationService.TranslateDifficulty(this.Player.PlayerInfo.DifficultyUnlocked) ?? "unknown",
-				[Resources.Money] = this.Player.PlayerInfo.Money.ToString(),
-				[Resources.SkillPoints] = this.Player.PlayerInfo.SkillPoints.ToString(),
-				[Resources.AttributesPoints] = this.Player.PlayerInfo.AttributesPoints.ToString(),
-				////[Resources.BaseStrength] = this.Player.PlayerInfo.BaseStrength.ToString(),
-				[Resources.CEStrength] = this.Player.PlayerInfo.CalculatedStrength.ToString(),
-				////[Resources.BaseDexterity] = this.Player.PlayerInfo.BaseDexterity.ToString(),
-				[Resources.CEDexterity] = this.Player.PlayerInfo.CalculatedDexterity.ToString(),
-				////[Resources.BaseIntelligence] = this.Player.PlayerInfo.BaseIntelligence.ToString(),
-				[Resources.CEIntelligence] = this.Player.PlayerInfo.CalculatedIntelligence.ToString(),
-				////[Resources.BaseHealth] = this.Player.PlayerInfo.BaseHealth.ToString(),
-				[Resources.CEHealth] = this.Player.PlayerInfo.CalculatedHealth.ToString(),
-				////[Resources.BaseMana] = this.Player.PlayerInfo.BaseMana.ToString(),
-				[Resources.CEMana] = this.Player.PlayerInfo.CalculatedMana.ToString(),
-				[Resources.PlayTimeInSeconds] = this.Player.PlayerInfo.PlayTimeInSeconds.ToString(),
-				[Resources.NumberOfDeaths] = this.Player.PlayerInfo.NumberOfDeaths.ToString(),
-				[Resources.NumberOfKills] = this.Player.PlayerInfo.NumberOfKills.ToString(),
-				[Resources.ExperienceFromKills] = this.Player.PlayerInfo.ExperienceFromKills.ToString(),
-				[Resources.HealthPotionsUsed] = this.Player.PlayerInfo.HealthPotionsUsed.ToString(),
-				[Resources.ManaPotionsUsed] = this.Player.PlayerInfo.ManaPotionsUsed.ToString(),
-				[Resources.NumHitsReceived] = this.Player.PlayerInfo.NumHitsReceived.ToString(),
-				[Resources.NumHitsInflicted] = this.Player.PlayerInfo.NumHitsInflicted.ToString(),
-				[Resources.CriticalHitsInflicted] = this.Player.PlayerInfo.CriticalHitsInflicted.ToString(),
-				[Resources.CriticalHitsReceived] = this.Player.PlayerInfo.CriticalHitsReceived.ToString(),
-			};
+			var pi = PlayerInfoText.BuildLines(this.Player.PlayerInfo, this.TranslationService);
 
 			var labStyle = BorderStyle.None;
 			var mg = new Padding(0, 0, 0, 1);

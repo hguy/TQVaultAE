@@ -1,5 +1,6 @@
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
+using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application.Contracts.Services;
 
@@ -92,4 +93,36 @@ public interface IPlayerService
 	/// </summary>
 	/// <returns><see langword="true"/> when the save was unarchived.</returns>
 	bool Unarchive(PlayerSave ps);
+
+	/// <summary>
+	/// Indicates whether the current player meets the requirements (level, strength, dexterity, intelligence) of
+	/// <paramref name="item"/>. Without a current player, or for an item without requirements, it does.
+	/// </summary>
+	/// <param name="item">Item to check.</param>
+	/// <returns><see langword="true"/> when the item can be equipped.</returns>
+	bool CurrentPlayerMeetsRequirements(Item item);
+
+	/// <summary>
+	/// Indicates whether <paramref name="item"/> suits the current player: a Titan Quest original player only takes
+	/// the items of the base game. Without a current player, every item suits.
+	/// </summary>
+	/// <param name="item">Item to check.</param>
+	/// <returns><see langword="true"/> when the item can be equipped.</returns>
+	bool IsSuitableForCurrentPlayer(Item item);
+
+	/// <summary>
+	/// Recomputes the gear stat bonuses of <paramref name="player"/> from its equipment.
+	/// Weapons in the secondary weapon slots do not count.
+	/// </summary>
+	/// <param name="player">Player to update.</param>
+	/// <param name="equipment">The equipped items.</param>
+	/// <param name="ignored">An item left out, as the item being dragged.</param>
+	void UpdateGearStatBonuses(PlayerCollection player, IEnumerable<Item> equipment, Item? ignored = null);
+
+	/// <summary>
+	/// Recomputes the skill stat bonuses of <paramref name="player"/> from the records of its skills and their levels.
+	/// Does nothing for a player without information.
+	/// </summary>
+	/// <param name="player">Player to update.</param>
+	void UpdateSkillStatBonuses(PlayerCollection player);
 }

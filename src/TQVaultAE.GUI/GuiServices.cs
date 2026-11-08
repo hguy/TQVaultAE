@@ -49,6 +49,7 @@ public sealed class GuiServices
 		, IMessageBoxService messageBoxes
 		, IVaultService vaultService
 		, IStashService stashService
+		, IPlayerService playerService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -78,6 +79,7 @@ public sealed class GuiServices
 		this.MessageBoxes = messageBoxes;
 		this.VaultService = vaultService;
 		this.StashService = stashService;
+		this.PlayerService = playerService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -114,6 +116,9 @@ public sealed class GuiServices
 
 	/// <summary>Stash files and the stash panel bags.</summary>
 	public IStashService StashService { get; }
+
+	/// <summary>Players: loading, saving, requirements and stat bonuses.</summary>
+	public IPlayerService PlayerService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();

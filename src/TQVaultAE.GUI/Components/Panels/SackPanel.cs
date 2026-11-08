@@ -566,14 +566,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="item">Item to check</param>
 	/// <returns>True if item is able to be equipped</returns>
 	protected virtual bool PlayerMeetRequierements(Item item)
-	{
-		var reqs = this.ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.Requirements).RequirementVariables;
-		var currPlayer = this.userContext.CurrentPlayer;
-		if (currPlayer != null && reqs != null && reqs.Count != 0 && !currPlayer.IsPlayerMeetRequierements(reqs))
-			return false;
-
-		return true;
-	}
+		=> this.Services.PlayerService.CurrentPlayerMeetsRequirements(item);
 
 	/// <summary>
 	/// Indicates whether the current player file can be edited.
@@ -594,15 +587,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="item"></param>
 	/// <returns></returns>
 	protected virtual bool IsSuitableForCurrentPlayer(Item item)
-	{
-		var currPlayer = this.userContext.CurrentPlayer;
-
-		if (currPlayer is not null && !currPlayer.IsImmortalThrone // Player is TQ Original
-			&& item.GameDlc != GameDlc.TitanQuest // Non base game item
-		) return false;
-
-		return true;
-	}
+		=> this.Services.PlayerService.IsSuitableForCurrentPlayer(item);
 
 	#endregion SackPanel Protected Methods
 

@@ -109,4 +109,14 @@ public static class ItemActionRules
 
 		return actions;
 	}
+
+	/// <summary>
+	/// Indicates whether <paramref name="item"/> can be equipped by a player of that game:
+	/// a Titan Quest original player only takes the items of the base game.
+	/// </summary>
+	/// <param name="item">Item to check.</param>
+	/// <param name="immortalThronePlayer"><see langword="true"/> for an Immortal Throne (or later) player.</param>
+	/// <returns><see langword="true"/> when the item suits the player.</returns>
+	public static bool IsSuitableFor(Item item, bool immortalThronePlayer)
+		=> immortalThronePlayer || item.GameDlc == GameDlc.TitanQuest;
 }

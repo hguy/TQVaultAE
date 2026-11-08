@@ -3,6 +3,7 @@ using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Config;
@@ -25,6 +26,8 @@ public class PlayerService(
 	, IPathIO pathIO
 	, UserSettings userSettings
 	, IDirectoryIO directoryIO
+	, IItemProvider itemProvider
+	, IDatabase database
 ) : IPlayerService
 {
 	private readonly ILogger Log = log;
@@ -41,6 +44,8 @@ public class PlayerService(
 	private readonly IPathIO PathIO = pathIO;
 	private readonly UserSettings UserSettings = userSettings;
 	private readonly IDirectoryIO DirectoryIO = directoryIO;
+	private readonly IItemProvider ItemProvider = itemProvider;
+	private readonly IDatabase Database = database;
 
 	/// <summary>
 	/// Loads a player and their stash.
@@ -341,5 +346,60 @@ public class PlayerService(
 			this.UpdatePlayerFilePath(oldPath, this.GamePathResolver.GetPlayerFile(ps.Name, ps.IsImmortalThrone, archive));
 
 		return moved;
+	}
+
+	/// <inheritdoc/>
+	public bool CurrentPlayerMeetsRequirements(Item item)
+	{
+		var currPlayer = this.userContext.CurrentPlayer;
+		if (currPlayer is null)
+			return true;
+
+		var reqs = this.ItemProvider.GetFriendlyNames(item, FriendlyNamesExtraScopes.Requirements).RequirementVariables;
+		if (reqs is null || reqs.Count == 0)
+			return true;
+
+		return currPlayer.IsPlayerMeetRequierements(reqs);
+	}
+
+	/// <inheritdoc/>
+	public bool IsSuitableForCurrentPlayer(Item item)
+	{
+		var currPlayer = this.userContext.CurrentPlayer;
+		return currPlayer is null || ItemActionRules.IsSuitableFor(item, currPlayer.IsImmortalThrone);
+	}
+
+	/// <inheritdoc/>
+	public void UpdateGearStatBonuses(PlayerCollection player, IEnumerable<Item> equipment, Item? ignored = null)
+	{
+		player.ClearPlayerGearBonuses();
+
+		foreach (Item item in equipment)
+		{
+			// Ignore the item if it is being dragged
+			if (item == ignored)
+				continue;
+
+			// Skip weapons in the secondary slots.
+			if (item.IsInWeaponSlot && (item.PositionY == 2 || item.PositionY == 3))
+				continue;
+
+			player.UpdatePlayerGearBonuses(this.ItemProvider.GetStatBonuses(item));
+		}
+	}
+
+	/// <inheritdoc/>
+	public void UpdateSkillStatBonuses(PlayerCollection player)
+	{
+		if (player.PlayerInfo is null)
+			return;
+
+		var statBonuses = new SortedList<string, int>();
+
+		foreach (SkillRecord skill in player.PlayerInfo.SkillRecordList)
+			this.ItemProvider.GetStatBonusesFromRecord(statBonuses, this.Database.GetRecordFromFile(skill.skillName), skill.skillLevel);
+
+		player.ClearPlayerSkillBonuses();
+		player.UpdatePlayerSkillBonuses(statBonuses);
 	}
 }
