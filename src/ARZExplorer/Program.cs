@@ -23,10 +23,9 @@ namespace ArzExplorer;
 /// </summary>
 public static class Program
 {
-	// Set first thing in Main.
+	// Set first thing in Main, before any form is created.
 	internal static IServiceProvider ServiceProvider = null!;
-	private static ILoggerFactory LoggerFactory = null!;
-	private static ILogger Log = null!;
+
 	/// <summary>
 	/// The main entry point for the application.
 	/// </summary>
@@ -37,15 +36,14 @@ public static class Program
 		Application.SetCompatibleTextRenderingDefault(false);
 
 		// Setup regular Microsoft.Extensions.Logging abstraction manualy
-		LoggerFactory = new LoggerFactory();
-		LoggerFactory.AddLog4Net();
-		Log = LoggerFactory.CreateLogger(typeof(Program));// Make static level logger
+		ILoggerFactory loggerFactory = new LoggerFactory();
+		loggerFactory.AddLog4Net();
 
 	restart:;
 		// Configure DI
 		var scol = new ServiceCollection()
 		// Logs
-		.AddSingleton(LoggerFactory)// Register factory
+		.AddSingleton(loggerFactory)// Register factory
 		.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
 		// Abstractions
 		.AddTransient<IFileIO, FileIO>()
