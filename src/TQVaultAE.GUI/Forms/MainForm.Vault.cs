@@ -289,16 +289,6 @@ public partial class MainForm
 		}
 	}
 
-
-	/// <summary>
-	/// Attempts to save all modified vault files
-	/// </summary>
-	private bool SaveAllModifiedVaults()
-	{
-		PlayerCollection? vaultOnError = null;
-		return this.SaveWithRetry(() => this.vaultService.SaveAllModifiedVaults(ref vaultOnError) > 0, () => vaultOnError?.PlayerName);
-	}
-
 	/// <summary>
 	/// Handler for changing the vault list drop down selection
 	/// </summary>

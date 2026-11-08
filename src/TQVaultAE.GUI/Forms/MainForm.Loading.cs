@@ -63,55 +63,52 @@ public partial class MainForm
 	/// <returns>true if players have been modified</returns>
 	private bool SaveAllModifiedFiles()
 	{
-#if DEBUG
-		if (Automation.AutomationHost.IsSaveBlocked("save players, vaults and stashes"))
+		if (IsSaveBlocked("save players, vaults and stashes"))
 			return false;
-#endif
-		bool playersModified = this.SaveAllModifiedPlayers();
-		bool vaultsModified = this.SaveAllModifiedVaults();
-		bool stashesModified = this.SaveAllModifiedStashes();
 
-		// Notification Last Save
-		if (playersModified || vaultsModified || stashesModified)
-		{
-			var saved = string.Format(Resources.SavedAtNotification, DateTime.Now);
-			this.NotificationText.Text = saved;
-			this.toolTip.SetToolTip(this.saveButton, saved);
-		}
-
-		return playersModified;
+		var result = this.saveOrchestrator.Save(SaveRequest.FilesOnly, this.AskSaveDecision);
+		this.ShowSavedNotification(result);
+		return result.PlayersSaved;
 	}
 
 	/// <summary>
-	/// Runs a save of players, vaults or stashes. On a file error, logs it and asks: Abort rethrows, Retry saves again,
-	/// Ignore gives up this save.
+	/// Shows the time of the last save when a character, vault or stash was saved.
 	/// </summary>
-	/// <param name="save">The save; returns whether something was saved.</param>
-	/// <param name="nameInError">The name of the file being saved when the error happened.</param>
-	/// <returns>Whether something was saved.</returns>
-	private bool SaveWithRetry(Func<bool> save, Func<string?> nameInError)
+	private void ShowSavedNotification(SaveResult result)
 	{
-		while (true)
+		if (!result.AnythingSaved)
+			return;
+
+		var saved = string.Format(Resources.SavedAtNotification, DateTime.Now);
+		this.NotificationText.Text = saved;
+		this.toolTip.SetToolTip(this.saveButton, saved);
+	}
+
+	/// <summary>
+	/// Logs a file error of a save and asks the user: Abort rethrows, Retry saves that step again, Ignore gives it up.
+	/// </summary>
+	private SaveDecision AskSaveDecision(SaveError error)
+	{
+		string title = string.Format(CultureInfo.CurrentCulture, Resources.MainFormSaveError, error.Name);
+		Log.LogError(error.Exception, "{Message}", title);
+		return this.Services.MessageBoxes.Ask(Log.FormatException(error.Exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation) switch
 		{
-			try
-			{
-				return save();
-			}
-			catch (IOException exception)
-			{
-				string title = string.Format(CultureInfo.CurrentCulture, Resources.MainFormSaveError, nameInError());
-				Log.LogError(exception, "{Message}", title);
-				switch (this.Services.MessageBoxes.Ask(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation))
-				{
-					case DialogResult.Abort:
-						throw;
-					case DialogResult.Retry:
-						continue;
-					default:
-						return false;
-				}
-			}
-		}
+			DialogResult.Abort => SaveDecision.Abort,
+			DialogResult.Retry => SaveDecision.Retry,
+			_ => SaveDecision.Ignore,
+		};
+	}
+
+	/// <summary>
+	/// Returns true when the debug save guard refuses <paramref name="operation"/>; always false in Release.
+	/// </summary>
+	private static bool IsSaveBlocked(string operation)
+	{
+#if DEBUG
+		return Automation.AutomationHost.IsSaveBlocked(operation);
+#else
+		return false;
+#endif
 	}
 
 	#endregion
@@ -316,6 +313,15 @@ public partial class MainForm
 		if (Automation.AutomationHost.IsSaveBlocked("save configuration"))
 			return;
 #endif
+		var configuration = this.CurrentSessionConfiguration();
+		this.configChanged = this.settingsPersistenceService.SaveConfiguration(configuration.VaultName, configuration.CharacterName, configuration.Zoom, configuration.ConfigChanged);
+	}
+
+	/// <summary>
+	/// Gets the state of the session to store in the user settings: shown vault, selected character, zoom.
+	/// </summary>
+	private SessionConfiguration CurrentSessionConfiguration()
+	{
 		string? vaultName = this.vaultListComboBox.SelectedItem != null ? this.vaultListComboBox.SelectedItemText() : null;
 
 		string? characterName = this.comboBoxCharacter.SelectedItem is PlayerSave ps
@@ -326,7 +332,7 @@ public partial class MainForm
 		if (characterName == Resources.MainFormSelectCharacter)
 			characterName = string.Empty;
 
-		this.configChanged = this.settingsPersistenceService.SaveConfiguration(vaultName, characterName, UIService.Zoom, this.configChanged);
+		return new SessionConfiguration(vaultName, characterName, UIService.Zoom, this.configChanged);
 	}
 
 	/// <summary>

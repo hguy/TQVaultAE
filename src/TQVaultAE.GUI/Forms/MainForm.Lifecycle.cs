@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using TQVaultAE.Application.Results;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using TQVaultAE.GUI.Components.Scaling;
@@ -66,15 +67,16 @@ public partial class MainForm
 			this._fileReloadDebouncer?.Dispose();
 			this._fileReloadDebouncer = null;
 
-			this.SaveAllModifiedFiles();
+			// Files, then configuration (added by VillageIdiot), then git backup: each part may be refused by the debug save guard.
+			var request = new SaveRequest(
+				Files: !IsSaveBlocked("save players, vaults and stashes")
+				, Configuration: IsSaveBlocked("save configuration") ? null : this.CurrentSessionConfiguration()
+				, GitBackup: !IsSaveBlocked("git commit and push"));
 
-			// Added by VillageIdiot
-			this.SaveConfiguration();
-
-#if DEBUG
-			if (!Automation.AutomationHost.IsSaveBlocked("git commit and push"))
-#endif
-			this.GameFileService.GitAddCommitTagAndPush();
+			var result = this.saveOrchestrator.Save(request, this.AskSaveDecision);
+			this.ShowSavedNotification(result);
+			if (result.ConfigChanged is bool configChanged)
+				this.configChanged = configChanged;
 
 			ok = true;
 		}

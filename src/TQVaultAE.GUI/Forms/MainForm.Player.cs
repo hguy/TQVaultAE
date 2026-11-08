@@ -291,16 +291,6 @@ public partial class MainForm
 	}
 
 	/// <summary>
-	/// Attempts to save all modified player files
-	/// </summary>
-	/// <returns>True if there were any modified player files.</returns>
-	private bool SaveAllModifiedPlayers()
-	{
-		PlayerCollection? playerIfError = null;
-		return this.SaveWithRetry(() => this.playerService.SaveAllModifiedPlayers(ref playerIfError), () => playerIfError?.PlayerName);
-	}
-
-	/// <summary>
 	/// Attempt to duplicate a character
 	/// </summary>
 	private void DuplicateCharacter()

@@ -44,6 +44,8 @@ public partial class MainForm : VaultForm
 
 	private readonly ILoadAllService loadAllService;
 
+	private readonly ISaveOrchestrator saveOrchestrator;
+
 	#region	Fields
 
 	/// <summary>
@@ -174,6 +176,7 @@ public partial class MainForm : VaultForm
 			, ISettingsPersistenceService settingsPersistenceService
 			, CommandLineArgs commandLineArgs
 			, ILoadAllService loadAllService
+			, ISaveOrchestrator saveOrchestrator
 		) : base(services)
 	{
 		this.userContext = sessionContext;
@@ -186,6 +189,7 @@ public partial class MainForm : VaultForm
 		this.settingsPersistenceService = settingsPersistenceService;
 		this.commandLineArgs = commandLineArgs;
 		this.loadAllService = loadAllService;
+		this.saveOrchestrator = saveOrchestrator;
 
 		Log = log;
 		Log.LogInformation("TQVaultAE Initialization !");
