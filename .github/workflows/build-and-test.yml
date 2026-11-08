@@ -36,7 +36,7 @@ jobs:
         run: dotnet restore ${{ env.SOLUTION_FILE }}
 
       - name: Build Release
-        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore -warnaserror
 
       - name: Publish release outputs
         run: pwsh -File .github/scripts/Publish-Release.ps1 -OutputDir publish
@@ -97,7 +97,7 @@ jobs:
         run: dotnet restore ${{ env.SOLUTION_FILE }}
 
       - name: Build test project
-        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release --no-restore -warnaserror
 
       - name: Run tests
         run: dotnet test --solution ${{ env.SOLUTION_FILE }} --configuration Release --no-build --report-xunit-trx
