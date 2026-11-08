@@ -54,6 +54,16 @@ public partial class ForgePanel
 
 	internal void AutomationSetHardcore(bool enabled) => this.scalingCheckBoxHardcore.Checked = enabled;
 
+	/// <summary>
+	/// Runs the drag cursor update of a mouse move over the forge: the cursor built from the dragged item's bitmap.
+	/// </summary>
+	/// <returns>The cursor, or <see langword="null"/> when nothing is dragged or it could not be built.</returns>
+	internal Cursor? AutomationUpdateDragCursor()
+	{
+		this.UpdateDragCursor();
+		return this.dragCursor?.Cursor;
+	}
+
 	/// <summary>Drops the dragged item on <paramref name="slot"/>, like a click on that slot's picture.</summary>
 	/// <returns>false when nothing is dragged.</returns>
 	internal bool AutomationDrop(ForgeSlot slot)

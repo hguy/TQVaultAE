@@ -102,6 +102,21 @@ internal static partial class AutomationTools
 			});
 		});
 
+	[McpServerTool(Name = "forge_drag_cursor")]
+	[Description("Runs the forge's drag cursor update, like a mouse move over the forge while an item is dragged (pick_item first). Returns whether a cursor was built from the item's bitmap, its size and hot spot (the bitmap centre).")]
+	public static string ForgeDragCursor()
+		=> AutomationHost.OnUi(form =>
+		{
+			var cursor = RequireForge(form).AutomationUpdateDragCursor();
+			return Serialize(new
+			{
+				built = cursor is not null,
+				width = cursor?.Size.Width,
+				height = cursor?.Size.Height,
+				hotSpot = cursor is null ? null : new { x = cursor.HotSpot.X, y = cursor.HotSpot.Y },
+			});
+		});
+
 	[McpServerTool(Name = "forge_cancel", Destructive = true)]
 	[Description("Cancels the forge, like its Cancel button: clears the slots and closes the forge.")]
 	public static string ForgeCancel() => OnForge((form, forge) => forge.AutomationCancel());
