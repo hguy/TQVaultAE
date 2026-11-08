@@ -3,8 +3,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Results;
 using TQVaultAE.Services;
 
 namespace TQVaultAE.Tests.Services;
@@ -17,6 +19,7 @@ public class HighlightServiceTests
 	private readonly Mock<ILogger<HighlightService>> _mockLogger;
 	private readonly Mock<IItemProvider> _mockItemProvider;
 	private readonly SessionContext _sessionContext;
+	private readonly Mock<ITranslationService> _mockTranslationService = new();
 	private readonly HighlightService _service;
 
 	public HighlightServiceTests()
@@ -27,7 +30,8 @@ public class HighlightServiceTests
 		_service = new HighlightService(
 			_mockLogger.Object,
 			_mockItemProvider.Object,
-			_sessionContext
+			_sessionContext,
+			_mockTranslationService.Object
 		);
 	}
 
@@ -170,4 +174,100 @@ public class HighlightServiceTests
 		// Assert - the empty stash is searched without error and matches nothing
 		_service.HighlightedItems.Should().BeEmpty();
 	}
+
+	#region ApplyFilter and type options
+
+	private static Item ItemOfClass(string itemClass)
+	{
+		var id = RecordId.Create($"""records\item\{itemClass}.dbr""");
+		var record = new DBRecordCollection(id, itemClass);
+		var classVariable = new Variable("Class", VariableDataType.StringVar, 1) { [0] = itemClass };
+		record.Set(classVariable);
+		return new Item { BaseItemId = id, baseItemInfo = new Info(record) };
+	}
+
+	/// <summary>Puts <paramref name="items"/> in the equipment of a player of the session.</summary>
+	private void AddPlayerItems(params Item[] items)
+	{
+		var playerFile = "/Test/Players/TestPlayer.plr";
+		var player = new PlayerCollection("TestPlayer", playerFile) { EquipmentSack = new SackCollection() };
+		foreach (var item in items)
+			player.EquipmentSack.AddItem(item);
+
+		_sessionContext.Players.GetOrAddAtomic(playerFile, _ => player);
+		_mockItemProvider
+			.Setup(x => x.GetFriendlyNames(It.IsAny<Item>(), It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
+			.Returns((Item i, FriendlyNamesExtraScopes? _, bool _) => new ToFriendlyNameResult(i));
+	}
+
+	[Fact]
+	public void IsEmpty_ValuesWithoutTheirRequirementCheckBox_AreIgnored()
+	{
+		new HighlightFilterValues { MinLvl = 10, MaxStr = 50 }.IsEmpty.Should().BeTrue();
+		new HighlightFilterValues { MinRequierement = true }.IsEmpty.Should().BeFalse();
+		new HighlightFilterValues { HavingSkill = true }.IsEmpty.Should().BeFalse();
+		new HighlightFilterValues { Origin = [GameDlc.Atlantis] }.IsEmpty.Should().BeFalse();
+	}
+
+	[Fact]
+	public void ApplyFilter_EmptyFilter_ClearsTheFilterAndTheHighlight()
+	{
+		_service.HighlightFilter = new HighlightFilterValues { HavingPrefix = true };
+
+		var active = _service.ApplyFilter(new HighlightFilterValues { MinLvl = 10 });
+
+		active.Should().BeFalse();
+		_service.HighlightFilter.Should().BeNull();
+		_service.HighlightedItems.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void ApplyFilter_Null_ClearsTheFilter()
+	{
+		_service.HighlightFilter = new HighlightFilterValues { HavingPrefix = true };
+
+		_service.ApplyFilter(null).Should().BeFalse();
+		_service.HighlightFilter.Should().BeNull();
+	}
+
+	[Fact]
+	public void ApplyFilter_PotionType_HighlightsEveryPotionClass()
+	{
+		_mockTranslationService.Setup(x => x.TranslateXTag(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+			.Returns((string tag, bool _, bool _, bool _) => tag);
+		var health = ItemOfClass(Item.ICLASS_POTIONHEALTH);
+		var mana = ItemOfClass(Item.ICLASS_POTIONMANA);
+		var sword = ItemOfClass(Item.ICLASS_SWORD);
+		AddPlayerItems(health, mana, sword);
+		var potions = _service.GetTypeOptions().Single(o => o.DisplayName == "tagTutorialTip14Title");
+
+		var active = _service.ApplyFilter(new HighlightFilterValues { ClassItem = [.. potions.ItemClasses] });
+
+		active.Should().BeTrue();
+		_service.HighlightedItems.Should().BeEquivalentTo([health, mana]);
+	}
+
+	[Fact]
+	public void GetTypeOptions_TrimsTheTrailingPunctuationOfTheArmorNames()
+	{
+		_mockTranslationService.Setup(x => x.TranslateXTag(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+			.Returns((string tag, bool _, bool _, bool _) => $"{tag} :");
+
+		var options = _service.GetTypeOptions();
+
+		options[0].DisplayName.Should().Be(Item.GetClassTagName(Item.ICLASS_HEAD));
+		options[0].ItemClasses.Should().Equal(Item.ICLASS_HEAD);
+		options.Single(o => o.ItemClasses.Contains(Item.ICLASS_SWORD)).DisplayName.Should().EndWith(" :");
+	}
+
+	[Fact]
+	public void GetTypeOptions_EachItemClassBelongsToOneType()
+	{
+		_mockTranslationService.Setup(x => x.TranslateXTag(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+			.Returns((string tag, bool _, bool _, bool _) => tag);
+
+		_service.GetTypeOptions().SelectMany(o => o.ItemClasses).Should().OnlyHaveUniqueItems();
+	}
+
+	#endregion
 }
