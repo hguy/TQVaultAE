@@ -114,10 +114,7 @@ public partial class ItemProvider
 		if (string.IsNullOrEmpty(icon))
 			icon = skillRecord.GetString("skillUpBitmapName", 0);
 
-		string[] description = [];
-		string descriptionTag = shown.GetString("skillBaseDescription", 0);
-		if (!string.IsNullOrEmpty(descriptionTag) && TranslationService.TryTranslateXTag(descriptionTag, out var descriptionText))
-			description = StringHelper.WrapWords(descriptionText, GrantedSkillDescriptionWidth).ToArray();
+		string[] description = this.GetSkillDescription(shown);
 
 		if (!TranslationService.TryTranslateXTag("MenuLevel", out var levelFormat))
 			levelFormat = "Level:   {0}";
@@ -137,6 +134,11 @@ public partial class ItemProvider
 				this.GetAttributesFromRecord(itm, buffRecord, true, buffId, attributes, skillLevelIndex: level - 1);
 		}
 
+		// A skill that only casts another one (skillCastName, e.g. "Potion Blast" casts "Shadow Surge" on a potion):
+		// the chance and the cast skill, with its effects at its own level. Its description stands in for a missing one.
+		if (this.GetCastSkill(itm, skillRecord, level, levelFormat, attributes) is { Length: > 0 } castDescription && description.Length == 0)
+			description = castDescription;
+
 		return new GrantedSkill(
 			skillId,
 			name,
@@ -148,6 +150,53 @@ public partial class ItemProvider
 			TrimEmptyLines(attributes)
 		);
 	}
+
+	/// <summary>The translated description of a skill record (<c>skillBaseDescription</c>), word wrapped.</summary>
+	private string[] GetSkillDescription(DBRecordCollection skill)
+	{
+		string tag = skill.GetString("skillBaseDescription", 0);
+		return !string.IsNullOrEmpty(tag) && TranslationService.TryTranslateXTag(tag, out var text)
+			? StringHelper.WrapWords(text, GrantedSkillDescriptionWidth).ToArray()
+			: [];
+	}
+
+	/// <summary>
+	/// Adds the skill a granted skill casts (<c>skillCastName</c>, with <c>skillCastChance</c> at <c>skillCastLevel</c>):
+	/// a line with the chance and its name, its level, then its effects at that level.
+	/// </summary>
+	/// <returns>The description of the cast skill; empty when there is none or no cast skill.</returns>
+	private string[] GetCastSkill(Item itm, DBRecordCollection skillRecord, int level, string levelFormat, List<string> attributes)
+	{
+		var castId = skillRecord.GetString("skillCastName", 0).ToRecordId();
+		if (RecordId.IsNullOrEmpty(castId) || Database.GetRecordFromFile(castId) is not { } castRecord)
+			return [];
+
+		if (!TranslationService.TryTranslateXTag(castRecord.GetString("skillDisplayName", 0), out var castName))
+			castName = PathIO.GetFileNameWithoutExtension(castId.Raw);
+
+		float chance = ValueAtLevel(skillRecord["skillCastChance"], level);
+		int castLevel = Math.Max((int)ValueAtLevel(skillRecord["skillCastLevel"], level), 1);
+
+		var text = ItemStyle.Mundane.TQColor().ColorTag();
+		var name = ItemStyle.Epic.TQColor().ColorTag();
+		if (attributes.Count != 0)
+			attributes.Add(string.Empty);
+
+		if (chance > 0 && TranslationService.TryTranslateXTag("ChanceOfTag", out var chanceFormat))
+			attributes.Add($"{text}{Format(ItemAttributeProvider.ConvertFormat(chanceFormat), chance)}{name}{castName}");
+		else
+			attributes.Add($"{name}{castName}");
+
+		attributes.Add($"{ItemStyle.Broken.TQColor().ColorTag()}{Format(levelFormat, castLevel)}");
+		this.GetAttributesFromRecord(itm, castRecord, true, castId, attributes, skillLevelIndex: castLevel - 1);
+		return this.GetSkillDescription(castRecord);
+	}
+
+	/// <summary>The value of a skill parameter at a level: one value per level, the last one beyond.</summary>
+	private static float ValueAtLevel(Variable? variable, int level)
+		=> variable is null || variable.NumberOfValues == 0
+			? 0F
+			: variable.GetSingle(Math.Clamp(level - 1, 0, variable.NumberOfValues - 1));
 
 	/// <summary>Drops the blank lines at both ends; the ones between groups stay as separators.</summary>
 	private static string[] TrimEmptyLines(List<string> lines)

@@ -56,6 +56,7 @@ public partial class ItemProvider
 			"USEDELAYTIME",
 			"CAMERASHAKEAMPLITUDE",
 			"SKILLMAXLEVEL",
+			"FORCEHIDEICONFROMQUICKSLOT",
 			"EXPANSIONTIME",
 			"SKILLTIER",
 			"CAMERASHAKEDURATIONSECS",
@@ -174,6 +175,8 @@ public partial class ItemProvider
 			|| keyUpper.EndsWith("SOUND", noCase)
 			|| keyUpper.EndsWith("MESH", noCase)
 			|| keyUpper.StartsWith("BODYMASK", noCase)
+			// How a skill casts another one (chance, level, on all damage types, at the target...): shown as one line.
+			|| keyUpper.StartsWith("SKILLCAST", noCase)
 		);
 	}
 	/// <summary>
