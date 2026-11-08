@@ -81,6 +81,7 @@ Cells are grid coordinates, as reported by `get_state`.
 | `forge_set_mode(mode)` / `forge_set_hardcore(enabled)` | Like the mode radio buttons (`Game`, `Strict`, `Relax`, `God`) and the Hardcore box. A stricter mode clears the slots, as in the app. |
 | `forge_drop(slot)` | Drops the dragged item on a forge slot. The rules of the current mode decide. A refusal is reported in `newMessages`, and the item stays dragged. |
 | `forge_select_part(slot, part)` | God mode: chooses which part of a material item is merged, like its combo box. |
+| `forge_drag_cursor` | Runs the drag cursor update of a mouse move over the forge while an item is dragged: whether the cursor was built from the item's bitmap (native `CreateIconIndirect`), its size and hot spot. |
 | `forge_reset` / `forge_cancel` / `forge_forge` | Like the Reset, Cancel and Forge buttons. `forge_forge` merges in memory only, since the save guard keeps it from being written, and reports the forged item and the sounds played. |
 | `set_save_guard(enabled)` | Turns the save guard on or off. |
 
