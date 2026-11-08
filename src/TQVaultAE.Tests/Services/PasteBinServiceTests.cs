@@ -114,4 +114,30 @@ public class PasteBinServiceTests
 		await act.Should().ThrowAsync<InvalidOperationException>()
 			.WithMessage("*404*");
 	}
+
+	[Theory]
+	[InlineData(null, UserSettings.DefaultPasteBinExpiration)]
+	[InlineData("1W", "1W")]
+	public async Task UploadAsync_PostsTheExpiration_DefaultWhenUnset(string? expiration, string expected)
+	{
+		string postedForm = string.Empty;
+		var handler = new Mock<HttpMessageHandler>();
+		handler.Protected()
+			.Setup<Task<HttpResponseMessage>>(
+				"SendAsync",
+				ItExpr.IsAny<HttpRequestMessage>(),
+				ItExpr.IsAny<CancellationToken>())
+			.Callback<HttpRequestMessage, CancellationToken>((request, token) => postedForm = request.Content!.ReadAsStringAsync(token).GetAwaiter().GetResult())
+			.ReturnsAsync(new HttpResponseMessage
+			{
+				StatusCode = HttpStatusCode.OK,
+				Content = new StringContent("https://pastebin.com/ABC123")
+			});
+
+		var settings = new UserSettings { PasteBinApiKey = TestApiKey, PasteBinExpiration = expiration! };
+		var service = new PasteBinService(new HttpClient(handler.Object), settings);
+		await service.UploadAsync("test content");
+
+		postedForm.Should().Contain($"api_paste_expire_date={expected}");
+	}
 }

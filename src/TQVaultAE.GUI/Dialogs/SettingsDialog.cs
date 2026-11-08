@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using TQVaultAE.Application.Results;
+using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.GUI.Dialogs;
@@ -544,7 +545,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.enableBackupPlayerSaves = USettings.GitBackupPlayerSavesEnabled;
 		this.enableOriginalTQSupport = USettings.EnableOriginalTQSupport;
 		this.pasteBinApiKey = USettings.PasteBinApiKey ?? string.Empty;
-		this.pasteBinExpiration = USettings.PasteBinExpiration ?? "1M";
+		this.pasteBinExpiration = USettings.PasteBinExpiration ?? UserSettings.DefaultPasteBinExpiration;
 
 		// Force English since there was some issue with getting the proper language setting.
 		var gl = Database.GameLanguage;
@@ -687,9 +688,6 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.ResumeLayout(false);
 		this.PerformLayout();
 	}
-
-	[GeneratedRegex(@"((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?")]
-	private static partial Regex GitUrlRegex();
 
 	private void ItemBGColorOpacityTrackBar_Scroll(object? sender, EventArgs e)
 	{

@@ -1868,6 +1868,9 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SettingsGitRepositoryUrl" xml:space="preserve">
     <value>Git Repository Url : </value>
   </data>
+	<data name="SettingsGitRepositoryUrlInvalid" xml:space="preserve">
+    <value>You must enter a valid Git Url.</value>
+  </data>
 	<data name="SettingsDisableLegacyBackup" xml:space="preserve">
     <value>Disable legacy backup</value>
   </data>

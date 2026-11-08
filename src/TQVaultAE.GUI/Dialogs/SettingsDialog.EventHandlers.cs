@@ -18,6 +18,7 @@ using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
+using TQVaultAE.Services;
 
 namespace TQVaultAE.GUI.Dialogs;
 
@@ -93,9 +94,9 @@ internal partial class SettingsDialog
 		// Validation
 		if (enableGitBackup)
 		{
-			if (string.IsNullOrEmpty(gitBackupRepository) || !GitUrlRegex().IsMatch(gitBackupRepository))
+			if (!GitRepositoryUrl.IsValid(gitBackupRepository))
 			{
-				this.UIService.ShowError("You must enter a valid Git Url.", Buttons: Application.Contracts.Services.ShowMessageButtons.OK);
+				this.UIService.ShowError(Resources.SettingsGitRepositoryUrlInvalid, Buttons: Application.Contracts.Services.ShowMessageButtons.OK);
 				this.DialogResult = DialogResult.None;
 				return;
 			}
