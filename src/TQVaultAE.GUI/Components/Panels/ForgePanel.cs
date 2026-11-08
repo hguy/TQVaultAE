@@ -42,7 +42,6 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private readonly IFontService FontService;
 	private readonly ITranslationService TranslationService;
 	private readonly IItemProvider ItemProvider;
-	private readonly IItemDatabaseService ItemDatabaseService;
 
 	internal Action? CancelAction;
 	internal Action? ForgeAction;
@@ -56,7 +55,8 @@ public partial class ForgePanel : UserControl, IScalingControl
 	/// <summary>Cards describing what each mode allows, on the mode radio buttons.</summary>
 	private RichToolTip? modeToolTip;
 
-	private ScalingRadioButton? lastMode;
+	/// <summary>The mode chosen before the current one, to reset the selection when the rules get stricter.</summary>
+	private ForgeMode? lastMode;
 
 	private static RecordId SoundStricMode = @"Sounds\MONSTERS\GREECE\G_TELKINE\TELEKINEVOICE01.WAV";
 	private static RecordId SoundRelaxMode = @"Sounds\MONSTERS\GREECE\G_TELKINE\TELEKINEVOICE02.WAV";
@@ -138,9 +138,8 @@ public partial class ForgePanel : UserControl, IScalingControl
 		FontService = services.FontService;
 		TranslationService = services.TranslationService;
 		ItemProvider = services.ItemProvider;
-		ItemDatabaseService = services.ItemDatabaseService;
 
-		Rules = new ForgeRules(LevelRequirement);
+		Rules = services.ForgeService.CreateRules();
 		Slots = [
 			new(ForgeSlot.Base, pictureBoxBaseItem, null),
 			new(ForgeSlot.Prefix, pictureBoxPrefix, comboBoxPrefix),
@@ -300,9 +299,6 @@ public partial class ForgePanel : UserControl, IScalingControl
 			],
 			Resources.ForgeCapResetOnStricter));
 	}
-
-	private int LevelRequirement(Item item)
-		=> this.ItemProvider.GetRequirementVariables(item).TryGetValue(Variable.KEY_LEVELREQ, out var level) ? level.GetInt32(0) : 0;
 
 	#region Backgrounds
 
@@ -481,25 +477,24 @@ public partial class ForgePanel : UserControl, IScalingControl
 		=> (SlotOf(slot).Combo?.SelectedItem as ForgeComboItem)?.Value;
 
 	/// <summary>Parts of <paramref name="item"/> usable in God mode.</summary>
-	private static void FillPartComboBox(ComboBox comboBox, Item item)
+	private void FillPartComboBox(ComboBox comboBox, Item item)
 	{
 		comboBox.Items.Clear();
-		comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Base, Text = Resources.ForgeUseBase });
 
-		if (item.HasPrefix)
-			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Prefix, Text = Resources.ForgeUsePrefix });
-
-		if (item.HasSuffix)
-			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Suffix, Text = Resources.ForgeUseSuffix });
-
-		if (item.HasRelicOrCharmSlot1)
-			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Relic1, Text = Resources.ForgeUseRelic1 });
-
-		if (item.HasRelicOrCharmSlot2)
-			comboBox.Items.Add(new ForgeComboItem { Value = ForgePart.Relic2, Text = Resources.ForgeUseRelic2 });
+		foreach (var part in this.Services.ForgeService.GodModeParts(item))
+			comboBox.Items.Add(new ForgeComboItem { Value = part, Text = PartText(part) });
 
 		comboBox.SelectedIndex = 0;// default on Base
 	}
+
+	private static string PartText(ForgePart part) => part switch
+	{
+		ForgePart.Prefix => Resources.ForgeUsePrefix,
+		ForgePart.Suffix => Resources.ForgeUseSuffix,
+		ForgePart.Relic1 => Resources.ForgeUseRelic1,
+		ForgePart.Relic2 => Resources.ForgeUseRelic2,
+		_ => Resources.ForgeUseBase,
+	};
 
 	private void HideGodModeRows()
 	{
@@ -524,25 +519,17 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	private void ForgeItem()
 	{
-		if (Rules.CheckForge(Selection) is { } problem)
+		var result = this.Services.ForgeService.Forge(Rules, Selection, Sacks, IsGodMode, GodPart, this.HardcoreMode);
+		if (result.Problem is { } problem)
 		{
 			Notify(problem);
 			return;
 		}
 
-		// Merge item properties into Base item
-		var itm = Selection.Base!;
-		ForgeMerge.Apply(itm, Selection, IsGodMode, GodPart);
-		ItemProvider.GetDBData(itm);
+		InvalidateTooltipCaches([.. result.Consumed, result.Forged!]);
 
-		Sacks[ForgeSlot.Base]!.IsModified = itm.IsModified = true;
-
-		HardcoreDeleteMaterialItems();
-
-		InvalidateItemCacheAll(itm);
-		// The search keeps the item's display data: replace its entry so it shows the forged item.
-		ItemDatabaseService.RemoveItemFromDatabase(itm);
-		ItemDatabaseService.TryAddItemToDatabase(itm);
+		// Repaint the sacks the items left (and the forged item) at the next paint, not synchronously.
+		this.FindForm()?.Invalidate(true);
 
 		ResetSelection();
 
@@ -557,31 +544,11 @@ public partial class ForgePanel : UserControl, IScalingControl
 			ForgeAction();
 	}
 
-	/// <summary>Hardcore mode: the material items are consumed.</summary>
-	private void HardcoreDeleteMaterialItems()
-	{
-		if (this.HardcoreMode)
-		{
-			foreach (var slot in new[] { ForgeSlot.Prefix, ForgeSlot.Suffix, ForgeSlot.Relic1, ForgeSlot.Relic2 })
-			{
-				if (Selection[slot] is not { } item || Sacks.GetValueOrDefault(slot) is not { } sack)
-					continue;
-
-				sack.RemoveItem(item);
-				InvalidateItemCacheAll(item);
-				ItemDatabaseService.RemoveItemFromDatabase(item);
-			}
-		}
-
-		// Repaint the sacks the items left (and the forged item) at the next paint, not synchronously.
-		this.FindForm()?.Invalidate(true);
-	}
-
-	private void InvalidateItemCacheAll(params Item[] items)
+	/// <summary>The forged and consumed items are drawn anew; the forge service refreshed their friendly names.</summary>
+	private static void InvalidateTooltipCaches(Item[] items)
 	{
 		ItemTooltip.InvalidateCache(items);
 		BagButtonTooltip.InvalidateCache(items);
-		ItemProvider.InvalidateFriendlyNamesCache(items);
 	}
 
 	#endregion
@@ -637,52 +604,29 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	private void ForgeMode_Clicked(object? sender, EventArgs e)
 	{
-		if (IsGameMode)
-		{
-			SoundService.PlaySound(SoundGameMode);
-
-			// Reset on Mode downgrade
-			if (lastMode == scalingRadioButtonGod || lastMode == scalingRadioButtonRelax || lastMode == scalingRadioButtonStrict)
-				ResetSelection();
-
-			HideGodModeRows();
-			lastMode = scalingRadioButtonGame;
+		if (!IsGameMode && !IsStrictMode && !IsRelaxMode && !IsGodMode)
 			return;
-		}
 
-		if (IsStrictMode)
+		var mode = Mode;
+
+		SoundService.PlaySound(mode switch
 		{
-			SoundService.PlaySound(SoundStricMode);
+			ForgeMode.God => SoundGodMode,
+			ForgeMode.Relax => SoundRelaxMode,
+			ForgeMode.Strict => SoundStricMode,
+			_ => SoundGameMode,
+		});
 
-			// Reset on Mode downgrade
-			if (lastMode == scalingRadioButtonGod || lastMode == scalingRadioButtonRelax)
-				ResetSelection();
+		// Reset on Mode downgrade
+		if (ForgeRules.IsDowngrade(lastMode, mode))
+			ResetSelection();
 
-			HideGodModeRows();
-			lastMode = scalingRadioButtonStrict;
-			return;
-		}
-
-		if (IsRelaxMode)
-		{
-			SoundService.PlaySound(SoundRelaxMode);
-
-			// Reset on Mode downgrade
-			if (lastMode == scalingRadioButtonGod)
-				ResetSelection();
-
-			HideGodModeRows();
-			lastMode = scalingRadioButtonRelax;
-			return;
-		}
-
-		if (IsGodMode)
-		{
-			SoundService.PlaySound(SoundGodMode);
-
+		if (mode == ForgeMode.God)
 			ShowGodModeRows();
-			lastMode = scalingRadioButtonGod;
-		}
+		else
+			HideGodModeRows();
+
+		lastMode = mode;
 	}
 
 	private void pictureBox_MouseEnter(object? sender, EventArgs e)

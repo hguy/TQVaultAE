@@ -50,6 +50,7 @@ public sealed class GuiServices
 		, IVaultService vaultService
 		, IStashService stashService
 		, IPlayerService playerService
+		, IForgeService forgeService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -80,6 +81,7 @@ public sealed class GuiServices
 		this.VaultService = vaultService;
 		this.StashService = stashService;
 		this.PlayerService = playerService;
+		this.ForgeService = forgeService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -119,6 +121,9 @@ public sealed class GuiServices
 
 	/// <summary>Players: loading, saving, requirements and stat bonuses.</summary>
 	public IPlayerService PlayerService { get; }
+
+	/// <summary>Forge rules, God mode parts and the forge itself.</summary>
+	public IForgeService ForgeService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();

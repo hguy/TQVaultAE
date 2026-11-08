@@ -248,6 +248,15 @@ public sealed class ForgeRules
 		return null;
 	}
 
+	/// <summary>
+	/// <c>true</c> when going from <paramref name="previous"/> to <paramref name="next"/> makes the rules stricter: the
+	/// items already placed may break the new rules, so the selection is reset.
+	/// </summary>
+	/// <param name="previous">The mode chosen before, or <c>null</c> when none was chosen yet.</param>
+	/// <param name="next">The mode chosen now.</param>
+	public static bool IsDowngrade(ForgeMode? previous, ForgeMode next)
+		=> previous is { } from && next < from;
+
 	private static string ClassOf(Item item)
 		=> string.IsNullOrWhiteSpace(item.ItemClass) ? "NoClass" : item.ItemClass;
 
