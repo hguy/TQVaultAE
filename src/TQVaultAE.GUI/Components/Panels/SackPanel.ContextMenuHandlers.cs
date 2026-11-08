@@ -447,6 +447,12 @@ public partial class SackPanel
 					this.DeleteItem(focusedItem, false);
 				}
 			}
+			else if (action == ItemActions.ClearSelection)
+			{
+				// Before the focused item test: the selection can be cleared from an empty cell.
+				this.ClearSelection();
+				Refresh();
+			}
 			else if (focusedItem is null)
 			{
 				// The other entries apply to the focused item.
@@ -553,11 +559,6 @@ public partial class SackPanel
 
 				InvalidateItemCacheItemTooltip(focusedItem);
 
-				Refresh();
-			}
-			else if (action == ItemActions.ClearSelection)
-			{
-				this.ClearSelection();
 				Refresh();
 			}
 
