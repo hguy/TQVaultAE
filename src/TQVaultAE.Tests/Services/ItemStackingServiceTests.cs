@@ -147,7 +147,8 @@ public class ItemStackingServiceTests
 		dragged.Var1.Should().Be(2, "2 of the 4 shards completed the relic");
 		dragged.IsModified.Should().BeTrue();
 		under.Location.Should().Be(DropLocation);
-		this._sack.Should().Contain(under);
+		this._sack.Count(i => ReferenceEquals(i, under)).Should().Be(1, "the completed relic must not be listed (and saved) twice");
+		this._sack.IsModified.Should().BeTrue();
 	}
 
 	[Fact]
