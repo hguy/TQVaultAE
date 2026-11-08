@@ -72,14 +72,6 @@ public interface IPlayerService
 	CharacterDuplicateResult DuplicateCharacter(PlayerSave source, string newName);
 
 	/// <summary>
-	/// Creates a file watcher for the player file.
-	/// </summary>
-	/// <param name="playerSave">Player save information.</param>
-	/// <param name="onChanged">Action to call when the file changes.</param>
-	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	FileSystemWatcher? CreatePlayerFileWatcher(PlayerSave playerSave, Action<PlayerSave, bool> onChanged);
-
-	/// <summary>
 	/// Updates the player file path in the player collection cache after archiving/unarchiving.
 	/// </summary>
 	/// <param name="oldPath">The old file path of the player.</param>

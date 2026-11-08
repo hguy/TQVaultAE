@@ -258,36 +258,6 @@ public class PlayerService(
 	}
 
 	/// <summary>
-	/// Creates a file watcher for the player file.
-	/// </summary>
-	/// <param name="playerSave">Player save information.</param>
-	/// <param name="onChanged">Action to call when the file changes.</param>
-	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	public FileSystemWatcher? CreatePlayerFileWatcher(PlayerSave playerSave, Action<PlayerSave, bool> onChanged)
-	{
-		var playerFile = GamePathResolver.GetPlayerFile(playerSave.Name, playerSave.IsImmortalThrone, playerSave.IsArchived);
-		var directory = Path.GetDirectoryName(playerFile);
-		var fileName = Path.GetFileName(playerFile);
-
-		if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
-			return null;
-
-		var watcher = new FileSystemWatcher(directory, fileName)
-		{
-			NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
-			EnableRaisingEvents = true
-		};
-
-		watcher.Changed += (sender, e) =>
-		{
-			Log.LogInformation("Player file changed: {FileName}", e.FullPath);
-			onChanged?.Invoke(playerSave, true);
-		};
-
-		return watcher;
-	}
-
-	/// <summary>
 	/// Updates the player file path in the player collection cache after archiving/unarchiving.
 	/// </summary>
 	/// <param name="oldPath">The old file path of the player.</param>
