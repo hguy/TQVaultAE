@@ -10,7 +10,6 @@ using System.Buffers.Binary;
 using System.Globalization;
 using System.Text;
 using TQVaultAE.GameFiles;
-using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data;
 
@@ -52,13 +51,14 @@ public class TQDataService : ITQDataService
 		string label = ReadCString(reader);
 		if (!string.Equals(label, value, StringComparison.OrdinalIgnoreCase))
 		{
+			long position = reader.BaseStream.Position - label.Length - 4;
 			var ex = new ArgumentException(string.Format(
 				CultureInfo.InvariantCulture,
 				"Error reading file at position {2}.  Expecting '{0}'.  Got '{1}'",
 				value,
 				label,
-				reader.BaseStream.Position - label.Length - 4));
-			Log.ErrorException(ex);
+				position));
+			this.Log.LogError(ex, "Unexpected string at position {Position}: expected '{Expected}', got '{Actual}'", position, value, label);
 			throw ex;
 		}
 	}

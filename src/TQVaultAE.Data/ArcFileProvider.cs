@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GameFiles;
-using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data;
 
@@ -40,7 +39,7 @@ public class ArcFileProvider : IArcFileProvider
 		}
 		catch (IOException exception)
 		{
-			Log.ErrorException(exception);
+			this.Log.LogError(exception, "Failed to read the table of contents of {ArcFile}", file.FileName);
 			return false;
 		}
 	}
@@ -81,7 +80,8 @@ public class ArcFileProvider : IArcFileProvider
 		}
 		catch (IOException exception)
 		{
-			Log.ErrorException(exception);
+			this.Log.LogError(exception, "Failed to extract record {Record} of {ArcFile} to {Destination} in {Folder}"
+				, record.Raw, file.FileName, destinationFileName, baseFolder);
 			return;
 		}
 	}

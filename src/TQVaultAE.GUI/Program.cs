@@ -203,7 +203,7 @@ public static class Program
 		}
 		catch (Exception ex)
 		{
-			Log.ErrorException(ex);
+			Log.LogError(ex, "TQVault failed to start or stopped on an unhandled error");
 			MessageBox.Show(Log.FormatException(ex), Resources.GlobalError, MessageBoxButtons.OK, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button1, MessageBoxOptions.DefaultDesktopOnly);
 		}
 

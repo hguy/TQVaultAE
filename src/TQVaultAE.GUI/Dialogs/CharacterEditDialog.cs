@@ -8,7 +8,6 @@ using System;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
-using TQVaultAE.Logs;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 
@@ -178,7 +177,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 		}
 		catch (Exception ex)
 		{
-			this.Log.ErrorException(ex);
+			this.Log.LogError(ex, "Failed to apply the character changes to {Player}", this.PlayerCollection.PlayerName);
 			this.Services.MessageBoxes.Inform(ex.Message, string.Empty);
 		}
 	}
@@ -339,7 +338,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 		}
 		catch (Exception ex)
 		{
-			Log.ErrorException(ex);
+			this.Log.LogError(ex, "Failed to update the attribute and skill points for the level change of {Player}", this.PlayerCollection.PlayerName);
 		}
 	}
 

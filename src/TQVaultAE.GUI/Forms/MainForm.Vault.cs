@@ -1,11 +1,11 @@
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
-using TQVaultAE.Logs;
 using TQVaultAE.Services;
 using TQVaultAE.Application;
 using TQVaultAE.GUI.Components.Scaling;
@@ -330,7 +330,7 @@ public partial class MainForm
 		}
 		catch (IOException exception)
 		{
-			Log.ErrorException(exception);
+			Log.LogError(exception, "Vault maintenance failed (shown vault {Vault})", this.vaultPanel.Player?.PlayerName);
 			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 		}
 	}
@@ -374,7 +374,7 @@ public partial class MainForm
 		}
 		catch (IOException exception)
 		{
-			Log.ErrorException(exception);
+			Log.LogError(exception, "Failed to load the vault {Vault}", this.vaultListComboBox.SelectedItemText());
 			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 
 			// put the vault back to what it was
@@ -414,7 +414,7 @@ public partial class MainForm
 		}
 		catch (IOException exception)
 		{
-			Log.ErrorException(exception);
+			Log.LogError(exception, "Failed to load the secondary vault {Vault}", this.secondaryVaultListComboBox.SelectedItemText());
 			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 
 			// put the vault back to what it was

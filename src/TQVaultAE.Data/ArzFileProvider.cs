@@ -2,7 +2,6 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GameFiles;
-using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data;
 
@@ -44,7 +43,7 @@ public class ArzFileProvider : IArzFileProvider
 		}
 		catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException)
 		{
-			Log.ErrorException(exception);
+			this.Log.LogError(exception, "Failed to read the database {ArzFile}", file.FileName);
 			return false;
 		}
 
@@ -94,7 +93,7 @@ public class ArzFileProvider : IArzFileProvider
 		catch (InvalidDataException ex)
 		{
 			var error = new ArgumentException($"Error while parsing arz record {info.ID} of {file.FileName}", ex);
-			Log.ErrorException(error);
+			this.Log.LogError(ex, "Failed to parse record {Record} of {ArzFile}", info.ID, file.FileName);
 			throw error;
 		}
 

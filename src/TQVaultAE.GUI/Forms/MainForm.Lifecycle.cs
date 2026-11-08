@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
 using TQVaultAE.GUI.Components.Scaling;
 

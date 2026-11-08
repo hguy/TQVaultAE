@@ -15,7 +15,6 @@ using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
