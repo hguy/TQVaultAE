@@ -93,9 +93,9 @@ public partial class MainForm
 			{
 				if (!vault.Equals(VaultService.MAINVAULT, StringComparison.Ordinal))
 				{
-					// we already added main vault
+					// Skip the vault open in the secondary panel; the ones after it stay in the list.
 					if (this.secondaryVaultListComboBox.SelectedItem != null && vault.Equals(this.secondaryVaultListComboBox.SelectedItemText(), StringComparison.Ordinal) && this.showSecondaryVault)
-						break;
+						continue;
 
 					this.vaultListComboBox.Items.Add(vault);
 				}
