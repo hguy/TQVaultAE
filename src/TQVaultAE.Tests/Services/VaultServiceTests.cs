@@ -7,6 +7,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
+using TQVaultAE.Application.DTOs;
 
 namespace TQVaultAE.Tests.Services;
 
@@ -378,5 +379,150 @@ public class VaultServiceTests
 		{
 			_userSettings.VaultPath = originalPath;
 		}
+	}
+
+	private static readonly string[] ExistingVaults = ["Main Vault", "Gear"];
+
+	private void SetupInvalidFileNameChars()
+		=> _mockPathIO.Setup(x => x.GetInvalidFileNameChars()).Returns(['/', '\\', ':', '*', '?', '"', '<', '>', '|']);
+
+	private (string Source, string Target) SetupVaultFiles(string sourceName, string targetName)
+	{
+		var sourceFile = $"""C:\Vaults\{sourceName}.vault.json""";
+		var targetFile = $"""C:\Vaults\{targetName}.vault.json""";
+		_mockGamePathService.Setup(x => x.GetVaultFile(sourceName)).Returns(sourceFile);
+		_mockGamePathService.Setup(x => x.GetVaultFile(targetName)).Returns(targetFile);
+		return (sourceFile, targetFile);
+	}
+
+	[Theory]
+	[InlineData(VaultMaintenance.New, null, "", VaultMaintenanceError.EmptyName)]
+	[InlineData(VaultMaintenance.New, null, "   ", VaultMaintenanceError.EmptyName)]
+	[InlineData(VaultMaintenance.New, null, "Bad:Name", VaultMaintenanceError.InvalidCharacters)]
+	[InlineData(VaultMaintenance.New, null, "gear", VaultMaintenanceError.DuplicateName)]
+	[InlineData(VaultMaintenance.New, null, "Rings", VaultMaintenanceError.None)]
+	[InlineData(VaultMaintenance.Copy, "Gear", "", VaultMaintenanceError.EmptyName)]
+	[InlineData(VaultMaintenance.Copy, "Missing", "Rings", VaultMaintenanceError.SourceMissing)]
+	[InlineData(VaultMaintenance.Copy, "Gear", "Ri/ngs", VaultMaintenanceError.InvalidCharacters)]
+	[InlineData(VaultMaintenance.Copy, "Gear", "MAIN VAULT", VaultMaintenanceError.DuplicateName)]
+	[InlineData(VaultMaintenance.Copy, "gear", "Rings", VaultMaintenanceError.None)]
+	[InlineData(VaultMaintenance.Rename, "Gear", "", VaultMaintenanceError.EmptyName)]
+	[InlineData(VaultMaintenance.Rename, null, "Rings", VaultMaintenanceError.SourceMissing)]
+	[InlineData(VaultMaintenance.Rename, "Gear", "Main Vault", VaultMaintenanceError.DuplicateName)]
+	[InlineData(VaultMaintenance.Rename, "Gear", "Rings", VaultMaintenanceError.None)]
+	[InlineData(VaultMaintenance.Delete, "Missing", null, VaultMaintenanceError.SourceMissing)]
+	[InlineData(VaultMaintenance.Delete, "Gear", null, VaultMaintenanceError.None)]
+	public void ValidateMaintenance_ReturnsFirstProblem(VaultMaintenance action, string? source, string? target, VaultMaintenanceError expected)
+	{
+		SetupInvalidFileNameChars();
+
+		var error = _vaultService.ValidateMaintenance(action, source, target, ExistingVaults);
+
+		error.Should().Be(expected);
+	}
+
+	[Fact]
+	public void ValidateMaintenance_EmptyTargetWins_OverMissingSource()
+	{
+		SetupInvalidFileNameChars();
+
+		var error = _vaultService.ValidateMaintenance(VaultMaintenance.Copy, "Missing", "", ExistingVaults);
+
+		error.Should().Be(VaultMaintenanceError.EmptyName);
+	}
+
+	[Fact]
+	public void CopyVault_WhenSourceExistsAndTargetDoesNot_CopiesAndDropsStaleTargetFromCache()
+	{
+		var (sourceFile, targetFile) = SetupVaultFiles("Gear", "Rings");
+		_mockFileIO.Setup(x => x.Exists(sourceFile)).Returns(true);
+		_mockFileIO.Setup(x => x.Exists(targetFile)).Returns(false);
+		_sessionContext.Vaults.GetOrAddAtomic(targetFile, _ => new PlayerCollection("Rings", targetFile));
+
+		var copied = _vaultService.CopyVault("Gear", "Rings");
+
+		copied.Should().BeTrue();
+		_mockFileIO.Verify(x => x.Copy(sourceFile, targetFile), Times.Once);
+		_sessionContext.Vaults.ContainsKey(targetFile).Should().BeFalse();
+	}
+
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(true, true)]
+	public void CopyVault_WhenSourceMissingOrTargetExists_DoesNothing(bool sourceExists, bool targetExists)
+	{
+		var (sourceFile, targetFile) = SetupVaultFiles("Gear", "Rings");
+		_mockFileIO.Setup(x => x.Exists(sourceFile)).Returns(sourceExists);
+		_mockFileIO.Setup(x => x.Exists(targetFile)).Returns(targetExists);
+
+		var copied = _vaultService.CopyVault("Gear", "Rings");
+
+		copied.Should().BeFalse();
+		_mockFileIO.Verify(x => x.Copy(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+	}
+
+	[Fact]
+	public void DeleteVault_WhenFileExists_DeletesAndDropsFromCache()
+	{
+		var vaultFile = """C:\Vaults\Gear.vault.json""";
+		_mockGamePathService.Setup(x => x.GetVaultFile("Gear")).Returns(vaultFile);
+		_mockFileIO.Setup(x => x.Exists(vaultFile)).Returns(true);
+		_sessionContext.Vaults.GetOrAddAtomic(vaultFile, _ => new PlayerCollection("Gear", vaultFile));
+
+		var deleted = _vaultService.DeleteVault("Gear");
+
+		deleted.Should().BeTrue();
+		_mockFileIO.Verify(x => x.Delete(vaultFile), Times.Once);
+		_sessionContext.Vaults.ContainsKey(vaultFile).Should().BeFalse();
+	}
+
+	[Fact]
+	public void DeleteVault_WhenFileMissing_OnlyDropsFromCache()
+	{
+		var vaultFile = """C:\Vaults\Gear.vault.json""";
+		_mockGamePathService.Setup(x => x.GetVaultFile("Gear")).Returns(vaultFile);
+		_mockFileIO.Setup(x => x.Exists(vaultFile)).Returns(false);
+		_sessionContext.Vaults.GetOrAddAtomic(vaultFile, _ => new PlayerCollection("Gear", vaultFile));
+
+		var deleted = _vaultService.DeleteVault("Gear");
+
+		deleted.Should().BeFalse();
+		_mockFileIO.Verify(x => x.Delete(It.IsAny<string>()), Times.Never);
+		_sessionContext.Vaults.ContainsKey(vaultFile).Should().BeFalse();
+	}
+
+	[Fact]
+	public void RenameVault_ToMainVault_MovesAndDropsBothNamesFromCache()
+	{
+		var (oldFile, newFile) = SetupVaultFiles("Gear", VaultService.MAINVAULT);
+		_mockFileIO.Setup(x => x.Exists(oldFile)).Returns(true);
+		_mockFileIO.Setup(x => x.Exists(newFile)).Returns(false);
+		_sessionContext.Vaults.GetOrAddAtomic(oldFile, _ => new PlayerCollection("Gear", oldFile));
+		// The Main Vault is always listed, so an empty unsaved one may be cached.
+		_sessionContext.Vaults.GetOrAddAtomic(newFile, _ => new PlayerCollection(VaultService.MAINVAULT, newFile));
+
+		var renamed = _vaultService.RenameVault("Gear", VaultService.MAINVAULT);
+
+		renamed.Should().BeTrue();
+		_mockFileIO.Verify(x => x.Move(oldFile, newFile), Times.Once);
+		_sessionContext.Vaults.ContainsKey(oldFile).Should().BeFalse();
+		_sessionContext.Vaults.ContainsKey(newFile).Should().BeFalse();
+	}
+
+	[Theory]
+	[InlineData(false, false)]
+	[InlineData(true, true)]
+	public void RenameVault_WhenSourceMissingOrTargetExists_KeepsFileAndCache(bool sourceExists, bool targetExists)
+	{
+		var (oldFile, newFile) = SetupVaultFiles("Gear", "Rings");
+		_mockFileIO.Setup(x => x.Exists(oldFile)).Returns(sourceExists);
+		_mockFileIO.Setup(x => x.Exists(newFile)).Returns(targetExists);
+		_sessionContext.Vaults.GetOrAddAtomic(oldFile, _ => new PlayerCollection("Gear", oldFile));
+
+		var renamed = _vaultService.RenameVault("Gear", "Rings");
+
+		renamed.Should().BeFalse();
+		_mockFileIO.Verify(x => x.Move(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+		_sessionContext.Vaults.ContainsKey(oldFile).Should().BeTrue();
 	}
 }

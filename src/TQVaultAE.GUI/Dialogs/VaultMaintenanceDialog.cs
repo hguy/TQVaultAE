@@ -13,6 +13,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Text;
 using System.Windows.Forms;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using TQVaultAE.GUI.Components.Scaling;
@@ -42,13 +44,19 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	private string? target;
 
+	/// <summary>
+	/// Validates the maintenance requests.
+	/// </summary>
+	private readonly IVaultService vaultService;
+
 
 	/// <summary>
 	/// Initializes a new instance of the VaultMaintenanceDialog class.
 	/// </summary>
-	public VaultMaintenanceDialog(MainForm instance) : base(instance.Services)
+	public VaultMaintenanceDialog(MainForm instance, IVaultService vaultService) : base(instance.Services)
 	{
 		this.Owner = instance;
+		this.vaultService = vaultService;
 
 		this.InitializeComponent();
 
@@ -91,37 +99,6 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 		this.invalidChars = this.PathIO.GetInvalidFileNameChars();
 
 		this.GetVaultList();
-	}
-
-	/// <summary>
-	/// Enumeration of the different maintenance functions
-	/// </summary>
-	public enum VaultMaintenance
-	{
-		/// <summary>
-		/// Nothing selected
-		/// </summary>
-		None = 0,
-
-		/// <summary>
-		/// Create a new vault
-		/// </summary>
-		New,
-
-		/// <summary>
-		/// Copy a vault
-		/// </summary>
-		Copy,
-
-		/// <summary>
-		/// Delete a vault
-		/// </summary>
-		Delete,
-
-		/// <summary>
-		/// Rename a vault
-		/// </summary>
-		Rename
 	}
 
 	/// <summary>
@@ -239,32 +216,6 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 	}
 
 	/// <summary>
-	/// Gets whether a vault file exists in the drop down list
-	/// </summary>
-	/// <param name="vault">Name of the vault</param>
-	/// <returns>true if the vault is in the drop down list</returns>
-	private bool IsInList(string? vault)
-	{
-		if (vault == null)
-		{
-			return false;
-		}
-
-		bool found = false;
-
-		foreach (string vaultName in this.vaultListComboBox.Items)
-		{
-			if (vault.Equals(vaultName, StringComparison.OrdinalIgnoreCase))
-			{
-				found = true;
-				break;
-			}
-		}
-
-		return found;
-	}
-
-	/// <summary>
 	/// Handler for clicking the OK button
 	/// Processes the user selection.
 	/// </summary>
@@ -272,126 +223,52 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 	/// <param name="e">EventArgs data</param>
 	private void OkayButtonClick(object? sender, EventArgs e)
 	{
-		if (this.action == VaultMaintenance.New)
+		if (this.action == VaultMaintenance.None)
 		{
-			// validate the text.
-			string target = this.targetTextBox.Text.Trim();
-
-			if (string.IsNullOrEmpty(target))
-			{
-				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadName, Resources.MaintenanceInvalidName);
-			}
-			else if (target.IndexOfAny(this.invalidChars) != -1)
-			{
-				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadChars, Resources.MaintenanceInvalidName);
-			}
-			else
-			{
-				if (this.IsInList(target))
-				{
-					this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
-					this.targetTextBox.SelectAll();
-					this.targetTextBox.Focus();
-				}
-				else
-				{
-					this.target = target;
-					this.DialogResult = DialogResult.OK;
-					Close();
-				}
-			}
+			return;
 		}
-		else if (this.action == VaultMaintenance.Copy)
+
+		bool needsSource = this.action != VaultMaintenance.New;
+		bool needsTarget = this.action != VaultMaintenance.Delete;
+
+		if (needsSource && this.vaultListComboBox.SelectedItem == null)
 		{
-			if (this.vaultListComboBox.SelectedItem == null)
-			{
-				return;
-			}
-
-			// validate the text.
-			string target = this.targetTextBox.Text.Trim();
-			string? source = this.vaultListComboBox.SelectedItemText();
-
-			if (string.IsNullOrEmpty(target))
-			{
-				this.Services.MessageBoxes.Inform(Resources.MaintenanceNoCopyTarget, Resources.MaintenanceInvalidName);
-			}
-			else if (source == null || !this.IsInList(source))
-			{
-				this.Services.MessageBoxes.Inform(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName);
-			}
-			else
-			{
-				if (this.IsInList(target))
-				{
-					this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
-					this.targetTextBox.SelectAll();
-					this.targetTextBox.Focus();
-				}
-				else
-				{
-					this.target = target;
-					this.source = source;
-					this.DialogResult = DialogResult.OK;
-					Close();
-				}
-			}
+			return;
 		}
-		else if (this.action == VaultMaintenance.Delete)
+
+		string? target = needsTarget ? this.targetTextBox.Text.Trim() : null;
+		string? source = needsSource ? this.vaultListComboBox.SelectedItemText() : null;
+
+		var existingVaults = this.vaultListComboBox.Items.Cast<object>().Select(item => item.ToString() ?? string.Empty);
+		var error = this.vaultService.ValidateMaintenance(this.action, source, target, existingVaults);
+
+		switch (error)
 		{
-			if (this.vaultListComboBox.SelectedItem == null)
-			{
-				return;
-			}
-
-			string? source = this.vaultListComboBox.SelectedItemText();
-
-			if (!this.IsInList(source))
-			{
-				this.Services.MessageBoxes.Inform(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName);
-			}
-			else
-			{
+			case VaultMaintenanceError.None:
+				this.target = target;
 				this.source = source;
 				this.DialogResult = DialogResult.OK;
 				Close();
-			}
-		}
-		else if (this.action == VaultMaintenance.Rename)
-		{
-			if (this.vaultListComboBox.SelectedItem == null)
-			{
-				return;
-			}
+				break;
 
-			// validate the text.
-			string target = this.targetTextBox.Text.Trim();
-			string? source = this.vaultListComboBox.SelectedItemText();
+			case VaultMaintenanceError.EmptyName:
+				string emptyMessage = this.action == VaultMaintenance.Copy ? Resources.MaintenanceNoCopyTarget : Resources.MaintenanceBadName;
+				this.Services.MessageBoxes.Inform(emptyMessage, Resources.MaintenanceInvalidName);
+				break;
 
-			if (string.IsNullOrEmpty(target))
-			{
-				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadName, Resources.MaintenanceInvalidName);
-			}
-			else if (source == null || !this.IsInList(source))
-			{
+			case VaultMaintenanceError.InvalidCharacters:
+				this.Services.MessageBoxes.Inform(Resources.MaintenanceBadChars, Resources.MaintenanceInvalidName);
+				break;
+
+			case VaultMaintenanceError.SourceMissing:
 				this.Services.MessageBoxes.Inform(Resources.MaintenanceSourceNoExist, Resources.MaintenanceInvalidSourceName);
-			}
-			else
-			{
-				if (this.IsInList(target))
-				{
-					this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
-					this.targetTextBox.SelectAll();
-					this.targetTextBox.Focus();
-				}
-				else
-				{
-					this.target = target;
-					this.source = source;
-					this.DialogResult = DialogResult.OK;
-					Close();
-				}
-			}
+				break;
+
+			case VaultMaintenanceError.DuplicateName:
+				this.Services.MessageBoxes.Inform(string.Format(CultureInfo.CurrentCulture, Resources.MaintenanceExists, target), Resources.MaintenanceDuplicate);
+				this.targetTextBox.SelectAll();
+				this.targetTextBox.Focus();
+				break;
 		}
 	}
 
