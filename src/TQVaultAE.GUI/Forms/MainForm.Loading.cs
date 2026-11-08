@@ -28,12 +28,12 @@ public partial class MainForm
 	/// </summary>
 	/// <returns>Total number of files that LoadAllFiles() will load.</returns>
 	private int LoadAllFilesTotal()
-	{
-		int numIT = GamePathResolver.GetCharacterList().Length;
-		numIT = numIT * 2;// Assuming that there is 1 stash file per character
-		int numVaults = GamePathResolver.GetVaultList().Length;
-		return Math.Max(0, numIT + numVaults - 1);
-	}
+		=> LoadAllFilesCount(GamePathResolver.GetCharacterList().Length, GamePathResolver.GetVaultList().Length);
+
+	/// <summary>
+	/// Number of progress steps of <see cref="LoadAllFiles"/>: one per character, one per character stash, one per vault.
+	/// </summary>
+	private static int LoadAllFilesCount(int characters, int vaults) => (characters * 2) + vaults;
 
 	/// <summary>
 	/// Loads all of the players, stashes, and vaults.
@@ -60,7 +60,7 @@ public partial class MainForm
 		var charactersIT = this.comboBoxCharacter.Items.OfType<PlayerSave>().ToArray();
 
 		// Since this takes a while, show a progress dialog box.
-		int total = charactersIT.Length + vaults.Length - 1;
+		int total = LoadAllFilesCount(charactersIT.Length, vaults.Length);
 
 		if (total > 0)
 		{
