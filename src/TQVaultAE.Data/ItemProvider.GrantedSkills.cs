@@ -40,8 +40,7 @@ public partial class ItemProvider
 			if (this.DisplayedSkillRecord(skillId) is not { } shown)
 				continue;
 
-			if (!TranslationService.TryTranslateXTag(shown.GetString("skillDisplayName", 0), out var name))
-				name = PathIO.GetFileNameWithoutExtension(skillId.Raw);
+			var name = this.SkillDisplayName(shown, skillId);
 
 			// Plain text for lists: some translations carry formatting tags, e.g. "{^I}".
 			name = name.RemoveAllTQTags().Trim();
@@ -107,8 +106,7 @@ public partial class ItemProvider
 		if (string.IsNullOrEmpty(nameTag))
 			return null;
 
-		if (!TranslationService.TryTranslateXTag(nameTag, out var name))
-			name = PathIO.GetFileNameWithoutExtension(skillId.Raw);
+		var name = this.SkillDisplayName(shown, skillId);
 
 		string icon = shown.GetString("skillUpBitmapName", 0);
 		if (string.IsNullOrEmpty(icon))
@@ -151,6 +149,15 @@ public partial class ItemProvider
 		);
 	}
 
+	/// <summary>
+	/// The name of a skill (<c>skillDisplayName</c>): its translation (or the text itself when the record writes plain
+	/// text, like "Storm Orb"), else the record file name.
+	/// </summary>
+	private string SkillDisplayName(DBRecordCollection skill, RecordId skillId)
+		=> TranslationService.TryTranslateXTag(skill.GetString("skillDisplayName", 0), out var name)
+			? name
+			: PathIO.GetFileNameWithoutExtension(skillId.Raw);
+
 	/// <summary>The translated description of a skill record (<c>skillBaseDescription</c>), word wrapped.</summary>
 	private string[] GetSkillDescription(DBRecordCollection skill)
 	{
@@ -171,8 +178,10 @@ public partial class ItemProvider
 		if (RecordId.IsNullOrEmpty(castId) || Database.GetRecordFromFile(castId) is not { } castRecord)
 			return [];
 
-		if (!TranslationService.TryTranslateXTag(castRecord.GetString("skillDisplayName", 0), out var castName))
-			castName = PathIO.GetFileNameWithoutExtension(castId.Raw);
+		// A helper skill without a name (e.g. the shield of "Arcane Healing"): its effects only, after "n% Chance of:".
+		string? castName = string.IsNullOrWhiteSpace(castRecord.GetString("skillDisplayName", 0))
+			? null
+			: this.SkillDisplayName(castRecord, castId);
 
 		float chance = ValueAtLevel(skillRecord["skillCastChance"], level);
 		int castLevel = Math.Max((int)ValueAtLevel(skillRecord["skillCastLevel"], level), 1);
@@ -182,7 +191,12 @@ public partial class ItemProvider
 		if (attributes.Count != 0)
 			attributes.Add(string.Empty);
 
-		if (chance > 0 && TranslationService.TryTranslateXTag("ChanceOfTag", out var chanceFormat))
+		if (castName is null)
+		{
+			if (chance > 0 && TranslationService.TryTranslateXTag("GlobalPercentChanceOfAllTag", out var chanceOfAll))
+				attributes.Add($"{text}{Format(ItemAttributeProvider.ConvertFormat(chanceOfAll), chance)}");
+		}
+		else if (chance > 0 && TranslationService.TryTranslateXTag("ChanceOfTag", out var chanceFormat))
 			attributes.Add($"{text}{Format(ItemAttributeProvider.ConvertFormat(chanceFormat), chance)}{name}{castName}");
 		else
 			attributes.Add($"{name}{castName}");
