@@ -53,6 +53,7 @@ public sealed class GuiServices
 		, IForgeService forgeService
 		, IItemEditService itemEditService
 		, IItemStackingService itemStackingService
+		, ISearchCategoryService searchCategoryService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -86,6 +87,7 @@ public sealed class GuiServices
 		this.ForgeService = forgeService;
 		this.ItemEditService = itemEditService;
 		this.ItemStackingService = itemStackingService;
+		this.SearchCategoryService = searchCategoryService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -134,6 +136,9 @@ public sealed class GuiServices
 
 	/// <summary>Stacking of potions, scrolls, relics and charms dropped on each other.</summary>
 	public IItemStackingService ItemStackingService { get; }
+
+	/// <summary>Value lists of the advanced search categories.</summary>
+	public ISearchCategoryService SearchCategoryService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();

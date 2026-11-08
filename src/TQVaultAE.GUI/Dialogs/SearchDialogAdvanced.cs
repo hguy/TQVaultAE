@@ -259,23 +259,7 @@ public partial class SearchDialogAdvanced : VaultForm
 
 	/// <summary>Steps run on the UI thread after the item data is built, each one a progress bar step.</summary>
 	private Action[] UiBuildSteps => [
-		this.PopulateCharacters,
-		this.PopulateItemType,
-		this.PopulateRarity,
-		this.PopulateStyle,
-		this.PopulateQuality,
-		this.PopulateVaults,
-		this.PopulateWithCharm,
-		this.PopulateWithRelic,
-		this.PopulateOrigin,
-		this.PopulateSetItems,
-		this.PopulateSkills,
-		this.PopulateItemAttributes,
-		this.PopulateBaseAttributes,
-		this.PopulatePrefixName,
-		this.PopulatePrefixAttributes,
-		this.PopulateSuffixName,
-		this.PopulateSuffixAttributes,
+		.. this.CategoryLists.Select(c => (Action)(() => this.PopulateCategory(c.Category, c.List))),
 		this.AdjustCheckBoxesWidth,
 		this.AdjustCheckBoxesHeight,
 		() => { this.SetSearchBoxVisibility(true); this.SyncNaveButton(); },
@@ -352,7 +336,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		{
 			// Created on the UI thread, so the progress bar is updated there.
 			var progress = new Progress<int>(this.vaultProgressBar.Increment);
-			await Task.Run(() => this.InitItemDatabase(progress));
+			await Task.Run(() => this.ItemDatabaseService.PrepareForSearch(progress));
 		}
 		catch (Exception ex)
 		{
@@ -368,7 +352,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.SearchEngineReady();
 	}
 
-	/// <summary>True while <see cref="InitItemDatabase"/> runs.</summary>
+	/// <summary>True while <see cref="IItemDatabaseService.PrepareForSearch"/> runs.</summary>
 	private bool _buildingSearchData;
 
 	/// <summary>Empties the categories and the current selection, which refer to the previous items.</summary>
@@ -411,33 +395,6 @@ public partial class SearchDialogAdvanced : VaultForm
 		// No need to rebuild it here - just lazy-load the friendly names
 	}
 
-	/// <summary>
-	/// Load item data & display progress. Runs off the UI thread, so it must not change UI controls.
-	/// </summary>
-	/// <param name="progress">Receives the number of items loaded since the last report.</param>
-	private void InitItemDatabase(IProgress<int> progress)
-	{
-		// Parallel lazy loading for much faster database initialization
-		var items = this.ItemDatabaseService.ItemDatabase.ToList();
-		var processedCount = 0;
-
-		// Report in batches: one UI message per item floods the message loop on large vaults.
-		int batch = Math.Max(1, items.Count / 200);
-		Parallel.ForEach(items, item =>
-		{
-			item.LazyLoad();
-			if (Interlocked.Increment(ref processedCount) % batch == 0)
-				progress.Report(batch);
-		});
-		if (processedCount % batch != 0)
-			progress.Report(processedCount % batch);
-
-		// Cleanup zombies - ConcurrentBag doesn't support RemoveAll, so we filter and rebuild
-		var validItems = items.Where(id => !string.IsNullOrWhiteSpace(id.ItemName)).ToList();
-
-		this.ItemDatabaseService.ResetAllItemDatabase(validItems);
-	}
-
 	#endregion
 
 	private void SearchEngineReady()
@@ -449,6 +406,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		this.flowLayoutPanelMain.SuspendLayout();
 		try
 		{
+			this._categoryItems = this.ItemDatabaseService.ItemDatabase.ToArray();
 			foreach (var step in this.UiBuildSteps)
 			{
 				step();
@@ -459,6 +417,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		}
 		finally
 		{
+			this._categoryItems = [];
 			this.flowLayoutPanelMain.ResumeLayout(true);
 			stepTimes.Add(stepWatch.ElapsedMilliseconds);
 		}
