@@ -52,6 +52,7 @@ public sealed class GuiServices
 		, IPlayerService playerService
 		, IForgeService forgeService
 		, IItemEditService itemEditService
+		, IItemStackingService itemStackingService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -84,6 +85,7 @@ public sealed class GuiServices
 		this.PlayerService = playerService;
 		this.ForgeService = forgeService;
 		this.ItemEditService = itemEditService;
+		this.ItemStackingService = itemStackingService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -129,6 +131,9 @@ public sealed class GuiServices
 
 	/// <summary>Item edits of the sack context menu: affixes, bonuses, relics, seed, copies.</summary>
 	public IItemEditService ItemEditService { get; }
+
+	/// <summary>Stacking of potions, scrolls, relics and charms dropped on each other.</summary>
+	public IItemStackingService ItemStackingService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();
