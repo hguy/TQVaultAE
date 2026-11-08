@@ -636,21 +636,9 @@ public partial class SackPanel
 				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
 				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
 
-				if (table != null && table.Length > 0)
-				{
-					int i = table.Length;
-					foreach (var e1 in table)
-					{
-						i--;
-						if (randPercent <= e1.Value.WeightPercent || i == 0)
-						{
-							focusedItem.RelicBonusId = e1.Key;
-							break;
-						}
-						else
-							randPercent -= e1.Value.WeightPercent;
-					}
-				}
+				RecordId? bonusId = table?.PickWeighted(randPercent);
+				if (bonusId is not null)
+					focusedItem.RelicBonusId = bonusId;
 
 				ItemProvider.GetDBData(focusedItem);
 
@@ -673,22 +661,12 @@ public partial class SackPanel
 				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
 				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(artifact);
 
-				if (table != null && table.Length > 0)
+				RecordId? bonusId = table?.PickWeighted(randPercent);
+				if (bonusId is not null)
 				{
-					int i = table.Length;
-					foreach (var e1 in table)
-					{
-						i--;
-						if (randPercent <= e1.Value.WeightPercent || i == 0)
-						{
-							artifact.RelicBonusId = e1.Key;
-							artifact.RelicBonusInfo = Database.GetInfo(e1.Key);
-							artifact.IsModified = true;
-							break;
-						}
-						else
-							randPercent -= e1.Value.WeightPercent;
-					}
+					artifact.RelicBonusId = bonusId;
+					artifact.RelicBonusInfo = Database.GetInfo(bonusId);
+					artifact.IsModified = true;
 				}
 
 				// Put artifact in DragInfo

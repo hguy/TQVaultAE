@@ -62,6 +62,30 @@ public class LootTableCollection : IEnumerable<KeyValuePair<RecordId, LootTableV
 	/// </summary>
 	public int Length => this.Data.Count;
 
+	/// <summary>
+	/// Picks an entry of the table by weight.
+	/// </summary>
+	/// <remarks>
+	/// The entries are walked in table order and the roll is reduced by each weight until it falls within one.
+	/// The last entry wins when the roll exceeds the sum of the weights.
+	/// </remarks>
+	/// <param name="roll">Roll between 0 and 1, compared to <see cref="LootTableValue.WeightPercent"/>.</param>
+	/// <returns>The key of the picked entry, or <see langword="null"/> when the table is empty.</returns>
+	public RecordId? PickWeighted(float roll)
+	{
+		int remaining = this.Data.Count;
+		foreach (var entry in this.Data)
+		{
+			remaining--;
+			if (roll <= entry.Value.WeightPercent || remaining == 0)
+				return entry.Key;
+
+			roll -= entry.Value.WeightPercent;
+		}
+
+		return null;
+	}
+
 
 	/// <summary>
 	/// Generic Iterator Block which returns the individual table values with the weighting as percent of total weight.
