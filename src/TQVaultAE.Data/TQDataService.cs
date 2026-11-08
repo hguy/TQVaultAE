@@ -16,7 +16,7 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// TQData is used to store information about reading and writing the data files in TQ.
 /// </summary>
-public class TQDataService : ITQDataService
+public class TQDataService(ILogger<TQDataService> log) : ITQDataService
 {
 	public const int BEGIN_BLOCK_VALUE = -1340212530;
 	public const int END_BLOCK_VALUE = -559038242;
@@ -24,7 +24,7 @@ public class TQDataService : ITQDataService
 	public int BeginBlockValue => BEGIN_BLOCK_VALUE;
 	public int EndBlockValue => END_BLOCK_VALUE;
 
-	private readonly ILogger Log;
+	private readonly ILogger Log = log;
 
 	/// <summary>
 	/// Gets the CP1252 (Windows-1252) encoding used for TQ file parsing.
@@ -35,11 +35,6 @@ public class TQDataService : ITQDataService
 	/// Gets the Unicode UTF-16 encoding.
 	/// </summary>
 	public static Encoding EncodingUnicode => Encoding.Unicode;
-
-	public TQDataService(ILogger<TQDataService> log)
-	{
-		this.Log = log;
-	}
 
 	/// <summary>
 	/// Validates that the next string is a certain value and throws an exception if it is not.

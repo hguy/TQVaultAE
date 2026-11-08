@@ -18,14 +18,14 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Loads, decodes, encodes and saves a Titan Quest player file.
 /// </summary>
-public class PlayerCollectionProvider : IPlayerCollectionProvider
+public class PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO) : IPlayerCollectionProvider
 {
-	private readonly ILogger Log;
-	private readonly IItemProvider ItemProvider;
-	private readonly ISackCollectionProvider SackCollectionProvider;
-	private readonly ITQDataService TQData;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
+	private readonly ILogger Log = log;
+	private readonly IItemProvider ItemProvider = itemProvider;
+	private readonly ISackCollectionProvider SackCollectionProvider = sackCollectionProvider;
+	private readonly ITQDataService TQData = tQData;
+	private readonly IFileIO FileIO = fileIO;
+	private readonly IPathIO PathIO = pathIO;
 
 	/// <summary>
 	/// array holding the byte pattern for the beginning of a block in the player file.
@@ -36,16 +36,6 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// array holding the byte pattern for the end of a block in the player file.
 	/// </summary>
 	public byte[] endBlockPattern = { 0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
-
-	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
-	{
-		this.Log = log;
-		this.ItemProvider = itemProvider;
-		this.SackCollectionProvider = sackCollectionProvider;
-		this.TQData = tQData;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-	}
 
 	public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
 	{

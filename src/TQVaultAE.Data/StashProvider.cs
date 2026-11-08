@@ -15,7 +15,7 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Class for handling the stash file
 /// </summary>
-public class StashProvider : IStashProvider
+public class StashProvider(ILogger<StashProvider> log, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO) : IStashProvider
 {
 	
 	/// <summary>
@@ -73,20 +73,11 @@ public class StashProvider : IStashProvider
 		0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d,
 	};
 		
-	private readonly ILogger Log;
-	private readonly ISackCollectionProvider SackCollectionProvider;
-	private readonly ITQDataService TQData;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
-
-	public StashProvider(ILogger<StashProvider> log, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO)
-	{
-		this.Log = log;
-		this.SackCollectionProvider = sackCollectionProvider;
-		this.TQData = tQData;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-	}
+	private readonly ILogger Log = log;
+	private readonly ISackCollectionProvider SackCollectionProvider = sackCollectionProvider;
+	private readonly ITQDataService TQData = tQData;
+	private readonly IFileIO FileIO = fileIO;
+	private readonly IPathIO PathIO = pathIO;
 
 	/// <summary>
 	/// Saves the stash file

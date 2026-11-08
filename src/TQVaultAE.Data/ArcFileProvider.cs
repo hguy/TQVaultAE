@@ -7,20 +7,12 @@ using TQVaultAE.GameFiles;
 
 namespace TQVaultAE.Data;
 
-public class ArcFileProvider : IArcFileProvider
+public class ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings) : IArcFileProvider
 {
-	private readonly ILogger Log;
-	private readonly IPathIO PathIO;
-	private readonly IDirectoryIO DirectoryIO;
-	private readonly UserSettings USettings;
-
-	public ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
-	{
-		this.Log = log;
-		this.PathIO = pathIO;
-		this.DirectoryIO = directoryIO;
-		this.USettings = uSettings;
-	}
+	private readonly ILogger Log = log;
+	private readonly IPathIO PathIO = pathIO;
+	private readonly IDirectoryIO DirectoryIO = directoryIO;
+	private readonly UserSettings USettings = uSettings;
 
 	#region ArcFile Public Methods
 
