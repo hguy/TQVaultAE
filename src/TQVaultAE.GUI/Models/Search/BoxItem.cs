@@ -1,43 +1,34 @@
-using System.Text.Json.Serialization;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.GUI.Components.Layout;
 using TQVaultAE.GUI.Components.Scaling;
-using TQVaultAE.GUI.Components;
 
 namespace TQVaultAE.GUI.Models.Search;
 
+/// <summary>
+/// A filter shown in the search dialog: a category value in its list, or the search term (no list).
+/// </summary>
+/// <remarks>
+/// Not saved: a saved query keeps its <see cref="SearchFilter"/> (<see cref="ToFilter"/>).
+/// </remarks>
 public class BoxItem
 {
-	VirtualCheckedListBox? _CheckedList;
-	[JsonIgnore]
-	public VirtualCheckedListBox? CheckedList
-	{
-		get => _CheckedList;
-		set
-		{
-			CheckedListName = value?.Name ?? string.Empty;
-			_CheckedList = value;
-		}
-	}
+	/// <summary>List showing the value; <see langword="null"/> for the search term.</summary>
+	public VirtualCheckedListBox? CheckedList { get; set; }
 
-	ScalingLabel? _Category;
-	[JsonIgnore]
-	public ScalingLabel? Category
-	{
-		get => _Category; 
-		set
-		{
-			CategoryName = value?.Name ?? string.Empty;
-			_Category = value;
-		}
-	}
+	/// <summary>Label of the category.</summary>
+	public ScalingLabel? Category { get; set; }
 
-	[JsonIgnore]
 	public IEnumerable<SearchResult> MatchingResults { get; set; } = [];
 
-	public string CheckedListName { get; set; } = string.Empty;
-	public string CategoryName { get; set; } = string.Empty;
+	public string CheckedListName => this.CheckedList?.Name ?? string.Empty;
+	public string CategoryName => this.Category?.Name ?? string.Empty;
 	public string DisplayValue { get; set; } = string.Empty;
+
+	/// <summary>The filter as saved in a search query.</summary>
+	public SearchFilter ToFilter()
+		=> new(this.CheckedListName, this.CategoryName, this.DisplayValue);
+
 	public override string ToString()
 		=> this.DisplayValue;
 }

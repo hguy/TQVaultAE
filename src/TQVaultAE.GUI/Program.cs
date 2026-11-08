@@ -26,7 +26,6 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.GUI.Infrastructure.Filters;
-using TQVaultAE.GUI.Models.Search;
 
 namespace TQVaultAE.GUI;
 
@@ -91,7 +90,6 @@ public static class Program
 				.AddSingleton(typeof(ILogger<>), typeof(Logger<>))
 				// Config
 				.AddSingleton<UserSettings>(sp => UserSettings.Read())
-				.AddSingleton<SearchQueries>()
 				.AddSingleton(new JsonSerializerOptions { IncludeFields = true, PropertyNameCaseInsensitive = true, WriteIndented = true })
 				// States
 				.AddSingleton<SessionContext>()
@@ -151,6 +149,7 @@ public static class Program
 		.AddSingleton<IItemStackingService, ItemStackingService>()
 		.AddTransient<ISaveOrchestrator, SaveOrchestrator>()
 		.AddSingleton<ISearchCategoryService, SearchCategoryService>()
+		.AddSingleton<ISearchQueryService, SearchQueryService>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()

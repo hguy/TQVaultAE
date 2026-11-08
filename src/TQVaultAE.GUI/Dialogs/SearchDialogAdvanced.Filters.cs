@@ -387,13 +387,15 @@ public partial class SearchDialogAdvanced
 			this.Invoke(ApplyCategoriesReducer);
 	}
 
-	private void Make_SelectedFilters(SearchQuery searchQuery)
+	/// <param name="searchQuery">The saved query.</param>
+	/// <param name="filters">Its live filters (<see cref="LoadPersonnalQueries"/>).</param>
+	private void Make_SelectedFilters(SearchQuery searchQuery, IReadOnlyList<BoxItem> filters)
 	{
 		// Make _SelectedFilters from saved query
 		this.SelectedFilters.Clear();
 		this.SelectedFiltersSet.Clear();
 
-		this.SelectedFilters.AddRange(searchQuery.CheckedItems);
+		this.SelectedFilters.AddRange(filters);
 
 		// Populate HashSet for O(1) lookups
 		foreach (var filter in this.SelectedFilters)
@@ -402,7 +404,7 @@ public partial class SearchDialogAdvanced
 		ResetCheckBoxesToFirstLoad();
 
 		// Restore SearchTerm ?
-		var term = searchQuery.CheckedItems.FirstOrDefault(i => i.CheckedList is null);
+		var term = filters.FirstOrDefault(i => i.CheckedList is null);
 
 		/// Avoid trigger of <see cref="scalingTextBoxSearchTerm_TextChanged"/>
 		if (term is null)

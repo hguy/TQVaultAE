@@ -54,6 +54,7 @@ public sealed class GuiServices
 		, IItemEditService itemEditService
 		, IItemStackingService itemStackingService
 		, ISearchCategoryService searchCategoryService
+		, ISearchQueryService searchQueryService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -88,6 +89,7 @@ public sealed class GuiServices
 		this.ItemEditService = itemEditService;
 		this.ItemStackingService = itemStackingService;
 		this.SearchCategoryService = searchCategoryService;
+		this.SearchQueryService = searchQueryService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -139,6 +141,9 @@ public sealed class GuiServices
 
 	/// <summary>Value lists of the advanced search categories.</summary>
 	public ISearchCategoryService SearchCategoryService { get; }
+
+	/// <summary>Search queries saved by the user.</summary>
+	public ISearchQueryService SearchQueryService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();
