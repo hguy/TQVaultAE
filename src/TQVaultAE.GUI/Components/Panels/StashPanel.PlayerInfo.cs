@@ -37,7 +37,7 @@ public partial class StashPanel
 
 	private void DisplayPlayerInfo()
 	{
-		if (this.Player == null || !this.equipmentPanel.Visible || this.BagButtons[this.CurrentBag].ButtonText != Resources.StashPanelBtnEquipment)
+		if (this.Player is null || !this.equipmentPanel.Visible || this.BagButtons[this.CurrentBag].ButtonText != Resources.StashPanelBtnEquipment)
 		{
 			this.PlayerPanel.Visible = false;
 			return;
@@ -53,7 +53,7 @@ public partial class StashPanel
 		this.PlayerPanel.Visible = false;
 		this.PlayerPanel.Controls.Clear();
 
-		if (this.Player?.PlayerInfo != null)
+		if (this.Player?.PlayerInfo is not null)
 		{
 			DisplayPlayerInfoLastName = this.Player.PlayerName;
 			var pi = PlayerInfoText.BuildLines(this.Player.PlayerInfo, this.TranslationService);

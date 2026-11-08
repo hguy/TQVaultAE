@@ -65,7 +65,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		if (label != null && label.Contains('{'))
+		if (label is not null && label.Contains('{'))
 		{
 			// the label has formatting codes.  Use it to format the amount
 			formatSpec = label;
@@ -76,7 +76,7 @@ public partial class ItemProvider
 		// Added by VillageIdiot
 		// Adjust for itemScalePercent
 		// AMS: Added If the value is reliant on the duration.
-		if ((minDurVar != null) && IsDurationReliantValue(data.Effect))
+		if ((minDurVar is not null) && IsDurationReliantValue(data.Effect))
 		{
 			min[Math.Min(min.NumberOfValues - 1, varNum)] = (float)min[Math.Min(min.NumberOfValues - 1, varNum)] * (float)minDurVar[minDurVar.NumberOfValues - 1] * itm.itemScalePercent;
 			max[Math.Min(max.NumberOfValues - 1, varNum)] = (float)max[Math.Min(max.NumberOfValues - 1, varNum)] * (float)minDurVar[minDurVar.NumberOfValues - 1] * itm.itemScalePercent;
@@ -137,7 +137,7 @@ public partial class ItemProvider
 			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
 		}
 
-		if (label != null && label.Contains('{'))
+		if (label is not null && label.Contains('{'))
 		{
 			// the label has formatting codes.  Use it to format the amount
 			formatSpec = label;
@@ -147,19 +147,19 @@ public partial class ItemProvider
 
 		Variable? currentVariable = null;
 
-		if (minVar != null)
+		if (minVar is not null)
 			currentVariable = minVar.Clone();
-		else if (maxVar != null)
+		else if (maxVar is not null)
 			currentVariable = maxVar.Clone();
 
-		if (currentVariable != null)
+		if (currentVariable is not null)
 		{
 			// Adjust for itemScalePercent
 			// only for floats
 			var curvar = currentVariable[Math.Min(currentVariable.NumberOfValues - 1, varNum)];
 			if (currentVariable.DataType == VariableDataType.Float)
 			{
-				if ((minDurVar != null) && IsDurationReliantValue(data.Effect))
+				if ((minDurVar is not null) && IsDurationReliantValue(data.Effect))
 				{
 					curvar = (float)curvar * (float)minDurVar[minDurVar.NumberOfValues - 1] * itm.itemScalePercent;
 				}
@@ -250,7 +250,7 @@ public partial class ItemProvider
 
 		Variable? durationVariable = minDurVar ?? maxDurVar;
 
-		if (durationVariable != null)
+		if (durationVariable is not null)
 		{
 			duration = this.Format(formatSpec, durationVariable[Math.Min(durationVariable.NumberOfValues - 1, varNum)]);
 			duration = $"{color?.ColorTag()}{duration}";
@@ -314,7 +314,7 @@ public partial class ItemProvider
 			Log.LogDebug("Item.formatspec (chance) = {FormatSpec}", formatSpec);
 
 		formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
-		if (chanceVar != null)
+		if (chanceVar is not null)
 		{
 			chance = this.Format(formatSpec, chanceVar[Math.Min(chanceVar.NumberOfValues - 1, varNum)]);
 			chance = $"{color?.ColorTag()}{chance}";

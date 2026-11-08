@@ -268,7 +268,7 @@ public partial class ItemProvider
 	/// <param name="statLevel">optional level if there can be multiple values</param>
 	public void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection? record, int statLevel = 0)
 	{
-		if (record == null || statBonuses == null)
+		if (record is null || statBonuses is null)
 			return;
 
 		// Some entries can have multiple values, but the value needs to be adjusted for 0 based lookups.
@@ -321,7 +321,7 @@ public partial class ItemProvider
 		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({Requirements}, {Record})", requirements, record);
 
-		if (record == null)
+		if (record is null)
 		{
 			if (USettings.ItemDebugLevel > 0)
 				Log.LogDebug("Error - record was null.");
@@ -399,22 +399,22 @@ public partial class ItemProvider
 			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({Requirements}, {ItemInfo})", requirements, itemInfo);
 
 		DBRecordCollection? record = Database.GetRecordFromFile(itemInfo.ItemId);
-		if (record == null)
+		if (record is null)
 			return;
 
 		string itemLevelTag = "itemLevel";
 		Variable? lvl = record[itemLevelTag];
-		if (lvl == null)
+		if (lvl is null)
 			return;
 
 		string itemLevel = lvl.ToStringValue();
 		string itemCostName = itemInfo.GetString("itemCostName");
 
 		record = Database.GetRecordFromFile(itemCostName);
-		if (record == null)
+		if (record is null)
 		{
 			record = Database.GetRecordFromFile("records/game/itemcost.dbr");
-			if (record == null)
+			if (record is null)
 				return;
 		}
 

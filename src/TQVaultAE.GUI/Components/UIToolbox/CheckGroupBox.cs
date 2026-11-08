@@ -64,7 +64,7 @@ public partial class CheckGroupBox : GroupBox
     {
         get
         {
-            if (this.Site != null && this.Site.DesignMode == true)
+            if (this.Site is not null && this.Site.DesignMode == true)
             {
                 // Design-time mode
                 return this.m_checkBox.Text;
@@ -171,7 +171,7 @@ public partial class CheckGroupBox : GroupBox
             }
         }
 
-        if (CheckedChanged != null)
+        if (CheckedChanged is not null)
         {
             CheckedChanged(sender, e);
         }
@@ -216,7 +216,7 @@ public partial class CheckGroupBox : GroupBox
 
     private void checkBox_CheckStateChanged(object? sender, EventArgs e)
     {
-        if (CheckStateChanged != null)
+        if (CheckStateChanged is not null)
         {
             CheckStateChanged(sender, e);
         }

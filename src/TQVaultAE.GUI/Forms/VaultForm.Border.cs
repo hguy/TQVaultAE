@@ -78,10 +78,10 @@ public partial class VaultForm
 
 		set
 		{
-			if (this.systemMenu != null)
+			if (this.systemMenu is not null)
 				this.systemMenu.MaximizeEnabled = value;
 
-			if (this.buttonMaximize != null)
+			if (this.buttonMaximize is not null)
 			{
 				this.buttonMaximize.Visible = value;
 				this.buttonMaximize.Enabled = value;
@@ -107,10 +107,10 @@ public partial class VaultForm
 	private void RefreshNormalizeBox()
 	{
 		var val = _NormalizeBox && (this.UIService?.Zoom ?? 1.0F) != 1.0F;
-		if (this.systemMenu != null)
+		if (this.systemMenu is not null)
 			this.systemMenu.NormalizeEnabled = val;
 
-		if (this.ButtonScaleTo1 != null)
+		if (this.ButtonScaleTo1 is not null)
 		{
 			this.ButtonScaleTo1.Visible = val;
 			this.ButtonScaleTo1.Enabled = val;
@@ -127,10 +127,10 @@ public partial class VaultForm
 
 		set
 		{
-			if (this.systemMenu != null)
+			if (this.systemMenu is not null)
 				this.systemMenu.MinimizeEnabled = value;
 
-			if (this.buttonMinimize != null)
+			if (this.buttonMinimize is not null)
 			{
 				this.buttonMinimize.Visible = value;
 				this.buttonMinimize.Enabled = value;
@@ -293,11 +293,11 @@ public partial class VaultForm
 	{
 		// Make it a couple of pixels wider than the side graphic.
 		int cornerWidth = 6;
-		if (this.sideBorder != null)
+		if (this.sideBorder is not null)
 			cornerWidth = this.sideBorder.Width + 2;
 
 		int cornerHeight = 6;
-		if (this.bottomBorder != null)
+		if (this.bottomBorder is not null)
 			cornerHeight = this.bottomBorder.Height + 2;
 
 		Size cornerSize = new Size(cornerWidth, cornerHeight);

@@ -65,12 +65,12 @@ public partial class MainForm : Form
 	private bool IsFileAlreadyOpened(string file)
 	{
 		var alreadyopend = this.tabControlFiles.TabPages.Cast<TabPage>().FirstOrDefault(p => ((string)p.Tag) == file);
-		if (alreadyopend != null)
+		if (alreadyopend is not null)
 		{
 			SetStatusMessage($@"""{alreadyopend.Text}"" file is already opened !");
 		}
 		;
-		return alreadyopend != null;
+		return alreadyopend is not null;
 	}
 
 	internal static void SetStatusMessage(string message)
@@ -116,7 +116,7 @@ public partial class MainForm : Form
 
 		// Add transfer stash
 		var ts = TQPath.SaveDirectoryTQITTransferStash;
-		if (ts != null)
+		if (ts is not null)
 		{
 			var itm = new ToolStripMenuItem("TQIT : Transfer Stash") { Tag = ts, };
 			itm.Click += new System.EventHandler(this.toolStripMenuItem_DetectedPlayers_Click);

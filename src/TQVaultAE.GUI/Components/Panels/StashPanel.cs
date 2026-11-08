@@ -325,7 +325,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	{
 		get
 		{
-			if (this.CurrentBag == 0 && this.equipmentPanel != null)
+			if (this.CurrentBag == 0 && this.equipmentPanel is not null)
 				return this.equipmentPanel;
 
 			return this.BagSackPanel;
@@ -400,7 +400,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 				if (this.currentBag == BagIdConstants.BAGID_EQUIPMENTPANEL)
 				{
 					// Equipment Panel
-					if (this.Player == null) 
+					if (this.Player is null) 
 						this.equipmentPanel.Sack = null;
 					else
 						this.equipmentPanel.Sack = this.Player.EquipmentSack;
@@ -526,13 +526,13 @@ public partial class StashPanel : VaultPanel, IScalingControl
 			++buttonOffset;
 		}
 
-		if ((this.relicVaultStash == null) || (this.relicVaultStash.NumberOfSacks < 1))
+		if ((this.relicVaultStash is null) || (this.relicVaultStash.NumberOfSacks < 1))
 			this.BagButtons[3].Visible = false;
 
-		if ((this.stash == null) || (this.stash.NumberOfSacks < 1))
+		if ((this.stash is null) || (this.stash.NumberOfSacks < 1))
 			this.BagButtons[2].Visible = false;
 
-		if ((this.transferStash == null) || (this.transferStash.NumberOfSacks < 1))
+		if ((this.transferStash is null) || (this.transferStash.NumberOfSacks < 1))
 			this.BagButtons[1].Visible = false;
 
 		#endregion
@@ -583,7 +583,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// <returns>Rectangle containg the size and position of the child vault panel.</returns>
 	private Rectangle GetBackgroundRect()
 	{
-		if (this.BagButtons == null || this.BagButtons.Count == 0)
+		if (this.BagButtons is null || this.BagButtons.Count == 0)
 			return Rectangle.Empty;
 
 		return new Rectangle(

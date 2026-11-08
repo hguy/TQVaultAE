@@ -144,7 +144,7 @@ public partial class ResultsDialog : VaultForm
 	/// <returns>String containing the tool tip for the Result.</returns>
 	private void GetToolTip(SearchResult selectedResult)
 	{
-		if (selectedResult == null || selectedResult.FriendlyNames == null)
+		if (selectedResult is null || selectedResult.FriendlyNames is null)
 			ItemTooltip.HideTooltip();
 		else
 			ItemTooltip.ShowTooltip(this.Services, selectedResult.FriendlyNames.Item, this);
@@ -155,7 +155,7 @@ public partial class ResultsDialog : VaultForm
 	/// </summary>
 	private void PopulateDataGridView()
 	{
-		if (this.resultsList == null || this.resultsList.Count < 1)
+		if (this.resultsList is null || this.resultsList.Count < 1)
 			return;
 
 		// Update the dialog text.
@@ -225,7 +225,7 @@ public partial class ResultsDialog : VaultForm
 			return;
 
 		var currentRow = this.resultsDataGridView.Rows[e.RowIndex];
-		if (currentRow.Tag == null)
+		if (currentRow.Tag is null)
 			return;
 
 		this.selectedResult = this.resultsList[(int)currentRow.Tag];
@@ -244,12 +244,12 @@ public partial class ResultsDialog : VaultForm
 			return;
 
 		var currentRow = this.resultsDataGridView.Rows[e.RowIndex];
-		if (currentRow.Tag == null)
+		if (currentRow.Tag is null)
 			return;
 
 		this.selectedResult = this.resultsList[(int)currentRow.Tag];
 
-		if (this.selectedResult.FriendlyNames != null && this.ResultChanged != null)
+		if (this.selectedResult.FriendlyNames is not null && this.ResultChanged is not null)
 			this.ResultChanged(this, new ResultChangedEventArgs(this.selectedResult));
 	}
 
@@ -285,7 +285,7 @@ public partial class ResultsDialog : VaultForm
 			return;
 
 		var currentRow = this.resultsDataGridView.Rows[e.RowIndex];
-		if (currentRow.Tag == null)
+		if (currentRow.Tag is null)
 			return;
 
 		this.selectedResult = this.resultsList[(int)currentRow.Tag];

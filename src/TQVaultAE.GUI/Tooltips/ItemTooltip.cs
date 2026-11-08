@@ -389,7 +389,7 @@ public partial class ItemTooltip : BaseTooltip
 		this.FillToolTip();
 
 		// Move it to view area from Mainform
-		if (this.SackPanel != null)
+		if (this.SackPanel is not null)
 		{
 			var loc = this.SackPanel.PointToScreen(Point.Empty);
 			var x = loc.X + ((this.FocusedItem.PositionX + this.FocusedItem.Size.Width) * usize);
@@ -441,7 +441,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 
 		// Move it to view area from Search form
-		if (this.ResultsDialog != null)
+		if (this.ResultsDialog is not null)
 		{
 			var loc = this.ResultsDialog.PointToScreen(Point.Empty);
 			var x = loc.X + this.ResultsDialog.Width;
@@ -451,7 +451,7 @@ public partial class ItemTooltip : BaseTooltip
 		}
 
 		// Move it to view area from PictureBox (Forge)
-		if (this.PictureBox != null)
+		if (this.PictureBox is not null)
 		{
 			var loc = this.PictureBox.PointToScreen(Point.Empty);
 			var x = loc.X + this.PictureBox.Width;

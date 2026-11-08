@@ -141,7 +141,7 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 	{
 		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
-		if (this.selectFunctionGroupBox != null && this.selectFunctionGroupBox.Font != null)
+		if (this.selectFunctionGroupBox is not null && this.selectFunctionGroupBox.Font is not null)
 		{
 			this.selectFunctionGroupBox.Font = ZoomScope.ScaleFont(this.selectFunctionGroupBox.Font, factor.Height);
 		}
@@ -213,7 +213,7 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 		bool needsSource = this.action != VaultMaintenance.New;
 		bool needsTarget = this.action != VaultMaintenance.Delete;
 
-		if (needsSource && this.vaultListComboBox.SelectedItem == null)
+		if (needsSource && this.vaultListComboBox.SelectedItem is null)
 		{
 			return;
 		}

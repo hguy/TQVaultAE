@@ -49,7 +49,7 @@ public partial class MainForm
 			Margin = new Padding(3, 0, 0, 0)
 		};
 
-		if (up != null)
+		if (up is not null)
 		{
 			vaultExportButton.UpBitmap = up;
 			vaultExportButton.OverBitmap = over ?? up;
@@ -98,7 +98,7 @@ public partial class MainForm
 	private void ExportVaultToFileClicked(object? sender, EventArgs e)
 	{
 		var vault = this.vaultPanel.Player;
-		if (vault == null)
+		if (vault is null)
 		{
 			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
 			return;
@@ -129,7 +129,7 @@ public partial class MainForm
 	private void ExportVaultToClipboardClicked(object? sender, EventArgs e)
 	{
 		var vault = this.vaultPanel.Player;
-		if (vault == null)
+		if (vault is null)
 		{
 			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
 			return;
@@ -151,7 +151,7 @@ public partial class MainForm
 	private async void ExportVaultToPasteBinClicked(object? sender, EventArgs e)
 	{
 		var vault = this.vaultPanel.Player;
-		if (vault == null)
+		if (vault is null)
 		{
 			this.UIService.ShowWarning(Resources.GlobalNoVaultLoaded);
 			return;
@@ -219,7 +219,7 @@ public partial class MainForm
 
 	private void HandleNonVaultImport(ImportResult importResult)
 	{
-		if (this.vaultPanel.Player == null)
+		if (this.vaultPanel.Player is null)
 		{
 			this.UIService.ShowError(Resources.GlobalNoVaultImportTarget);
 			return;
@@ -227,7 +227,7 @@ public partial class MainForm
 
 		var sackPanel = this.vaultPanel.SackPanel;
 		var sack = sackPanel.Sack;
-		if (sack == null)
+		if (sack is null)
 		{
 			this.UIService.ShowError(Resources.GlobalNoActiveTabImport);
 			return;
@@ -235,7 +235,7 @@ public partial class MainForm
 
 		var imported = this.itemExchangeService.PlaceImportedItems(sack, importResult, sackPanel.SackSize.Width, sackPanel.SackSize.Height);
 
-		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo != null)
+		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo is not null)
 		{
 			var button = this.vaultPanel.BagButtons[this.vaultPanel.CurrentBag];
 			button.ApplyIconInfo(sack);
@@ -252,7 +252,7 @@ public partial class MainForm
 			return;
 #endif
 		var targetVault = this.vaultPanel.Player;
-		if (targetVault == null)
+		if (targetVault is null)
 		{
 			this.UIService.ShowError(Resources.GlobalNoVaultImportTarget);
 			return;
@@ -300,14 +300,14 @@ public partial class MainForm
 		this.itemExchangeService.ImportVaultInto(targetVault, importResult);
 		this.vaultPanel.Refresh();
 
-		if (importResult.SackIconInfo != null)
+		if (importResult.SackIconInfo is not null)
 		{
 			for (int i = 0; i < targetVault.NumberOfSacks && i < this.vaultPanel.BagButtons.Count; i++)
 			{
 				if (importResult.SackIconInfo.ContainsKey(i))
 				{
 					var sack = targetVault.GetSack(i);
-					if (sack != null)
+					if (sack is not null)
 						this.vaultPanel.BagButtons[i].ApplyIconInfo(sack);
 				}
 			}

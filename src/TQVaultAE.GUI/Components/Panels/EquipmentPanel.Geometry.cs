@@ -25,7 +25,7 @@ public partial class EquipmentPanel
 	/// <returns>Item at that cell location</returns>
 	protected override Item? FindItem(Point cellLocation)
 	{
-		if (this.Sack == null)
+		if (this.Sack is null)
 			return null;
 
 		// Find the item for this point
@@ -136,7 +136,7 @@ public partial class EquipmentPanel
 	/// <returns>Rectangle containing the screen coordinates occupied by the item.</returns>
 	protected override Rectangle GetItemScreenRectangle(Item? item)
 	{
-		if (item == null)
+		if (item is null)
 			return Rectangle.Empty;
 
 		return this.FindSlotRect(item.Location.X, item.Location.Y);

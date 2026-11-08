@@ -28,7 +28,7 @@ public partial class SackPanel
 	/// <param name="suppressMessage">Determines whether we will show a delete confirmation message.</param>
 	private void DeleteItem(Item focusedItem, bool suppressMessage)
 	{
-		if (focusedItem != null)
+		if (focusedItem is not null)
 		{
 			if (suppressMessage || USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.SackPanelDeleteMsg, Resources.SackPanelDelete, MessageBoxIcon.Warning))
 			{
@@ -55,10 +55,10 @@ public partial class SackPanel
 		this.MouseMoveCallback(sender, e); // process the mouse moving to this location...just in case
 
 		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
-		if (focusedItem != null)
+		if (focusedItem is not null)
 		{
 			// Allocate the List if not already done.
-			if (this.selectedItems == null)
+			if (this.selectedItems is null)
 				this.selectedItems = new List<Item>();
 
 			if (!this.IsItemSelected(focusedItem))
@@ -88,12 +88,12 @@ public partial class SackPanel
 			return;
 
 		// Allocate the List if not already done.
-		if (this.selectedItems == null)
+		if (this.selectedItems is null)
 			this.selectedItems = new List<Item>();
 
 		Collection<Item> itemsUnderDraw = FindAllItems(FindAllCells(GetMouseDragRectangle()));
 
-		if (itemsUnderDraw != null)
+		if (itemsUnderDraw is not null)
 		{
 			foreach (Item item in itemsUnderDraw)
 			{
@@ -155,7 +155,7 @@ public partial class SackPanel
 				, destIndex);
 			this.RaiseAutoMove(this.ShownSack, plan);
 
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 				this.ClearSelectedItems();
 
 			ItemTooltip.HideTooltip();
@@ -185,10 +185,10 @@ public partial class SackPanel
 	{
 		try
 		{
-			if (this.ExchangeService == null)
+			if (this.ExchangeService is null)
 				return;
 
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 			{
 				var json = this.ExchangeService.SerializeItems(this.selectedItems);
 				Clipboard.SetText(json);
@@ -196,7 +196,7 @@ public partial class SackPanel
 			}
 
 			Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-			if (focusedItem == null)
+			if (focusedItem is null)
 				return;
 
 			var jsonItem = this.ExchangeService.SerializeItem(focusedItem);
@@ -212,10 +212,10 @@ public partial class SackPanel
 	{
 		try
 		{
-			if (this.ExchangeService == null)
+			if (this.ExchangeService is null)
 				return;
 
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 			{
 				var json = this.ExchangeService.SerializeItems(this.selectedItems);
 				using var dialog = new SaveFileDialog
@@ -232,7 +232,7 @@ public partial class SackPanel
 			}
 
 			Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-			if (focusedItem == null)
+			if (focusedItem is null)
 				return;
 
 			var jsonItem = this.ExchangeService.SerializeItem(focusedItem);
@@ -256,10 +256,10 @@ public partial class SackPanel
 	{
 		try
 		{
-			if (this.ExchangeService == null)
+			if (this.ExchangeService is null)
 				return;
 
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 			{
 				var json = this.ExchangeService.SerializeItems(this.selectedItems);
 				var url = await this.ExchangeService.ExportToPasteBinAsync(json, "Multi-item export");
@@ -269,7 +269,7 @@ public partial class SackPanel
 			}
 
 			Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-			if (focusedItem == null)
+			if (focusedItem is null)
 				return;
 
 			var urlItem = await this.ExchangeService.ExportItemToPasteBinAsync(focusedItem);
@@ -292,10 +292,10 @@ public partial class SackPanel
 	private void NewSetItemClicked(object? sender, EventArgs e)
 	{
 		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-		if (focusedItem != null)
+		if (focusedItem is not null)
 		{
 			ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
-			if (item != null)
+			if (item is not null)
 			{
 				// Create the item
 				var newId = item.Name.ToRecordId();
@@ -404,10 +404,10 @@ public partial class SackPanel
 	private void ChangeBonusItemClicked(object? sender, EventArgs e)
 	{
 		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-		if (focusedItem != null)
+		if (focusedItem is not null)
 		{
 			ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
-			if (item != null
+			if (item is not null
 				&& this.Services.ItemEditService.ChangeCompletionBonus(this.ShownSack, focusedItem, item.Name.ToRecordId()))
 			{
 				this.InvalidateItemCacheAll(focusedItem);
@@ -423,12 +423,12 @@ public partial class SackPanel
 	private void ContextMenuItemClicked(object? sender, ToolStripItemClickedEventArgs e)
 	{
 		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-		if (focusedItem != null || this.selectedItems != null)
+		if (focusedItem is not null || this.selectedItems is not null)
 		{
 			var action = e.ClickedItem?.Tag as ItemActions? ?? ItemActions.None;
 			if (action == ItemActions.Delete)
 			{
-				if (this.selectedItems != null)
+				if (this.selectedItems is not null)
 				{
 					if (USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.SackPanelDeleteMultiMsg, Resources.SackPanelDeleteMulti, MessageBoxIcon.Warning))
 					{

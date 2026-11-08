@@ -34,7 +34,7 @@ public partial class SackPanel
 	{
 		Item? item = this.FindItem(location);
 
-		if (item != null)
+		if (item is not null)
 		{
 			this.SelectItem(item);
 			this.Invalidate();
@@ -46,7 +46,7 @@ public partial class SackPanel
 	/// </summary>
 	public void ClearSelectedItems()
 	{
-		if (this.selectedItems != null)
+		if (this.selectedItems is not null)
 		{
 			this.ClearSelection();
 			this.Invalidate();
@@ -58,9 +58,9 @@ public partial class SackPanel
 	/// </summary>
 	public void SelectAllItems()
 	{
-		if (this.Sack != null && !this.Sack.IsEmpty)
+		if (this.Sack is not null && !this.Sack.IsEmpty)
 		{
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 				this.ClearSelection();
 
 			foreach (Item item in this.Sack)
@@ -75,9 +75,9 @@ public partial class SackPanel
 	/// </summary>
 	public void SelectAllHighlightedItems()
 	{
-		if (this.Sack != null && !this.Sack.IsEmpty)
+		if (this.Sack is not null && !this.Sack.IsEmpty)
 		{
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 				this.ClearSelection();
 
 			foreach (Item item in this.HighlightService.HighlightedItems)
@@ -112,11 +112,11 @@ public partial class SackPanel
 		if (this.DragInfo.IsActive)
 			return;
 
-		if (this.Sack == null || this.Sack.IsEmpty)
+		if (this.Sack is null || this.Sack.IsEmpty)
 			return;
 
 		// Make sure there we have items selected
-		if (this.selectedItems == null)
+		if (this.selectedItems is null)
 			return;
 
 		// Nothing moves when an item is in the way or would leave the sack.
@@ -135,7 +135,7 @@ public partial class SackPanel
 	protected bool IsItemSelected(Item item)
 	{
 		// Make sure we have something to check
-		if (this.selectedItems == null || this.selectedItems.Count == 0)
+		if (this.selectedItems is null || this.selectedItems.Count == 0)
 			return false;
 
 		// Iterate through the list of selected items
@@ -155,11 +155,11 @@ public partial class SackPanel
 	/// <param name="item">Item we are adding to the selection list.</param>
 	protected void SelectItem(Item item)
 	{
-		if (item == null)
+		if (item is null)
 			return;
 
 		// Allocate the List if needed.
-		if (this.selectedItems == null)
+		if (this.selectedItems is null)
 			this.selectedItems = new List<Item>();
 
 		// Check to see if the item is already selected
@@ -182,7 +182,7 @@ public partial class SackPanel
 	/// <param name="item">Item that we are removing</param>
 	protected void RemoveSelectedItem(Item item)
 	{
-		if (item == null || this.selectedItems == null)
+		if (item is null || this.selectedItems is null)
 			return;
 
 		if (this.IsItemSelected(item))
@@ -219,7 +219,7 @@ public partial class SackPanel
 	/// </summary>
 	protected void ClearSelection()
 	{
-		if (this.selectedItems != null)
+		if (this.selectedItems is not null)
 			this.selectedItems = null;
 	}
 }

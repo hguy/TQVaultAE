@@ -51,7 +51,7 @@ public class ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDire
 
 			string dataID = string.Concat(this.PathIO.GetFileNameWithoutExtension(file.FileName), "\\", record.Raw);
 			byte[]? data = this.GetData(file, dataID);
-			if (data == null)
+			if (data is null)
 				return;
 
 			string destination = baseFolder;

@@ -58,7 +58,7 @@ public partial class ItemProvider
 		string? skillName = null;
 		DBRecordCollection? skillRecord = Database.GetRecordFromFile(augmentMasteryValue);
 
-		if (skillRecord != null)
+		if (skillRecord is not null)
 		{
 			string nameTag = skillRecord.GetString("skillDisplayName", 0);
 
@@ -76,7 +76,7 @@ public partial class ItemProvider
 		if (!TranslationService.TryTranslateXTag("ItemMasteryIncrement", out var formatSpec))
 		{
 			formatSpec = "?+{0} to skills in {1}?";
-			if (font == null)
+			if (font is null)
 				font = ItemStyle.Legendary.TQColor();
 		}
 		else
@@ -113,7 +113,7 @@ public partial class ItemProvider
 			string? skillName = null;
 			string? nameTag = null;
 			DBRecordCollection? skillRecord = Database.GetRecordFromFile(skillRecordID);
-			if (skillRecord != null)
+			if (skillRecord is not null)
 			{
 				// Changed by VillageIdiot
 				// for augmenting buff skills
@@ -133,7 +133,7 @@ public partial class ItemProvider
 						{
 							string petSkillID = skillRecord.GetString("petSkillName", 0);
 							DBRecordCollection? petSkillRecord = Database.GetRecordFromFile(petSkillID);
-							if (petSkillRecord != null)
+							if (petSkillRecord is not null)
 							{
 								// Try to get display name
 								string petNameTag = petSkillRecord.GetString("skillDisplayName", 0);
@@ -163,7 +163,7 @@ public partial class ItemProvider
 				{
 					// This is a buff skill
 					DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
-					if (buffSkillRecord != null)
+					if (buffSkillRecord is not null)
 					{
 						nameTag = buffSkillRecord.GetString("skillDisplayName", 0);
 						if (!string.IsNullOrEmpty(nameTag))
@@ -211,7 +211,7 @@ public partial class ItemProvider
 		// Special case for granted skills
 		var grantedSkillId = variable.GetString(0);
 		DBRecordCollection? skillRecord = Database.GetRecordFromFile(grantedSkillId);
-		if (skillRecord != null)
+		if (skillRecord is not null)
 		{
 			// Add a blank line and then the Grants Skill text
 			results.Add(string.Empty);
@@ -243,7 +243,7 @@ public partial class ItemProvider
 			{
 				// This is a buff skill
 				DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
-				if (buffSkillRecord != null)
+				if (buffSkillRecord is not null)
 				{
 					nameTag = buffSkillRecord.GetString("skillDisplayName", 0);
 					if (!string.IsNullOrEmpty(nameTag))
@@ -281,7 +281,7 @@ public partial class ItemProvider
 		if (!string.IsNullOrEmpty(autoController))
 		{
 			DBRecordCollection? autoControllerRecord = Database.GetRecordFromFile(autoController);
-			if (autoControllerRecord != null)
+			if (autoControllerRecord is not null)
 				triggerType = autoControllerRecord.GetString("triggerType", 0);
 		}
 
@@ -446,7 +446,7 @@ public partial class ItemProvider
 				lineLength = 30;
 
 			// Show the description text first
-			if (skillRecord != null)
+			if (skillRecord is not null)
 			{
 				string buffSkillName = skillRecord.GetString("buffSkillName", 0);
 				var buffSkillNameId = buffSkillName.ToRecordId();
@@ -499,7 +499,7 @@ public partial class ItemProvider
 					{
 						// itm skill is a buff
 						DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillNameId);
-						if (buffSkillRecord != null)
+						if (buffSkillRecord is not null)
 						{
 							descriptionTag = buffSkillRecord.GetString("skillBaseDescription", 0);
 							if (!string.IsNullOrEmpty(descriptionTag))
@@ -541,12 +541,12 @@ public partial class ItemProvider
 
 				// Added by VillageIdiot
 				// Adjust for the flavor text of scrolls
-				if (skillRecord != null && !itm.IsScroll && !itm.IsPotion)
+				if (skillRecord is not null && !itm.IsScroll && !itm.IsPotion)
 					results.Add(string.Empty);
 
 				// Added by VillageIdiot
 				// Add the skill effects
-				if (skillRecord != null)
+				if (skillRecord is not null)
 				{
 					// itm is a summon
 					if (skillRecord.GetString("Class", 0).Equals("SKILL_SPAWNPET", noCase))

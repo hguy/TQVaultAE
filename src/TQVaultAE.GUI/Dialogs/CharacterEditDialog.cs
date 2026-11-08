@@ -92,7 +92,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 	private void UpdatePlayerInfo(bool mustResetAttributes = false, bool masteriesResetRequired = false)
 	{
 		if (!USettings.AllowCharacterEdit) return;
-		if (PlayerCollection.PlayerInfo == null) return;
+		if (PlayerCollection.PlayerInfo is null) return;
 		try
 		{
 			var request = new CharacterEditRequest(
@@ -291,9 +291,9 @@ internal sealed partial class CharacterEditDialog : VaultForm
 	private void StatsUpDown_ValueChanged(object? sender, EventArgs e)
 	{
 		if (!_loaded) return;
-		if (sender == null) return;
+		if (sender is null) return;
 		var upDwnCtrl = (NumericUpDown)sender!;
-		if (upDwnCtrl.Tag == null) return;
+		if (upDwnCtrl.Tag is null) return;
 
 		var prevValue = this._previousValues[upDwnCtrl];
 		var value = Convert.ToInt32(upDwnCtrl.Value);
@@ -318,7 +318,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 
 	private void LevelingCheckBox_CheckedChanged(object? sender, EventArgs e)
 	{
-		if (sender == null) return;
+		if (sender is null) return;
 
 		var chkbx = (CheckBox)sender!;
 		if (chkbx.Checked)

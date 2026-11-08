@@ -215,7 +215,7 @@ public class BagButtonBase : Panel
 		{
 			// yep.
 			var temp = this.getToolTip;
-			if (temp != null)
+			if (temp is not null)
 				temp(this);
 		}
 	}
@@ -237,7 +237,7 @@ public class BagButtonBase : Panel
 	{
 		BagButtonLabelTooltip.ShowTooltip(this.Services, this);
 
-		if (this.getToolTip != null)
+		if (this.getToolTip is not null)
 		{
 			// Disable Tooltip bag
 			var panel = this.getToolTip.Target as Panel;
@@ -345,7 +345,7 @@ public class BagButtonBase : Panel
 			{
 				Font? font = this.GetScaledButtonTextFont(e.Graphics, FontService.GetFontLight(20.0F * UIService.Scale, GraphicsUnit.Pixel));
 
-				if (font != null)
+				if (font is not null)
 				{
 					// If we are mousing over then display the bolded font.
 					if (this.IsOver)
@@ -383,7 +383,7 @@ public class BagButtonBase : Panel
 	private Font? GetScaledButtonTextFont(Graphics graphics, Font font)
 	{
 		// Make sure we have something to test.
-		if (graphics == null || font == null)
+		if (graphics is null || font is null)
 		{
 			return null;
 		}

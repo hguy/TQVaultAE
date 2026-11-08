@@ -67,7 +67,7 @@ public partial class VaultPanel
 	{
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 
-		if (item != null)
+		if (item is not null)
 		{
 			if (item.Text == Resources.PlayerPanelMenuEnableAllTooltip)
 			{
@@ -141,7 +141,7 @@ public partial class VaultPanel
 	private void ExportTabToClipboardClicked(object? sender, EventArgs e)
 	{
 		var exchangeService = this.ExchangeService;
-		if (exchangeService != null && this.BagSackPanel?.Sack != null)
+		if (exchangeService is not null && this.BagSackPanel?.Sack is not null)
 		{
 			var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
 			Clipboard.SetText(json);
@@ -151,7 +151,7 @@ public partial class VaultPanel
 	private void ExportTabToFileClicked(object? sender, EventArgs e)
 	{
 		var exchangeService = this.ExchangeService;
-		if (exchangeService != null && this.BagSackPanel?.Sack != null)
+		if (exchangeService is not null && this.BagSackPanel?.Sack is not null)
 		{
 			var json = exchangeService.SerializeSackCollection(this.BagSackPanel.Sack, this.CurrentBag);
 			using var dialog = new SaveFileDialog
@@ -169,7 +169,7 @@ public partial class VaultPanel
 	private async void ExportTabToPasteBinClicked(object? sender, EventArgs e)
 	{
 		var exchangeService = this.ExchangeService;
-		if (exchangeService != null && this.BagSackPanel?.Sack != null)
+		if (exchangeService is not null && this.BagSackPanel?.Sack is not null)
 		{
 			try
 			{
@@ -327,7 +327,7 @@ public partial class VaultPanel
 	private void CopyBagClicked(object? sender, EventArgs e)
 	{
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
-		if (item != null)
+		if (item is not null)
 		{
 			int destinationIndex = GetDestinationSackIndex(item);
 
@@ -369,7 +369,7 @@ public partial class VaultPanel
 	private void MoveBagClicked(object? sender, EventArgs e)
 	{
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
-		if (item != null)
+		if (item is not null)
 		{
 			int destinationIndex = GetDestinationSackIndex(item);
 			if (this.ShownPlayer.MoveSack(this.CurrentBag, destinationIndex))
@@ -398,7 +398,7 @@ public partial class VaultPanel
 	private void MergeBagClicked(object? sender, EventArgs e)
 	{
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
-		if (item != null)
+		if (item is not null)
 		{
 			int destinationIndex = GetDestinationSackIndex(item);
 

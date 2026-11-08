@@ -186,7 +186,7 @@ internal sealed partial class AboutBox : VaultForm
 	{
 		this.Font = ZoomScope.ScaleFont(this.Font, factor.Height);
 
-		if (this.logoPictureBox != null && this.logoPictureBox.Image != null)
+		if (this.logoPictureBox is not null && this.logoPictureBox.Image is not null)
 		{
 			this.logoPictureBox.Image = new Bitmap(
 				this.logoPictureBox.Image,

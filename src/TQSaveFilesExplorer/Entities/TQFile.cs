@@ -236,7 +236,7 @@ public partial class TQFile
 		if (this.IsStashFile)
 		{
 			var crc = records.FirstOrDefault();
-			if (crc != null && crc.IsUnknownSegment)// Should be true
+			if (crc is not null && crc.IsUnknownSegment)// Should be true
 			{
 				crc.DataType = TQFileDataType.Int;
 				crc.DataAsInt = BitConverter.ToInt32(crc.DataAsByteArray, 0);

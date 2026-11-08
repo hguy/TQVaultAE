@@ -104,7 +104,7 @@ public class ItemExchangeService(
 					{
 						var dto = JsonSerializer.Deserialize<ItemDto>(dataElement.GetRawText(), _jsonOptions);
 
-						if (dto == null)
+						if (dto is null)
 							return ImportResult.Failed("Failed to deserialize item data.");
 
 						var item = dto.ToItem();
@@ -116,7 +116,7 @@ public class ItemExchangeService(
 					{
 						var dto = JsonSerializer.Deserialize<TabExportDTO>(dataElement.GetRawText(), _jsonOptions);
 
-						if (dto == null)
+						if (dto is null)
 							return ImportResult.Failed("Failed to deserialize tab data.");
 
 						var items = new List<Item>();
@@ -134,7 +134,7 @@ public class ItemExchangeService(
 				{
 					var dtos = JsonSerializer.Deserialize<List<ItemDto>>(dataElement.GetRawText(), _jsonOptions);
 
-					if (dtos == null || dtos.Count == 0)
+					if (dtos is null || dtos.Count == 0)
 						return ImportResult.Failed("Failed to deserialize multi-select item data.");
 
 					var items = dtos
@@ -153,7 +153,7 @@ public class ItemExchangeService(
 					{
 						var dto = JsonSerializer.Deserialize<VaultExportDTO>(dataElement.GetRawText(), _jsonOptions);
 
-						if (dto == null)
+						if (dto is null)
 							return ImportResult.Failed("Failed to deserialize vault data.");
 
 						var sackItems = new Dictionary<int, List<Item>>();
@@ -169,7 +169,7 @@ public class ItemExchangeService(
 							}
 
 							sackItems[sackDto.SackNumber] = itemList;
-							if (sackDto.IconInfo != null)
+							if (sackDto.IconInfo is not null)
 								sackIconInfo[sackDto.SackNumber] = sackDto.IconInfo;
 						}
 
@@ -188,7 +188,7 @@ public class ItemExchangeService(
 
 	public void ImportVaultInto(PlayerCollection vault, ImportResult importData)
 	{
-		if (vault == null || importData?.SackItems == null)
+		if (vault is null || importData?.SackItems is null)
 			return;
 
 		// Clear all tabs
@@ -196,7 +196,7 @@ public class ItemExchangeService(
 		{
 			var sack = vault.GetSack(i);
 			sack?.items?.Clear();
-			if (sack != null)
+			if (sack is not null)
 				sack.IsModified = true;
 		}
 
@@ -208,7 +208,7 @@ public class ItemExchangeService(
 				continue;
 
 			var sack = vault.GetSack(sackNumber);
-			if (sack == null)
+			if (sack is null)
 				continue;
 
 			foreach (var item in kvp.Value)
@@ -217,7 +217,7 @@ public class ItemExchangeService(
 			}
 		}
 
-		if (importData.SackIconInfo != null)
+		if (importData.SackIconInfo is not null)
 		{
 			foreach (var kvp in importData.SackIconInfo)
 			{
@@ -226,7 +226,7 @@ public class ItemExchangeService(
 					continue;
 
 				var sack = vault.GetSack(sackNumber);
-				if (sack == null)
+				if (sack is null)
 					continue;
 
 				sack.BagButtonIconInfo = kvp.Value;
@@ -247,7 +247,7 @@ public class ItemExchangeService(
 
 	public async Task<string> ExportToPasteBinAsync(string json, string? pasteName = null)
 	{
-		if (_pasteBinService == null)
+		if (_pasteBinService is null)
 			throw new InvalidOperationException("PasteBin service is not configured.");
 
 		return await _pasteBinService.UploadAsync(json, pasteName);
@@ -264,7 +264,7 @@ public class ItemExchangeService(
 
 	public async Task<string> ImportFromPasteBinAsync(string pasteUrl)
 	{
-		if (_pasteBinService == null)
+		if (_pasteBinService is null)
 			throw new InvalidOperationException("PasteBin service is not configured.");
 
 		var payload = await _pasteBinService.FetchPasteAsync(pasteUrl);
@@ -329,7 +329,7 @@ public class ItemExchangeService(
 			imported++;
 		}
 
-		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo != null)
+		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo is not null)
 			sack.BagButtonIconInfo = importResult.TabIconInfo;
 
 		sack.IsModified = true;
@@ -348,7 +348,7 @@ public class ItemExchangeService(
 		{
 			for (var cy = y; cy < y + height; cy++)
 			{
-				if (this._itemMovementService.FindItem(sack, new System.Drawing.Point(cx, cy)) != null)
+				if (this._itemMovementService.FindItem(sack, new System.Drawing.Point(cx, cy)) is not null)
 					return false;
 			}
 		}
@@ -361,7 +361,7 @@ public class ItemExchangeService(
 		for (int i = 0; i < vault.NumberOfSacks; i++)
 		{
 			var sack = vault.GetSack(i);
-			if (sack != null && !sack.IsEmpty)
+			if (sack is not null && !sack.IsEmpty)
 				return false;
 		}
 

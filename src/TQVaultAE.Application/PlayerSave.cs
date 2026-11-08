@@ -46,7 +46,7 @@ public sealed class PlayerSave : IDisposable
 		return string.Join(string.Empty, new[] {
 			Info is null ? Name : $"{Name}"
 			, Info?.Class is null ? string.Empty : $", {Translate.TranslateXTag(Info.Class, true, true)}"
-			, !string.IsNullOrWhiteSpace(Info?.Class) && Info?.CurrentLevel != null ?  " -" : string.Empty
+			, !string.IsNullOrWhiteSpace(Info?.Class) && Info?.CurrentLevel is not null ?  " -" : string.Empty
 			, Info?.CurrentLevel is null ? string.Empty : $" {Translate.TranslateXTag("tagMenuImport05")} : {Info.CurrentLevel}"
 			, IsImmortalThrone ? string.Empty : " (TQ)"
 			//, IsCustom ? $", IsCustom" : string.Empty // CustomMap is not specificaly related to this character

@@ -112,7 +112,7 @@ public partial class MainForm
 			this.bufferedFlowLayoutPanelsecondaryVaultList.Visible = false;
 
 			this.stashPanel.Player = this.playerPanel.Player;
-			if (this.lastStash != null)
+			if (this.lastStash is not null)
 			{
 				this.stashPanel.Stash = this.lastStash;
 				if (this.lastBag != -1 && this.lastBag != this.stashPanel.CurrentBag)
@@ -140,7 +140,7 @@ public partial class MainForm
 		Item? item = e.Item;
 		SackCollection? sack = e.Sack;
 		var sackPanel = (SackPanel)sender!;
-		if (item == null)
+		if (item is null)
 		{
 			// Only do something if this sack is the "owner" of the current item highlighted.
 			if (sack == this.lastSackHighlighted)
@@ -321,7 +321,7 @@ public partial class MainForm
 	private bool ValidateStashAvailability()
 	{
 		// Check if we are moving to the player's stash
-		if (this.stashPanel.CurrentBag == BagIdConstants.BAGID_PLAYERSTASH && this.stashPanel.Player == null)
+		if (this.stashPanel.CurrentBag == BagIdConstants.BAGID_PLAYERSTASH && this.stashPanel.Player is null)
 		{
 			// We have nowhere to send the item so cancel the move.
 			this.DragInfo.Cancel();
@@ -333,7 +333,7 @@ public partial class MainForm
 			this.stashPanel.CurrentBag = BagIdConstants.BAGID_TRANSFERSTASH;
 
 		// Check the transfer stash
-		if (this.stashPanel.TransferStash == null && this.stashPanel.CurrentBag == BagIdConstants.BAGID_TRANSFERSTASH)
+		if (this.stashPanel.TransferStash is null && this.stashPanel.CurrentBag == BagIdConstants.BAGID_TRANSFERSTASH)
 		{
 			// We have nowhere to send the item so cancel the move.
 			this.DragInfo.Cancel();
@@ -341,7 +341,7 @@ public partial class MainForm
 		}
 
 		// Check the relic vault stash
-		if (this.stashPanel.RelicVaultStash == null && this.stashPanel.CurrentBag == BagIdConstants.BAGID_RELICVAULTSTASH)
+		if (this.stashPanel.RelicVaultStash is null && this.stashPanel.CurrentBag == BagIdConstants.BAGID_RELICVAULTSTASH)
 		{
 			// We have nowhere to send the item so cancel the move.
 			this.DragInfo.Cancel();
@@ -359,7 +359,7 @@ public partial class MainForm
 		var (destinationPanel, destinationSackPanel, destSackNumber) = this.GetAutoMoveDestination(sourcePanel);
 		var destinationSack = destinationPanel?.Player?.GetSack(destSackNumber);
 
-		if (destinationPanel?.Player == null || destinationSackPanel == null || destinationSack == null)
+		if (destinationPanel?.Player is null || destinationSackPanel is null || destinationSack is null)
 		{
 			// We have nowhere to send the item so cancel the move.
 			this.DragInfo.Cancel();
@@ -429,7 +429,7 @@ public partial class MainForm
 	/// <param name="destinationSackNumber"></param>
 	private void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, int destinationSackNumber, StashType? destinationStashType)
 	{
-		if (item == null || destinationPlayer == null)
+		if (item is null || destinationPlayer is null)
 			return;
 
 		// The container name comes from the file name (character or vault), not from PlayerName

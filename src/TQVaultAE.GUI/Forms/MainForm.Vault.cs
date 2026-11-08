@@ -83,7 +83,7 @@ public partial class MainForm
 		this.vaultListComboBox.Items.Clear();
 
 		// Maintenance entry first, then Main Vault, without the vault open in the secondary panel.
-		string? secondaryVault = this.showSecondaryVault && this.secondaryVaultListComboBox.SelectedItem != null
+		string? secondaryVault = this.showSecondaryVault && this.secondaryVaultListComboBox.SelectedItem is not null
 			? this.secondaryVaultListComboBox.SelectedItemText()
 			: null;
 		var choices = this.vaultService.BuildVaultChoices(vaults, Resources.MainFormMaintainVault, secondaryVault);
@@ -148,7 +148,7 @@ public partial class MainForm
 		PlayerCollection? vault = null;
 		if (secondaryVault && vaultName == Resources.MainFormSelectVault)
 		{
-			if (this.secondaryVaultPanel.Player != null)
+			if (this.secondaryVaultPanel.Player is not null)
 				this.secondaryVaultPanel.Player = null;
 		}
 		else
@@ -156,7 +156,7 @@ public partial class MainForm
 			// Use service
 			var result = this.vaultService.LoadVault(vaultName);
 
-			if (result.ArgumentException != null)
+			if (result.ArgumentException is not null)
 			{
 				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.Filename, result.ArgumentException.Message);
 				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
@@ -192,7 +192,7 @@ public partial class MainForm
 				bool handled = false;
 
 				// Create a new vault?
-				if (dlg.Action == VaultMaintenance.New && newName != null)
+				if (dlg.Action == VaultMaintenance.New && newName is not null)
 				{
 					// Add the name to the list
 					this.vaultListComboBox.Items.Add(newName);
@@ -204,7 +204,7 @@ public partial class MainForm
 					this.LoadVault(newName, false);
 					handled = true;
 				}
-				else if (dlg.Action == VaultMaintenance.Copy && newName != null && oldName != null)
+				else if (dlg.Action == VaultMaintenance.Copy && newName is not null && oldName is not null)
 				{
 					// Make sure we save all modifications first.
 					this.SaveAllModifiedFiles();
@@ -222,7 +222,7 @@ public partial class MainForm
 						handled = true;
 					}
 				}
-				else if (dlg.Action == VaultMaintenance.Delete && oldName != null)
+				else if (dlg.Action == VaultMaintenance.Delete && oldName is not null)
 				{
 					// Make sure we save all modifications first.
 					this.SaveAllModifiedFiles();
@@ -237,7 +237,7 @@ public partial class MainForm
 
 					handled = true;
 				}
-				else if (dlg.Action == VaultMaintenance.Rename && newName != null && oldName != null)
+				else if (dlg.Action == VaultMaintenance.Rename && newName is not null && oldName is not null)
 				{
 					// Make sure we save all modifications first.
 					this.SaveAllModifiedFiles();
@@ -264,10 +264,10 @@ public partial class MainForm
 					}
 				}
 
-				if ((newName == null && oldName == null) || !handled)
+				if ((newName is null && oldName is null) || !handled)
 				{
 					// put the vault back to what it was
-					if (this.vaultPanel.Player != null)
+					if (this.vaultPanel.Player is not null)
 					{
 						this.vaultListComboBox.SelectedItem = this.vaultPanel.Player.PlayerName;
 					}
@@ -276,7 +276,7 @@ public partial class MainForm
 			else
 			{
 				// put the vault back to what it was
-				if (this.vaultPanel.Player != null)
+				if (this.vaultPanel.Player is not null)
 				{
 					this.vaultListComboBox.SelectedItem = this.vaultPanel.Player.PlayerName;
 				}
@@ -305,7 +305,7 @@ public partial class MainForm
 			else
 			{
 				string? vaultName = this.vaultListComboBox.SelectedItemText();
-				if (this.vaultPanel.Player == null || !vaultName.Equals(this.vaultPanel.Player.PlayerName, StringComparison.Ordinal))
+				if (this.vaultPanel.Player is null || !vaultName.Equals(this.vaultPanel.Player.PlayerName, StringComparison.Ordinal))
 				{
 					this.LoadVault(vaultName, false);
 				}
@@ -322,7 +322,7 @@ public partial class MainForm
 			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 
 			// put the vault back to what it was
-			if (this.vaultPanel.Player != null)
+			if (this.vaultPanel.Player is not null)
 			{
 				this.vaultListComboBox.SelectedItem = this.vaultPanel.Player.PlayerName;
 			}
@@ -342,7 +342,7 @@ public partial class MainForm
 			if (this.secondaryVaultListComboBox.SelectedIndex == 0)
 			{
 				// Clear the vault panel.
-				if (this.secondaryVaultPanel.Player != null)
+				if (this.secondaryVaultPanel.Player is not null)
 				{
 					this.secondaryVaultPanel.Player = null;
 				}
@@ -350,7 +350,7 @@ public partial class MainForm
 			else
 			{
 				string? vaultName = this.secondaryVaultListComboBox.SelectedItemText();
-				if (this.secondaryVaultPanel.Player == null || !vaultName.Equals(this.secondaryVaultPanel.Player.PlayerName, StringComparison.Ordinal))
+				if (this.secondaryVaultPanel.Player is null || !vaultName.Equals(this.secondaryVaultPanel.Player.PlayerName, StringComparison.Ordinal))
 				{
 					this.LoadVault(vaultName, true);
 				}
@@ -362,7 +362,7 @@ public partial class MainForm
 			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 
 			// put the vault back to what it was
-			if (this.secondaryVaultPanel.Player != null)
+			if (this.secondaryVaultPanel.Player is not null)
 			{
 				this.secondaryVaultListComboBox.SelectedItem = this.secondaryVaultPanel.Player.PlayerName;
 			}

@@ -61,7 +61,7 @@ public static class EquipmentRules
 	/// <param name="slot">The slot.</param>
 	public static bool CanEquip(SackCollection sack, Item? item, int slot)
 	{
-		if (item == null || slot < 0 || slot > sack.NumberOfSlots)
+		if (item is null || slot < 0 || slot > sack.NumberOfSlots)
 			return false;
 
 		switch (slot)
@@ -129,7 +129,7 @@ public static class EquipmentRules
 	/// <returns>The slot, or -1 when the sack is not the equipment or the item is in no slot.</returns>
 	public static int FindSlot(SackCollection? sack, Item? item)
 	{
-		if (sack == null || sack.SackType != SackType.Equipment || item == null)
+		if (sack is null || sack.SackType != SackType.Equipment || item is null)
 			return -1;
 
 		Point position = item.IsInWeaponSlot
@@ -232,7 +232,7 @@ public static class EquipmentRules
 			if (slot != secondSlot)
 			{
 				// Dropped on the first slot of the pair.
-				if (itemUnderUs != null && !IsEmpty(itemUnderUs))
+				if (itemUnderUs is not null && !IsEmpty(itemUnderUs))
 				{
 					// For a two-handed weapon, the item under us is the one in the second slot.
 					itemUnderUs = PickUpCopy(sack, itemUnderUs.Is2HWeapon ? secondSlot : slot);
@@ -250,7 +250,7 @@ public static class EquipmentRules
 			{
 				// Dropped on the second slot, the first slot of the pair may hold something.
 				int firstSlot = secondSlot - 1;
-				if (itemUnderUs != null && !IsEmpty(itemUnderUs))
+				if (itemUnderUs is not null && !IsEmpty(itemUnderUs))
 				{
 					itemUnderUs = PickUpCopy(sack, slot);
 					PutEmptyItem(sack, item, slot);

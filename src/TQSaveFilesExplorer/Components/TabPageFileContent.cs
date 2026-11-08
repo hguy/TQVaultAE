@@ -119,7 +119,7 @@ private bool _DisplayDataDecimal = true;
 
 			var childs = node.Nodes.Cast<TreeNode>().ToArray();
 			var nestedErrlvl = RecurseColor(childs);
-			if (nestedErrlvl != null)
+			if (nestedErrlvl is not null)
 			{
 				if (errlvl != Color.Red) errlvl = nestedErrlvl;
 				node.ForeColor = nestedErrlvl.Value;

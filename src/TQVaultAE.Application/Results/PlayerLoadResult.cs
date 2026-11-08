@@ -39,7 +39,7 @@ public class PlayerLoadResult
 	/// Indicates whether the player was loaded successfully.
 	/// </summary>
 	[MemberNotNullWhen(true, nameof(Player))]
-	public bool IsSuccess => Player != null;
+	public bool IsSuccess => Player is not null;
 
 	/// <summary>
 	/// Any exception that occurred during loading.

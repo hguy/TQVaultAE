@@ -48,10 +48,10 @@ public partial class SackPanel
 		this.MouseMoveCallback(sender, e);
 
 		Item? focusedItem = this.FindItem(this.LastCellWithFocus);
-		if (focusedItem != null)
+		if (focusedItem is not null)
 		{
 			// We picked up an item so clear the selection
-			if (this.selectedItems != null)
+			if (this.selectedItems is not null)
 			{
 				// We might be over the only selected item so no need to redraw the whole sack.
 				if (this.selectedItems.Count != 1 || focusedItem != this.selectedItems[0])
@@ -82,7 +82,7 @@ public partial class SackPanel
 	/// <returns>Point containing the mouse offset.</returns>
 	protected virtual Point GetMouseOffset(Point location, Item item)
 	{
-		if (item == null)
+		if (item is null)
 			return Point.Empty;
 
 		Point topLeft = this.CellTopLeft(item.Location);
@@ -159,7 +159,7 @@ public partial class SackPanel
 			this.ItemsUnderDragItem.Clear();
 
 			// Now mark itemUnderUs as picked up.
-			if (itemUnderUs != null && !RecordId.IsNullOrEmpty(itemUnderUs.BaseItemId))
+			if (itemUnderUs is not null && !RecordId.IsNullOrEmpty(itemUnderUs.BaseItemId))
 			{
 				// set our mouse offset to be the center of the item.
 				Point mouseOffset = new Point(
@@ -248,7 +248,7 @@ public partial class SackPanel
 		}
 
 		// We also need to wipe out any items that were under or are now under the dragItem so they can be redrawn
-		if (this.ItemsUnderOldDragLocation != null && this.ItemsUnderOldDragLocation.Count != 0)
+		if (this.ItemsUnderOldDragLocation is not null && this.ItemsUnderOldDragLocation.Count != 0)
 		{
 			foreach (Item item in this.ItemsUnderOldDragLocation)
 			{
@@ -267,7 +267,7 @@ public partial class SackPanel
 			}
 		}
 
-		if (this.ItemsUnderDragItem != null && this.ItemsUnderDragItem.Count != 0)
+		if (this.ItemsUnderDragItem is not null && this.ItemsUnderDragItem.Count != 0)
 		{
 			foreach (Item item in this.ItemsUnderDragItem)
 			{
@@ -304,7 +304,7 @@ public partial class SackPanel
 	/// <param name="item">The item to update</param>
 	protected void UpdateItemLocation(Item item)
 	{
-		if (item == null)
+		if (item is null)
 			return;
 
 		item.Place.CopyFrom(this.PlaceHere());

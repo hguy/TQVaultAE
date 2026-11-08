@@ -69,7 +69,7 @@ public partial class ItemProvider
 		// Added by VillageIdiot
 		// Updated to accept multiple racial bonuses in record
 		string[]? races = record.GetAllStrings("racialBonusRace");
-		if (races != null)
+		if (races is not null)
 		{
 			for (int j = 0; j < races.Length; ++j)
 			{
@@ -96,7 +96,7 @@ public partial class ItemProvider
 				}
 
 
-				if (line != null)
+				if (line is not null)
 				{
 					if (d.Variable.Length > 0)
 					{
@@ -141,7 +141,7 @@ public partial class ItemProvider
 		{
 			var reagentId = variable.GetString(0);
 			DBRecordCollection? reagentRecord = Database.GetRecordFromFile(reagentId);
-			if (reagentRecord != null)
+			if (reagentRecord is not null)
 			{
 				string nameTag = reagentRecord.GetString("description", 0);
 				if (!string.IsNullOrEmpty(nameTag))
@@ -197,7 +197,7 @@ public partial class ItemProvider
 		}
 
 		label = ItemAttributeProvider.ConvertFormat(label);
-		if (label != null && label.Contains('{'))
+		if (label is not null && label.Contains('{'))
 		{
 			// we have a format string.  try using it.
 			line = Format(label, variable[Math.Min(variable.NumberOfValues - 1, variableNumber)]);

@@ -54,7 +54,7 @@ public partial class SearchDialogAdvanced
 		}
 
 		// When this method is used as a BoxItem factory, i don't want the textbox to keep the reference.
-		if (searchTerm != null)
+		if (searchTerm is not null)
 			scalingTextBoxSearchTerm.Tag = null;
 
 		return searchTermBoxItem;

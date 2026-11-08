@@ -78,7 +78,7 @@ public class ScalingButton : Button, IScalingControl
 				this.FlatAppearance.BorderSize = 0;
 				this.FlatAppearance.MouseOverBackColor = Theme.TransparentButton;
 				this.FlatAppearance.MouseDownBackColor = Theme.TransparentButton;
-				if (this.UpBitmap != null)
+				if (this.UpBitmap is not null)
 					this.Image = this.UpBitmap;
 			}
 			else
@@ -110,7 +110,7 @@ public class ScalingButton : Button, IScalingControl
 
 		set
 		{
-			if (value && this.UpBitmap != null)
+			if (value && this.UpBitmap is not null)
 				this.Size = this.UpBitmap.Size;
 
 			this.sizeToGraphic = value;
@@ -152,7 +152,7 @@ public class ScalingButton : Button, IScalingControl
 	/// <param name="pevent">PaintEventArgs data</param>
 	protected override void OnPaint(PaintEventArgs pevent)
 	{
-		if (this.UseCustomGraphic && this.Image != null && this.Size != this.Image.Size)
+		if (this.UseCustomGraphic && this.Image is not null && this.Size != this.Image.Size)
 		{
 			// The copies were made for another size: drop them (this can put the source image back).
 			if (this.scaledSize != this.Size)
@@ -251,7 +251,7 @@ public class ScalingButton : Button, IScalingControl
 		{
 			this.baseFont = null;
 			this.Font = this.GetScaledButtonTextFont(this.Font, Convert.ToInt32((float)this.Width * factor.Width));
-			if (this.Image != null)
+			if (this.Image is not null)
 				this.Image = this.UpBitmap;
 
 			base.ScaleControl(factor, specified);
@@ -259,7 +259,7 @@ public class ScalingButton : Button, IScalingControl
 		}
 
 		// Get a reference for scaling.
-		if (this.baseFont == null)
+		if (this.baseFont is null)
 			this.baseFont = this.Font;
 
 		// We changed the font so reset the base font.
@@ -270,7 +270,7 @@ public class ScalingButton : Button, IScalingControl
 		this.Font = this.GetScaledButtonTextFont(this.baseFont, Convert.ToInt32((float)this.Width * factor.Width));
 
 		// Reset the image to the original size.  Assume that we are resizing and that this button is not under the mouse.
-		if (this.Image != null)
+		if (this.Image is not null)
 			this.Image = this.UpBitmap;
 
 		base.ScaleControl(factor, specified);
@@ -285,7 +285,7 @@ public class ScalingButton : Button, IScalingControl
 	{
 		if (this.UseCustomGraphic)
 		{
-			if (this.OverBitmap != null)
+			if (this.OverBitmap is not null)
 				this.Image = this.OverBitmap;
 			else
 			{
@@ -304,7 +304,7 @@ public class ScalingButton : Button, IScalingControl
 	{
 		if (this.UseCustomGraphic)
 		{
-			if (this.OverBitmap != null)
+			if (this.OverBitmap is not null)
 				this.Image = this.OverBitmap;
 			else
 			{
@@ -345,7 +345,7 @@ public class ScalingButton : Button, IScalingControl
 	{
 		if (this.UseCustomGraphic)
 		{
-			if (this.OverBitmap != null)
+			if (this.OverBitmap is not null)
 				this.Image = this.OverBitmap;
 			else
 				this.Image = this.UpBitmap;
@@ -361,7 +361,7 @@ public class ScalingButton : Button, IScalingControl
 	{
 		if (this.UseCustomGraphic)
 		{
-			if (this.DownBitmap != null)
+			if (this.DownBitmap is not null)
 				this.Image = this.DownBitmap;
 			else
 			{
@@ -379,7 +379,7 @@ public class ScalingButton : Button, IScalingControl
 	private void TextChangedCallback(object? sender, EventArgs e)
 	{
 		// Make sure we start somewhere.
-		if (this.baseFont == null)
+		if (this.baseFont is null)
 			this.baseFont = this.Font;
 
 		// We changed the font so reset the base font.
@@ -398,7 +398,7 @@ public class ScalingButton : Button, IScalingControl
 	private Font? GetScaledButtonTextFont(Font? font, int newWidth)
 	{
 		// Make sure we have something to test.
-		if (font == null)
+		if (font is null)
 			return null;
 
 		// See if the text can fit on the button and if it does we do not need to do anything.

@@ -50,7 +50,7 @@ public class ItemDatabaseService(
     /// <inheritdoc/>
     public bool TryAddItemToDatabase(Item item)
     {
-        if (item == null)
+        if (item is null)
             return false;
 
         // Already in the database (by reference)
@@ -72,7 +72,7 @@ public class ItemDatabaseService(
     /// <inheritdoc/>
     public void AddItemToDatabase(Item item, string containerPath, string containerName, int sackNumber, SackType sackType, StashType? stashType = null)
     {
-        if (item == null)
+        if (item is null)
             return;
 
         item.Place.Path = containerPath;
@@ -87,7 +87,7 @@ public class ItemDatabaseService(
     /// <inheritdoc/>
     public void RemoveItemFromDatabase(Item item)
     {
-        if (item == null)
+        if (item is null)
             return;
 
         this._database = Database.Of(this.ItemDatabase.Where(r => r.Item != item));
@@ -106,14 +106,14 @@ public class ItemDatabaseService(
         foreach (var kvp in this._sessionContext.Vaults)
         {
             var vault = kvp.Value.Value;
-            if (vault == null)
+            if (vault is null)
                 continue;
 
             int sackNumber = -1;
             foreach (var sack in vault)
             {
                 sackNumber++;
-                if (sack == null)
+                if (sack is null)
                     continue;
 
                 foreach (var item in sack)
@@ -125,7 +125,7 @@ public class ItemDatabaseService(
         foreach (var kvp in this._sessionContext.Players)
         {
             var player = kvp.Value.Value;
-            if (player == null)
+            if (player is null)
                 continue;
 
             // Player sacks
@@ -133,7 +133,7 @@ public class ItemDatabaseService(
             foreach (var sack in player)
             {
                 sackNumber++;
-                if (sack == null)
+                if (sack is null)
                     continue;
 
                 foreach (var item in sack)
@@ -141,7 +141,7 @@ public class ItemDatabaseService(
             }
 
             // Equipment sack
-            if (player.EquipmentSack != null)
+            if (player.EquipmentSack is not null)
             {
                 foreach (var item in player.EquipmentSack)
                     this.AddItemToDatabase(item, kvp.Key, player.PlayerName, BagIdConstants.BAGID_EQUIPMENTPANEL, SackType.Equipment);
@@ -152,7 +152,7 @@ public class ItemDatabaseService(
         foreach (var kvp in this._sessionContext.Stashes)
         {
             var stash = kvp.Value.Value;
-            if (stash?.Sack == null)
+            if (stash?.Sack is null)
                 continue;
 
             int sackNumber = BagIdConstants.BAGID_PLAYERSTASH;
@@ -204,7 +204,7 @@ public class ItemDatabaseService(
             return Array.Empty<SearchResult>();
 
         var itemDatabase = this.ItemDatabase;
-        if (itemDatabase == null || itemDatabase.IsEmpty)
+        if (itemDatabase is null || itemDatabase.IsEmpty)
             return Array.Empty<SearchResult>();
 
         return this.ApplyTextSearch(itemDatabase, searchText, isRegex).ToList();
@@ -302,7 +302,7 @@ public class ItemDatabaseService(
 	/// <inheritdoc/>
 	public IReadOnlyList<SearchResult> ExecuteAdvancedSearch(AdvancedSearchRequest request)
     {
-        if (request.InitialResults == null)
+        if (request.InitialResults is null)
             return Array.Empty<SearchResult>();
 
         // Start with all initial results
@@ -322,7 +322,7 @@ public class ItemDatabaseService(
             results = results.Where(i => i.FriendlyNames?.Item?.HasCharm == true).ToList();
 
         if (request.IsSetItem)
-            results = results.Where(i => i.FriendlyNames?.ItemSet != null).ToList();
+            results = results.Where(i => i.FriendlyNames?.ItemSet is not null).ToList();
 
         if (request.HasSkill)
             results = results.Where(i => this._itemProvider.HasGrantedSkill(i.Item)).ToList();
@@ -332,7 +332,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Lvl.HasValue || req.Lvl.Value >= request.MinLevel;
             }).ToList();
 
@@ -340,7 +340,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Str.HasValue || req.Str.Value >= request.MinStrength;
             }).ToList();
 
@@ -348,7 +348,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Dex.HasValue || req.Dex.Value >= request.MinDexterity;
             }).ToList();
 
@@ -356,7 +356,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Int.HasValue || req.Int.Value >= request.MinIntelligence;
             }).ToList();
 
@@ -365,7 +365,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Lvl.HasValue || req.Lvl.Value <= request.MaxLevel;
             }).ToList();
 
@@ -373,7 +373,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Str.HasValue || req.Str.Value <= request.MaxStrength;
             }).ToList();
 
@@ -381,7 +381,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Dex.HasValue || req.Dex.Value <= request.MaxDexterity;
             }).ToList();
 
@@ -389,7 +389,7 @@ public class ItemDatabaseService(
             results = results.Where(x =>
             {
                 var req = x.FriendlyNames?.RequirementInfo;
-                if (req == null) return true;
+                if (req is null) return true;
                 return !req.Int.HasValue || req.Int.Value <= request.MaxIntelligence;
             }).ToList();
 
@@ -443,19 +443,19 @@ public class ItemDatabaseService(
             try
             {
                 var regex = new Regex(searchText, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                return results.Where(r => r.FriendlyNames != null &&
+                return results.Where(r => r.FriendlyNames is not null &&
                     regex.IsMatch(r.FriendlyNames.FullNameClean ?? string.Empty));
             }
             catch (ArgumentException)
             {
                 // Invalid regex, fall back to contains
-                return results.Where(r => r.FriendlyNames != null &&
+                return results.Where(r => r.FriendlyNames is not null &&
                     (r.FriendlyNames.FullNameClean ?? string.Empty).Contains(searchText, StringComparison.OrdinalIgnoreCase));
             }
         }
         else
         {
-            return results.Where(r => r.FriendlyNames != null &&
+            return results.Where(r => r.FriendlyNames is not null &&
                 r.FriendlyNames.FulltextIsMatchIndexOf(searchText));
         }
     }

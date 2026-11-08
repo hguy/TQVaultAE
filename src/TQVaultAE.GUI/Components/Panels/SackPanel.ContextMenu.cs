@@ -66,7 +66,7 @@ public partial class SackPanel
 	
 	private void AddExportMenuItems(Item? focusedItem, bool singleSelectionFocused)
 	{
-		if (focusedItem != null && (this.selectedItems == null || singleSelectionFocused))
+		if (focusedItem is not null && (this.selectedItems is null || singleSelectionFocused))
 		{
 			var hasApiKey = this.ExchangeService?.HasPasteBinApiKey == true;
 
@@ -104,7 +104,7 @@ public partial class SackPanel
 			this.CustomContextMenu.Items.Add(exportItemMenu);
 		}
 
-		if (this.selectedItems != null && !singleSelectionFocused)
+		if (this.selectedItems is not null && !singleSelectionFocused)
 		{
 			var exportItemMenu = new ToolStripMenuItem(Resources.SackPanelMenuExportItem)
 			{

@@ -99,7 +99,7 @@ internal sealed partial class SplashScreenForm : VaultForm
 		if (this.UseRoundedRectangle)
 		{
 			this.graphicsPath = this.CreatePath(20);
-			if (this.graphicsPath != null)
+			if (this.graphicsPath is not null)
 			{
 				this.Region = new Region(this.graphicsPath);
 			}
@@ -167,7 +167,7 @@ internal sealed partial class SplashScreenForm : VaultForm
 		base.OnPaint(e);
 
 		// Paint a black border around the form.
-		if (this.UseRoundedRectangle && this.graphicsPath != null)
+		if (this.UseRoundedRectangle && this.graphicsPath is not null)
 		{
 			using var pen = new Pen(Color.Black, borderPenWidth);
 			e.Graphics.DrawPath(pen, this.graphicsPath);

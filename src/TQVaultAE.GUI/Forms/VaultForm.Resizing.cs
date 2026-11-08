@@ -33,7 +33,7 @@ public partial class VaultForm
 
 		set
 		{
-			if (this.systemMenu != null)
+			if (this.systemMenu is not null)
 				this.systemMenu.SizeEnabled = value;
 
 			this.resizeCustomAllowed = value;

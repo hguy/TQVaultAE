@@ -20,10 +20,10 @@ public class VaultExportDTO
 		for (int i = 0; i < vault.NumberOfSacks; i++)
 		{
 			var sack = vault.GetSack(i);
-			if (sack == null)
+			if (sack is null)
 				continue;
 
-			if (sack.IsEmpty && (sack.BagButtonIconInfo == null || sack.BagButtonIconInfo.DisplayMode == BagButtonDisplayMode.Default))
+			if (sack.IsEmpty && (sack.BagButtonIconInfo is null || sack.BagButtonIconInfo.DisplayMode == BagButtonDisplayMode.Default))
 				continue;
 
 			var items = new List<ItemDto>();

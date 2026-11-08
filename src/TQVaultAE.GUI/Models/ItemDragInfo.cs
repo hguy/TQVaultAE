@@ -71,7 +71,7 @@ public class ItemDragInfo
 	/// Gets a value indicating whether an item is currently being dragged around.
 	/// </summary>
 	[MemberNotNullWhen(true, nameof(Item), nameof(srcItem))]
-	public bool IsActive => this.srcItem != null;
+	public bool IsActive => this.srcItem is not null;
 
 	/// <summary>
 	/// Gets the item being dragged around
@@ -97,7 +97,7 @@ public class ItemDragInfo
 	/// Gets a value indicating whether the item has been modified
 	/// </summary>
 	[MemberNotNullWhen(true, nameof(Original), nameof(original))]
-	public bool IsModifiedItem => this.original != null;
+	public bool IsModifiedItem => this.original is not null;
 
 	/// <summary>
 	/// Gets the original draginfo data

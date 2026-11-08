@@ -70,12 +70,12 @@ public class CommandLineArgs
 	/// <summary>
 	/// Gets a value indicating whether to bypass the starts screen.
 	/// </summary>
-	public bool IsAutomatic => this.Player != null || this.MapName != null;
+	public bool IsAutomatic => this.Player is not null || this.MapName is not null;
 
 	/// <summary>
 	/// Gets a value indicating whether a custom map has been specified.
 	/// </summary>
-	public bool HasMapName => this.MapName != null;
+	public bool HasMapName => this.MapName is not null;
 
 	/// <summary>
 	/// Throws the usage message if the command line arguments are incorrect.

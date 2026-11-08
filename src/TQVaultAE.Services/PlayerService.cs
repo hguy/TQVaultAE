@@ -84,7 +84,7 @@ public class PlayerService(
 					foreach (var sack in resultPC)
 					{
 						sackNumber++;
-						if (sack == null)
+						if (sack is null)
 							continue;
 
 						foreach (var item in sack)
@@ -92,7 +92,7 @@ public class PlayerService(
 					}
 
 					// Add equipment items
-					if (resultPC.EquipmentSack != null)
+					if (resultPC.EquipmentSack is not null)
 					{
 						foreach (var item in resultPC.EquipmentSack)
 							this.ItemDatabaseService.AddItemToDatabase(item, k, selectedSave.Name, 0, SackType.Equipment);
@@ -163,7 +163,7 @@ public class PlayerService(
 			string playerFile = kvp.Key;
 			PlayerCollection player = kvp.Value.Value;
 
-			if (player == null) continue;
+			if (player is null) continue;
 
 			if (player.IsModified)
 			{

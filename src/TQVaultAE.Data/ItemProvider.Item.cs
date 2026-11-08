@@ -16,26 +16,26 @@ public partial class ItemProvider
 	{
 		// Ordinal: the keys are attribute names, and the default culture-aware comparer was a visible cost of the search warm-up.
 		var RequirementVariables = new SortedList<string, Variable>(StringComparer.Ordinal);
-		if (itm.baseItemInfo != null)
+		if (itm.baseItemInfo is not null)
 		{
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(itm.BaseItemId));
 			GetDynamicRequirementsFromRecord(itm, RequirementVariables, itm.baseItemInfo);
 		}
 
-		if (itm.prefixInfo != null)
+		if (itm.prefixInfo is not null)
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(itm.prefixID));
 
-		if (itm.suffixInfo != null)
+		if (itm.suffixInfo is not null)
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(itm.suffixID));
 
-		if (itm.RelicInfo != null)
+		if (itm.RelicInfo is not null)
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(itm.relicID));
 
-		if (itm.Relic2Info != null)
+		if (itm.Relic2Info is not null)
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(itm.relic2ID));
 
 		// Add Artifact level requirement to formula
-		if (itm.IsFormulae && itm.baseItemInfo != null)
+		if (itm.IsFormulae && itm.baseItemInfo is not null)
 		{
 			string artifactName = itm.baseItemInfo.GetString("artifactName");
 			GetRequirementsFromRecord(RequirementVariables, Database.GetRecordFromFile(artifactName));
@@ -53,19 +53,19 @@ public partial class ItemProvider
 	{
 		var statBonuses = new SortedList<string, int>();
 
-		if (item.baseItemInfo != null)
+		if (item.baseItemInfo is not null)
 			GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(item.BaseItemId));
 
-		if (item.prefixInfo != null)
+		if (item.prefixInfo is not null)
 			GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(item.prefixID));
 
-		if (item.suffixInfo != null)
+		if (item.suffixInfo is not null)
 			GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(item.suffixID));
 
-		if (item.RelicInfo != null)
+		if (item.RelicInfo is not null)
 			GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(item.relicID), item.RelicInfo.CompletedRelicLevel);
 
-		if (item.Relic2Info != null)
+		if (item.Relic2Info is not null)
 			GetStatBonusesFromRecord(statBonuses, Database.GetRecordFromFile(item.relic2ID), item.Relic2Info.CompletedRelicLevel);
 
 		return statBonuses;
@@ -77,7 +77,7 @@ public partial class ItemProvider
 	/// <returns>Returns <see cref="SetItemInfo"/> containing the remaining set items or null if the item is not part of a set.</returns>
 	public SetItemInfo? GetSetItems(Item itm)
 	{
-		if (itm.baseItemInfo == null)
+		if (itm.baseItemInfo is null)
 			return null;
 
 		string itemSetName = itm.baseItemInfo.GetString("itemSetName");
@@ -86,11 +86,11 @@ public partial class ItemProvider
 
 		// Get the set record
 		DBRecordCollection? setRecords = Database.GetRecordFromFile(itemSetName);
-		if (setRecords == null)
+		if (setRecords is null)
 			return null;
 
 		string[]? setMembers = setRecords.GetAllStrings("setMembers");
-		if (setMembers == null || setMembers.Length == 0)
+		if (setMembers is null || setMembers.Length == 0)
 			return null;
 
 		var setName = setRecords.GetString("setName", 0);
@@ -146,11 +146,11 @@ public partial class ItemProvider
 		if (USettings.ItemDebugLevel > 1)
 			Log.LogDebug("'{FullNameBagTooltip}' baseItemInfo is {Negation} null"
 				, GetFriendlyNames(itm).FullNameBagTooltip
-				, (itm.baseItemInfo == null) ? string.Empty : "NOT"
+				, (itm.baseItemInfo is null) ? string.Empty : "NOT"
 			);
 
 		// Picture resource: its data is read when the item is first drawn (UIService.GetBitmap).
-		if (itm.baseItemInfo != null)
+		if (itm.baseItemInfo is not null)
 		{
 			itm.TexImageResourceId = itm.IsRelicOrCharm && !itm.IsRelicComplete
 				? itm.baseItemInfo.ShardBitmap
@@ -181,7 +181,7 @@ public partial class ItemProvider
 		DBRecordCollection? baseItem = Database.GetRecordFromFile(itm.baseItemInfo.ItemId);
 
 		// Check to see if it's a Buff Skill
-		if (baseItem is not null && baseItem.GetString("itemSkillAutoController", 0) != null)
+		if (baseItem is not null && baseItem.GetString("itemSkillAutoController", 0) is not null)
 		{
 			int level = baseItem.GetInt32("itemSkillLevel", 0);
 			string itemSkillName = baseItem.GetString("itemSkillName", 0);
@@ -191,7 +191,7 @@ public partial class ItemProvider
 				itemSkillName = itm.baseItemInfo.GetString("itemSkillName");
 				DBRecordCollection? skill = Database.GetRecordFromFile(itemSkillName);
 
-				if (skill != null)
+				if (skill is not null)
 				{
 					var buffSkillName = skill.GetString("buffSkillName", 0);
 
@@ -293,7 +293,7 @@ public partial class ItemProvider
 	public SetItemInfo? GetItemSetTranslations(Item itm)
 	{
 		var setMembers = this.GetSetItems(itm);
-		if (setMembers != null)
+		if (setMembers is not null)
 		{
 			var name = TranslationService.TranslateXTag(setMembers.setName);
 			setMembers.Translations.Add(setMembers.setName, $"{ItemStyle.Rare.TQColor().ColorTag()}{name}");
@@ -302,7 +302,7 @@ public partial class ItemProvider
 			{
 				name = "?? Missing database info ??";
 
-				if (memb.Value != null)
+				if (memb.Value is not null)
 					name = TranslationService.TranslateXTag(memb.Value.DescriptionTag);
 
 				setMembers.Translations.Add(memb.Key, $"{ItemStyle.Common.TQColor().ColorTag()}    {name}");

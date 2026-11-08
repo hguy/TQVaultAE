@@ -387,11 +387,11 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	public virtual void ToolTipCallback(int windowHandle)
 	{
 		// check the bag buttons
-		if (this.BagButtons != null && this.BagButtons.Count > 0)
+		if (this.BagButtons is not null && this.BagButtons.Count > 0)
 		{
 			foreach (BagButtonBase button in this.BagButtons)
 			{
-				if (button != null)
+				if (button is not null)
 				{
 					button.ToolTipCallback(windowHandle);
 				}
@@ -408,7 +408,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// </summary>
 	protected virtual void AssignSacks()
 	{
-		if ((this.Player == null) || (this.Player.NumberOfSacks < 1))
+		if ((this.Player is null) || (this.Player.NumberOfSacks < 1))
 		{
 			foreach (BagButtonBase button in this.BagButtons)
 			{
@@ -478,7 +478,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		if (this.DrawAsGroupBox)
 		{
 			this.Text = this.NoPlayerString;
-			if (this.player != null)
+			if (this.player is not null)
 			{
 				this.Text = this.player.PlayerName;
 			}
@@ -564,7 +564,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	{
 		PropertyChangedEventHandler? handler = this.PropertyChanged;
 
-		if (handler != null)
+		if (handler is not null)
 		{
 			handler(this, new PropertyChangedEventArgs(name));
 		}

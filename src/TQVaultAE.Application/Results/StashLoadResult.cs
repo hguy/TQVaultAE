@@ -19,7 +19,7 @@ public class StashLoadResult
 	/// Indicates whether the stash was loaded successfully.
 	/// </summary>
 	[MemberNotNullWhen(true, nameof(Stash), nameof(StashFile))]
-	public bool IsSuccess => Stash != null;
+	public bool IsSuccess => Stash is not null;
 
 	/// <summary>
 	/// Creates a successful result.

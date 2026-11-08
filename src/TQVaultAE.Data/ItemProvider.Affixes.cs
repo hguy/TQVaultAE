@@ -162,7 +162,7 @@ public partial class ItemProvider
 	/// <returns>returns null if the item is not an artifact/charm/relic</returns>
 	public LootTableCollection? BonusTableRelicOrArtifact(Item itm)
 	{
-		if (itm.baseItemInfo == null)
+		if (itm.baseItemInfo is null)
 			return null;
 
 		string? lootTableID = null;
@@ -259,7 +259,7 @@ public partial class ItemProvider
 	/// <returns>A new artifact</returns>
 	public Item? CraftArtifact(Item itm)
 	{
-		if (itm.IsFormulae && itm.baseItemInfo != null)
+		if (itm.IsFormulae && itm.baseItemInfo is not null)
 		{
 			string artifactname = itm.baseItemInfo.GetString("artifactName");
 			Item newArtifact = itm.MakeEmptyCopy(artifactname);

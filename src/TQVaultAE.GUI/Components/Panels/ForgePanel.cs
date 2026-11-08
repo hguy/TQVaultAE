@@ -79,7 +79,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private bool IsRelaxMode => scalingRadioButtonRelax.Checked;
 	private bool IsStrictMode => scalingRadioButtonStrict.Checked;
 	private bool IsGameMode => scalingRadioButtonGame.Checked;
-	private bool IsDraging => DragInfo != null && DragInfo.IsActive;
+	private bool IsDraging => DragInfo is not null && DragInfo.IsActive;
 
 	private ForgeMode Mode
 		=> IsGodMode ? ForgeMode.God

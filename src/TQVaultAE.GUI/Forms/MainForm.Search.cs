@@ -94,7 +94,7 @@ public partial class MainForm
 	private void SelectResult(object? sender, ResultChangedEventArgs e)
 	{
 		SearchResult selectedResult = e.Result;
-		if (selectedResult == null || selectedResult.FriendlyNames == null) return;
+		if (selectedResult is null || selectedResult.FriendlyNames is null) return;
 
 		this.ClearAllItemsSelectedCallback(this, new SackPanelEventArgs(null, null));
 
@@ -118,7 +118,7 @@ public partial class MainForm
 			this.comboBoxCharacter.SelectedIndex = this.comboBoxCharacter.FindString(selectedResult.ContainerName);
 
 			// Bail if we are attempting to highlight something in the stash panel and the stash does not exist.
-			if (this.stashPanel.SackPanel == null && selectedResult.SackType != SackType.Player)
+			if (this.stashPanel.SackPanel is null && selectedResult.SackType != SackType.Player)
 				return;
 
 			if (selectedResult.SackType == SackType.Player)

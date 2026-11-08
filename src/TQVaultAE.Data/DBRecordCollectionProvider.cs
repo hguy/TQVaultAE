@@ -22,7 +22,7 @@ public class DBRecordCollectionProvider(IDirectoryIO directoryIO, IPathIO pathIO
 		string fullPath = PathIO.Combine(baseFolder, drc.Id.Normalized);
 		string destinationFolder = PathIO.GetDirectoryName(fullPath);
 
-		if (fileName != null)
+		if (fileName is not null)
 		{
 			fullPath = PathIO.Combine(baseFolder, fileName);
 			destinationFolder = baseFolder;

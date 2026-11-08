@@ -62,7 +62,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 	{
 		lock (syncObj)
 		{
-			if (_Current != null) _Current.Close();
+			if (_Current is not null) _Current.Close();
 			_Current = null;
 		}
 	}
@@ -142,7 +142,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 
 		var catgroups =
 			from f in this.Filters
-			where f.CheckedList != null
+			where f.CheckedList is not null
 			group f by f.Category into grp
 			orderby grp.Key.Text
 			select grp;
