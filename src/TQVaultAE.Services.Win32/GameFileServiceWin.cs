@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Presentation;
-using Medallion.Shell;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 
@@ -58,7 +57,7 @@ public class GameFileServiceWin : GameFileService
 		var SaveDataParent = this.PathIO.GetDirectoryName(RepoTQPath);
 		var dirfilter = this.PathIO.Combine(SaveDataParent, @$"*{GamePathService.SaveDataDirName}*");
 		string errMess = string.Format(Resources.UnableToExecute, "DIR /A " + dirfilter);
-		var dir = Command.Run("CMD.EXE", "/C", "DIR", "/A", dirfilter);
+		var dir = ShellCommand.Run("CMD.EXE", ["/C", "DIR", "/A", dirfilter]);
 		if (HandleExecuteOut(dir, errMess, out var diroutStd, out var direrrStd))
 		{
 			var diroutSdtStr = diroutStd.JoinString(" ");
@@ -70,7 +69,7 @@ public class GameFileServiceWin : GameFileService
 				var filesToRestore = this.PathIO.Combine(RepoTQPath, "*");
 				// New save files (untracked) will not be deleted (you can only restore files that are tracked Deleted/Modified)
 				errMess = string.Format(Resources.UnableToExecute, @"git.exe restore """ + filesToRestore + @"""");
-				var restore = Command.Run("git", new[] { "restore", filesToRestore }, (opt) => { opt.WorkingDirectory(LocalGitRepoDir); });
+				var restore = ShellCommand.Run("git", ["restore", filesToRestore], LocalGitRepoDir);
 				HandleExecuteOut(restore, errMess, out var restoreoutStd, out var restoreerrStd);
 			}
 			else if (isAJunction && !overrideFiles)
@@ -107,7 +106,7 @@ public class GameFileServiceWin : GameFileService
 		{
 			var dirfilter = this.PathIO.Combine(LocalGitRepoDir, @$"*{GamePathService.VaultFilesDefaultDirName}*");
 			string errMess = string.Format(Resources.UnableToExecute, "DIR /A " + dirfilter);
-			var dir = Command.Run("CMD.EXE", "/C", "DIR", "/A", dirfilter);
+			var dir = ShellCommand.Run("CMD.EXE", ["/C", "DIR", "/A", dirfilter]);
 			if (HandleExecuteOut(dir, errMess, out var diroutStd, out var direrrStd))
 			{
 				var diroutSdtStr = diroutStd.JoinString(" ");
@@ -119,7 +118,7 @@ public class GameFileServiceWin : GameFileService
 					var filesToRestore = this.PathIO.Combine(repoVaultFilesPath, "*");// New vault (untracked) will not be deleted (you can only restore files that are tracked Deleted/Modified)
 
 					errMess = string.Format(Resources.UnableToExecute, @"git.exe restore """ + filesToRestore + @"""");
-					var restore = Command.Run("git", new[] { "restore", filesToRestore }, (opt) => { opt.WorkingDirectory(LocalGitRepoDir); });
+					var restore = ShellCommand.Run("git", ["restore", filesToRestore], LocalGitRepoDir);
 					HandleExecuteOut(restore, errMess, out var restoreoutStd, out var restoreerrStd);
 				}
 				else if (isAJunction && !overrideFiles)
@@ -155,7 +154,7 @@ public class GameFileServiceWin : GameFileService
 		// check if it's a junction already
 		var dirfilter = this.PathIO.Combine(GamePathService.LocalGitRepositoryDirectory, @$"*{GamePathService.VaultFilesDefaultDirName}*");
 		string errMess = string.Format(Resources.UnableToExecute, "DIR /A " + dirfilter);
-		var dir = Command.Run("CMD.EXE", "/C", "DIR", "/A", dirfilter);
+		var dir = ShellCommand.Run("CMD.EXE", ["/C", "DIR", "/A", dirfilter]);
 		if (HandleExecuteOut(dir, errMess, out var diroutStd, out var direrrStd))
 		{
 			var saveDataPath = this.PathIO.Combine(GamePathService.LocalGitRepositoryDirectory, GamePathService.VaultFilesDefaultDirName);
@@ -174,7 +173,7 @@ public class GameFileServiceWin : GameFileService
 		string sourcePath = GamePathService.TQVaultSaveFolder;
 		string errMess = string.Format(Resources.UnableToExecute, string.Format("MKLINK /J {0} {1}", junctionPath, GamePathService.TQVaultSaveFolder));
 
-		var mklink = Command.Run("CMD.EXE", "/C", "MKLINK", "/J", junctionPath, sourcePath);
+		var mklink = ShellCommand.Run("CMD.EXE", ["/C", "MKLINK", "/J", junctionPath, sourcePath]);
 		return HandleExecuteOut(mklink, errMess, out var mklinkoutStd, out var mklinkerrStd);
 	}
 
@@ -193,7 +192,7 @@ public class GameFileServiceWin : GameFileService
 			var junctionPathParent = this.PathIO.Combine(GamePathService.LocalGitRepositoryDirectory, GamePathService.SaveDirNameTQ);
 			this.DirectoryIO.CreateDirectory(junctionPathParent);
 			string errMess = string.Format(Resources.UnableToExecute, string.Format("MKLINK /J {0} {1}", RepoTQPath, TQPathSaveData));
-			var mklink = Command.Run("CMD.EXE", "/C", "MKLINK", "/J", RepoTQPath, TQPathSaveData);
+			var mklink = ShellCommand.Run("CMD.EXE", ["/C", "MKLINK", "/J", RepoTQPath, TQPathSaveData]);
 			TQSuccess = HandleExecuteOut(mklink, errMess, out var mklinkoutStd, out var mklinkerrStd);
 		}
 
@@ -202,7 +201,7 @@ public class GameFileServiceWin : GameFileService
 			var junctionPathParent = this.PathIO.Combine(GamePathService.LocalGitRepositoryDirectory, GamePathService.SaveDirNameTQIT);
 			this.DirectoryIO.CreateDirectory(junctionPathParent);
 			string errMess = string.Format(Resources.UnableToExecute, string.Format("MKLINK /J {0} {1}", RepoTQITPath, TQITPathSaveData));
-			var mklink = Command.Run("CMD.EXE", "/C", "MKLINK", "/J", RepoTQITPath, TQITPathSaveData);
+			var mklink = ShellCommand.Run("CMD.EXE", ["/C", "MKLINK", "/J", RepoTQITPath, TQITPathSaveData]);
 			TQITSuccess = HandleExecuteOut(mklink, errMess, out var mklinkoutStd, out var mklinkerrStd);
 		}
 
@@ -232,7 +231,7 @@ public class GameFileServiceWin : GameFileService
 			// check if it's a junction already
 			var dirfilter = this.PathIO.Combine(tqpath, @$"*{GamePathService.SaveDataDirName}*");
 			string errMess = string.Format(Resources.UnableToExecute, "DIR /A \"" + dirfilter + '"');
-			var dir = Command.Run("CMD.EXE", "/C", "DIR", "/A", dirfilter);
+			var dir = ShellCommand.Run("CMD.EXE", ["/C", "DIR", "/A", dirfilter]);
 			if (HandleExecuteOut(dir, errMess, out var diroutStd, out var direrrStd))
 			{
 				var junctionPath = this.PathIO.Combine(tqpath, GamePathService.SaveDataDirName);
@@ -251,7 +250,7 @@ public class GameFileServiceWin : GameFileService
 		{
 			// Detach that junction
 			var errMess = string.Format(Resources.UnableToExecute, "fsutil.exe reparsepoint delete \"" + junctionPath + '"');
-			var fsutil = Command.Run("fsutil.exe", "reparsepoint", "delete", junctionPath);
+			var fsutil = ShellCommand.Run("fsutil.exe", ["reparsepoint", "delete", junctionPath]);
 			if (HandleExecuteOut(fsutil, errMess, out var fsutiloutStd, out var fsutilerrStd))
 			{
 				// Remove dir
@@ -272,7 +271,7 @@ public class GameFileServiceWin : GameFileService
 	bool RmDir(string dirToDeletePath)
 	{
 		var errMess = string.Format(Resources.UnableToExecute, "rmdir /S /Q \"" + dirToDeletePath + '"');
-		var rmdir = Command.Run("CMD.EXE", "/C", "rmdir", "/S", "/Q", dirToDeletePath);
+		var rmdir = ShellCommand.Run("CMD.EXE", ["/C", "rmdir", "/S", "/Q", dirToDeletePath]);
 		return HandleExecuteOut(rmdir, errMess, out var rmdiroutStd, out var rmdirerrStd);
 	}
 }

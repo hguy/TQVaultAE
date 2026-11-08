@@ -27,7 +27,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Enums.NET" />
-		<PackageReference Include="MedallionShell" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
 		<PackageReference Include="NAudio" />
 	</ItemGroup>
