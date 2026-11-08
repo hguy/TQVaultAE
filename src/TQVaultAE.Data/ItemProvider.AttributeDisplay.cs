@@ -262,7 +262,7 @@ public partial class ItemProvider
 	/// Converts the item's attribute list to a string
 	/// </summary>
 	/// <param name="record">DBRecord for the item</param>
-	/// <param name="attributeList">ArrayList containing the attributes list</param>
+	/// <param name="attributeList">List of the attribute variables of the group</param>
 	/// <param name="recordId">string containing the record id</param>
 	/// <param name="results">List containing the results</param>
 	/// <param name="skillLevelIndex">value index of a skill record shown at a known level (granted skills); null to deduce it</param>
@@ -716,7 +716,7 @@ public partial class ItemProvider
 	/// <summary>
 	/// Gets the global chance string
 	/// </summary>
-	/// <param name="attributeList">Arraylist containing the attributes</param>
+	/// <param name="attributeList">List of the attribute variables of the group</param>
 	/// <param name="varNum">offset number of the variable value that we are using</param>
 	/// <param name="v">variable structure</param>
 	/// <param name="font">font string</param>
@@ -1366,7 +1366,7 @@ public partial class ItemProvider
 	/// Converts the item's offensive attributes to a string
 	/// </summary>
 	/// <param name="record">DBRecord of the database record</param>
-	/// <param name="attributeList">ArrayList containing the attribute list</param>
+	/// <param name="attributeList">List of the attribute variables of the group</param>
 	/// <param name="data">ItemAttributesData for the item</param>
 	/// <param name="recordId">string containing the record id</param>
 	/// <param name="results">List containing the results</param>
@@ -2300,7 +2300,7 @@ public partial class ItemProvider
 	/// <summary>
 	/// For displaying raw attribute data
 	/// </summary>
-	/// <param name="attributeList">ArrayList containing the arributes</param>
+	/// <param name="attributeList">List of the attribute variables of the group</param>
 	/// <param name="results">List containing the attribute strings.</param>
 	private void ConvertBareAttributeListToString(List<Variable?> attributeList, List<string> results)
 	{
