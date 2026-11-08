@@ -95,6 +95,27 @@ public partial class MainForm
 	/// <param name="e">EventArgs data</param>
 	private async void MainFormLoad(object? sender, EventArgs e)
 	{
+		// async void event handler: nothing may escape it.
+		try
+		{
+			await this.StartLoadingAsync();
+		}
+		catch (Exception ex)
+		{
+			Log.LogError(ex, "Starting the main form failed (loadingComplete = {LoadingComplete})", this.loadingComplete);
+			this.Services.MessageBoxes.ShowException(ex, Resources.Form1ErrorLoadingResources, MessageBoxIcon.Error);
+
+			// The form stays disabled until the loading completes: it cannot be used then.
+			if (!this.loadingComplete)
+				System.Windows.Forms.Application.Exit();
+		}
+	}
+
+	/// <summary>
+	/// Syncs the git repository, shows the splash screen and loads the resources.
+	/// </summary>
+	private async Task StartLoadingAsync()
+	{
 		// Sync git local repo first
 		this.GameFileService.GitRepositorySetup();
 

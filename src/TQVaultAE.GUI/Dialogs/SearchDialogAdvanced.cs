@@ -292,14 +292,35 @@ public partial class SearchDialogAdvanced : VaultForm
 			return;
 
 		this._openWatch.Restart();
-		this.BeginInvoke(this.PrepareForSearch);
+		// Not awaited: the dialog stays responsive while the search data is built. The task never faults.
+		this.BeginInvoke(() => _ = this.PrepareForSearchLoggedAsync());
+	}
+
+	/// <summary>
+	/// Runs <see cref="PrepareForSearchAsync"/>, logging and showing its failure instead of letting it escape.
+	/// </summary>
+	private async Task PrepareForSearchLoggedAsync()
+	{
+		try
+		{
+			await this.PrepareForSearchAsync();
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Preparing the search dialog failed after {Elapsed} ms", this._openWatch.ElapsedMilliseconds);
+			if (!this.IsDisposed)
+			{
+				this.scalingLabelProgress.Text = ex.Message;
+				this.scalingLabelProgress.Visible = true;
+			}
+		}
 	}
 
 	/// <summary>
 	/// Builds the categories on the first opening, and again only when the item database changed since then;
 	/// otherwise the dialog is shown as it was left.
 	/// </summary>
-	private async void PrepareForSearch()
+	private async Task PrepareForSearchAsync()
 	{
 		// Paint the dialog (VaultForm custom borders etc.) before the categories are built.
 		this.Update();
