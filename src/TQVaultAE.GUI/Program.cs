@@ -142,6 +142,7 @@ public static class Program
 		.AddSingleton<IPasteBinService, PasteBinService>()
 		.AddSingleton<IForgeService, ForgeService>()
 		.AddSingleton<HttpClient>()
+		.AddSingleton<ISettingsPersistenceService, SettingsPersistenceService>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()
