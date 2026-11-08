@@ -7,11 +7,11 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
+using TQVaultAE.GameFiles;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Logs;
@@ -1225,46 +1225,21 @@ public partial class Database : IDatabase
 			return;
 		}
 
-		// now read it like a text file
-		// Changed to system default encoding since there might be extended ascii (or something else) in the text db.
-		using (StreamReader reader = new StreamReader(new MemoryStream(data), Encoding.Default))
+		// The game files are UTF-16 with a BOM, but some (x2 quests, mod strings) are cp1252 without one.
+		foreach (var (tag, text) in TextDatabaseFactory.ReadEntries(data))
 		{
-			char delimiter = '=';
-			string? line;
-			while ((line = reader.ReadLine()) != null)
-			{
-				line = line.Trim();
+			string label = text;
 
-				// delete short lines
-				if (line.Length < 2)
-					continue;
+			// Now for the foreign languages there is a bunch of crap in here so the proper version of the adjective can be used with the proper
+			// noun form.  I don' want to code all that so this next code will just take the first version of the adjective and then
+			// throw away all the metadata.
 
-				// comment line
-				if (line.StartsWith("//", StringComparison.Ordinal))
-					continue;
+			// hguy : one expression to rule them all
+			if (ParseTextDBRegEx().Match(label) is { Success: true } match)
+				label = match.Groups["Label"].Value.Trim();
 
-				// split on the equal sign
-				string[] fields = line.Split(delimiter);
-
-				// bad line
-				if (fields.Length < 2)
-					continue;
-
-				string label = fields[1].Trim();
-
-				// Now for the foreign languages there is a bunch of crap in here so the proper version of the adjective can be used with the proper
-				// noun form.  I don' want to code all that so this next code will just take the first version of the adjective and then
-				// throw away all the metadata.
-
-				// hguy : one expression to rule them all 
-				if (ParseTextDBRegEx().Match(label) is { Success: true } match)
-					label = match.Groups["Label"].Value.Trim();
-
-				// If this field is already in the db, then replace it
-				string key = fields[0].Trim().ToUpperInvariant();
-
-				this.textDB.AddOrUpdate(key, label, (k, v) => label);// Override with the new "label"
-			}
+			// A tag already in the db is replaced: the last file loaded wins.
+			this.textDB[tag.ToUpperInvariant()] = label;
 		}
 
 		if (USettings.DatabaseDebugLevel > 0)

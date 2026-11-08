@@ -15,6 +15,27 @@ public sealed class TextDatabaseTests
 	}
 
 	[Fact]
+	public void ReadEntries_WithoutBom_DecodesCp1252()
+	{
+		// Some game files (x2 quests, mod strings) have no BOM and accented cp1252 text.
+		byte[] cp1252 = [.. "nordic_questgiver=Hej och v"u8, 0xE4, .. "lkommen\r\n// comment\r\ntagB = a = b"u8];
+
+		var entries = TextDatabaseFactory.ReadEntries(cp1252);
+
+		entries.Should().HaveCount(2);
+		entries["NORDIC_QUESTGIVER"].Should().Be("Hej och välkommen");
+		entries["tagB"].Should().Be("a = b");
+	}
+
+	[Fact]
+	public void ReadEntries_WithUtf16Bom_DecodesUnicode()
+	{
+		var utf16 = Encoding.Unicode.GetPreamble().Concat(Encoding.Unicode.GetBytes("tagRu=Меч")).ToArray();
+
+		TextDatabaseFactory.ReadEntries(utf16)["tagRu"].Should().Be("Меч");
+	}
+
+	[Fact]
 	public void Parse_SplitsOnFirstEqualsOnly()
 	{
 		var d = Parse("tagFormula=Damage = {%d0} x 2\r\n");
