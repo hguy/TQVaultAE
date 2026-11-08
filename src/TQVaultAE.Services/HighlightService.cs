@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Domain.Results;
@@ -17,11 +18,13 @@ namespace TQVaultAE.Services;
 public class HighlightService(
     ILogger<HighlightService> log,
     IItemProvider itemProvider,
-    SessionContext sessionContext) : IHighlightService
+    SessionContext sessionContext,
+    ITranslationService translationService) : IHighlightService
 {
     private readonly ILogger<HighlightService> _log = log;
     private readonly IItemProvider _itemProvider = itemProvider;
     private readonly SessionContext _sessionContext = sessionContext;
+    private readonly ITranslationService _translationService = translationService;
 
     public Color HighlightSearchItemColor { get; set; } = TQColor.Indigo.Color();
     public Color HighlightSearchItemBorderColor { get; set; } = TQColor.Red.Color();
@@ -192,5 +195,52 @@ public class HighlightService(
         this.HighlightedItems = new List<Item>();
         this.HighlightSearch = null;
         this.HighlightFilter = null;
+    }
+
+    /// <inheritdoc/>
+    public bool ApplyFilter(HighlightFilterValues? filter)
+    {
+        this.HighlightFilter = filter is { IsEmpty: false } ? filter : null;
+        this.FindHighlight();
+        return this.HighlightFilter is not null;
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<HighlightTypeOption> GetTypeOptions()
+    {
+        // The names of some classes end with " :" or "~" in the game texts.
+        HighlightTypeOption Of(string itemClass, params char[] trim)
+        {
+            var name = this._translationService.TranslateXTag(Item.GetClassTagName(itemClass));
+            return new(trim.Length == 0 ? name : name.Trim(trim), [itemClass]);
+        }
+
+        return
+        [
+            Of(Item.ICLASS_HEAD, ' ', ':'),
+            Of(Item.ICLASS_FOREARM, ' ', ':'),
+            Of(Item.ICLASS_UPPERBODY, ' ', ':'),
+            Of(Item.ICLASS_LOWERBODY, ' ', ':'),
+            Of(Item.ICLASS_AXE),
+            Of(Item.ICLASS_MACE),
+            Of(Item.ICLASS_SWORD),
+            Of(Item.ICLASS_SHIELD),
+            new(this._translationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RANGEDONEHAND), true), [Item.ICLASS_RANGEDONEHAND]),
+            Of(Item.ICLASS_BOW),
+            Of(Item.ICLASS_SPEAR),
+            Of(Item.ICLASS_STAFF, ' ', ':'),
+            Of(Item.ICLASS_AMULET),
+            Of(Item.ICLASS_RING),
+            Of(Item.ICLASS_ARTIFACT),
+            Of(Item.ICLASS_FORMULA),
+            Of(Item.ICLASS_RELIC),
+            Of(Item.ICLASS_CHARM),
+            Of(Item.ICLASS_SCROLL),
+            // Potions and eternal scrolls are one type.
+            new(this._translationService.TranslateXTag("tagTutorialTip14Title"), [Item.ICLASS_POTIONMANA, Item.ICLASS_POTIONHEALTH, Item.ICLASS_SCROLL_ETERNAL]),
+            Of(Item.ICLASS_QUESTITEM),
+            Of(Item.ICLASS_EQUIPMENT, ' ', '~'),
+            Of(Item.ICLASS_DYE),
+        ];
     }
 }

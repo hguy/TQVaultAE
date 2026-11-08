@@ -1,5 +1,6 @@
 ﻿﻿using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Infrastructure;
@@ -115,100 +116,7 @@ public partial class HighlightFilters : UserControl
 	private void InitType()
 	{
 		scalingCheckedListBoxTypes.Items.Clear();// Remove design mode items
-		var list = new ItemType[] {
-			new ItemType{
-				Value = Item.ICLASS_HEAD,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_HEAD)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_FOREARM,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_FOREARM)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_UPPERBODY,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_UPPERBODY)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_LOWERBODY,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_LOWERBODY)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_AXE,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_AXE))
-			},
-			new ItemType{
-				Value = Item.ICLASS_MACE,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_MACE))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SWORD,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SWORD))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SHIELD,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SHIELD))
-			},
-			new ItemType{
-				Value = Item.ICLASS_RANGEDONEHAND,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RANGEDONEHAND), true)
-			},
-			new ItemType{
-				Value = Item.ICLASS_BOW,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_BOW))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SPEAR,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SPEAR))
-			},
-			new ItemType{
-				Value = Item.ICLASS_STAFF,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_STAFF)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_AMULET,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_AMULET))
-			},
-			new ItemType{
-				Value = Item.ICLASS_RING,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RING))
-			},
-			new ItemType{
-				Value = Item.ICLASS_ARTIFACT,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_ARTIFACT))
-			},
-			new ItemType{
-				Value = Item.ICLASS_FORMULA,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_FORMULA))
-			},
-			new ItemType{
-				Value = Item.ICLASS_RELIC,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RELIC))
-			},
-			new ItemType{
-				Value = Item.ICLASS_CHARM,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_CHARM))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SCROLL,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SCROLL))
-			},
-			new ItemType{
-				Value = string.Join("|", Item.ICLASS_POTIONMANA, Item.ICLASS_POTIONHEALTH, Item.ICLASS_SCROLL_ETERNAL),
-				DisplayName = TranslationService.TranslateXTag("tagTutorialTip14Title")
-			},
-			new ItemType{
-				Value = Item.ICLASS_QUESTITEM,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_QUESTITEM))
-			},
-			new ItemType{
-				Value = Item.ICLASS_EQUIPMENT,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_EQUIPMENT)).Trim(' ', '~')
-			},
-			new ItemType{
-				Value = Item.ICLASS_DYE,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_DYE))
-			},
-		};
+		var list = HighlightService.GetTypeOptions();
 
 		// Compute item space (ColumnWidth)
 		int maxWidth = list.Select(i =>
@@ -222,7 +130,7 @@ public partial class HighlightFilters : UserControl
 		maxWidth += scalingCheckedListBoxTypes.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxTypes.ColumnWidth = maxWidth;
 
-		scalingCheckedListBoxTypes.Items.AddRange(list);
+		scalingCheckedListBoxTypes.Items.AddRange([.. list]);
 	}
 
 	private void InitRarity()
@@ -332,10 +240,8 @@ public partial class HighlightFilters : UserControl
 	{
 		var frm = FindForm();
 		ResetAll();
-		HighlightService.HighlightFilter = null;
-		_link.LinkVisited = false;
+		_link.LinkVisited = HighlightService.ApplyFilter(null);
 		Visible = false;
-		HighlightService.FindHighlight();
 		frm?.Refresh();
 	}
 
@@ -354,7 +260,7 @@ public partial class HighlightFilters : UserControl
 			MinStr = (int)numericUpDownMinStr.Value,
 			MaxRequierement = scalingCheckBoxMax.Checked,
 			MinRequierement = scalingCheckBoxMin.Checked,
-			ClassItem = scalingCheckedListBoxTypes.CheckedItems.OfType<ItemType>().SelectMany(x => x.Value.Split('|')).ToList(),
+			ClassItem = scalingCheckedListBoxTypes.CheckedItems.OfType<HighlightTypeOption>().SelectMany(x => x.ItemClasses).ToList(),
 			Rarity = scalingCheckedListBoxRarity.CheckedItems.OfType<ItemRarity>().Select(x => x.Value).ToList(),
 			Origin = scalingCheckedListBoxOrigin.CheckedItems.OfType<ItemOrigin>().Select(x => x.Value).ToList(),
 			HavingPrefix = scalingCheckBoxHavingPrefix.Checked,
@@ -365,22 +271,9 @@ public partial class HighlightFilters : UserControl
 			HavingSkill = scalingCheckBoxHavingSkill.Checked,
 		};
 
-		if (filter.MaxRequierement || filter.MinRequierement || filter.HavingPrefix || filter.HavingSuffix || filter.HavingRelic || filter.HavingCharm || filter.IsSetItem || filter.HavingSkill
-			|| filter.ClassItem.Count != 0 || filter.Rarity.Count != 0 || filter.Origin.Count != 0)
-		{
-			HighlightService.HighlightFilter = filter;
-			_link.LinkVisited = true;
-			Visible = false;
-			HighlightService.FindHighlight();
-			frm?.Refresh();
-			return;
-		}
-
-		// No filters
-		HighlightService.HighlightFilter = null;
-		_link.LinkVisited = false;
+		// An empty filter clears the highlight filter.
+		_link.LinkVisited = HighlightService.ApplyFilter(filter);
 		Visible = false;
-		HighlightService.FindHighlight();
 		frm?.Refresh();
 	}
 

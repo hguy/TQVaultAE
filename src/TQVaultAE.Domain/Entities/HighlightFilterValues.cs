@@ -22,4 +22,13 @@ public class HighlightFilterValues
 	public bool IsSetItem;
 	/// <summary>Only the items that grant a skill.</summary>
 	public bool HavingSkill;
+
+	/// <summary>
+	/// <c>true</c> when no filter is active: no requirement range, no type, rarity or origin, and no "having" option.
+	/// The level and attribute values alone do not count without their minimum or maximum check box.
+	/// </summary>
+	public bool IsEmpty
+		=> !(this.MaxRequierement || this.MinRequierement
+			|| this.HavingPrefix || this.HavingSuffix || this.HavingRelic || this.HavingCharm || this.IsSetItem || this.HavingSkill
+			|| this.ClassItem.Count != 0 || this.Rarity.Count != 0 || this.Origin.Count != 0);
 }
