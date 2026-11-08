@@ -8,6 +8,7 @@ using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Results;
 using TQVaultAE.Services;
 using TQVaultAE.Application.DTOs;
 
@@ -32,6 +33,8 @@ public class PlayerServiceTests
 	private readonly SessionContext _sessionContext;
 	private readonly UserSettings _userSettings;
 	private readonly Mock<IDirectoryIO> _mockDirectoryIO;
+	private readonly Mock<IItemProvider> _mockItemProvider;
+	private readonly Mock<IDatabase> _mockDatabase;
 	private readonly PlayerService _playerService;
 
 	/// <summary>
@@ -68,6 +71,8 @@ public class PlayerServiceTests
 		_mockPathIO = new Mock<PathIO>();
 		_userSettings = new UserSettings();
 		_mockDirectoryIO = new Mock<IDirectoryIO>();
+		_mockItemProvider = new Mock<IItemProvider>();
+		_mockDatabase = new Mock<IDatabase>();
 
 		// Create SessionContext - parameterless data holder
 		_sessionContext = new SessionContext();
@@ -86,7 +91,9 @@ public class PlayerServiceTests
 			_mockFileIO.Object,
 			_mockPathIO.Object,
 			_userSettings,
-			_mockDirectoryIO.Object
+			_mockDirectoryIO.Object,
+			_mockItemProvider.Object,
+			_mockDatabase.Object
 		);
 	}
 
@@ -766,4 +773,120 @@ public class PlayerServiceTests
 
 		result.Error.Should().BeSameAs(failure);
 	}
+
+	#region Requirements and stat bonuses
+
+	private static Item BaseGameSword() => new() { BaseItemId = RecordId.Create("""records\item\equipmentweapon\sword\us_n_01.dbr""") };
+
+	private static Item ImmortalThroneSword() => new() { BaseItemId = RecordId.Create("""records\xpack\items\weapons\swords\u_e_01.dbr""") };
+
+	private static PlayerCollection PlayerWith(int level = 10, int strength = 100, bool immortalThrone = true)
+		=> new("test", "test.chr")
+		{
+			IsImmortalThrone = immortalThrone,
+			PlayerInfo = new PlayerInfo(new Mock<IPathIO>().Object) { CurrentLevel = level, BaseStrength = strength },
+		};
+
+	private void SetupRequirements(Item item, int level)
+	{
+		var result = new ToFriendlyNameResult(item);
+		result.RequirementVariables.Add(Variable.KEY_LEVELREQ, new Variable(Variable.KEY_LEVELREQ, VariableDataType.Integer, 1) { [0] = level });
+		_mockItemProvider.Setup(x => x.GetFriendlyNames(item, FriendlyNamesExtraScopes.Requirements, true)).Returns(result);
+	}
+
+	[Fact]
+	public void CurrentPlayerMeetsRequirements_WithoutCurrentPlayer_ReturnsTrue()
+	{
+		var item = BaseGameSword();
+		SetupRequirements(item, 99);
+
+		_playerService.CurrentPlayerMeetsRequirements(item).Should().BeTrue();
+	}
+
+	[Theory]
+	[InlineData(10, true)]
+	[InlineData(11, false)]
+	public void CurrentPlayerMeetsRequirements_ComparesTheLevelRequirement(int required, bool expected)
+	{
+		var item = BaseGameSword();
+		SetupRequirements(item, required);
+		_sessionContext.CurrentPlayer = PlayerWith(level: 10);
+
+		_playerService.CurrentPlayerMeetsRequirements(item).Should().Be(expected);
+	}
+
+	[Fact]
+	public void CurrentPlayerMeetsRequirements_ItemWithoutRequirements_ReturnsTrue()
+	{
+		var item = BaseGameSword();
+		_mockItemProvider.Setup(x => x.GetFriendlyNames(item, FriendlyNamesExtraScopes.Requirements, true)).Returns(new ToFriendlyNameResult(item));
+		_sessionContext.CurrentPlayer = PlayerWith(level: 1);
+
+		_playerService.CurrentPlayerMeetsRequirements(item).Should().BeTrue();
+	}
+
+	[Fact]
+	public void IsSuitableForCurrentPlayer_OriginalPlayer_RefusesExpansionItems()
+	{
+		_sessionContext.CurrentPlayer = PlayerWith(immortalThrone: false);
+
+		_playerService.IsSuitableForCurrentPlayer(ImmortalThroneSword()).Should().BeFalse();
+		_playerService.IsSuitableForCurrentPlayer(BaseGameSword()).Should().BeTrue();
+	}
+
+	[Fact]
+	public void IsSuitableForCurrentPlayer_WithoutCurrentPlayer_AcceptsEveryItem()
+		=> _playerService.IsSuitableForCurrentPlayer(ImmortalThroneSword()).Should().BeTrue();
+
+	[Fact]
+	public void UpdateGearStatBonuses_SkipsTheSecondaryWeaponsAndTheIgnoredItem()
+	{
+		var player = PlayerWith();
+		player.PlayerInfo!.GearBonus = new PlayerStatBonus { StrengthBonus = 50 };
+		var ring = new Item { PositionX = 0, PositionY = 0 };
+		var primary = new Item { PositionX = Item.WeaponSlotIndicator, PositionY = 0 };
+		var secondary = new Item { PositionX = Item.WeaponSlotIndicator, PositionY = 2 };
+		var secondaryShield = new Item { PositionX = Item.WeaponSlotIndicator, PositionY = 3 };
+		var dragged = new Item { PositionX = 1, PositionY = 0 };
+		_mockItemProvider.Setup(x => x.GetStatBonuses(It.IsAny<Item>()))
+			.Returns(() => new SortedList<string, int> { ["CHARACTERSTRENGTH"] = 1 });
+
+		_playerService.UpdateGearStatBonuses(player, [ring, primary, secondary, secondaryShield, dragged], dragged);
+
+		// The previous bonus is cleared, then the ring and the primary weapon count.
+		player.PlayerInfo.GearBonus.StrengthBonus.Should().Be(2);
+		_mockItemProvider.Verify(x => x.GetStatBonuses(secondary), Times.Never);
+		_mockItemProvider.Verify(x => x.GetStatBonuses(secondaryShield), Times.Never);
+		_mockItemProvider.Verify(x => x.GetStatBonuses(dragged), Times.Never);
+	}
+
+	[Fact]
+	public void UpdateSkillStatBonuses_SumsTheBonusesOfEverySkillAtItsLevel()
+	{
+		var player = PlayerWith();
+		player.PlayerInfo!.SkillBonus = new PlayerStatBonus { StrengthBonus = 50 };
+		player.PlayerInfo.SkillRecordList.Add(new SkillRecord { skillName = """records\skills\a.dbr""", skillLevel = 2 });
+		player.PlayerInfo.SkillRecordList.Add(new SkillRecord { skillName = """records\skills\b.dbr""", skillLevel = 3 });
+		_mockItemProvider
+			.Setup(x => x.GetStatBonusesFromRecord(It.IsAny<SortedList<string, int>>(), It.IsAny<DBRecordCollection?>(), It.IsAny<int>()))
+			.Callback((SortedList<string, int> bonuses, DBRecordCollection? _, int level)
+				=> bonuses["CHARACTERSTRENGTH"] = bonuses.GetValueOrDefault("CHARACTERSTRENGTH") + level);
+
+		_playerService.UpdateSkillStatBonuses(player);
+
+		player.PlayerInfo.SkillBonus.StrengthBonus.Should().Be(5);
+		_mockDatabase.Verify(x => x.GetRecordFromFile(It.IsAny<RecordId>()), Times.Exactly(2));
+	}
+
+	[Fact]
+	public void UpdateSkillStatBonuses_PlayerWithoutInformation_DoesNothing()
+	{
+		var player = new PlayerCollection("test", "test.chr") { PlayerInfo = null };
+
+		_playerService.UpdateSkillStatBonuses(player);
+
+		_mockDatabase.Verify(x => x.GetRecordFromFile(It.IsAny<RecordId>()), Times.Never);
+	}
+
+	#endregion
 }

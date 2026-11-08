@@ -65,20 +65,8 @@ public partial class EquipmentPanel : SackPanel, IScalingControl
 		if (currentPlayer == null)
 			return;
 
-		currentPlayer.ClearPlayerGearBonuses();
-
-		foreach (Item item in this.Sack)
-		{
-			// Ignore the item if it is being dragged
-			if (DragInfo.Item == item)
-				continue;
-
-			// Skip weapons in the secondary slots.
-			if (item.IsInWeaponSlot && (item.PositionY == 2 || item.PositionY == 3))
-				continue;
-
-			currentPlayer.UpdatePlayerGearBonuses(ItemProvider.GetStatBonuses(item));
-		}
+		// The item being dragged does not count.
+		this.Services.PlayerService.UpdateGearStatBonuses(currentPlayer, this.Sack, this.DragInfo.Item);
 
 		// Let the container panel know that the calculation has changed.
 		OnEquipmentChanged?.Invoke(this, new SackPanelEventArgs(null, null));

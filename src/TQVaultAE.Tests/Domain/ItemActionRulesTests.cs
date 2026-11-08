@@ -29,6 +29,14 @@ public class ItemActionRulesTests
 		, bool readOnly = false, bool allowEdit = false, bool allowCopy = false)
 		=> ItemActionRules.Available(new ItemActionContext(item, selectionCount, itemIsTheSelection, readOnly, allowEdit, allowCopy));
 
+	[Theory]
+	[InlineData("""records\item\equipmentweapon\sword\us_n_01.dbr""", false, true)]
+	[InlineData("""records\xpack\items\weapons\swords\u_e_01.dbr""", false, false)]
+	[InlineData("""records\xpack\items\weapons\swords\u_e_01.dbr""", true, true)]
+	[InlineData("""records\item\equipmentweapon\sword\us_n_01.dbr""", true, true)]
+	public void IsSuitableFor_OriginalPlayerOnlyTakesBaseGameItems(string baseItemId, bool immortalThronePlayer, bool expected)
+		=> ItemActionRules.IsSuitableFor(new Item { BaseItemId = RecordId.Create(baseItemId) }, immortalThronePlayer).Should().Be(expected);
+
 	[Fact]
 	public void Available_NothingUnderCursorNorSelected_OffersNothing()
 		=> For(null).Should().Be(ItemActions.None);
