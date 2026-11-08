@@ -64,10 +64,15 @@ public class TranslationService : ITranslationService
 	{
 		string? resx = LookFortranslation(xTagName);
 
+		// A tag has no space: some records write the text itself where a tag is expected ("Storm Orb" as a skill
+		// name), and the game shows it as is.
+		if (string.IsNullOrWhiteSpace(resx) && xTagName is not null && xTagName.Trim().Contains(' '))
+			resx = xTagName.Trim();
+
 		if (string.IsNullOrWhiteSpace(resx))
 		{
 			// Like TranslateXTag: show the tag itself, so a missing translation is visible in the UI.
-			translation = xTagName;
+			translation = xTagName!;
 			return false;
 		}
 

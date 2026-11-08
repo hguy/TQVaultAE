@@ -28,6 +28,17 @@ public class TranslationServiceTests
 	}
 
 	[Fact]
+	public void TryTranslateXTag_WithPlainTextInsteadOfTag_ReturnsTheText()
+	{
+		// Act - a record writes "Storm Orb" where a skill name tag is expected
+		var found = _service.TryTranslateXTag(" Storm Orb ", out var translation);
+
+		// Assert - shown as the game shows it, not as a missing tag
+		found.Should().BeTrue();
+		translation.Should().Be("Storm Orb");
+	}
+
+	[Fact]
 	public void TryTranslateXTag_WithTagInDatabase_ReturnsTheTranslation()
 	{
 		// Arrange
