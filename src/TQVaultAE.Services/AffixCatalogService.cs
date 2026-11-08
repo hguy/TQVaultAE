@@ -9,20 +9,14 @@ namespace TQVaultAE.Services;
 /// <summary>
 /// Builds the catalogs offered by the item context menu: set members, completion bonuses and affixes.
 /// </summary>
-public class AffixCatalogService : IAffixCatalogService
+public class AffixCatalogService(IItemProvider itemProvider, ITranslationService translationService) : IAffixCatalogService
 {
 	private const int BrokenTypeId = 0;
 	private const int PrefixTypeId = 1;
 	private const int SuffixTypeId = 2;
 
-	private readonly IItemProvider _itemProvider;
-	private readonly ITranslationService _translationService;
-
-	public AffixCatalogService(IItemProvider itemProvider, ITranslationService translationService)
-	{
-		this._itemProvider = itemProvider;
-		this._translationService = translationService;
-	}
+	private readonly IItemProvider _itemProvider = itemProvider;
+	private readonly ITranslationService _translationService = translationService;
 
 	/// <inheritdoc/>
 	public IReadOnlyList<SetMemberChoice> GetSetMemberChoices(Item item)

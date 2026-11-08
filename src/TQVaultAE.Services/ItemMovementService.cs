@@ -11,14 +11,9 @@ namespace TQVaultAE.Services;
 /// Service for handling item movement operations.
 /// Contains pure business logic extracted from GUI layer.
 /// </summary>
-public class ItemMovementService : IItemMovementService
+public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMovementService
 {
-    private readonly ILogger<ItemMovementService> _log;
-
-    public ItemMovementService(ILogger<ItemMovementService> log)
-    {
-        this._log = log;
-    }
+    private readonly ILogger<ItemMovementService> _log = log;
 
     /// <summary>
     /// Finds open cells in a sack for placing an item.

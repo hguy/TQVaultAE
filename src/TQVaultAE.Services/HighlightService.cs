@@ -14,27 +14,20 @@ namespace TQVaultAE.Services;
 /// <summary>
 /// Service for managing item highlight search functionality.
 /// </summary>
-public class HighlightService : IHighlightService
+public class HighlightService(
+    ILogger<HighlightService> log,
+    IItemProvider itemProvider,
+    SessionContext sessionContext) : IHighlightService
 {
-    private readonly ILogger<HighlightService> _log;
-    private readonly IItemProvider _itemProvider;
-    private readonly SessionContext _sessionContext;
+    private readonly ILogger<HighlightService> _log = log;
+    private readonly IItemProvider _itemProvider = itemProvider;
+    private readonly SessionContext _sessionContext = sessionContext;
 
     public Color HighlightSearchItemColor { get; set; } = TQColor.Indigo.Color();
     public Color HighlightSearchItemBorderColor { get; set; } = TQColor.Red.Color();
     public string? HighlightSearch { get; set; }
     public HighlightFilterValues? HighlightFilter { get; set; }
     public IReadOnlyList<Item> HighlightedItems { get; private set; } = new List<Item>();
-
-    public HighlightService(
-        ILogger<HighlightService> log,
-        IItemProvider itemProvider,
-        SessionContext sessionContext)
-    {
-        this._log = log;
-        this._itemProvider = itemProvider;
-        this._sessionContext = sessionContext;
-    }
 
     /// <inheritdoc/>
     public void FindHighlight()

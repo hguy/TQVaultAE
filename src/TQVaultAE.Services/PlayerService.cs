@@ -10,55 +10,37 @@ using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.Services;
 
-public class PlayerService : IPlayerService
+public class PlayerService(
+	ILogger<PlayerService> log
+	, SessionContext userContext
+	, IItemDatabaseService itemDatabaseService
+	, IPlayerCollectionProvider playerCollectionProvider
+	, IStashService stashService
+	, IGameFileService iGameFileService
+	, IGamePathService gamePathResolver
+	, ITranslationService translationService
+	, ITQDataService tQDataService
+	, ITagService tagService
+	, IFileIO fileIO
+	, IPathIO pathIO
+	, UserSettings userSettings
+	, IDirectoryIO directoryIO
+) : IPlayerService
 {
-	private readonly ILogger Log;
-	private readonly SessionContext userContext;
-	private readonly IItemDatabaseService ItemDatabaseService;
-	private readonly IPlayerCollectionProvider PlayerCollectionProvider;
-	private readonly IStashService StashService;
-	private readonly IGameFileService GameFileService;
-	private readonly IGamePathService GamePathResolver;
-	private readonly ITranslationService TranslationService;
-	private readonly ITQDataService TQDataService;
-	private readonly ITagService TagService;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
-	private readonly UserSettings UserSettings;
-	private readonly IDirectoryIO DirectoryIO;
-
-	public PlayerService(
-		ILogger<PlayerService> log
-		, SessionContext userContext
-		, IItemDatabaseService itemDatabaseService
-		, IPlayerCollectionProvider playerCollectionProvider
-		, IStashService stashService
-		, IGameFileService iGameFileService
-		, IGamePathService gamePathResolver
-		, ITranslationService translationService
-		, ITQDataService tQDataService
-		, ITagService tagService
-		, IFileIO fileIO
-		, IPathIO pathIO
-		, UserSettings userSettings
-		, IDirectoryIO directoryIO
-	)
-	{
-		this.Log = log;
-		this.userContext = userContext;
-		this.ItemDatabaseService = itemDatabaseService;
-		this.PlayerCollectionProvider = playerCollectionProvider;
-		this.StashService = stashService;
-		this.GameFileService = iGameFileService;
-		this.GamePathResolver = gamePathResolver;
-		this.TranslationService = translationService;
-		this.TQDataService = tQDataService;
-		this.TagService = tagService;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-		this.UserSettings = userSettings;
-		this.DirectoryIO = directoryIO;
-	}
+	private readonly ILogger Log = log;
+	private readonly SessionContext userContext = userContext;
+	private readonly IItemDatabaseService ItemDatabaseService = itemDatabaseService;
+	private readonly IPlayerCollectionProvider PlayerCollectionProvider = playerCollectionProvider;
+	private readonly IStashService StashService = stashService;
+	private readonly IGameFileService GameFileService = iGameFileService;
+	private readonly IGamePathService GamePathResolver = gamePathResolver;
+	private readonly ITranslationService TranslationService = translationService;
+	private readonly ITQDataService TQDataService = tQDataService;
+	private readonly ITagService TagService = tagService;
+	private readonly IFileIO FileIO = fileIO;
+	private readonly IPathIO PathIO = pathIO;
+	private readonly UserSettings UserSettings = userSettings;
+	private readonly IDirectoryIO DirectoryIO = directoryIO;
 
 	/// <summary>
 	/// Loads a player and their stash.

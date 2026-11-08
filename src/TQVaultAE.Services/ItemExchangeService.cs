@@ -11,25 +11,17 @@ using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Services;
 
-public class ItemExchangeService : IItemExchangeService
+public class ItemExchangeService(
+	JsonSerializerOptions jsonOptions
+	, IPasteBinService pasteBinService = null!
+	, UserSettings userSettings = null!
+	, IItemProvider itemProvider = null!
+) : IItemExchangeService
 {
-	private readonly JsonSerializerOptions _jsonOptions;
-	private readonly IPasteBinService _pasteBinService;
-	private readonly UserSettings _userSettings;
-	private readonly IItemProvider _itemProvider;
-
-	public ItemExchangeService(
-		JsonSerializerOptions jsonOptions
-		, IPasteBinService pasteBinService = null!
-		, UserSettings userSettings = null!
-		, IItemProvider itemProvider = null!
-	)
-	{
-		_jsonOptions = jsonOptions;
-		_pasteBinService = pasteBinService;
-		_userSettings = userSettings;
-		_itemProvider = itemProvider;
-	}
+	private readonly JsonSerializerOptions _jsonOptions = jsonOptions;
+	private readonly IPasteBinService _pasteBinService = pasteBinService;
+	private readonly UserSettings _userSettings = userSettings;
+	private readonly IItemProvider _itemProvider = itemProvider;
 
 	public string SerializeItem(Item item)
 	{

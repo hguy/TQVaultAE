@@ -13,27 +13,16 @@ namespace TQVaultAE.Services;
 /// <summary>
 /// IGameFileService implementation
 /// </summary>
-public partial class GameFileService : IGameFileService
+public partial class GameFileService(ILogger<GameFileService> log, IGamePathService iGamePathService, IUserNotifier userNotifier, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings userSettings) : IGameFileService
 {
-	protected readonly ILogger Log;
-	protected readonly IGamePathService GamePathService;
-	protected readonly IUserNotifier UserNotifier;
-	protected readonly IFileIO FileIO;
-	protected readonly IPathIO PathIO;
-	protected readonly IDirectoryIO DirectoryIO;
+	protected readonly ILogger Log = log;
+	protected readonly IGamePathService GamePathService = iGamePathService;
+	protected readonly IUserNotifier UserNotifier = userNotifier;
+	protected readonly IFileIO FileIO = fileIO;
+	protected readonly IPathIO PathIO = pathIO;
+	protected readonly IDirectoryIO DirectoryIO = directoryIO;
 
-	protected readonly UserSettings UserSettings;
-
-	public GameFileService(ILogger<GameFileService> log, IGamePathService iGamePathService, IUserNotifier userNotifier, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings userSettings)
-	{
-		this.Log = log;
-		this.GamePathService = iGamePathService;
-		this.UserNotifier = userNotifier;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-		this.DirectoryIO = directoryIO;
-		this.UserSettings = userSettings;
-	}
+	protected readonly UserSettings UserSettings = userSettings;
 
 	public bool GitAmIBehind()
 	{

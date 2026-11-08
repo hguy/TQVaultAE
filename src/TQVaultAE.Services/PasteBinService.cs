@@ -5,19 +5,13 @@ using TQVaultAE.Config;
 
 namespace TQVaultAE.Services;
 
-public class PasteBinService : IPasteBinService
+public class PasteBinService(HttpClient httpClient, UserSettings userSettings) : IPasteBinService
 {
-	private readonly HttpClient _httpClient;
-	private readonly UserSettings _userSettings;
+	private readonly HttpClient _httpClient = httpClient;
+	private readonly UserSettings _userSettings = userSettings;
 
 	private const string PasteBinApiUrl = "https://pastebin.com/api/api_post.php";
 	private const string PasteBinRawUrl = "https://pastebin.com/raw/{0}";
-
-	public PasteBinService(HttpClient httpClient, UserSettings userSettings)
-	{
-		_httpClient = httpClient;
-		_userSettings = userSettings;
-	}
 
 	public async Task<string> UploadAsync(string text, string? pasteName = null)
 	{
