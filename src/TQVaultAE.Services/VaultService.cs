@@ -20,6 +20,7 @@ public class VaultService : IVaultService
 	private readonly IFileIO FileIO;
 	private readonly IPathIO PathIO;
 	private readonly UserSettings UserSettings;
+	private readonly IItemProvider ItemProvider;
 	public const string MAINVAULT = "Main Vault";
 
 	public VaultService(
@@ -31,7 +32,8 @@ public class VaultService : IVaultService
 		IGameFileService iGameFileService,
 		IFileIO fileIO,
 		IPathIO pathIO,
-		UserSettings userSettings)
+		UserSettings userSettings,
+		IItemProvider itemProvider)
 	{
 		this.Log = log;
 		this.userContext = userContext;
@@ -42,6 +44,7 @@ public class VaultService : IVaultService
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;
 		this.UserSettings = userSettings;
+		this.ItemProvider = itemProvider;
 	}
 
 	/// <summary>
@@ -200,6 +203,34 @@ public class VaultService : IVaultService
 		}
 
 		return choices;
+	}
+
+	/// <inheritdoc />
+	public BagTransferCheck CheckBagTransfer(PlayerCollection vault, int source, int destination)
+	{
+		int count = vault.NumberOfSacks;
+		if (source < 0 || source >= count || destination < 0 || destination >= count || source == destination)
+			return BagTransferCheck.Invalid;
+
+		return vault.GetSack(destination)?.IsEmpty ?? true
+			? BagTransferCheck.Allowed
+			: BagTransferCheck.DestinationNotEmpty;
+	}
+
+	/// <inheritdoc />
+	public string BuildCsvExport(PlayerCollection vault, int? bagIndex, char delimiter)
+	{
+		IEnumerable<(Item Item, int BagId)> items = bagIndex is int index
+			? (vault.GetSack(index) ?? []).Select(item => (item, index + 1))
+			: (vault.Sacks ?? []).SelectMany((sack, idx) => sack.Select(item => (item, idx + 1)));
+
+		var lines = items.Select((entry, row) =>
+		{
+			var friendlyNames = this.ItemProvider.GetFriendlyNames(entry.Item, FriendlyNamesExtraScopes.Requirements);
+			return new CsvRow(vault.PlayerName, entry.BagId, friendlyNames, row, delimiter).ToString();
+		}).Prepend(CsvRow.GetCSVHeader(delimiter));
+
+		return string.Join(Environment.NewLine, lines);
 	}
 
 	/// <inheritdoc />

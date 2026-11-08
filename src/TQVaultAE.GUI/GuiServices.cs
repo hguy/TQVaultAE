@@ -47,6 +47,7 @@ public sealed class GuiServices
 		, IFileIO fileIO
 		, IDirectoryIO directoryIO
 		, IMessageBoxService messageBoxes
+		, IVaultService vaultService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -74,6 +75,7 @@ public sealed class GuiServices
 		this.FileIO = fileIO;
 		this.DirectoryIO = directoryIO;
 		this.MessageBoxes = messageBoxes;
+		this.VaultService = vaultService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -104,6 +106,9 @@ public sealed class GuiServices
 
 	/// <summary>Message boxes: information, confirmations and errors.</summary>
 	public IMessageBoxService MessageBoxes { get; }
+
+	/// <summary>Vault files, lists and bag operations.</summary>
+	public IVaultService VaultService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();

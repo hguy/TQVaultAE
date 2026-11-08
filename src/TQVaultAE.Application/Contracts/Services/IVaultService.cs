@@ -40,6 +40,24 @@ public interface IVaultService
 	IReadOnlyList<string> BuildVaultChoices(IEnumerable<string> vaultNames, string? leadingEntry = null, string? excludedVault = null, bool alwaysIncludeMainVault = true);
 
 	/// <summary>
+	/// Checks a bag copy or merge from <paramref name="source"/> onto <paramref name="destination"/> within a vault.
+	/// </summary>
+	/// <param name="vault">The vault.</param>
+	/// <param name="source">Index of the source bag.</param>
+	/// <param name="destination">Index of the destination bag.</param>
+	/// <returns>Whether the transfer can run and whether it would overwrite items.</returns>
+	BagTransferCheck CheckBagTransfer(PlayerCollection vault, int source, int destination);
+
+	/// <summary>
+	/// Builds the CSV export of a vault, or of one of its bags: a header line, then one line per item.
+	/// </summary>
+	/// <param name="vault">The vault.</param>
+	/// <param name="bagIndex">Index of the bag to export; the whole vault when null.</param>
+	/// <param name="delimiter">The CSV delimiter.</param>
+	/// <returns>The CSV text, lines separated by <see cref="Environment.NewLine"/>.</returns>
+	string BuildCsvExport(PlayerCollection vault, int? bagIndex, char delimiter);
+
+	/// <summary>
 	/// Checks a vault maintenance request before it runs.
 	/// </summary>
 	/// <param name="action">The maintenance function.</param>
