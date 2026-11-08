@@ -30,9 +30,15 @@ public static partial class TextDatabaseFactory
 	/// the first '=', '//' comments skipped, the last of a duplicated key wins.
 	/// </summary>
 	public static Dictionary<string, string> ReadEntries(ReadOnlySpan<byte> bytes)
+		=> ReadEntries(DecodeText(bytes));
+
+	/// <summary>Decodes a game text file: UTF-16LE/BE or UTF-8 when a BOM is present, cp1252 otherwise.</summary>
+	public static string DecodeText(ReadOnlySpan<byte> bytes) => TextDatabase.DecodeText(bytes);
+
+	private static Dictionary<string, string> ReadEntries(string text)
 	{
 		var entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-		TextDatabase.Parse(TextDatabase.DecodeText(bytes), entries);
+		TextDatabase.Parse(text, entries);
 		return entries;
 	}
 }
