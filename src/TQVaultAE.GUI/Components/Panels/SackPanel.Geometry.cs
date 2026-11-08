@@ -83,7 +83,7 @@ public partial class SackPanel
 	/// <param name="itemToCheck">Item instance</param>
 	/// <returns>true if valid</returns>
 	public bool IsItemValidForPlacement(Item itemToCheck)
-		=> this.sack?.StashType != Domain.Entities.StashType.RelicVaultStash || itemToCheck.IsArtifact || itemToCheck.IsRelicOrCharm || itemToCheck.IsFormulae;
+		=> this.Services.ItemMovementService.IsItemValidForStashType(itemToCheck, this.sack?.StashType);
 
 	/// <summary>
 	/// Converts the screen coords into cell coords
@@ -123,30 +123,8 @@ public partial class SackPanel
 		if (this.Sack == null)
 			return null;
 
-		// Find the item for this point
-		foreach (Item item in this.Sack)
-		{
-			if (item == this.DragInfo.Item)
-				// hide the item being dragged
-				continue;
-
-			// store the x and y values
-			int x = item.PositionX;
-			int y = item.PositionY;
-
-			if (RecordId.IsNullOrEmpty(item.BaseItemId))
-				// Skip over empty items
-				continue;
-
-			// see if this item overlaps the cell
-			if ((x <= cellLocation.X) && ((x + item.Width - 1) >= cellLocation.X) &&
-				(y <= cellLocation.Y) && ((y + item.Height - 1) >= cellLocation.Y))
-			{
-				return item;
-			}
-		}
-
-		return null;
+		// hide the item being dragged
+		return this.Services.ItemMovementService.FindItem(this.Sack, cellLocation, this.DragInfo.Item);
 	}
 
 	/// <summary>

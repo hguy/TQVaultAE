@@ -386,6 +386,76 @@ public class ItemMovementServiceTests
 		item.Place.Name.Should().Be("Custom Name");
 	}
 
+	[Fact]
+	public void FindItem_CellCoveredByItem_ReturnsIt()
+	{
+		var sack = new SackCollection();
+		var item = CreateItem("Item1", 2, 1, 2, 3);
+		sack.AddItem(item);
+
+		_service.FindItem(sack, new Point(3, 3)).Should().BeSameAs(item);
+		_service.FindItem(sack, new Point(4, 3)).Should().BeNull();
+		_service.FindItem(sack, new Point(3, 4)).Should().BeNull();
+	}
+
+	[Fact]
+	public void FindItem_IgnoredItem_IsSkipped()
+	{
+		var sack = new SackCollection();
+		var dragged = CreateItem("Dragged", 0, 0, 1, 1);
+		sack.AddItem(dragged);
+
+		_service.FindItem(sack, new Point(0, 0), dragged).Should().BeNull();
+		_service.FindItem(sack, new Point(0, 0)).Should().BeSameAs(dragged);
+	}
+
+	[Fact]
+	public void FindItem_IgnoredItemOverlapsAnother_ReturnsTheOther()
+	{
+		var sack = new SackCollection();
+		var dragged = CreateItem("Dragged", 0, 0, 2, 2);
+		var other = CreateItem("Other", 1, 1, 1, 1);
+		sack.AddItem(dragged);
+		sack.AddItem(other);
+
+		_service.FindItem(sack, new Point(1, 1), dragged).Should().BeSameAs(other);
+	}
+
+	[Fact]
+	public void FindItem_ItemWithoutBaseId_IsSkipped()
+	{
+		var sack = new SackCollection();
+		var empty = CreateItem("Empty", 0, 0, 1, 1);
+		empty.BaseItemId = RecordId.Empty;
+		sack.AddItem(empty);
+
+		_service.FindItem(sack, new Point(0, 0)).Should().BeNull();
+	}
+
+	[Fact]
+	public void UpdateItemLocation_StashWithStashType_UsesStashTypeAsSackNumber()
+	{
+		var item = CreateItem("Item1", 0, 0, 1, 1);
+		var player = new PlayerCollection("Stash", "/path/to/stash");
+
+		_service.UpdateItemLocation(item, player, SackType.Stash, 3, StashType.RelicVaultStash, "Relic");
+
+		item.Place.SackNumber.Should().Be((int)StashType.RelicVaultStash);
+		item.Place.StashType.Should().Be(StashType.RelicVaultStash);
+		item.Place.Path.Should().Be("/path/to/stash");
+	}
+
+	[Fact]
+	public void UpdateItemLocation_StashWithoutStashType_UsesSackNumber()
+	{
+		var item = CreateItem("Item1", 0, 0, 1, 1);
+		var player = new PlayerCollection("Stash", "/path/to/stash");
+
+		_service.UpdateItemLocation(item, player, SackType.Stash, 3);
+
+		item.Place.SackNumber.Should().Be(3);
+	}
+
 	/// <summary>
 	/// Helper to create a test item
 	/// </summary>
