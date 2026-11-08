@@ -146,6 +146,7 @@ public static class Program
 		.AddSingleton<ISettingsPersistenceService, SettingsPersistenceService>()
 		.AddSingleton<IStartupService, StartupService>()
 		.AddSingleton(new CommandLineArgs(Environment.GetCommandLineArgs()))
+		.AddTransient<ILoadAllService, LoadAllService>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()

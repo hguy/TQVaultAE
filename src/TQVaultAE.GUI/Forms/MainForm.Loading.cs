@@ -7,10 +7,7 @@ using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.Collections.Concurrent;
 using TQVaultAE.Application;
-using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.Logs;
 
@@ -29,16 +26,10 @@ public partial class MainForm
 	/// </summary>
 	/// <returns>Total number of files that LoadAllFiles() will load.</returns>
 	private int LoadAllFilesTotal()
-		=> LoadAllFilesCount(GamePathResolver.GetCharacterList().Length, GamePathResolver.GetVaultList().Length);
-
-	/// <summary>
-	/// Number of progress steps of <see cref="LoadAllFiles"/>: one per character, one per character stash, one per vault.
-	/// </summary>
-	private static int LoadAllFilesCount(int characters, int vaults) => (characters * 2) + vaults;
+		=> LoadAllService.CountSteps(GamePathResolver.GetCharacterList().Length, GamePathResolver.GetVaultList().Length);
 
 	/// <summary>
 	/// Loads all of the players, stashes, and vaults.
-	/// Shows a progress dialog.
 	/// Used for the searching function.
 	/// </summary>
 	/// <param name="progress">Receives one step per loaded file.</param>
@@ -46,92 +37,24 @@ public partial class MainForm
 	{
 		// Check to see if we failed the last time we tried loading all of the files.
 		// If we did fail then turn it off and skip it.
-		if (!USettings.LoadAllFilesCompleted)
+		if (this.loadAllService.LastRunFailed
+			&& this.Services.MessageBoxes.Confirm(Resources.MainFormDisableLoadAllFiles, Resources.MainFormDisableLoadAllFilesCaption, MessageBoxIcon.Information))
 		{
-			if (this.Services.MessageBoxes.Confirm(Resources.MainFormDisableLoadAllFiles, Resources.MainFormDisableLoadAllFilesCaption, MessageBoxIcon.Information))
-			{
-				USettings.LoadAllFilesCompleted = true;
-				USettings.LoadAllFiles = false;
-				USettings.Save();
-				return;
-			}
-		}
-
-		string[] vaults = GamePathResolver.GetVaultList();
-		var charactersIT = this.comboBoxCharacter.Items.OfType<PlayerSave>().ToArray();
-
-		// Since this takes a while, show a progress dialog box.
-		int total = LoadAllFilesCount(charactersIT.Length, vaults.Length);
-
-		if (total > 0)
-		{
-			// We were successful last time so we reset the flag for this attempt.
-			USettings.LoadAllFilesCompleted = false;
-			USettings.Save();
-		}
-		else
+			this.loadAllService.DisableLoadAll();
 			return;
+		}
 
-		Stopwatch stopWatch = new Stopwatch();
-		stopWatch.Start();
+		var result = this.loadAllService.LoadAll(
+			this.comboBoxCharacter.Items.OfType<PlayerSave>().ToArray()
+			, GamePathResolver.GetVaultList()
+			, progress);
 
-		// Load all of the Immortal Throne player files and stashes.
-		var bagPlayer = new ConcurrentBag<PlayerLoadResult>();
-		var bagPlayerStashes = new ConcurrentBag<StashLoadResult>();
-		var bagVault = new ConcurrentBag<VaultLoadResult>();
-
-		var lambdacharactersIT = charactersIT.Select(c => (Action)(() =>
+		// Display errors
+		foreach (var error in result.Errors)
 		{
-			// Get the player
-			var result = this.playerService.LoadPlayer(c);
-			bagPlayer.Add(result);
-			progress.Report(1);
-		})).ToArray();
-
-		var lambdacharacterStashes = charactersIT.Select(c => (Action)(() =>
-		{
-			// Get the player's stash
-			var result = this.stashService.LoadPlayerStash(c);
-			bagPlayerStashes.Add(result);
-			progress.Report(1);
-		})).ToArray();
-
-		var lambdaVault = vaults.Select(c => (Action)(() =>
-		{
-			// Load all of the vaults.
-			var result = this.vaultService.LoadVault(c);
-			bagVault.Add(result);
-			progress.Report(1);
-		})).ToArray();
-
-		Parallel.Invoke(lambdacharactersIT.Concat(lambdacharacterStashes).Concat(lambdaVault).ToArray());// Parallel loading
-
-		// Dispay errors
-		var readErrors = bagPlayer.Select(p => (File: (string?)p.PlayerFile, Error: p.Player?.ArgumentException))
-			.Concat(bagPlayerStashes.Select(p => (File: p.StashFile, Error: p.Stash?.ArgumentException)))
-			.Concat(bagVault.Select(p => (File: (string?)p.Filename, Error: p.ArgumentException)))
-			.ToList();
-		foreach (var (file, error) in readErrors)
-		{
-			if (error is null)
-				continue;
-
-			string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, file, error.Message);
+			string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, error.File, error.Error.Message);
 			this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
 		}
-
-		stopWatch.Stop();
-		// Get the elapsed time as a TimeSpan value.
-		TimeSpan ts = stopWatch.Elapsed;
-
-		// Format and display the TimeSpan value.
-		Log.LogInformation("LoadTime {Hours:00}:{Minutes:00}:{Seconds:00}.{Centiseconds:00}",
-			ts.Hours, ts.Minutes, ts.Seconds,
-			ts.Milliseconds / 10);
-
-		// We made it so set the flag to indicate we were successful.
-		USettings.LoadAllFilesCompleted = true;
-		USettings.Save();
 	}
 
 	/// <summary>
@@ -350,44 +273,29 @@ public partial class MainForm
 			}
 		}
 
+		var characters = this.comboBoxCharacter.Items.OfType<PlayerSave>().ToArray();
+		var selection = StartupSelection.Resolve(
+			USettings
+			, characters.Select(ps => ps.Name)
+			, vaultName => FileIO.Exists(GamePathResolver.GetVaultFile(vaultName))
+			, this.commandLineArgs);
+
 		// Load last character here if selected
-		if (USettings.LoadLastCharacter)
-		{
-			var lastPlayerSave = this.comboBoxCharacter.Items.OfType<PlayerSave>()
-				.FirstOrDefault(ps => ps.Name == USettings.LastCharacterName);
+		if (selection.CharacterName is not null)
+			this.comboBoxCharacter.SelectedItem = characters.First(ps => ps.Name == selection.CharacterName);
 
-			if (lastPlayerSave != null)
-				this.comboBoxCharacter.SelectedItem = lastPlayerSave;
-		}
-
-		string currentVault = VaultService.MAINVAULT;
-
-		// See if we should load the last loaded vault
-		if (USettings.LoadLastVault)
-		{
-			currentVault = USettings.LastVaultName;
-
-			// Make sure there is something in the config file to load else load the Main Vault
-			// We do not want to create new here.
-			if (string.IsNullOrEmpty(currentVault) || !FileIO.Exists(GamePathResolver.GetVaultFile(currentVault)))
-				currentVault = VaultService.MAINVAULT;
-		}
-
-		this.vaultListComboBox.SelectedItem = currentVault;
+		this.vaultListComboBox.SelectedItem = selection.VaultName;
 
 		// Finally load Vault
-		this.LoadVault(currentVault, false);
+		this.LoadVault(selection.VaultName, false);
 
 		this.splashScreen.UpdateText();
 		this.splashScreen.ShowMainForm = true;
 
-		var args = this.commandLineArgs;
-
 		// Allows skipping of title screen with setting
-		if (args.IsAutomatic || USettings.SkipTitle == true)
+		if (selection.SkipTitle)
 		{
-			string? player = args.Player;
-			int index = this.comboBoxCharacter.FindString(player ?? string.Empty);
+			int index = this.comboBoxCharacter.FindString(selection.AutomaticPlayer);
 			if (index != -1)
 				this.comboBoxCharacter.SelectedIndex = index;
 

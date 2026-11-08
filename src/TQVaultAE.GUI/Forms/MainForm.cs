@@ -42,6 +42,8 @@ public partial class MainForm : VaultForm
 	/// </summary>
 	private readonly CommandLineArgs commandLineArgs;
 
+	private readonly ILoadAllService loadAllService;
+
 	#region	Fields
 
 	/// <summary>
@@ -171,6 +173,7 @@ public partial class MainForm : VaultForm
 			, IItemExchangeService itemExchangeService
 			, ISettingsPersistenceService settingsPersistenceService
 			, CommandLineArgs commandLineArgs
+			, ILoadAllService loadAllService
 		) : base(services)
 	{
 		this.userContext = sessionContext;
@@ -182,6 +185,7 @@ public partial class MainForm : VaultForm
 		this.itemExchangeService = itemExchangeService;
 		this.settingsPersistenceService = settingsPersistenceService;
 		this.commandLineArgs = commandLineArgs;
+		this.loadAllService = loadAllService;
 
 		Log = log;
 		Log.LogInformation("TQVaultAE Initialization !");
