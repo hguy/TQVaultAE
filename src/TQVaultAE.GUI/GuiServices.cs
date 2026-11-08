@@ -48,6 +48,7 @@ public sealed class GuiServices
 		, IDirectoryIO directoryIO
 		, IMessageBoxService messageBoxes
 		, IVaultService vaultService
+		, IStashService stashService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -76,6 +77,7 @@ public sealed class GuiServices
 		this.DirectoryIO = directoryIO;
 		this.MessageBoxes = messageBoxes;
 		this.VaultService = vaultService;
+		this.StashService = stashService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -109,6 +111,9 @@ public sealed class GuiServices
 
 	/// <summary>Vault files, lists and bag operations.</summary>
 	public IVaultService VaultService { get; }
+
+	/// <summary>Stash files and the stash panel bags.</summary>
+	public IStashService StashService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();

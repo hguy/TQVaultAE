@@ -6,6 +6,7 @@
 using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Services;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
@@ -242,21 +243,14 @@ public class BagButtonBase : Panel
 			var panel = this.getToolTip.Target as Panel;
 			this.getToolTip(this);
 
-			if (panel is StashPanel sp)
+			if (panel is StashPanel)
 			{
-				switch (this.ButtonNumber)
-				{
-					case BagIdConstants.BAGID_EQUIPMENTPANEL when !this.USettings.DisableTooltipEquipment:
-					case BagIdConstants.BAGID_PLAYERSTASH when !this.USettings.DisableTooltipStash:
-					case BagIdConstants.BAGID_RELICVAULTSTASH when !this.USettings.DisableTooltipRelic:
-					case BagIdConstants.BAGID_TRANSFERSTASH when !this.USettings.DisableTooltipTransfer:
-						BagButtonTooltip.ShowTooltip(this.Services, this);
-						break;
-				}
+				if (!this.USettings.IsStashTooltipDisabled(this.ButtonNumber))
+					BagButtonTooltip.ShowTooltip(this.Services, this);
 			}
 			else if (
 				(panel is VaultPanel vp && vp.Vault is not null && !vp.Vault.DisabledTooltipBagId.Contains(this.ButtonNumber)) // Vault Only
-				|| panel is PlayerPanel || panel is SackPanel || panel is StashPanel // Others
+				|| panel is PlayerPanel || panel is SackPanel // Others
 			)
 			{
 				BagButtonTooltip.ShowTooltip(this.Services, this);

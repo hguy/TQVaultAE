@@ -387,14 +387,8 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 		set
 		{
-			int bagID = value;
-
 			// figure out the current bag to use
-			if (bagID < 0)
-				bagID = BagIdConstants.BAGID_EQUIPMENTPANEL;
-
-			if (bagID >= 4)
-				bagID = BagIdConstants.BAGID_RELICVAULTSTASH;
+			int bagID = this.Services.StashService.ClampBagId(value);
 
 			if (bagID != this.currentBag)
 			{
@@ -521,11 +515,7 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	protected override void AssignSacks()
 	{
 		// figure out the current bag to use
-		if (this.currentBag < 0)
-			this.currentBag = BagIdConstants.BAGID_EQUIPMENTPANEL;
-
-		if (this.currentBag >= 4)
-			this.currentBag = BagIdConstants.BAGID_RELICVAULTSTASH;
+		this.currentBag = this.Services.StashService.ClampBagId(this.currentBag);
 
 		#region hide/show bag buttons and assign initial bitmaps
 
@@ -549,69 +539,25 @@ public partial class StashPanel : VaultPanel, IScalingControl
 
 		#endregion
 
-		if (this.currentBag == BagIdConstants.BAGID_EQUIPMENTPANEL)
+		this.SackPanel.Sack = this.GetBagSack(this.currentBag);
+		if (this.currentBag == BagIdConstants.BAGID_EQUIPMENTPANEL && this.Player is not null)
 		{
-			if (this.Player == null)
-				this.SackPanel.Sack = null;
-			else
-			{
-				this.SackPanel.Sack = this.Player.EquipmentSack;
-				this.equipmentPanel.GetGearStatBonus();
-				GetSkillStatBonus();
-			}
-		}
-		else if (this.currentBag == BagIdConstants.BAGID_TRANSFERSTASH)
-		{
-			// Assign the transfer stash
-			if ((this.transferStash == null) || (this.transferStash.NumberOfSacks < 1))
-				this.SackPanel.Sack = null;
-			else
-			{
-				if (this.transferStash.NumberOfSacks > 0)
-					this.SackPanel.Sack = this.transferStash.Sack;
-				else
-					this.SackPanel.Sack = null;
-			}
-		}
-		else if (this.currentBag == BagIdConstants.BAGID_PLAYERSTASH)
-		{
-			if ((this.stash == null) || (this.stash.NumberOfSacks < 1))
-				this.SackPanel.Sack = null;
-			else
-			{
-				if (this.stash.NumberOfSacks > 0)
-					this.SackPanel.Sack = this.stash.Sack;
-				else
-					this.SackPanel.Sack = null;
-			}
-		}
-		else if (this.currentBag == BagIdConstants.BAGID_RELICVAULTSTASH)
-		{
-			// Assign the relic vault stash
-			if ((this.relicVaultStash == null) || (this.relicVaultStash.NumberOfSacks < 1))
-				this.SackPanel.Sack = null;
-			else
-			{
-				if (this.relicVaultStash.NumberOfSacks > 0)
-					this.SackPanel.Sack = this.relicVaultStash.Sack;
-				else
-					this.SackPanel.Sack = null;
-			}
+			this.equipmentPanel.GetGearStatBonus();
+			GetSkillStatBonus();
 		}
 
 		// Assign sacks to button
-		for (int i = 0; i < this.BagButtons.Count; i++)
-		{
-			var but = this.BagButtons[i];
-			switch (i)
-			{
-				case BagIdConstants.BAGID_EQUIPMENTPANEL: but.Sack = this.Player?.EquipmentSack; break;
-				case BagIdConstants.BAGID_PLAYERSTASH: but.Sack = this.stash?.Sack; break;
-				case BagIdConstants.BAGID_RELICVAULTSTASH: but.Sack = this.relicVaultStash?.Sack; break;
-				case BagIdConstants.BAGID_TRANSFERSTASH: but.Sack = this.transferStash?.Sack; break;
-			}
-		}
+		foreach (var button in this.BagButtons.Take(4))
+			button.Sack = this.GetBagSack(button.ButtonNumber);
 	}
+
+	/// <summary>
+	/// Gets the sack shown by a bag of this panel.
+	/// </summary>
+	/// <param name="bagId">The bag id (see <see cref="BagIdConstants"/>).</param>
+	/// <returns>The sack, null when the bag has nothing to show.</returns>
+	private SackCollection? GetBagSack(int bagId)
+		=> this.Services.StashService.GetBagSack(bagId, this.Player, this.transferStash, this.stash, this.relicVaultStash);
 
 	/// <summary>
 	/// Paint callback
