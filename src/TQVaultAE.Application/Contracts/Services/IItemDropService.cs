@@ -1,0 +1,42 @@
+using System.Drawing;
+using TQVaultAE.Application.Results;
+using TQVaultAE.Domain.Entities;
+
+namespace TQVaultAE.Application.Contracts.Services;
+
+/// <summary>
+/// Rules of an item dropped with the mouse on a sack of a vault, a player or a stash.
+/// </summary>
+/// <remarks>
+/// A drop runs in two steps: <see cref="Decide"/>, then, for <see cref="DropDecision.Drop"/>, the caller takes the
+/// dragged item out of its source sack and calls <see cref="Drop"/>.
+/// </remarks>
+public interface IItemDropService
+{
+	/// <summary>
+	/// Decides what a drop does.
+	/// </summary>
+	/// <remarks>
+	/// Refused when the stash does not take this kind of item (the relic vault), or when a player or equipment sack
+	/// gets an item the current character cannot use. Put back when dropped on itself and the drag can be cancelled.
+	/// </remarks>
+	/// <param name="dragItem">The dragged item.</param>
+	/// <param name="itemUnderUs">The only item under the drop, or <see langword="null"/>.</param>
+	/// <param name="panelSackType">The sack type of the panel of the drop.</param>
+	/// <param name="stashType">The stash type of the sack of the drop, or <see langword="null"/>.</param>
+	/// <param name="canCancelDrag">The drag can be cancelled (not a new or modified item).</param>
+	DropDecision Decide(Item dragItem, Item? itemUnderUs, SackType panelSackType, StashType? stashType, bool canCancelDrag);
+
+	/// <summary>
+	/// Drops an item on a sack: stacks it on the item under it, or places it at <paramref name="cell"/>, moves its
+	/// place to <paramref name="place"/> and registers it in the search database.
+	/// </summary>
+	/// <param name="dragItem">The dropped item, already taken out of its source sack.</param>
+	/// <param name="itemUnderUs">The only item under the drop, or <see langword="null"/>.</param>
+	/// <param name="sack">The sack of the drop.</param>
+	/// <param name="cell">The top left cell of the drop.</param>
+	/// <param name="place">Where the sack is: container, sack number and type.</param>
+	/// <param name="disableAutoStacking">The user turned stacking off.</param>
+	/// <returns>What ends in the sack and what to pick up next.</returns>
+	ItemDropResult Drop(Item dragItem, Item? itemUnderUs, SackCollection sack, Point cell, ContainerPlace place, bool disableAutoStacking);
+}

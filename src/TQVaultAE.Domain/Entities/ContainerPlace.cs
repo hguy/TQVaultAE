@@ -30,4 +30,17 @@ public record ContainerPlace
 	/// Null if not a stash
 	/// </summary>
 	public StashType? StashType { get; set; }
+
+	/// <summary>
+	/// Copies another place into this one, keeping this instance: the item and its search result share it.
+	/// </summary>
+	/// <param name="other">The place to copy.</param>
+	public void CopyFrom(ContainerPlace other)
+	{
+		this.SackType = other.SackType;
+		this.Path = other.Path;
+		this.Name = other.Name;
+		this.StashType = other.StashType;
+		this.SackNumber = other.SackNumber;
+	}
 }
