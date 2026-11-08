@@ -108,7 +108,10 @@ public partial class StashPanel
 			var mg = new Padding(0, 0, 0, 1);
 			var pd = new Padding(0);
 			int rowIdx = 0;
-			var labFnt = new Font(this.Font.FontFamily, 7.5f * UIService.FontZoom);
+			// Zoom, not FontZoom: these labels are new, and Windows Forms scales them to the DPI of the panel when they are
+			// added. With FontZoom, a player shown on a monitor of another DPI got the DPI ratio twice, and the text stayed
+			// smaller (by that ratio) on every monitor until the next player change.
+			var labFnt = new Font(this.Font.FontFamily, 7.5f * UIService.Zoom);
 
 			// Add Edit Button
 			var editButton = new ScalingButton()

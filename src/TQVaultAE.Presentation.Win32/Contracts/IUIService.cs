@@ -50,6 +50,8 @@ public interface IUIService : IUserNotifier
 	/// <summary>
 	/// What fonts sized in points are multiplied by: the zoom, and the monitor DPI over the system DPI, since Windows sizes
 	/// those fonts for the system DPI. Equal to <see cref="Zoom"/> on a monitor at the system DPI.
+	/// For a control already on the window. A control created later and added to it is scaled to the window's DPI by
+	/// Windows Forms when it is added: its font takes <see cref="Zoom"/>, or it shrinks twice on a monitor of another DPI.
 	/// </summary>
 	float FontZoom { get; }
 
