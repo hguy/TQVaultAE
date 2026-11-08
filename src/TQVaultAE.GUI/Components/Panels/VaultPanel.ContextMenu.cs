@@ -13,6 +13,7 @@ using System.Globalization;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
@@ -42,41 +43,20 @@ public partial class VaultPanel
 	}
 
 	private void ExportVaultCSVToClipboard(object? sender, EventArgs e)
-	{
-		var (delim, _) = GetCSVDelimiter();
-
-		var csvRows = (this.ShownVault.Sacks ?? []).SelectMany((sack, idx)
-				=> sack.Select(itm => (itm, bagid: idx + 1, vaultname: this.ShownVault.PlayerName))
-			)
-			.Select((vt, idx) =>
-			{
-				var fnr = this.ItemProvider.GetFriendlyNames(vt.itm, FriendlyNamesExtraScopes.Requirements);
-				return new CsvRow(vt.vaultname, vt.bagid, fnr, idx, delim).ToString();
-			}).ToList();
-
-		csvRows.Insert(0, CsvRow.GetCSVHeader(delim));
-
-		var export = string.Join(Environment.NewLine, csvRows);
-
-		Clipboard.SetText(export, TextDataFormat.UnicodeText);
-
-		this.UIService.NotifyUser(string.Format(Resources.CSVExportedToClipboardNotification, DateTime.Now));
-	}
+		=> this.ExportCSVToClipboard(null);
 
 	private void ExportBagCSVToClipboard(object? sender, EventArgs e)
+		=> this.ExportCSVToClipboard(this.BagSackPanel.CurrentSack);
+
+	/// <summary>
+	/// Copies the CSV export of the shown vault, or of one of its bags, to the clipboard.
+	/// </summary>
+	/// <param name="bagIndex">Index of the bag to export; the whole vault when null.</param>
+	private void ExportCSVToClipboard(int? bagIndex)
 	{
 		var (delim, _) = GetCSVDelimiter();
 
-		var csvRows = this.BagSackPanel.ShownSack.Select(itm => (itm, bagid: this.BagSackPanel.CurrentSack + 1, vaultname: this.ShownVault.PlayerName))
-			.Select((vt, idx) =>
-			{
-				var fnr = this.ItemProvider.GetFriendlyNames(vt.itm, FriendlyNamesExtraScopes.Requirements);
-				return new CsvRow(vt.vaultname, vt.bagid, fnr, idx, delim).ToString();
-			}).ToList();
-
-		csvRows.Insert(0, CsvRow.GetCSVHeader(delim));
-
-		var export = string.Join(Environment.NewLine, csvRows);
+		var export = this.Services.VaultService.BuildCsvExport(this.ShownVault, bagIndex, delim);
 
 		Clipboard.SetText(export, TextDataFormat.UnicodeText);
 
@@ -211,27 +191,12 @@ public partial class VaultPanel
 	}
 
 	/// <summary>
-	/// Gets the index from the menu string using the delimiter in the resources since the strings are now regionalized.
-	/// Helper for the context menu.
+	/// Gets the destination bag index carried by a bag submenu entry.
 	/// </summary>
-	/// <param name="selectedItem">string of the item selected in the menu</param>
-	/// <returns>numeric index of the item selected.  -1 if it fails.</returns>
-	private static int GetDestinationSackIndex(string? selectedItem)
-	{
-		if (string.IsNullOrEmpty(selectedItem))
-		{
-			return -1;
-		}
-
-		int hashSign = Resources.GlobalMenuBag.IndexOf(Resources.GlobalMenuBagDelimiter, StringComparison.Ordinal) + 1;
-
-		if (hashSign == -1)
-		{
-			return -1;
-		}
-
-		return Convert.ToInt32(selectedItem.Substring(hashSign), CultureInfo.InvariantCulture) - 1;
-	}
+	/// <param name="sender">The clicked menu entry.</param>
+	/// <returns>The bag index, -1 when the entry carries none.</returns>
+	private static int GetDestinationSackIndex(object? sender)
+		=> (sender as ToolStripItem)?.Tag is MenuItemTagBagIndex tag ? tag.Index : -1;
 
 	/// <summary>
 	/// Creates a context menu submenu with choices for each bag in the panel
@@ -318,24 +283,8 @@ public partial class VaultPanel
 		if (selectedItem == Resources.PlayerPanelCopyIcon)
 		{
 			var button = this.BagButtons[this.CurrentBag];
-			var sourceInfo = button.Sack?.BagButtonIconInfo;
-
-			// Create a new instance (deep copy) to avoid shared reference issues
-			if (sourceInfo is not null)
-			{
-				this.userContext.IconInfoCopy = new BagButtonIconInfo
-				{
-					DisplayMode = sourceInfo.DisplayMode,
-					Label = sourceInfo.Label,
-					OnStr = sourceInfo.OnStr,
-					OffStr = sourceInfo.OffStr,
-					OverStr = sourceInfo.OverStr
-				};
-			}
-			else
-			{
-				this.userContext.IconInfoCopy = null;
-			}
+			// Keep a copy, not the bag's own instance, so later edits of the bag do not change it.
+			this.userContext.IconInfoCopy = button.Sack?.BagButtonIconInfo?.Clone();
 
 			if (this.FindForm() is MainForm frm)
 				frm.NotificationText.Text = Resources.GlobalCopied;
@@ -345,21 +294,14 @@ public partial class VaultPanel
 		{
 			var button = this.BagButtons[this.CurrentBag];
 
-			// Create a new instance to avoid shared reference issues
+			// Paste a copy, so pasting on several bags does not share one instance.
 			var sourceInfo = this.userContext.IconInfoCopy;
 			if (sourceInfo is not null)
 			{
 				if (button.Sack is null)
 					return;
 
-				button.Sack.BagButtonIconInfo = new BagButtonIconInfo
-				{
-					DisplayMode = sourceInfo.DisplayMode,
-					Label = sourceInfo.Label,
-					OnStr = sourceInfo.OnStr,
-					OffStr = sourceInfo.OffStr,
-					OverStr = sourceInfo.OverStr
-				};
+				button.Sack.BagButtonIconInfo = sourceInfo.Clone();
 			}
 			else
 			{
@@ -387,14 +329,15 @@ public partial class VaultPanel
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 		if (item != null)
 		{
-			int destinationIndex = GetDestinationSackIndex(item.Name);
+			int destinationIndex = GetDestinationSackIndex(item);
 
-			if (destinationIndex > this.ShownPlayer.NumberOfSacks)
+			var check = this.Services.VaultService.CheckBagTransfer(this.ShownPlayer, this.CurrentBag, destinationIndex);
+			if (check == BagTransferCheck.Invalid)
 			{
 				return;
 			}
 
-			if (!(this.ShownPlayer.GetSack(destinationIndex + this.BagPanelOffset)?.IsEmpty ?? true))
+			if (check == BagTransferCheck.DestinationNotEmpty)
 			{
 				// Suppressed warnings mean overwrite without asking, as for the other confirmations.
 				if (!this.USettings.SuppressWarnings && !this.Services.MessageBoxes.Confirm(Resources.PlayerOverwriteSackMsg, Resources.PlayerOverwriteSack))
@@ -428,7 +371,7 @@ public partial class VaultPanel
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 		if (item != null)
 		{
-			int destinationIndex = GetDestinationSackIndex(item.Name);
+			int destinationIndex = GetDestinationSackIndex(item);
 			if (this.ShownPlayer.MoveSack(this.CurrentBag, destinationIndex))
 			{
 				if (this.CurrentBag != destinationIndex)
@@ -457,9 +400,9 @@ public partial class VaultPanel
 		ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
 		if (item != null)
 		{
-			int destinationIndex = GetDestinationSackIndex(item.Name);
+			int destinationIndex = GetDestinationSackIndex(item);
 
-			if (destinationIndex < 0 || destinationIndex > this.ShownPlayer.NumberOfSacks || this.CurrentBag == destinationIndex)
+			if (this.Services.VaultService.CheckBagTransfer(this.ShownPlayer, this.CurrentBag, destinationIndex) == BagTransferCheck.Invalid)
 			{
 				return;
 			}

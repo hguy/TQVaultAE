@@ -8,6 +8,7 @@ using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
 using TQVaultAE.Application.DTOs;
+using TQVaultAE.Domain.Results;
 
 namespace TQVaultAE.Tests.Services;
 
@@ -25,6 +26,7 @@ public class VaultServiceTests
 	private readonly Mock<IFileIO> _mockFileIO;
 	private readonly Mock<IPathIO> _mockPathIO;
 	private readonly UserSettings _userSettings;
+	private readonly Mock<IItemProvider> _mockItemProvider;
 	private readonly VaultService _vaultService;
 
 	/// <summary>
@@ -40,6 +42,7 @@ public class VaultServiceTests
 		_mockFileIO = new Mock<IFileIO>();
 		_mockPathIO = new Mock<IPathIO>();
 		_userSettings = new UserSettings();
+		_mockItemProvider = new Mock<IItemProvider>();
 
 		// Create SessionContext - parameterless data holder
 		_sessionContext = new SessionContext();
@@ -53,7 +56,8 @@ public class VaultServiceTests
 			_mockGameFileService.Object,
 			_mockFileIO.Object,
 			_mockPathIO.Object,
-			_userSettings
+			_userSettings,
+			_mockItemProvider.Object
 		);
 	}
 
@@ -564,5 +568,61 @@ public class VaultServiceTests
 		var choices = _vaultService.BuildVaultChoices(["Arms", "Main Vault"], "<Select>", VaultService.MAINVAULT);
 
 		choices.Should().Equal("<Select>", "Arms");
+	}
+
+	private static PlayerCollection CreateVaultWithItemInBag(int bags, int filledBag)
+	{
+		var vault = new PlayerCollection("Gear", """C:\Vaults\Gear.vault.json""") { IsVault = true };
+		vault.CreateEmptySacks(bags);
+		vault.Sacks[filledBag].AddItem(new Item());
+		return vault;
+	}
+
+	[Theory]
+	[InlineData(0, 1, BagTransferCheck.Allowed)]
+	[InlineData(0, 2, BagTransferCheck.DestinationNotEmpty)]
+	[InlineData(0, 0, BagTransferCheck.Invalid)]
+	[InlineData(0, -1, BagTransferCheck.Invalid)]
+	[InlineData(0, 3, BagTransferCheck.Invalid)]
+	[InlineData(3, 1, BagTransferCheck.Invalid)]
+	public void CheckBagTransfer_ChecksBoundsSameBagAndDestinationContent(int source, int destination, BagTransferCheck expected)
+	{
+		var vault = CreateVaultWithItemInBag(bags: 3, filledBag: 2);
+
+		var check = _vaultService.CheckBagTransfer(vault, source, destination);
+
+		check.Should().Be(expected);
+	}
+
+	[Fact]
+	public void BuildCsvExport_WholeVault_NumbersRowsAcrossBagsWithOneBasedBagIds()
+	{
+		var vault = CreateVaultWithItemInBag(bags: 3, filledBag: 2);
+		vault.GetSack(0)!.AddItem(new Item());
+		_mockItemProvider
+			.Setup(x => x.GetFriendlyNames(It.IsAny<Item>(), FriendlyNamesExtraScopes.Requirements, true))
+			.Returns<Item, FriendlyNamesExtraScopes?, bool>((item, _, _) => new ToFriendlyNameResult(item));
+
+		var lines = _vaultService.BuildCsvExport(vault, null, ';').Split(Environment.NewLine);
+
+		lines.Should().HaveCount(3);
+		lines[0].Should().StartWith("Row;Vault;BagId;");
+		lines[1].Should().StartWith("0;Gear;1;");
+		lines[2].Should().StartWith("1;Gear;3;");
+	}
+
+	[Fact]
+	public void BuildCsvExport_OneBag_ExportsOnlyThatBag()
+	{
+		var vault = CreateVaultWithItemInBag(bags: 3, filledBag: 2);
+		vault.GetSack(0)!.AddItem(new Item());
+		_mockItemProvider
+			.Setup(x => x.GetFriendlyNames(It.IsAny<Item>(), FriendlyNamesExtraScopes.Requirements, true))
+			.Returns<Item, FriendlyNamesExtraScopes?, bool>((item, _, _) => new ToFriendlyNameResult(item));
+
+		var lines = _vaultService.BuildCsvExport(vault, 2, ',').Split(Environment.NewLine);
+
+		lines.Should().HaveCount(2);
+		lines[1].Should().StartWith("0,Gear,3,");
 	}
 }

@@ -54,4 +54,10 @@ public class BagButtonIconInfo
 		get => OverStr;
 		set => OverStr = RecordId.RawOf(value);
 	}
+
+	/// <summary>
+	/// Returns a copy that shares nothing with this instance, so a pasted icon is not changed with its source.
+	/// </summary>
+	public BagButtonIconInfo Clone()
+		=> (BagButtonIconInfo)this.MemberwiseClone();
 }
