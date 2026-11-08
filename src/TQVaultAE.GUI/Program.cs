@@ -135,6 +135,7 @@ public static class Program
 
 		// Application Layer - Core Services
 		.AddSingleton<IItemMovementService, ItemMovementService>()
+		.AddSingleton<IAffixCatalogService, AffixCatalogService>()
 		.AddSingleton<IHighlightService, HighlightService>()
 		.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
 		.AddSingleton<IItemExchangeService, ItemExchangeService>()

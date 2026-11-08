@@ -1,0 +1,207 @@
+using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
+using TQVaultAE.Domain.Entities;
+using TQVaultAE.Domain.Helpers;
+
+namespace TQVaultAE.Services;
+
+/// <summary>
+/// Builds the catalogs offered by the item context menu: set members, completion bonuses and affixes.
+/// </summary>
+public class AffixCatalogService : IAffixCatalogService
+{
+	private const int BrokenTypeId = 0;
+	private const int PrefixTypeId = 1;
+	private const int SuffixTypeId = 2;
+
+	private readonly IItemProvider _itemProvider;
+	private readonly ITranslationService _translationService;
+
+	public AffixCatalogService(IItemProvider itemProvider, ITranslationService translationService)
+	{
+		this._itemProvider = itemProvider;
+		this._translationService = translationService;
+	}
+
+	/// <inheritdoc/>
+	public IReadOnlyList<SetMemberChoice> GetSetMemberChoices(Item item)
+	{
+		var setItems = this._itemProvider.GetSetItems(item);
+		if (setItems?.setMembers is not { Count: > 0 })
+			return [];
+
+		var choices = new List<SetMemberChoice>();
+		foreach (var setPiece in setItems.setMembers)
+		{
+			// do not offer the current item
+			if (item.BaseItemId == setPiece.Key.ToRecordId())
+				continue;
+
+			Info info = setPiece.Value;
+			if (info is null)
+				continue;
+
+			choices.Add(new SetMemberChoice(setPiece.Key, this._translationService.TranslateXTag(info.DescriptionTag)));
+		}
+
+		return choices.OrderBy(c => c.Label).ToList();
+	}
+
+	/// <inheritdoc/>
+	public IReadOnlyList<BonusChoice> GetCompletionBonusChoices(Item item)
+	{
+		if (!((item.IsRelicOrCharm && item.IsRelicComplete) || item.IsArtifact))
+			return [];
+
+		return BuildBonusChoices(this._itemProvider.BonusTableRelicOrArtifact(item), item.RelicBonusId);
+	}
+
+	/// <inheritdoc/>
+	public (IReadOnlyList<BonusChoice> Relic1, IReadOnlyList<BonusChoice> Relic2) GetSocketedBonusChoices(Item item)
+	{
+		if (!this._itemProvider.BonusTableSocketedRelic(item, out var table1, out var table2))
+			return ([], []);
+
+		return (BuildBonusChoices(table1, item.RelicBonusId), BuildBonusChoices(table2, item.RelicBonus2Id));
+	}
+
+	/// <inheritdoc/>
+	public AffixCatalog? GetAffixCatalog(Item item, bool enableEpicLegendaryAffixes)
+	{
+		if (!(item.IsArmor || item.IsWeaponShield || item.IsJewellery))
+			return null;
+
+		ItemAffixes? affixes = enableEpicLegendaryAffixes && (item.Rarity == Rarity.Epic || item.Rarity == Rarity.Legendary)
+			// Get all available affixes for an item type
+			? this._itemProvider.GetAllAvailableAffixes(item.GearType)
+			// Get affixes related to a specific item
+			: this._itemProvider.GetItemAffixes(item.BaseItemId);
+
+		if (affixes is null)
+			return null;
+
+		var groups = CurateAffixes(affixes);
+
+		return new AffixCatalog(
+			affixes.Broken.Count > 0
+			, groups.Where(g => g.Key.TypeId == BrokenTypeId).ToList()
+			, affixes.Prefix.Count > 0
+			, groups.Where(g => g.Key.TypeId == PrefixTypeId).ToList()
+			, affixes.Suffix.Count > 0
+			, groups.Where(g => g.Key.TypeId == SuffixTypeId).ToList()
+		);
+	}
+
+	/// <inheritdoc/>
+	public IReadOnlyList<AffixGroup> GroupByEffect(IEnumerable<AffixGroup> groups)
+	{
+		var regrouped =
+			from grp in groups
+			from av in grp
+			let effect = av.AffixId.PrettyFileNameExploded.Effect
+			let flattenedAffix = new AffixEntry(
+				av.TypeId,
+				av.AffixId,
+				av.AffixIdDlc,
+				effect,
+				av.WeightPercent,
+				string.Format("{0} : ({1}) {2} ({3:p2}) {4}"
+					, effect
+					, av.AffixId.PrettyFileNameExploded.Number
+					, av.Translation
+					, av.WeightPercent
+					, av.AffixIdDlc.GetSuffix()
+				),
+				av.LootRandomizer
+			)
+			orderby flattenedAffix.Translation, flattenedAffix.AffixId.PrettyFileNameExploded.Number
+			group flattenedAffix by new AffixGroupKey(flattenedAffix.TypeId, flattenedAffix.Translation) into grp2
+			select new AffixGroup(grp2.Key, grp2);
+
+		return regrouped.ToList();
+	}
+
+	/// <inheritdoc/>
+	public string FormatVariantLabel(AffixEntry entry, bool byEffect)
+		=> string.Format("({0}) {1} ({2:p2}) {3}"
+			, entry.AffixId.PrettyFileNameExploded.Number
+			, byEffect
+				? entry.LootRandomizer.Translation // groups are effects: show the affix name
+				: entry.AffixId.PrettyFileNameExploded.Effect // groups are affix names: show the effect
+			, entry.WeightPercent
+			, entry.AffixIdDlc.GetSuffix()
+		);
+
+	/// <summary>
+	/// Flattens the broken, prefix and suffix tables of every DLC, keeps the highest weight of each affix,
+	/// and groups the affixes by type and name.
+	/// </summary>
+	private static List<AffixGroup> CurateAffixes(ItemAffixes affixes)
+	{
+		var affixTypes = new[] { // UNPIVOT
+			(AffixTypeId: BrokenTypeId, AffixType: affixes.Broken),
+			(AffixTypeId: PrefixTypeId, AffixType: affixes.Prefix),
+			(AffixTypeId: SuffixTypeId, AffixType: affixes.Suffix)
+		};
+
+		var curatedAffixes =
+			from types in affixTypes
+			from dlc in types.AffixType
+			from ltvalues in dlc.Value
+			from value in ltvalues
+			select new
+			{
+				TypeId = types.AffixTypeId,
+				AffixId = value.Key,
+				value.Value.WeightPercent,
+				value.Value.LootRandomizer
+			} into flat
+			group flat by new { flat.TypeId, flat.AffixId } into grp
+			let f = grp.First()
+			let _AffixIdDlc = grp.Key.AffixId.Dlc
+			let _translation = f.LootRandomizer.Translation
+			let _WeightPercent = grp.Max(v => v.WeightPercent)
+			let affixEntry = new AffixEntry(
+				grp.Key.TypeId,
+				grp.Key.AffixId,
+				_AffixIdDlc,
+				_translation,
+				_WeightPercent,
+				string.Format("{0} : {1} ({2:p2}) {3}" // Default format for Order by affix name
+					, _translation
+					, grp.Key.AffixId.PrettyFileName
+					, _WeightPercent
+					, _AffixIdDlc.GetSuffix()
+				),
+				f.LootRandomizer
+			)
+			group affixEntry by new AffixGroupKey(affixEntry.TypeId, affixEntry.Translation) into grp2
+			orderby grp2.Key.TypeId, grp2.Key.Translation // Order by affix name
+			select new AffixGroup(grp2.Key, grp2);
+
+		return curatedAffixes.ToList();
+	}
+
+	private static List<BonusChoice> BuildBonusChoices(LootTableCollection? table, RecordId? currentBonusId)
+	{
+		if (table is not { Length: > 0 })
+			return [];
+
+		return table
+			.Select(entry => new BonusChoice(
+				entry.Key
+				, string.Format("{0} : {1} ({2:p2}) {3}"
+					, entry.Value.LootRandomizer.Translation
+					, entry.Key.PrettyFileName
+					, entry.Value.WeightPercent
+					, entry.Key.Dlc.GetSuffix()
+				)
+				, entry.Value.LootRandomizer.Unknown
+				, entry.Value.LootRandomizer.TranslationTagIsEmpty
+				, entry.Key == currentBonusId
+			))
+			.OrderBy(c => c.Label)
+			.ToList();
+	}
+}
