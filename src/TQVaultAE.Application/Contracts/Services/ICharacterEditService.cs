@@ -1,4 +1,5 @@
 using TQVaultAE.Application.DTOs;
+using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application.Contracts.Services;
 
@@ -27,4 +28,11 @@ public interface ICharacterEditService
 	/// </summary>
 	/// <returns>false when the character has no player info.</returns>
 	bool Apply(PlayerCollection player, CharacterEditRequest request);
+
+	/// <summary>
+	/// Gets the description tag of a mastery, to translate for its name.
+	/// </summary>
+	/// <param name="masteryId">The mastery record.</param>
+	/// <returns>The tag, or an empty string when the record is unknown.</returns>
+	string GetMasteryDescriptionTag(RecordId masteryId);
 }

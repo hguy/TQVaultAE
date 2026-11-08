@@ -15,4 +15,9 @@ public interface ISettingsPersistenceService
 	/// <param name="configChanged">Whether the settings were already changed in this session.</param>
 	/// <returns>Whether the settings are changed, so the caller keeps it for the next call.</returns>
 	bool SaveConfiguration(string? vaultName, string? characterName, float zoom, bool configChanged);
+
+	/// <summary>
+	/// Gets the language of the installed game, or null when it could not be read.
+	/// </summary>
+	string? GameLanguage { get; }
 }

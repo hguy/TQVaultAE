@@ -301,7 +301,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 	private void LoadSettings()
 	{
 		// Force English since there was some issue with getting the proper language setting.
-		var gl = Database.GameLanguage;
+		var gl = this.Services.SettingsPersistence.GameLanguage;
 		var language = gl == null ? "English" : gl;
 
 		this.editor = new SettingsEditor(SettingsValues.From(USettings, language, GamePathResolver.GamePathTQ, GamePathResolver.GamePathTQIT));

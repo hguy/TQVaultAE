@@ -9,7 +9,6 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Actions;
@@ -31,7 +30,6 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	protected readonly IFontService FontService;
 	protected readonly IUIService UIService;
 	protected readonly SessionContext userContext;
-	protected readonly IItemProvider ItemProvider;
 	protected readonly GuiServices Services;
 	protected readonly UserSettings USettings;
 	protected readonly IHighlightService HighlightService;
@@ -117,7 +115,6 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.FontService = this.Services.FontService;
 		this.UIService = this.Services.UIService;
 		this.userContext = this.Services.Session;
-		this.ItemProvider = this.Services.ItemProvider;
 		this.USettings = this.Services.Settings;
 		this.HighlightService = this.Services.HighlightService;
 		this.ExchangeService = this.Services.ItemExchangeService;

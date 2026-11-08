@@ -246,4 +246,22 @@ public class ItemExchangeServiceImportTests
 		created.GetSack(0)!.IsModified.Should().BeTrue();
 		this._vaultService.Verify(v => v.SaveVault(created, "Rings_20260304_050607"), Times.Once);
 	}
+
+	[Theory]
+	[InlineData("Ring of Ages", "Ring of Ages")]
+	[InlineData("", null)]
+	public async Task ExportItemToPasteBinAsync_NamesThePasteAfterTheItem(string itemName, string? expectedPasteName)
+	{
+		var item = NewItem(0, 0);
+		var itemProvider = new Mock<TQVaultAE.Application.Contracts.Providers.IItemProvider>();
+		itemProvider.Setup(p => p.GetFriendlyNames(item, null, true))
+			.Returns(new TQVaultAE.Domain.Results.ToFriendlyNameResult(item) { BaseItemInfoDescription = itemName });
+		this._pasteBin.Setup(p => p.UploadAsync(It.IsAny<string>(), It.IsAny<string?>())).ReturnsAsync("https://pastebin.com/x");
+		var service = new ItemExchangeService(this._jsonOptions, this._pasteBin.Object, itemProvider: itemProvider.Object);
+
+		var url = await service.ExportItemToPasteBinAsync(item);
+
+		url.Should().Be("https://pastebin.com/x");
+		this._pasteBin.Verify(p => p.UploadAsync(service.SerializeItem(item), expectedPasteName), Times.Once);
+	}
 }

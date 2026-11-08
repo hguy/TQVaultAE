@@ -1,5 +1,4 @@
 ﻿﻿using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Scaling;
@@ -16,7 +15,7 @@ public partial class ComboBoxCharacterItem : UserControl
 	internal const int BASE_HEIGHT = 60;
 
 	// Set by Init: the drop down creates the item before giving it its save.
-	private IDatabase Database = null!;
+	private ICharacterEditService CharacterEditService = null!;
 	private ITagService TagService = null!;
 	private ITranslationService TranslationService = null!;
 	private IFontService FontService = null!;
@@ -57,12 +56,12 @@ public partial class ComboBoxCharacterItem : UserControl
 		SelectedItemChanged?.Invoke(this, EventArgs.Empty);
 	}
 
-	public void Init(object item, ITranslationService translationService, IFontService fontService, IDatabase database, ITagService tagService)
+	public void Init(object item, ITranslationService translationService, IFontService fontService, ICharacterEditService characterEditService, ITagService tagService)
 	{
 		this.Item = item;
 		this.TranslationService = translationService;
 		this.FontService = fontService;
-		this.Database = database;
+		this.CharacterEditService = characterEditService;
 		this.TagService = tagService;
 
 		this.scalingLabelCharName.Font = FontService.GetFont(this.scalingLabelCharName.Font.Size);
@@ -114,8 +113,7 @@ public partial class ComboBoxCharacterItem : UserControl
 			{
 				foreach (var recId in dbr)
 				{
-					var masteryInfo = this.Database.GetInfo(recId);
-					var masteryName = this.TranslationService.TranslateXTag(masteryInfo?.DescriptionTag ?? string.Empty);
+					var masteryName = this.TranslationService.TranslateXTag(this.CharacterEditService.GetMasteryDescriptionTag(recId));
 					masteryNames.Add(masteryName);
 				}
 				this.scalingLabelMasteries.Text = masteryNames.JoinString(" + ");

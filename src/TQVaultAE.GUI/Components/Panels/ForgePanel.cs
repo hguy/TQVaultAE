@@ -1,4 +1,3 @@
-using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Forge;
@@ -41,7 +40,6 @@ public partial class ForgePanel : UserControl, IScalingControl
 	private readonly IUIService UIService;
 	private readonly IFontService FontService;
 	private readonly ITranslationService TranslationService;
-	private readonly IItemProvider ItemProvider;
 
 	internal Action? CancelAction;
 	internal Action? ForgeAction;
@@ -103,16 +101,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 		get
 		{
 			if (Selection.Base is null) return null;
-			if (_PreviewItem is null)
-			{
-				_PreviewItem = Selection.Base.Clone();
-				if (Selection.Prefix is not null || Selection.Suffix is not null || Selection.Relic1 is not null || Selection.Relic2 is not null)
-				{
-					ForgeMerge.Apply(_PreviewItem, Selection, IsGodMode, GodPart);
-					this.ItemProvider.GetDBData(_PreviewItem);
-				}
-			}
-			return _PreviewItem;
+			return _PreviewItem ??= this.Services.ForgeService.Preview(Selection, IsGodMode, GodPart);
 		}
 	}
 
@@ -137,7 +126,6 @@ public partial class ForgePanel : UserControl, IScalingControl
 		UIService = services.UIService;
 		FontService = services.FontService;
 		TranslationService = services.TranslationService;
-		ItemProvider = services.ItemProvider;
 
 		Rules = services.ForgeService.CreateRules();
 		Slots = [

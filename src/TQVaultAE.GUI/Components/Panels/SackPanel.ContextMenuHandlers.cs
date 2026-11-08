@@ -272,10 +272,7 @@ public partial class SackPanel
 			if (focusedItem == null)
 				return;
 
-			var jsonItem = this.ExchangeService.SerializeItem(focusedItem);
-			var friendlyName = this.ItemProvider.GetFriendlyNames(focusedItem).FullNameClean;
-			var pasteName = string.IsNullOrWhiteSpace(friendlyName) ? null : friendlyName;
-			var urlItem = await this.ExchangeService.ExportToPasteBinAsync(jsonItem, pasteName);
+			var urlItem = await this.ExchangeService.ExportItemToPasteBinAsync(focusedItem);
 			Clipboard.SetText(urlItem);
 			this.UIService.NotifyUser($"Item exported to PasteBin: {urlItem}");
 		}
@@ -302,8 +299,7 @@ public partial class SackPanel
 			{
 				// Create the item
 				var newId = item.Name.ToRecordId();
-				Item newItem = focusedItem.MakeEmptyCopy(newId);
-				ItemProvider.GetDBData(newItem);
+				Item newItem = this.Services.ItemEditService.NewSetMember(focusedItem, newId);
 
 				// Set DragInfo to focused item.
 				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));

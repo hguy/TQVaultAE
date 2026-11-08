@@ -81,6 +81,11 @@ public interface IItemEditService
 	/// <param name="item">The item to copy.</param>
 	Item Duplicate(Item item);
 
+	/// <summary>Makes another member of the set of <paramref name="setItem"/>, with its record data read.</summary>
+	/// <param name="setItem">The set item it is made from: its block data are kept.</param>
+	/// <param name="memberId">The record of the set member.</param>
+	Item NewSetMember(Item setItem, RecordId memberId);
+
 	/// <summary>Gives <paramref name="item"/> a new random seed.</summary>
 	/// <param name="sack">The sack holding the item.</param>
 	/// <param name="item">The item to change.</param>

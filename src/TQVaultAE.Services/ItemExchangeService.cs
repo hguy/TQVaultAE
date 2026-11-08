@@ -253,6 +253,15 @@ public class ItemExchangeService(
 		return await _pasteBinService.UploadAsync(json, pasteName);
 	}
 
+	/// <inheritdoc/>
+	public Task<string> ExportItemToPasteBinAsync(Item item)
+	{
+		var json = this.SerializeItem(item);
+		var friendlyName = this._itemProvider?.GetFriendlyNames(item).FullNameClean;
+		var pasteName = string.IsNullOrWhiteSpace(friendlyName) ? null : friendlyName;
+		return this.ExportToPasteBinAsync(json, pasteName);
+	}
+
 	public async Task<string> ImportFromPasteBinAsync(string pasteUrl)
 	{
 		if (_pasteBinService == null)

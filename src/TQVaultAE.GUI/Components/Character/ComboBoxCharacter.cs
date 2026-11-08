@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Rendering;
@@ -21,7 +20,7 @@ public partial class ComboBoxCharacter : UserControl
 	private IUIService UIService = null!;
 	private IFontService FontService = null!;
 	private ITranslationService TranslationService = null!;
-	private IDatabase Database = null!;
+	private ICharacterEditService CharacterEditService = null!;
 	private ITagService TagService = null!;
 	private IPlayerService PlayerService = null!;
 	private UserSettings USettings = null!;
@@ -183,7 +182,7 @@ public partial class ComboBoxCharacter : UserControl
 		IUIService uIService
 		, IFontService fontService
 		, ITranslationService translationService
-		, IDatabase database
+		, ICharacterEditService characterEditService
 		, ITagService tagService
 		, IPlayerService playerService
 		, UserSettings userSettings
@@ -193,7 +192,7 @@ public partial class ComboBoxCharacter : UserControl
 		this.UIService = uIService;
 		this.FontService = fontService;
 		this.TranslationService = translationService;
-		this.Database = database;
+		this.CharacterEditService = characterEditService;
 		this.TagService = tagService;
 		this.PlayerService = playerService;
 		this.USettings = userSettings;
@@ -519,7 +518,7 @@ public partial class ComboBoxCharacter : UserControl
 				var save = this.Items[e.NewIndex];
 
 				var item = new ComboBoxCharacterItem();
-				item.Init(save, TranslationService, FontService, Database, TagService);
+				item.Init(save, TranslationService, FontService, CharacterEditService, TagService);
 				item.SelectedItemChanged += Item_SelectedItemChanged;
 				this.DropDown.Items.Add(item);
 				item.RefreshContent();

@@ -14,6 +14,10 @@ public interface IItemExchangeService
 	bool IsPasteBinUrl(string text);
 	bool HasPasteBinApiKey { get; }
 	Task<string> ExportToPasteBinAsync(string json, string? pasteName = null);
+
+	/// <summary>Exports an item to PasteBin, the paste named after the item.</summary>
+	/// <returns>The URL of the paste.</returns>
+	Task<string> ExportItemToPasteBinAsync(Item item);
 	Task<string> ImportFromPasteBinAsync(string pasteUrl);
 
 	/// <summary>
