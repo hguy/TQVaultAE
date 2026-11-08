@@ -6,7 +6,6 @@ using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
-using TQVaultAE.Logs;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Results;
@@ -301,28 +300,8 @@ public partial class MainForm
 	/// <returns>True if there were any modified player files.</returns>
 	private bool SaveAllModifiedPlayers()
 	{
-	retry:
-		bool saved = false;
 		PlayerCollection? playerIfError = null;
-		try
-		{
-			saved = this.playerService.SaveAllModifiedPlayers(ref playerIfError);
-		}
-		catch (IOException exception)
-		{
-			string title = string.Format(CultureInfo.InvariantCulture, Resources.MainFormSaveError, playerIfError?.PlayerName);
-			Log.LogError(exception, "{Message}", title);
-			switch (this.Services.MessageBoxes.Ask(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation))
-			{
-				case DialogResult.Abort:
-					// rethrow the exception
-					throw;
-				case DialogResult.Retry:
-					goto retry;
-					//default: break; // DialogResult.Ignore
-			}
-		}
-		return saved;
+		return this.SaveWithRetry(() => this.playerService.SaveAllModifiedPlayers(ref playerIfError), () => playerIfError?.PlayerName);
 	}
 
 	/// <summary>
