@@ -1119,8 +1119,10 @@ public partial class Database : IDatabase
 			this.ParseTextDB(databaseFile, "text\\x2commonequipment.txt");
 			this.ParseTextDB(databaseFile, "text\\x2uniqueequipment.txt");
 			this.ParseTextDB(databaseFile, "text\\x2quest.txt");
-			this.ParseTextDB(databaseFile, "text\\x2ui.txt");
+			// skills before ui, as in the archive: x2ui.txt redefines 22 Runemaster tags with the reworked texts, over the
+			// old ones of x2skills.txt (one still carries a developer note, "PBAoE - should self-target automatically").
 			this.ParseTextDB(databaseFile, "text\\x2skills.txt");
+			this.ParseTextDB(databaseFile, "text\\x2ui.txt");
 			this.ParseTextDB(databaseFile, "text\\x2monsters.txt"); // Added by VillageIdiot
 			this.ParseTextDB(databaseFile, "text\\x2menu.txt"); // Added by VillageIdiot
 			this.ParseTextDB(databaseFile, "text\\x2npc.txt"); // Added by VillageIdiot
