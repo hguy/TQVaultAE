@@ -8,14 +8,14 @@ using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Data;
 
-public class LootTableCollectionProvider : ILootTableCollectionProvider
+public class LootTableCollectionProvider(ILogger<LootTableCollectionProvider> log, IDatabase database, ITranslationService translationService, UserSettings uSettings) : ILootTableCollectionProvider
 {
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
-	private readonly ILogger<LootTableCollectionProvider> Log;
-	private readonly IDatabase Database;
-	private readonly ITranslationService TranslationService;
-	private readonly UserSettings USettings;
+	private readonly ILogger<LootTableCollectionProvider> Log = log;
+	private readonly IDatabase Database = database;
+	private readonly ITranslationService TranslationService = translationService;
+	private readonly UserSettings USettings = uSettings;
 
 	private Dictionary<RecordId, LootTableCollection> LootTableCache = new();
 
@@ -75,14 +75,6 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 
 			return _AllLootRandomizerTranslated;
 		}
-	}
-
-	public LootTableCollectionProvider(ILogger<LootTableCollectionProvider> log, IDatabase database, ITranslationService translationService, UserSettings uSettings)
-	{
-		this.Log = log;
-		this.Database = database;
-		this.TranslationService = translationService;
-		USettings = uSettings;
 	}
 
 	private Dictionary<RecordId, (float Weight, LootRandomizerItem LootRandomizer)> MakeTable(RecordId tableId, DBRecordCollection records)

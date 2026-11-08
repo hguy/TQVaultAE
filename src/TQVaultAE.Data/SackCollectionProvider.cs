@@ -15,18 +15,11 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Encodes and decodes a Titan Quest item sack from a player file.
 /// </summary>
-public class SackCollectionProvider : ISackCollectionProvider
+public class SackCollectionProvider(ILogger<SackCollectionProvider> log, IItemProvider itemProvider, ITQDataService tQData) : ISackCollectionProvider
 {
-	private readonly ILogger Log;
-	private readonly IItemProvider ItemProvider;
-	private readonly ITQDataService TQData;
-
-	public SackCollectionProvider(ILogger<SackCollectionProvider> log, IItemProvider itemProvider, ITQDataService tQData)
-	{
-		this.Log = log;
-		this.ItemProvider = itemProvider;
-		this.TQData = tQData;
-	}
+	private readonly ILogger Log = log;
+	private readonly IItemProvider ItemProvider = itemProvider;
+	private readonly ITQDataService TQData = tQData;
 
 	/// <summary>
 	/// Encodes the sack into binary form

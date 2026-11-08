@@ -4,18 +4,11 @@ using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Data;
 
-public class DBRecordCollectionProvider : IDBRecordCollectionProvider
+public class DBRecordCollectionProvider(IDirectoryIO directoryIO, IPathIO pathIO, IFileIO fileIO) : IDBRecordCollectionProvider
 {
-	private readonly IDirectoryIO DirectoryIO;
-	private readonly IPathIO PathIO;
-	private readonly IFileIO FileIO;
-
-	public DBRecordCollectionProvider(IDirectoryIO directoryIO, IPathIO pathIO, IFileIO fileIO)
-	{
-		this.DirectoryIO = directoryIO;
-		PathIO = pathIO;
-		FileIO = fileIO;
-	}
+	private readonly IDirectoryIO DirectoryIO = directoryIO;
+	private readonly IPathIO PathIO = pathIO;
+	private readonly IFileIO FileIO = fileIO;
 
 	/// <summary>
 	/// Writes all variables into a file.

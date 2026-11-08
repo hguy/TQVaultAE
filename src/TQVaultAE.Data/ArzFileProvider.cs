@@ -8,12 +8,9 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Reads database.arz files through the shared <see cref="IArzDatabase"/> reader and maps records to <see cref="DBRecordCollection"/>.
 /// </summary>
-public class ArzFileProvider : IArzFileProvider
+public class ArzFileProvider(ILogger<ArzFileProvider> log) : IArzFileProvider
 {
-	private readonly ILogger Log;
-
-	public ArzFileProvider(ILogger<ArzFileProvider> log)
-		=> this.Log = log;
+	private readonly ILogger Log = log;
 
 	/// <summary>
 	/// Opens the ARZ file and loads its record table (records are decoded on demand).

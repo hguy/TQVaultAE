@@ -14,23 +14,14 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Used to sort AttributeEffect groups so that effects that belong together stay together
 /// </summary>
-public class ItemAttributeListCompare : IComparer<List<Variable?>>
+/// <param name="isArmor">flag to show that the item is a piece of armor</param>
+public class ItemAttributeListCompare(bool isArmor, IItemAttributeProvider itemAttributeProvider) : IComparer<List<Variable?>>
 {
 	/// <summary>
 	/// Flag to show whether the item is a piece of armor
 	/// </summary>
-	private bool isArmor;
-	private readonly IItemAttributeProvider ItemAttributeProvider;
-
-	/// <summary>
-	/// Initializes a new instance of the ItemAttributeListCompare class.
-	/// </summary>
-	/// <param name="isArmor">flag to show that the item is a piece of armor</param>
-	public ItemAttributeListCompare(bool isArmor, IItemAttributeProvider itemAttributeProvider)
-	{
-		this.isArmor = isArmor;
-		this.ItemAttributeProvider = itemAttributeProvider;
-	}
+	private bool isArmor = isArmor;
+	private readonly IItemAttributeProvider ItemAttributeProvider = itemAttributeProvider;
 
 	/// <summary>
 	/// Compares 2 values
