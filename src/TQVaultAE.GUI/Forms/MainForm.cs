@@ -263,8 +263,6 @@ Item Debug Level: {ItemDebugLevel}
 			, this.FontService
 			, this.TranslationService
 			, this.Database
-			, this.GameFileService
-			, this.GamePathResolver
 			, this.TagService
 			, this.playerService
 			, USettings

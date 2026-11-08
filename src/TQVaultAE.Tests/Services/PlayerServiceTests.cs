@@ -493,6 +493,50 @@ public class PlayerServiceTests
 		_sessionContext.Players.ContainsKey(oldPath).Should().BeFalse();
 	}
 
+	[Theory]
+	[InlineData(true)]
+	[InlineData(false)]
+	public void ArchiveOrUnarchive_WhenMoved_KeysTheLoadedPlayerByItsNewPath(bool archive)
+	{
+		// Arrange - a loaded player at the path before the move
+		var activePath = "/Test/Players/_TestPlayer/Player.chr";
+		var archivedPath = "/Test/Players/Archived/_TestPlayer/Player.chr";
+		var (fromPath, toPath) = archive ? (activePath, archivedPath) : (archivedPath, activePath);
+		var playerSave = CreatePlayerSave("/Test/Players/_TestPlayer");
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, false)).Returns(activePath);
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, true)).Returns(archivedPath);
+		var player = new PlayerCollection("TestPlayer", fromPath);
+		_sessionContext.Players.TryAdd(fromPath, new Lazy<PlayerCollection>(() => player));
+		_mockGameFileService.Setup(x => x.Archive(playerSave)).Returns(true);
+		_mockGameFileService.Setup(x => x.Unarchive(playerSave)).Returns(true);
+
+		// Act
+		bool moved = archive ? _playerService.Archive(playerSave) : _playerService.Unarchive(playerSave);
+
+		// Assert - every archive path (one save, all, by tag) keeps the session in step with the files
+		moved.Should().BeTrue();
+		_sessionContext.Players.ContainsKey(fromPath).Should().BeFalse();
+		_sessionContext.Players[toPath].Value.PlayerFile.Should().Be(toPath);
+	}
+
+	[Fact]
+	public void Unarchive_WhenTheMoveFails_KeepsThePlayerWhereItWas()
+	{
+		// Arrange
+		var archivedPath = "/Test/Players/Archived/_TestPlayer/Player.chr";
+		var playerSave = CreatePlayerSave("/Test/Players/_TestPlayer");
+		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, true)).Returns(archivedPath);
+		_sessionContext.Players.TryAdd(archivedPath, new Lazy<PlayerCollection>(() => new PlayerCollection("TestPlayer", archivedPath)));
+		_mockGameFileService.Setup(x => x.Unarchive(playerSave)).Returns(false);
+
+		// Act
+		bool moved = _playerService.Unarchive(playerSave);
+
+		// Assert
+		moved.Should().BeFalse();
+		_sessionContext.Players.Should().ContainKey(archivedPath);
+	}
+
 	/// <summary>
 	/// Test LoadPlayer with fromFileWatcher updates existing player
 	/// </summary>

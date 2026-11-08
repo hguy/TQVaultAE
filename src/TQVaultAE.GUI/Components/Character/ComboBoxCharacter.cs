@@ -22,8 +22,6 @@ public partial class ComboBoxCharacter : UserControl
 	private IFontService FontService = null!;
 	private ITranslationService TranslationService = null!;
 	private IDatabase Database = null!;
-	private IGamePathService GamePathService = null!;
-	private IGameFileService GameFileService = null!;
 	private ITagService TagService = null!;
 	private IPlayerService PlayerService = null!;
 	private UserSettings USettings = null!;
@@ -186,8 +184,6 @@ public partial class ComboBoxCharacter : UserControl
 		, IFontService fontService
 		, ITranslationService translationService
 		, IDatabase database
-		, IGameFileService gameFileService
-		, IGamePathService gamePathService
 		, ITagService tagService
 		, IPlayerService playerService
 		, UserSettings userSettings
@@ -198,8 +194,6 @@ public partial class ComboBoxCharacter : UserControl
 		this.FontService = fontService;
 		this.TranslationService = translationService;
 		this.Database = database;
-		this.GamePathService = gamePathService;
-		this.GameFileService = gameFileService;
 		this.TagService = tagService;
 		this.PlayerService = playerService;
 		this.USettings = userSettings;
@@ -690,7 +684,7 @@ public partial class ComboBoxCharacter : UserControl
 			select ps;
 
 		foreach (var taggedSave in taggedSaves)
-			this.GameFileService.Unarchive(taggedSave);
+			this.PlayerService.Unarchive(taggedSave);
 
 		RefreshItems();
 		RefreshContent();
@@ -708,15 +702,7 @@ public partial class ComboBoxCharacter : UserControl
 			select ps;
 
 		foreach (var taggedSave in taggedSaves)
-		{
-			var oldPath = GamePathService.GetPlayerFile(taggedSave.Name, taggedSave.IsImmortalThrone, false);
-			var success = this.GameFileService.Archive(taggedSave);
-			if (success)
-			{
-				var newPath = GamePathService.GetPlayerFile(taggedSave.Name, taggedSave.IsImmortalThrone, true);
-				PlayerService.UpdatePlayerFilePath(oldPath, newPath);
-			}
-		}
+			this.PlayerService.Archive(taggedSave);
 
 		RefreshItems();
 		RefreshContent();
@@ -797,27 +783,10 @@ public partial class ComboBoxCharacter : UserControl
 		{
 			// Archive it
 			if (archiveToolStripMenuItem.Checked)
-			{
-				var oldPath = GamePathService.GetPlayerFile(ps.Name, ps.IsImmortalThrone, false);
-				var success = GameFileService.Archive(ps);
-				if (success)
-				{
-					var newPath = GamePathService.GetPlayerFile(ps.Name, ps.IsImmortalThrone, true);
-					PlayerService.UpdatePlayerFilePath(oldPath, newPath);
-				}
-				RefreshItem(ps);
-				RefreshContent();
-				return;
-			}
+				this.PlayerService.Archive(ps);
+			else
+				this.PlayerService.Unarchive(ps);
 
-			// Unarchive it
-			var oldUnarchivePath = GamePathService.GetPlayerFile(ps.Name, ps.IsImmortalThrone, true);
-			var unarchiveSuccess = GameFileService.Unarchive(ps);
-			if (unarchiveSuccess)
-			{
-				var newUnarchivePath = GamePathService.GetPlayerFile(ps.Name, ps.IsImmortalThrone, false);
-				PlayerService.UpdatePlayerFilePath(oldUnarchivePath, newUnarchivePath);
-			}
 			RefreshItem(ps);
 			RefreshContent();
 		}
@@ -835,15 +804,7 @@ public partial class ComboBoxCharacter : UserControl
 			select ps;
 
 		foreach (var activeSave in activeSaves)
-		{
-			var oldPath = GamePathService.GetPlayerFile(activeSave.Name, activeSave.IsImmortalThrone, false);
-			var success = GameFileService.Archive(activeSave);
-			if (success)
-			{
-				var newPath = GamePathService.GetPlayerFile(activeSave.Name, activeSave.IsImmortalThrone, true);
-				PlayerService.UpdatePlayerFilePath(oldPath, newPath);
-			}
-		}
+			this.PlayerService.Archive(activeSave);
 
 		RefreshItems();
 		RefreshContent();
@@ -861,7 +822,7 @@ public partial class ComboBoxCharacter : UserControl
 			select ps;
 
 		foreach (var save in archivedSaves)
-			GameFileService.Unarchive(save);
+			this.PlayerService.Unarchive(save);
 
 		RefreshItems();
 		RefreshContent();
