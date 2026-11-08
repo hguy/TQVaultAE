@@ -158,7 +158,8 @@ public partial class BagButtonSettings : VaultForm
 		ScaleControl(this.UIService, this.applyButton);
 
 		this.FitExitButtons();
-		this.PlaceAvailablePictures();
+		this.ApplyBorderPadding();
+
 
 		#endregion
 
@@ -615,6 +616,41 @@ public partial class BagButtonSettings : VaultForm
 		if (!this.scalingTextBoxLabel.Enabled) this.scalingTextBoxLabel.Text = string.Empty;
 	}
 
+	/// <summary>Room for the custom border and its title bar at 96 DPI, around the layout table that fills the form.</summary>
+	private static readonly Padding BorderPadding = new(23, 32, 22, 20);
+
+	/// <summary>
+	/// Sets the border room for the current DPI. Windows Forms does not scale the padding of the form on a DPI change, and
+	/// anchoring the table instead lost a few pixels at each change while the dialog was hidden: computed from the
+	/// design value each time, it cannot drift.
+	/// </summary>
+	private void ApplyBorderPadding()
+	{
+		float factor = this.DeviceDpi / 96F;
+		int Scaled(int value) => (int)Math.Round(value * factor);
+		this.Padding = new Padding(Scaled(BorderPadding.Left), Scaled(BorderPadding.Top), Scaled(BorderPadding.Right), Scaled(BorderPadding.Bottom));
+	}
+
+	protected override void OnDpiChanged(DpiChangedEventArgs e)
+	{
+		base.OnDpiChanged(e);
+		this.ApplyBorderPadding();
+	}
+
+	/// <summary>
+	/// Gives the apply and cancel buttons one width that holds the longer of their translated texts ("Appliquer" did
+	/// not fit the 80 pixels designed for "Apply"). Not AutoSize: ScalingButton fits its font to its width, and with
+	/// AutoSize the two chase each other. The bottom table places them.
+	/// </summary>
+	private void FitExitButtons()
+	{
+		// The margin ScalingButton keeps around its text.
+		const int textMargin = 16;
+		int width = new[] { this.applyButton, this.cancelButton }
+			.Max(b => Math.Max(b.Width, TextRenderer.MeasureText(b.Text, b.Font).Width + textMargin));
+		this.applyButton.Width = this.cancelButton.Width = width;
+	}
+
 	private void scalingRadioButtonDefaultIcon_CheckedChanged(object? sender, EventArgs e)
 	{
 		if (this.scalingRadioButtonDefaultIcon.Checked)
@@ -624,54 +660,5 @@ public partial class BagButtonSettings : VaultForm
 		}
 
 		this.ShowSelection();
-	}
-
-	/// <summary>
-	/// Gives the apply and cancel buttons one width that holds the longer of their translated texts ("Appliquer" did
-	/// not fit the 80 pixels designed for "Apply"); the cancel button keeps its right edge.
-	/// </summary>
-	private void FitExitButtons()
-	{
-		// The margin ScalingButton keeps around its text.
-		const int textMargin = 16;
-		int width = new[] { this.applyButton, this.cancelButton }
-			.Select(b => TextRenderer.MeasureText(b.Text, b.Font).Width + textMargin)
-			.Append(this.applyButton.Width)
-			.Append(this.cancelButton.Width)
-			.Max();
-
-		this.applyButton.Width = width;
-
-		int right = this.cancelButton.Right;
-		this.cancelButton.Width = width;
-		this.cancelButton.Left = right - width;
-	}
-
-	/// <summary>
-	/// Lays out the available pictures group: it starts under the upper panel, which overlapped and hid the lower half
-	/// of its title; the drag and drop notice goes under the title and the picture tabs under the notice. Bottoms stay.
-	/// </summary>
-	private void PlaceAvailablePictures()
-	{
-		var group = this.groupBoxAvailablePictures;
-		int groupTop = this.flowLayoutPanelUpperParts.Bottom + this.flowLayoutPanelUpperParts.Margin.Bottom;
-		if (group.Top < groupTop)
-		{
-			int groupBottom = group.Bottom;
-			group.Top = groupTop;
-			group.Height = groupBottom - groupTop;
-		}
-
-		int top = group.DisplayRectangle.Top;
-		if (this.scalingLabelDragDropNotice.Top < top)
-			this.scalingLabelDragDropNotice.Top = top;
-
-		int tabsTop = this.scalingLabelDragDropNotice.Bottom + this.scalingLabelDragDropNotice.Margin.Bottom + 3;
-		if (this.tabControlPics.Top < tabsTop)
-		{
-			int bottom = this.tabControlPics.Bottom;
-			this.tabControlPics.Top = tabsTop;
-			this.tabControlPics.Height = bottom - tabsTop;
-		}
 	}
 }

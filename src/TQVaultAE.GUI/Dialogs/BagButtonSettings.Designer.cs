@@ -34,6 +34,7 @@ namespace TQVaultAE.GUI.Dialogs
 		private void InitializeComponent()
 		{
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BagButtonSettings));
+            this.tableLayoutPanelSkeleton = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanelBottom = new System.Windows.Forms.TableLayoutPanel();
             this.scalingTextBoxDebug = new TQVaultAE.GUI.Components.Scaling.ScalingTextBox();
             this.applyButton = new TQVaultAE.GUI.Components.Scaling.ScalingButton();
@@ -91,6 +92,7 @@ namespace TQVaultAE.GUI.Dialogs
             this.iconGridGreaves = new TQVaultAE.GUI.Components.Icons.IconGrid();
             this.scalingLabelDragDropNotice = new TQVaultAE.GUI.Components.Scaling.ScalingLabel();
             this.iconMagnifier = new TQVaultAE.GUI.Components.Icons.IconMagnifier();
+            this.tableLayoutPanelSkeleton.SuspendLayout();
             this.tableLayoutPanelBottom.SuspendLayout();
             this.flowLayoutPanelSelectedButton.SuspendLayout();
             this.groupBoxEdit.SuspendLayout();
@@ -124,10 +126,30 @@ namespace TQVaultAE.GUI.Dialogs
             this.tabPageGreaves.SuspendLayout();
             this.SuspendLayout();
             // 
+            // tableLayoutPanelSkeleton
+            // 
+            this.tableLayoutPanelSkeleton.ColumnCount = 1;
+            this.tableLayoutPanelSkeleton.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanelSkeleton.Controls.Add(this.flowLayoutPanelSelectedButton, 0, 0);
+            this.tableLayoutPanelSkeleton.Controls.Add(this.flowLayoutPanelUpperParts, 0, 1);
+            this.tableLayoutPanelSkeleton.Controls.Add(this.groupBoxAvailablePictures, 0, 2);
+            this.tableLayoutPanelSkeleton.Controls.Add(this.tableLayoutPanelBottom, 0, 3);
+            this.tableLayoutPanelSkeleton.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanelSkeleton.Location = new System.Drawing.Point(23, 32);
+            this.tableLayoutPanelSkeleton.Margin = new System.Windows.Forms.Padding(0);
+            this.tableLayoutPanelSkeleton.Name = "tableLayoutPanelSkeleton";
+            this.tableLayoutPanelSkeleton.RowCount = 4;
+            this.tableLayoutPanelSkeleton.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanelSkeleton.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanelSkeleton.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanelSkeleton.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanelSkeleton.Size = new System.Drawing.Size(1002, 628);
+            this.tableLayoutPanelSkeleton.TabIndex = 15;
+            // 
             // tableLayoutPanelBottom
             // 
-            this.tableLayoutPanelBottom.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tableLayoutPanelBottom.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tableLayoutPanelBottom.AutoSize = true;
             this.tableLayoutPanelBottom.ColumnCount = 3;
             this.tableLayoutPanelBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 15F));
             this.tableLayoutPanelBottom.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 70F));
@@ -522,15 +544,14 @@ namespace TQVaultAE.GUI.Dialogs
             // 
             // groupBoxAvailablePictures
             // 
-            this.groupBoxAvailablePictures.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBoxAvailablePictures.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBoxAvailablePictures.Controls.Add(this.tabControlPics);
             this.groupBoxAvailablePictures.Controls.Add(this.scalingLabelDragDropNotice);
             this.groupBoxAvailablePictures.Font = new System.Drawing.Font("Albertus MT", 12F);
             this.groupBoxAvailablePictures.ForeColor = System.Drawing.Color.Gold;
             this.groupBoxAvailablePictures.Location = new System.Drawing.Point(26, 251);
             this.groupBoxAvailablePictures.Name = "groupBoxAvailablePictures";
+            this.groupBoxAvailablePictures.Padding = new System.Windows.Forms.Padding(14, 4, 20, 12);
             this.groupBoxAvailablePictures.Size = new System.Drawing.Size(996, 363);
             this.groupBoxAvailablePictures.TabIndex = 12;
             this.groupBoxAvailablePictures.TabStop = false;
@@ -538,9 +559,7 @@ namespace TQVaultAE.GUI.Dialogs
             // 
             // tabControlPics
             // 
-            this.tabControlPics.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+            this.tabControlPics.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControlPics.Controls.Add(this.tabPageSkills);
             this.tabControlPics.Controls.Add(this.tabPageRelics);
             this.tabControlPics.Controls.Add(this.tabPageArtifacts);
@@ -809,11 +828,13 @@ namespace TQVaultAE.GUI.Dialogs
             // scalingLabelDragDropNotice
             // 
             this.scalingLabelDragDropNotice.AutoSize = true;
+            this.scalingLabelDragDropNotice.Dock = System.Windows.Forms.DockStyle.Top;
             this.scalingLabelDragDropNotice.Font = new System.Drawing.Font("Albertus MT Light", 11.25F);
             this.scalingLabelDragDropNotice.ForeColor = System.Drawing.Color.White;
             this.scalingLabelDragDropNotice.Location = new System.Drawing.Point(14, 19);
             this.scalingLabelDragDropNotice.Margin = new System.Windows.Forms.Padding(3, 7, 3, 0);
             this.scalingLabelDragDropNotice.Name = "scalingLabelDragDropNotice";
+            this.scalingLabelDragDropNotice.Padding = new System.Windows.Forms.Padding(0, 0, 0, 3);
             this.scalingLabelDragDropNotice.Size = new System.Drawing.Size(318, 17);
             this.scalingLabelDragDropNotice.TabIndex = 1;
             this.scalingLabelDragDropNotice.Tag = "";
@@ -839,10 +860,7 @@ namespace TQVaultAE.GUI.Dialogs
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(46)))), ((int)(((byte)(31)))), ((int)(((byte)(21)))));
             this.ClientSize = new System.Drawing.Size(1047, 680);
             this.Controls.Add(this.iconMagnifier);
-            this.Controls.Add(this.groupBoxAvailablePictures);
-            this.Controls.Add(this.flowLayoutPanelUpperParts);
-            this.Controls.Add(this.flowLayoutPanelSelectedButton);
-            this.Controls.Add(this.tableLayoutPanelBottom);
+            this.Controls.Add(this.tableLayoutPanelSkeleton);
             this.DrawCustomBorder = true;
             this.Font = new System.Drawing.Font("Albertus MT", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.Color.White;
@@ -859,11 +877,10 @@ namespace TQVaultAE.GUI.Dialogs
             this.TitleTextColor = System.Drawing.Color.FromArgb(((int)(((byte)(51)))), ((int)(((byte)(44)))), ((int)(((byte)(28)))));
             this.TopMost = true;
             this.Load += new System.EventHandler(this.BagButtonSettings_Load);
-            this.Controls.SetChildIndex(this.tableLayoutPanelBottom, 0);
-            this.Controls.SetChildIndex(this.flowLayoutPanelSelectedButton, 0);
-            this.Controls.SetChildIndex(this.flowLayoutPanelUpperParts, 0);
-            this.Controls.SetChildIndex(this.groupBoxAvailablePictures, 0);
+            this.Controls.SetChildIndex(this.tableLayoutPanelSkeleton, 0);
             this.Controls.SetChildIndex(this.iconMagnifier, 0);
+            this.tableLayoutPanelSkeleton.ResumeLayout(false);
+            this.tableLayoutPanelSkeleton.PerformLayout();
             this.tableLayoutPanelBottom.ResumeLayout(false);
             this.tableLayoutPanelBottom.PerformLayout();
             this.flowLayoutPanelSelectedButton.ResumeLayout(false);
@@ -911,6 +928,7 @@ namespace TQVaultAE.GUI.Dialogs
 
 		#endregion
 
+		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelSkeleton;
 		private System.Windows.Forms.TableLayoutPanel tableLayoutPanelBottom;
 		private ScalingButton applyButton;
 		private ScalingButton cancelButton;

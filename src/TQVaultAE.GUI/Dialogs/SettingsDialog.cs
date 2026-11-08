@@ -325,6 +325,10 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 
 		this.InitializeComponent();
 
+		// The dialog follows its inner table: the font, a translation, a group shown or a monitor of another DPI change it.
+		this.bufferedTableLayoutPanelSkeleton.SizeChanged += (_, _) => this.FitToContent();
+		this.FitToContent();
+
 		foreach (var kvp in PasteBinExpirationOptions)
 		{
 			this.pasteBinExpirationComboBox.Items.Add(new PasteBinExpirationComboBoxItem(kvp.Key, kvp.Value));
@@ -693,16 +697,20 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.ConfigurationChanged = this.ItemBGColorOpacityChanged = true;
 	}
 
-	private void SettingsDialog_Shown(object? sender, EventArgs e) => this.FitToContent();
-
-	/// <summary>On a monitor of another DPI the layout is scaled again: the size follows it.</summary>
+	/// <summary>
+	/// On a monitor of another DPI, Windows gives the window its suggested size after the layout was scaled, over the
+	/// fit made while the table changed: fit again once it is applied.
+	/// </summary>
 	protected override void OnDpiChanged(DpiChangedEventArgs e)
 	{
 		base.OnDpiChanged(e);
 		this.FitToContent();
 	}
 
-	/// <summary>Adjusts the size to the inner table, so a taller column does not push the buttons out.</summary>
+	/// <summary>
+	/// Adjusts the size to the inner table, so a taller column does not push the buttons out. Not Form.AutoSize: the
+	/// caption buttons of the custom border sit on the right edge and would keep the form from shrinking.
+	/// </summary>
 	private void FitToContent()
 	{
 		this.Width = this.bufferedTableLayoutPanelSkeleton.Location.X + this.bufferedTableLayoutPanelSkeleton.Width + this.Padding.Right + 5;
