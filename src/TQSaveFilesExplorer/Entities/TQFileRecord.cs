@@ -17,17 +17,31 @@ public class TQFileRecord
 	internal static readonly Encoding Encoding1252 = Encoding.GetEncoding(1252);
 	internal static readonly Encoding EncodingUTF16 = Encoding.Unicode;
 
-	public Match RegExMatch { get; set; }
+	/// <summary>
+	/// Key match in the file content. <see langword="null"/> for unknown segments.
+	/// </summary>
+	public Match? RegExMatch { get; set; }
 
-	public string KeyLength { get; set; }
+	public string? KeyLength { get; set; }
 	public int KeyLengthAsInt { get; set; }
 
-	public string KeyRaw { get; set; }
-	public string KeyName { get; set; }
+	public string? KeyRaw { get; set; }
+	public string KeyName { get; set; } = string.Empty;
 
 	public TQFileDataType DataType { get; set; } = TQFileDataType.Unknown;
 
-	public TQFile File { get; set; }
+	/// <summary>
+	/// File the record was parsed from. <see langword="null"/> for unknown segments.
+	/// </summary>
+	public TQFile? File { get; set; }
+
+	/// <summary>
+	/// File the record was parsed from, for the operations that need its content.
+	/// </summary>
+	protected TQFile AttachedFile
+	{
+		get => this.File ?? throw new InvalidOperationException($"Record \"{this.KeyName}\" is not attached to a file.");
+	}
 
 	public int KeyIndex
 	{
@@ -37,8 +51,8 @@ public class TQFileRecord
 	public int ValueStart { get; set; }
 	public int ValueEnd { get; set; }
 
-	public string DataAsStr { get; set; }
-	public byte[] DataAsByteArray { get; set; }
+	public string? DataAsStr { get; set; }
+	public byte[] DataAsByteArray { get; set; } = [];
 	public int? DataAsInt { get; set; }
 	public float? DataAsFloat { get; set; }
 	public bool IsSubStructureOpening { get => this.KeyName == TQFilePlayerRecordKey.begin_block.ToString(); }
@@ -46,7 +60,7 @@ public class TQFileRecord
 	public bool IsUnknownSegment { get => this.KeyName == unknown_segment; }
 	public bool HasError { get => this.DataType == TQFileDataType.Unknown || this.IsUnknownSegment; }
 	public bool IsDataTypeError { get => this.DataType == TQFileDataType.Unknown && !this.IsUnknownSegment; }
-	public TQFileRecord Parent { get; internal set; }
+	public TQFileRecord? Parent { get; internal set; }
 	public List<TQFileRecord> Childs { get; internal set; } = [];
 	/// <summary>
 	/// Indicate that the key is irrelevant as data. Only data have a meaning.
@@ -88,43 +102,43 @@ public class TQFileRecord
 		{
 			case TQFileDataType.Int:
 				ValueEnd = ValueStart + sizeof(int) - 1; // -1 because ValueStart is first relevant byte
-				DataAsByteArray = new ArraySegment<byte>(this.File.Content, ValueStart, sizeof(int)).ToArray();
+				DataAsByteArray = new ArraySegment<byte>(this.AttachedFile.Content, ValueStart, sizeof(int)).ToArray();
 				DataAsInt = BitConverter.ToInt32(DataAsByteArray, 0);
 				DataAsFloat = BitConverter.ToSingle(DataAsByteArray, 0);
 				break;
 			case TQFileDataType.Float:
 				ValueEnd = ValueStart + sizeof(float) - 1;
-				DataAsByteArray = new ArraySegment<byte>(this.File.Content, ValueStart, sizeof(float)).ToArray();
+				DataAsByteArray = new ArraySegment<byte>(this.AttachedFile.Content, ValueStart, sizeof(float)).ToArray();
 				DataAsInt = BitConverter.ToInt32(DataAsByteArray, 0);
 				DataAsFloat = BitConverter.ToSingle(DataAsByteArray, 0);
 				break;
 			case TQFileDataType.String1252:
 				// Read StrLen
-				len = BitConverter.ToInt32(new ArraySegment<byte>(this.File.Content, ValueStart, sizeof(int)).ToArray(), 0);
+				len = BitConverter.ToInt32(new ArraySegment<byte>(this.AttachedFile.Content, ValueStart, sizeof(int)).ToArray(), 0);
 				// Read Str
 				ValueEnd = ValueStart + sizeof(int) - 1 + len;
-				DataAsByteArray = new ArraySegment<byte>(this.File.Content, ValueStart + sizeof(int), len).ToArray();
+				DataAsByteArray = new ArraySegment<byte>(this.AttachedFile.Content, ValueStart + sizeof(int), len).ToArray();
 				DataAsStr = Encoding1252.GetString(DataAsByteArray);
 				break;
 			case TQFileDataType.StringUTF16:
 				// Read StrLen
-				len = BitConverter.ToInt32(new ArraySegment<byte>(this.File.Content, ValueStart, sizeof(int)).ToArray(), 0);
+				len = BitConverter.ToInt32(new ArraySegment<byte>(this.AttachedFile.Content, ValueStart, sizeof(int)).ToArray(), 0);
 				// Read Str
 				ValueEnd = ValueStart + sizeof(int) - 1 + (len * 2);
-				DataAsByteArray = new ArraySegment<byte>(this.File.Content, ValueStart + sizeof(int), len * 2).ToArray();// * 2 because UTF16 has 2 byte encoding
+				DataAsByteArray = new ArraySegment<byte>(this.AttachedFile.Content, ValueStart + sizeof(int), len * 2).ToArray();// * 2 because UTF16 has 2 byte encoding
 				DataAsStr = EncodingUTF16.GetString(DataAsByteArray); //ReadUTF16String();
 				break;
 			case TQFileDataType.ByteArrayVar:
 				// Read Len
-				len = BitConverter.ToInt32(new ArraySegment<byte>(this.File.Content, ValueStart, sizeof(int)).ToArray(), 0);
+				len = BitConverter.ToInt32(new ArraySegment<byte>(this.AttachedFile.Content, ValueStart, sizeof(int)).ToArray(), 0);
 				// Read bytes
 				ValueEnd = ValueStart + sizeof(int) - 1 + len;
-				DataAsByteArray = new ArraySegment<byte>(this.File.Content, ValueStart + sizeof(int), len).ToArray();
+				DataAsByteArray = new ArraySegment<byte>(this.AttachedFile.Content, ValueStart + sizeof(int), len).ToArray();
 				break;
 			case TQFileDataType.ByteArray16:
 				// Read bytes
 				ValueEnd = ValueStart + 16 - 1;
-				DataAsByteArray = new ArraySegment<byte>(this.File.Content, ValueStart, 16).ToArray();
+				DataAsByteArray = new ArraySegment<byte>(this.AttachedFile.Content, ValueStart, 16).ToArray();
 				break;
 		}
 	}
@@ -143,14 +157,14 @@ public class TQFileRecord
 		switch (this.DataType)
 		{
 			case TQFileDataType.Int:
-				data = _DisplayDataDecimal ? this.DataAsInt.Value.ToString() : this.DataAsInt.Value.ToString("X8");
+				data = _DisplayDataDecimal ? $"{this.DataAsInt}" : $"{this.DataAsInt:X8}";
 				break;
 			case TQFileDataType.Float:
-				data = _DisplayDataDecimal ? this.DataAsFloat.Value.ToString() : this.DataAsInt.Value.ToString("X8");
+				data = _DisplayDataDecimal ? $"{this.DataAsFloat}" : $"{this.DataAsInt:X8}";
 				break;
 			case TQFileDataType.String1252:
 			case TQFileDataType.StringUTF16:
-				data = this.DataAsStr;
+				data = this.DataAsStr ?? string.Empty;
 				break;
 			case TQFileDataType.ByteArrayVar:
 			case TQFileDataType.ByteArray16:

@@ -51,7 +51,7 @@ public partial class AboutBox : Form
 			}
 
 			// If there was no Title attribute, or if the Title attribute was the empty string, return the .exe name
-			return Assembly.GetExecutingAssembly().GetName().Name;
+			return Assembly.GetExecutingAssembly().GetName().Name ?? string.Empty;
 		}
 	}
 
@@ -62,7 +62,7 @@ public partial class AboutBox : Form
 	{
 		get
 		{
-			return Assembly.GetExecutingAssembly().GetName().Version.ToString();
+			return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
 		}
 	}
 

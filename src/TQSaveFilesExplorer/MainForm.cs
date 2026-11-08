@@ -11,7 +11,7 @@ namespace TQ.SaveFilesExplorer;
 
 public partial class MainForm : Form
 {
-	internal static MainForm StaticRef { get; private set; } = null;
+	internal static MainForm? StaticRef { get; private set; }
 
 	public MainForm()
 	{
@@ -64,7 +64,7 @@ public partial class MainForm : Form
 
 	private bool IsFileAlreadyOpened(string file)
 	{
-		var alreadyopend = this.tabControlFiles.TabPages.Cast<TabPage>().FirstOrDefault(p => ((string)p.Tag) == file);
+		var alreadyopend = this.tabControlFiles.TabPages.Cast<TabPage>().FirstOrDefault(p => ((string?)p.Tag) == file);
 		if (alreadyopend is not null)
 		{
 			SetStatusMessage($@"""{alreadyopend.Text}"" file is already opened !");
@@ -75,8 +75,11 @@ public partial class MainForm : Form
 
 	internal static void SetStatusMessage(string message)
 	{
-		StaticRef.toolStripStatusLabelMessage.Visible = true;
-		StaticRef.toolStripStatusLabelMessage.Text = message;
+		var form = StaticRef;
+		if (form is null) return;
+
+		form.toolStripStatusLabelMessage.Visible = true;
+		form.toolStripStatusLabelMessage.Text = message;
 	}
 
 	private void MainForm_Load(object sender, EventArgs e)
@@ -88,10 +91,10 @@ public partial class MainForm : Form
 	}
 
 
-	private void toolStripMenuItem_DetectedPlayers_Click(object sender, EventArgs e)
+	private void toolStripMenuItem_DetectedPlayers_Click(object? sender, EventArgs e)
 	{
-		var item = sender as ToolStripMenuItem;
-		LoadFilesFromDirectory((string)item.Tag);
+		// Every detected player item holds its directory in Tag
+		if (sender is ToolStripMenuItem { Tag: string path }) LoadFilesFromDirectory(path);
 	}
 
 
@@ -101,12 +104,15 @@ public partial class MainForm : Form
 	private void DetectLocalSaves()
 	{
 		// Detecting local players saves 
-		List<ToolStripItem> items = new string[] { TQPath.SaveDirectoryTQIT, TQPath.SaveDirectoryTQ }
+		var saveDirectoryTQIT = TQPath.SaveDirectoryTQIT;
+		List<ToolStripItem> items = new string?[] { saveDirectoryTQIT, TQPath.SaveDirectoryTQ }
+			.OfType<string>()
 			.Where(p => !string.IsNullOrWhiteSpace(p))
 			.SelectMany(p => Directory.GetDirectories(p, "_*"))
 			.Select(d =>
 			{
-				var itm = new ToolStripMenuItem($"{(d.StartsWith(TQPath.SaveDirectoryTQIT, StringComparison.Ordinal) ? "TQIT" : "TQ")} : {Path.GetFileName(d)}") { Tag = d, };
+				var isTQIT = saveDirectoryTQIT is not null && d.StartsWith(saveDirectoryTQIT, StringComparison.Ordinal);
+				var itm = new ToolStripMenuItem($"{(isTQIT ? "TQIT" : "TQ")} : {Path.GetFileName(d)}") { Tag = d, };
 				itm.Click += new System.EventHandler(this.toolStripMenuItem_DetectedPlayers_Click);
 				return itm;
 			}
@@ -170,7 +176,9 @@ public partial class MainForm : Form
 
 	private void CloseTabToolStripMenuItem_Click(object sender, EventArgs e)
 	{
-		var menuitem = sender as ToolStripMenuItem;
-		this.tabControlFiles.TabPages.Remove(this.tabControlFiles.SelectedTab);
+		var selectedTab = this.tabControlFiles.SelectedTab;
+		if (selectedTab is null) return;
+
+		this.tabControlFiles.TabPages.Remove(selectedTab);
 	}
 }
