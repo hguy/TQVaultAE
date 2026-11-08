@@ -9,11 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Media;
 using System.Reflection;
-using System.Text;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.GameFiles;
 using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Services.Win32;
 
@@ -725,15 +725,9 @@ public partial class MainForm : Form
 								if (tag.RawData == null)
 									return;
 
-								// now read it like a text file
-								using (StreamReader reader = new StreamReader(new MemoryStream(tag.RawData), Encoding.Default))
-								{
-									string? line;
-									while ((line = reader.ReadLine()) != null)
-									{
-										tag.RecordText.Add(line);
-									}
-								}
+								// UTF-16 with a BOM, or cp1252 without one, like the game.
+								foreach (var line in TextDatabaseFactory.DecodeText(tag.RawData).AsSpan().EnumerateLines())
+									tag.RecordText.Add(line.ToString());
 							}
 
 							this.textBoxDetails.Lines = tag.RecordText.ToArray();
