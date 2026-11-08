@@ -93,7 +93,7 @@ public class BaseTooltip : Form
 			// If there is a color tag in the middle
 			if (friendlyName.LastIndexOf('{') > 0)
 			{
-				var multiColors = friendlyName.Split('{').Where(t => !string.IsNullOrEmpty(t)).ToArray();
+				var multiColors = friendlyName.SplitColorSegments();
 				if (multiColors.Length > 1)
 				{
 					row = new FlowLayoutPanel()
@@ -112,16 +112,7 @@ public class BaseTooltip : Form
 
 					row.SuspendLayout();
 					foreach (var coloredSegment in multiColors)
-					{
-						// IsColorTagged
-						if (coloredSegment.First() == '^')
-						{
-							var segTxt = '{' + coloredSegment;
-							row.Controls.Add(MakeSingleColorLabel(uiService, fontService, segTxt, FGColor, fontSize, style, BGColor));
-						}
-						else
-							row.Controls.Add(MakeSingleColorLabel(uiService, fontService, coloredSegment, FGColor, fontSize, style, BGColor));
-					}
+						row.Controls.Add(MakeSingleColorLabel(uiService, fontService, coloredSegment, FGColor, fontSize, style, BGColor));
 					row.ResumeLayout();
 				}
 			}
@@ -135,8 +126,8 @@ public class BaseTooltip : Form
 	internal static Label MakeSingleColorLabel(IUIService uiService, IFontService fontService, string friendlyName, Color? FGColor, float fontSize, FontStyle style, Color? BGColor = null)
 	{
 		// Single Color
-		FGColor = TQColorHelper.GetColorFromTaggedString(friendlyName)?.Color() ?? FGColor ?? TQColor.White.Color();// Color Tag take précédence
-		var txt = TQColorHelper.RemoveLeadingColorTag(friendlyName);
+		var (tagColor, txt) = friendlyName.SplitLeadingColorTag();
+		FGColor = tagColor?.Color() ?? FGColor ?? TQColor.White.Color();// Color Tag take précédence
 		var row = new Label()
 		{
 			Text = txt,

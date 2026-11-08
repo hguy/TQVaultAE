@@ -437,4 +437,41 @@ public class TQColorHelperTests
 	}
 
 	#endregion
+
+	#region SplitLeadingColorTag / SplitColorSegments
+
+	[Theory]
+	[InlineData("{^Y}Gold", TQColor.Yellow, "Gold")]
+	[InlineData("^RRed", TQColor.Red, "Red")]
+	[InlineData("Plain {^Y}tail", null, "Plain {^Y}tail")]
+	[InlineData("", null, "")]
+	[InlineData("   ", null, "   ")]
+	public void SplitLeadingColorTag_ReturnsTheLeadingColorAndTheUntaggedText(string text, TQColor? expectedColor, string expectedText)
+	{
+		var (color, rest) = text.SplitLeadingColorTag();
+
+		color.Should().Be(expectedColor);
+		rest.Should().Be(expectedText);
+	}
+
+	[Fact]
+	public void SplitColorSegments_KeepsEachSegmentColorTag()
+		=> "{^Y}Name {^W}(level 3)".SplitColorSegments()
+			.Should().Equal("{^Y}Name ", "{^W}(level 3)");
+
+	[Fact]
+	public void SplitColorSegments_TextBeforeFirstTag_IsItsOwnSegment()
+		=> "Damage {^R}+10".SplitColorSegments()
+			.Should().Equal("Damage ", "{^R}+10");
+
+	[Fact]
+	public void SplitColorSegments_DropsEmptySegmentsAndLoneBraces()
+		=> "{^Y}A{{^G}B{".SplitColorSegments()
+			.Should().Equal("{^Y}A", "{^G}B");
+
+	[Fact]
+	public void SplitColorSegments_NoTag_ReturnsTheText()
+		=> "Plain".SplitColorSegments().Should().Equal("Plain");
+
+	#endregion
 }
