@@ -92,21 +92,17 @@ public partial class ItemTooltip
 			var blocks = skills.Select(skill => this.RasterizeSkill(skill, bg)).ToList();
 			try
 			{
+				var columnOf = ItemTooltipContentBuilder.PackColumns(blocks.Select(b => b.Height).ToList(), separator, maxHeight);
 				var columns = new List<List<Bitmap>>();
-				int height = 0;
-				foreach (var block in blocks)
+				for (int i = 0; i < blocks.Count; i++)
 				{
-					bool newColumn = columns.Count == 0 || height + separator + block.Height > maxHeight;
+					bool newColumn = columnOf[i] == columns.Count;
 #if DEBUG
 					this.AutomationRecorder?.PlaceSkill(newColumn);
 #endif
 					if (newColumn)
-					{
 						columns.Add([]);
-						height = -separator;
-					}
-					columns[^1].Add(block);
-					height += separator + block.Height;
+					columns[^1].Add(blocks[i]);
 				}
 
 				panels.AddRange(columns.Select(column => DrawColumn(column, bg, pad, separator)));
@@ -264,28 +260,23 @@ public partial class ItemTooltip
 			Padding = new Padding(0),
 			Anchor = AnchorStyles.Left,
 		};
-		title.Controls.Add(MakeSingleColorLabel(this.UIService, this.FontService, skill.Name, ItemStyle.Epic.TQColor().Color(), 10F, FontStyle.Bold, bg));
-		title.Controls.Add(MakeSingleColorLabel(this.UIService, this.FontService, skill.LevelText, ItemStyle.Broken.TQColor().Color(), 10F, FontStyle.Regular, bg));
+		var content = ItemTooltipContentBuilder.BuildSkill(skill);
+		title.Controls.Add(this.MakeTitleLabel(content.Name, bg));
+		title.Controls.Add(this.MakeTitleLabel(content.Level, bg));
 		header.Controls.Add(title);
 		panel.Controls.Add(header);
 
-		if (skill.Activation is not null)
-			AddPanelRow(panel, skill.Activation, ItemStyle.Mundane.TQColor().Color(), bg);
-
-		foreach (var line in skill.Description)
-			AddPanelRow(panel, line, ItemStyle.Mundane.TQColor().Color(), bg);
-
-		if (skill.Attributes.Length != 0)
-		{
-			AddPanelRow(panel, TOOLTIPSPACER, null, bg);
-			foreach (var line in skill.Attributes)
-				AddPanelRow(panel, line.Length == 0 ? TOOLTIPSPACER : line, null, bg);
-		}
+		foreach (var line in content.Body)
+			AddPanelRow(panel, line, bg);
 	}
 
-	private void AddPanelRow(FlowLayoutPanel panel, string text, Color? color, Color bg)
+	private Label MakeTitleLabel(TooltipLine line, Color bg)
+		=> MakeSingleColorLabel(this.UIService, this.FontService, line.Text, line.Color?.Color(), 10F, line.Bold ? FontStyle.Bold : FontStyle.Regular, bg);
+
+	private void AddPanelRow(FlowLayoutPanel panel, TooltipLine line, Color bg)
 	{
-		if (MakeRow(this.UIService, this.FontService, text, color, BGColor: bg) is { } row)
+		var text = line.Kind == TooltipLineKind.Spacer ? TOOLTIPSPACER : line.Text;
+		if (MakeRow(this.UIService, this.FontService, text, line.Color?.Color(), BGColor: bg) is { } row)
 			panel.Controls.Add(row);
 	}
 }

@@ -1,5 +1,6 @@
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Automation;
+using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Tooltips;
 
