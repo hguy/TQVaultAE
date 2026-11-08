@@ -37,6 +37,11 @@ public partial class MainForm : VaultForm
 	private readonly IItemExchangeService itemExchangeService;
 	private readonly ISettingsPersistenceService settingsPersistenceService;
 
+	/// <summary>
+	/// The command line, parsed once at startup.
+	/// </summary>
+	private readonly CommandLineArgs commandLineArgs;
+
 	#region	Fields
 
 	/// <summary>
@@ -165,6 +170,7 @@ public partial class MainForm : VaultForm
 			, ITagService tagService
 			, IItemExchangeService itemExchangeService
 			, ISettingsPersistenceService settingsPersistenceService
+			, CommandLineArgs commandLineArgs
 		) : base(services)
 	{
 		this.userContext = sessionContext;
@@ -175,6 +181,7 @@ public partial class MainForm : VaultForm
 		this.TagService = tagService;
 		this.itemExchangeService = itemExchangeService;
 		this.settingsPersistenceService = settingsPersistenceService;
+		this.commandLineArgs = commandLineArgs;
 
 		Log = log;
 		Log.LogInformation("TQVaultAE Initialization !");

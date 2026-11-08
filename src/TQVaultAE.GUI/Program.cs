@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.GUI.Infrastructure.Filters;
 using TQVaultAE.GUI.Models.Search;
@@ -143,6 +144,8 @@ public static class Program
 		.AddSingleton<IForgeService, ForgeService>()
 		.AddSingleton<HttpClient>()
 		.AddSingleton<ISettingsPersistenceService, SettingsPersistenceService>()
+		.AddSingleton<IStartupService, StartupService>()
+		.AddSingleton(new CommandLineArgs(Environment.GetCommandLineArgs()))
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()
@@ -164,15 +167,15 @@ public static class Program
 
 			Program.ServiceProvider = scol.BuildServiceProvider();
 
-			var gamePathResolver = Program.ServiceProvider.GetRequiredService<IGamePathService>();
 			var userSettings = ServiceProvider.GetRequiredService<UserSettings>();
+			var startupService = ServiceProvider.GetRequiredService<IStartupService>();
 
 			try
 			{
 				ManageCulture();
-				SetUILanguage(userSettings);
-				SetupGamePaths(gamePathResolver, userSettings);
-				SetupMapName(gamePathResolver, userSettings);
+				SetUILanguage(startupService.ResolveUICultureName());
+				ShowStartupNotice(startupService.SetupGamePaths());
+				startupService.SetupMapName();
 			}
 			catch (ExGamePathNotFound ex)
 			{
@@ -216,122 +219,48 @@ public static class Program
 	#region Init
 
 	/// <summary>
-	/// Reads the paths from the config files and sets them.
+	/// Shows the message about the vault folder chosen while the game paths were set up.
 	/// </summary>
-	private static void SetupGamePaths(IGamePathService gamePathResolver, UserSettings userSettings)
+	private static void ShowStartupNotice(StartupNotice notice)
 	{
-		if (userSettings.AutoDetectGamePath)
+		switch (notice)
 		{
-			gamePathResolver.GamePathTQ = gamePathResolver.ResolveGamePath();
-			gamePathResolver.GamePathTQIT = gamePathResolver.ResolveGamePath();
-		}
-		else
-		{
-			gamePathResolver.GamePathTQ = userSettings.TQPath;
-			gamePathResolver.GamePathTQIT = userSettings.TQITPath;
-		}
-
-		var titanQuestGamePath = gamePathResolver.GamePathTQ;
-		if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
-
-		titanQuestGamePath = gamePathResolver.GamePathTQIT;
-		if (!string.IsNullOrWhiteSpace(titanQuestGamePath)) DetectGameType();
-
-		Log.LogInformation("Selected TQ path {GamePathTQ}", gamePathResolver.GamePathTQ);
-		Log.LogInformation("Selected TQIT path {GamePathTQIT}", gamePathResolver.GamePathTQIT);
-
-		// Show a message that the default path is going to be used.
-		if (string.IsNullOrEmpty(userSettings.VaultPath))
-		{
-			string folderPath = Path.Combine(gamePathResolver.SaveFolderTQ, "TQVaultData");
-
-			// Check to see if we are still using a shortcut to specify the vault path and display a message
-			// to use the configuration UI if we are.
-			if (!Directory.Exists(folderPath) && File.Exists(Path.ChangeExtension(folderPath, ".lnk")))
-			{
+			case StartupNotice.LegacyVaultShortcut:
+				// The vault path is still given by a shortcut: tell to use the configuration UI.
 				MessageBox.Show(Resources.DataLinkMsg, Resources.DataLink, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxService.ReadingOptions);
-			}
-			else
-			{
+				break;
+			case StartupNotice.DefaultVaultPath:
 				MessageBox.Show(Resources.DataDefaultPathMsg, Resources.DataDefaultPath, MessageBoxButtons.OK, MessageBoxIcon.Information, MessageBoxDefaultButton.Button1, MessageBoxService.ReadingOptions);
-			}
-		}
-
-		gamePathResolver.TQVaultSaveFolder = userSettings.VaultPath;
-
-		void DetectGameType()
-		{
-			if (File.Exists(Path.Combine(titanQuestGamePath, "TQ.exe"))) gamePathResolver.GameType = GameType.TQAE;
-			else if (File.Exists(Path.Combine(titanQuestGamePath, "TQIT.exe"))) gamePathResolver.GameType = GameType.TQIT;
-			else gamePathResolver.GameType = GameType.TQ;
+				break;
 		}
 	}
 
 	/// <summary>
-	/// Attempts to read language from config file and set the Current Thread's Culture and UICulture.
-	/// Defaults to to OS UI Culture.
+	/// Sets the Current Thread's Culture and UICulture to the language of the settings.
+	/// Keeps the OS UI Culture when there is none.
 	/// </summary>
-	private static void SetUILanguage(UserSettings userSettings)
+	/// <param name="cultureName">The culture found from the settings, or null.</param>
+	private static void SetUILanguage(string? cultureName)
 	{
-		string? settingsCulture = null;
-		if (!string.IsNullOrEmpty(userSettings.UILanguage))
+		if (string.IsNullOrEmpty(cultureName))
+			return;
+
+		try
 		{
-			settingsCulture = userSettings.UILanguage;
+			// Sets the culture
+			Thread.CurrentThread.CurrentCulture = new CultureInfo(cultureName);
+
+			// Sets the UI culture
+			Thread.CurrentThread.CurrentUICulture = new CultureInfo(cultureName);
 		}
-		else if (!userSettings.AutoDetectLanguage)
+		catch (ArgumentNullException e)
 		{
-			settingsCulture = userSettings.TQLanguage;
+			Log.LogError(e, "Argument Null Exception when setting the language");
 		}
-
-		if (!string.IsNullOrEmpty(settingsCulture))
+		catch (NotSupportedException e)
 		{
-			string? myCulture = null;
-			foreach (CultureInfo ci in CultureInfo.GetCultures(CultureTypes.NeutralCultures))
-			{
-				if (ci.EnglishName.Equals(settingsCulture, StringComparison.OrdinalIgnoreCase))
-				{
-					myCulture = ci.TextInfo.CultureName;
-					break;
-				}
-			}
-
-			// We found something so we will use it.
-			if (!string.IsNullOrEmpty(myCulture))
-			{
-				try
-				{
-					// Sets the culture
-					Thread.CurrentThread.CurrentCulture = new CultureInfo(myCulture);
-
-					// Sets the UI culture
-					Thread.CurrentThread.CurrentUICulture = new CultureInfo(myCulture);
-				}
-				catch (ArgumentNullException e)
-				{
-					Log.LogError(e, "Argument Null Exception when setting the language");
-				}
-				catch (NotSupportedException e)
-				{
-					Log.LogError(e, "Not Supported Exception when setting the language");
-				}
-			}
-
-			// If not then we just default to the OS UI culture.
+			Log.LogError(e, "Not Supported Exception when setting the language");
 		}
-	}
-
-	/// <summary>
-	/// Sets the name of the game map if a custom map is set in the config file.
-	/// Defaults to Main otherwise.
-	/// </summary>
-	private static void SetupMapName(IGamePathService gamePathResolver, UserSettings userSettings)
-	{
-		// Set the map name.  Command line argument can override this setting in LoadResources().
-		string mapName = "main";
-		if (userSettings.ModEnabled)
-			mapName = userSettings.CustomMap;
-
-		gamePathResolver.MapName = mapName;
 	}
 
 	#endregion
