@@ -79,7 +79,7 @@ public partial class VaultPanel
 		if (e.Button == MouseButtons.Right)
 		{
 			// Only process vault bags with something in them.
-			if (this.BagSackPanel.SackType == SackType.Vault && this.BagButtons[this.CurrentBag].ButtonText != null)
+			if (this.BagSackPanel.SackType == SackType.Vault && this.BagButtons[this.CurrentBag].ButtonText is not null)
 			{
 				this.contextMenu.Items.Clear();
 
@@ -199,7 +199,7 @@ public partial class VaultPanel
 	/// </summary>
 	protected void HideAutoSortButtons()
 	{
-		if (this.autoSortButtons != null && this.autoSortButtons.Count > 0)
+		if (this.autoSortButtons is not null && this.autoSortButtons.Count > 0)
 		{
 			foreach (AutoSortButton autoSortButton in this.autoSortButtons)
 			{
@@ -213,7 +213,7 @@ public partial class VaultPanel
 	/// </summary>
 	protected void UnhideAutoSortButtons()
 	{
-		if (this.autoSortButtons != null && this.autoSortButtons.Count > 0)
+		if (this.autoSortButtons is not null && this.autoSortButtons.Count > 0)
 		{
 			this.autoSortButtons[0].Visible = true;
 
@@ -292,7 +292,7 @@ public partial class VaultPanel
 		// Get the list of items 
 		SackCollection? sack = this.ShownPlayer.GetSack(button.ButtonNumber + this.BagPanelOffset);
 
-		if (sack == null)
+		if (sack is null)
 		{
 			return;
 		}

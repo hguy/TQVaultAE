@@ -67,7 +67,7 @@ public class PlayerPanel : VaultPanel
 		this.BagSackPanel.IsPlayerBagPanel = true;
 
 		// Recalculate the button sizing and placement since we moved the BagSackPanel.
-		if (this.BagButtons != null && this.BagButtons.Count > 0)
+		if (this.BagButtons is not null && this.BagButtons.Count > 0)
 		{
 			float buttonWidth = (float)Images.inventorybagup01.Width;
 			float buttonHeight = (float)Images.inventorybagup01.Height;
@@ -117,7 +117,7 @@ public class PlayerPanel : VaultPanel
 	/// </summary>
 	public new SackPanel SackPanel
 	{
-		get => (this.mainSackPanel != null) ? this.mainSackPanel : this.BagSackPanel;
+		get => (this.mainSackPanel is not null) ? this.mainSackPanel : this.BagSackPanel;
 	}
 
 	/// <summary>
@@ -155,9 +155,9 @@ public class PlayerPanel : VaultPanel
 	/// </summary>
 	protected override void AssignSacks()
 	{
-		if (this.mainSackPanel != null)
+		if (this.mainSackPanel is not null)
 		{
-			if ((this.Player == null) || (this.Player.NumberOfSacks < 1))
+			if ((this.Player is null) || (this.Player.NumberOfSacks < 1))
 			{
 				this.mainSackPanel.Sack = null;
 			}

@@ -25,7 +25,7 @@ public class FontService : IFontService
 			if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
 			{
 				// Code here won't run in Visual Studio designer but runtime 
-				if (FontLoader != null && _FONT_ALBERTUSMT is null)
+				if (FontLoader is not null && _FONT_ALBERTUSMT is null)
 				{
 					var baseFont = Enums.Parse<FontFamilyList>(USettings.BaseFont ?? FontFamilyList.AlbertusMT.ToString());
 					switch (baseFont)
@@ -72,7 +72,7 @@ public class FontService : IFontService
 			if (LicenseManager.UsageMode == LicenseUsageMode.Runtime)
 			{
 				// Code here won't run in Visual Studio designer
-				if (FontLoader != null && _FONT_ALBERTUSMTLIGHT is null)
+				if (FontLoader is not null && _FONT_ALBERTUSMTLIGHT is null)
 				{
 					var baseFont = Enums.Parse<FontFamilyList>(USettings.BaseFont ?? FontFamilyList.AlbertusMT.ToString());
 					switch (baseFont)

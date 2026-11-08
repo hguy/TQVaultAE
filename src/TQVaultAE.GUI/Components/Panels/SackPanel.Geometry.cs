@@ -74,7 +74,7 @@ public partial class SackPanel
 			return false;
 
 		var items = this.FindAllItems(new Rectangle(x, y, width, height));
-		return items == null || items.Count == 0;
+		return items is null || items.Count == 0;
 	}
 
 	/// <summary>
@@ -120,7 +120,7 @@ public partial class SackPanel
 	/// <returns>Item at that cell location</returns>
 	protected virtual Item? FindItem(Point cellLocation)
 	{
-		if (this.Sack == null)
+		if (this.Sack is null)
 			return null;
 
 		// hide the item being dragged
@@ -146,7 +146,7 @@ public partial class SackPanel
 			{
 				Item? item = this.FindItem(new Point(x, y));
 
-				if (item != null)
+				if (item is not null)
 				{
 					// Add this item to the array if it is not already in there
 					if (!items.Contains(item))
@@ -260,7 +260,7 @@ public partial class SackPanel
 	/// <returns>Rectangle containing the screen coordinates occupied by the item.</returns>
 	protected virtual Rectangle GetItemScreenRectangle(Item? item)
 	{
-		if (item == null)
+		if (item is null)
 			return Rectangle.Empty;
 
 		Point screenLocation = this.CellTopLeft(item.Location);

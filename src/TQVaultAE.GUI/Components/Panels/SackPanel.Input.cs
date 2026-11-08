@@ -38,7 +38,7 @@ public partial class SackPanel
 	/// <param name="e">MouseEventArgs data</param>
 	protected virtual void MouseDownCallback(object? sender, MouseEventArgs e)
 	{
-		if (this.Sack == null)
+		if (this.Sack is null)
 			return;
 
 		var isEquipmentReadOnly = (USettings.PlayerReadonly == true && this.SackType == SackType.Equipment);
@@ -92,7 +92,7 @@ public partial class SackPanel
 
 				this.CustomContextMenu.Items.Clear();
 
-				if (focusedItem != null)
+				if (focusedItem is not null)
 					this.contextMenuCellWithFocus = this.LastCellWithFocus;
 
 				if (actions.HasFlag(ItemActions.Delete))
@@ -140,7 +140,7 @@ public partial class SackPanel
 				if (actions.HasFlag(ItemActions.ClearSelection))
 					this.AddActionMenuItem(Resources.SackPanelMenuClear, ItemActions.ClearSelection);
 
-				if ((focusedItem != null || selectionCount > 0) && this.CustomContextMenu.Items.Count > 0)
+				if ((focusedItem is not null || selectionCount > 0) && this.CustomContextMenu.Items.Count > 0)
 					this.CustomContextMenu.Show(this, new Point(e.X, e.Y));
 			}
 		}
@@ -163,7 +163,7 @@ public partial class SackPanel
 
 			if (newItem != lastItem || redrawSelection)
 			{
-				if (lastItem != null)
+				if (lastItem is not null)
 					this.Invalidate(GetItemScreenRectangle(lastItem));
 
 				if (cell != this.LastCellWithFocus)
@@ -171,7 +171,7 @@ public partial class SackPanel
 
 				if (newItem != lastItem)
 				{
-					if (newItem != null)
+					if (newItem is not null)
 						this.Invalidate(GetItemScreenRectangle(newItem));
 
 					this.OnNewItemHighlighted?.Invoke(this, new SackPanelEventArgs(this.Sack, newItem));
@@ -187,7 +187,7 @@ public partial class SackPanel
 	/// <param name="e">MouseEventArgs data</param>
 	protected void MouseMoveCallback(object? sender, MouseEventArgs e)
 	{
-		if (this.Sack == null)
+		if (this.Sack is null)
 			return;
 
 		if (!this.DragInfo.IsActive)
@@ -328,7 +328,7 @@ public partial class SackPanel
 	/// <param name="e">KeyPressEventArgs data</param>
 	private void KeyPressCallback(object? sender, KeyPressEventArgs e)
 	{
-		if (this.Sack != null)
+		if (this.Sack is not null)
 		{
 			if (e.KeyChar == (char)27 && this.DragInfo.IsActive && this.DragInfo.CanBeCanceled)
 			{
@@ -343,7 +343,7 @@ public partial class SackPanel
 				// Copy
 				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 
-				if (focusedItem != null)
+				if (focusedItem is not null)
 				{
 					// Set DragInfo to focused item.
 					this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
@@ -362,7 +362,7 @@ public partial class SackPanel
 				// Delete
 				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 
-				if (focusedItem != null)
+				if (focusedItem is not null)
 				{
 					this.DeleteItem(focusedItem, false);
 					this.Refresh();
@@ -374,7 +374,7 @@ public partial class SackPanel
 				// Duplicate
 				Item? focusedItem = this.FindItem(this.LastCellWithFocus);
 
-				if (focusedItem != null)
+				if (focusedItem is not null)
 				{
 					// Set DragInfo to focused item.
 					this.DragInfo.Set(this, this.Sack, focusedItem, new Point(1, 1));
@@ -399,7 +399,7 @@ public partial class SackPanel
 	private void MouseLeaveCallback(object? sender, EventArgs e)
 	{
 		this.controlKeyDown = false;
-		if (this.Sack == null)
+		if (this.Sack is null)
 			return;
 
 		if (!this.DragInfo.IsActive)

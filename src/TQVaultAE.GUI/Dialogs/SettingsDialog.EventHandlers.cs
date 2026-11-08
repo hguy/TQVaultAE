@@ -157,7 +157,7 @@ internal partial class SettingsDialog
 	private void LanguageComboBoxSelectedIndexChanged(object? sender, EventArgs e)
 	{
 		// There was some problem getting the game language so we ignore changing it.
-		if (this.Services.SettingsPersistence.GameLanguage == null)
+		if (this.Services.SettingsPersistence.GameLanguage is null)
 			return;
 
 		// No selection happens only while the list is rebuilt.

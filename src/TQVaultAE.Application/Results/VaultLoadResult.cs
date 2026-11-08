@@ -23,7 +23,7 @@ public class VaultLoadResult
 	/// Indicates whether the vault load was successful.
 	/// </summary>
 	[MemberNotNullWhen(true, nameof(Vault))]
-	public bool IsSuccess => Vault != null;
+	public bool IsSuccess => Vault is not null;
 
 	/// <summary>
 	/// Any exception that occurred during loading.

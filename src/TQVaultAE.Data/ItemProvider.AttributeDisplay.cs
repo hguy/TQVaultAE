@@ -39,7 +39,7 @@ public partial class ItemProvider
 
 		// First get a list of attributes, grouped by effect.
 		Dictionary<string, List<Variable?>> attrByEffect = new();
-		if (record == null)
+		if (record is null)
 		{
 			if (USettings.ItemDebugLevel > 0)
 				Log.LogDebug("Error - record was null.");
@@ -71,7 +71,7 @@ public partial class ItemProvider
 				continue;
 
 			ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(variable.Name);
-			if (data == null)
+			if (data is null)
 			{
 				// unknown attribute
 				if (USettings.ItemDebugLevel > 2)
@@ -278,7 +278,7 @@ public partial class ItemProvider
 			return;
 
 		ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(variable.Name);
-		if (data == null)
+		if (data is null)
 		{
 			// unknown attribute
 			if (USettings.ItemDebugLevel > 0)
@@ -358,11 +358,11 @@ public partial class ItemProvider
 
 		foreach (Variable? variable in attributeList)
 		{
-			if (variable == null)
+			if (variable is null)
 				continue;
 
 			ItemAttributesData? attributeData = ItemAttributeProvider.GetAttributeData(variable.Name);
-			if (attributeData == null)
+			if (attributeData is null)
 			{
 				// unknown attribute
 				attributeData = new ItemAttributesData(ItemAttributesEffectType.Other, variable.Name, variable.Name, string.Empty, 0);
@@ -457,19 +457,19 @@ public partial class ItemProvider
 
 		// Figure out the Amount string
 		string? amount = null;
-		if (minVar != null
-			&& maxVar != null
+		if (minVar is not null
+			&& maxVar is not null
 			&& minVar.GetSingle(Math.Min(minVar.NumberOfValues - 1, variableNumber)) != maxVar.GetSingle(Math.Min(maxVar.NumberOfValues - 1, variableNumber))
 		)
 		{
-			if (minDurVar != null)
+			if (minDurVar is not null)
 				amount = GetAmountRange(itm, data, variableNumber, minVar, maxVar, ref label, labelColor, minDurVar);
 			else
 				amount = GetAmountRange(itm, data, variableNumber, minVar, maxVar, ref label, labelColor);
 		}
 		else
 		{
-			if (minDurVar != null)
+			if (minDurVar is not null)
 				amount = GetAmountSingle(itm, data, variableNumber, minVar, maxVar, ref label, labelColor, minDurVar);
 			else
 				amount = GetAmountSingle(itm, data, variableNumber, minVar, maxVar, ref label, labelColor);
@@ -481,24 +481,24 @@ public partial class ItemProvider
 		float minDurVarValue = -1;
 		float maxDurVarValue = -1;
 
-		if (minDurVar != null)
+		if (minDurVar is not null)
 			minDurVarValue = (float)minDurVar[minDurVar.NumberOfValues - 1];
 
-		if (maxDurVar != null)
+		if (maxDurVar is not null)
 			maxDurVarValue = (float)maxDurVar[maxDurVar.NumberOfValues - 1];
-		if (minDurVar != null && maxDurVar != null && minDurVarValue != maxDurVarValue)
+		if (minDurVar is not null && maxDurVar is not null && minDurVarValue != maxDurVarValue)
 			duration = GetDurationRange(variableNumber, minDurVar, maxDurVar);
 		else
 			duration = GetDurationSingle(variableNumber, minDurVar, maxDurVar);
 
 		// Figure out the Damage Ratio string
 		string? damageRatio = null;
-		if (damageRatioData != null && damageRatioVar != null)
+		if (damageRatioData is not null && damageRatioVar is not null)
 			damageRatio = GetDamageRatio(variableNumber, damageRatioData, damageRatioVar);
 
 		// Figure out the chance string
 		string? chance = null;
-		if (chanceVar != null)
+		if (chanceVar is not null)
 			chance = GetChance(variableNumber, chanceVar);
 
 		// Display the chance + label + Amount + Duration + DamageRatio
@@ -589,15 +589,15 @@ public partial class ItemProvider
 
 		// now see if we have a modifier
 		string? modifier = null;
-		if (modifierData != null && modifierVar != null)
+		if (modifierData is not null && modifierVar is not null)
 			modifier = GetModifier(data, variableNumber, modifierData, modifierVar);
 
 		string? durationModifier = null;
-		if (durationModifierVar != null)
+		if (durationModifierVar is not null)
 			durationModifier = GetDurationModifier(variableNumber, durationModifierVar);
 
 		string? modifierChance = null;
-		if (modifierChanceVar != null)
+		if (modifierChanceVar is not null)
 			modifierChance = GetChanceModifier(variableNumber, modifierChanceVar);
 
 		numberOfStrings = 0;
@@ -636,31 +636,31 @@ public partial class ItemProvider
 		// Now display any other variables we did not see here.
 		foreach (Variable? variable in attributeList)
 		{
-			if (variable == null)
+			if (variable is null)
 				continue;
 
 			ItemAttributesData? attributeData = ItemAttributeProvider.GetAttributeData(variable.Name);
 
-			if (attributeData == null)
+			if (attributeData is null)
 				// unknown attribute
 				attributeData = new ItemAttributesData(ItemAttributesEffectType.Other, variable.Name, variable.Name, string.Empty, 0);
 
 			string normalizedAttributeVariable = attributeData.Variable.ToUpperInvariant();
 			if (
 				!(
-					amount != null
+					amount is not null
 					&& (normalizedAttributeVariable == "MIN"
 						|| normalizedAttributeVariable == "MAX"
 						|| normalizedAttributeVariable == "DRAINMIN"
 						|| normalizedAttributeVariable == "DRAINMAX"
 					)
 				)
-				&& !(duration != null && (normalizedAttributeVariable == "DURATIONMIN" || normalizedAttributeVariable == "DURATIONMAX"))
-				&& !(chance != null && normalizedAttributeVariable == "CHANCE")
-				&& !(modifier != null && normalizedAttributeVariable == "MODIFIER")
-				&& !(durationModifier != null && normalizedAttributeVariable == "DURATIONMODIFIER")
-				&& !(modifierChance != null && normalizedAttributeVariable == "MODIFIERCHANCE")
-				&& !(damageRatio != null && normalizedAttributeVariable == "DAMAGERATIO")
+				&& !(duration is not null && (normalizedAttributeVariable == "DURATIONMIN" || normalizedAttributeVariable == "DURATIONMAX"))
+				&& !(chance is not null && normalizedAttributeVariable == "CHANCE")
+				&& !(modifier is not null && normalizedAttributeVariable == "MODIFIER")
+				&& !(durationModifier is not null && normalizedAttributeVariable == "DURATIONMODIFIER")
+				&& !(modifierChance is not null && normalizedAttributeVariable == "MODIFIERCHANCE")
+				&& !(damageRatio is not null && normalizedAttributeVariable == "DAMAGERATIO")
 				&& normalizedAttributeVariable != "GLOBAL"
 				// XOR is a flag, not an effect: in a global group it makes "Chance for one of the following:", elsewhere
 				// (e.g. the durations of Rune Storm) it has nothing to show.
@@ -761,7 +761,7 @@ public partial class ItemProvider
 				}
 
 				// We have no line so just show the raw attribute
-				if (line == null)
+				if (line is null)
 					line = GetRawAttribute(data, variableNumber, variable, ref color);
 
 				// Start finalizing the line of text
@@ -806,7 +806,7 @@ public partial class ItemProvider
 				{
 					string petBonusID = record.GetString("petBonusName", 0);
 					DBRecordCollection? petBonusRecord = Database.GetRecordFromFile(petBonusID);
-					if (petBonusRecord != null)
+					if (petBonusRecord is not null)
 					{
 						var tmp = new List<string>();
 						GetAttributesFromRecord(itm, petBonusRecord, true, petBonusID, tmp);
@@ -883,7 +883,7 @@ public partial class ItemProvider
 	{
 		foreach (Variable? variable in attributeList)
 		{
-			if (variable != null)
+			if (variable is not null)
 				results.Add(variable.ToString());
 		}
 	}

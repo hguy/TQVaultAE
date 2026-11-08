@@ -322,7 +322,7 @@ public partial class MainForm
 	/// </summary>
 	private SessionConfiguration CurrentSessionConfiguration()
 	{
-		string? vaultName = this.vaultListComboBox.SelectedItem != null ? this.vaultListComboBox.SelectedItemText() : null;
+		string? vaultName = this.vaultListComboBox.SelectedItem is not null ? this.vaultListComboBox.SelectedItemText() : null;
 
 		string? characterName = this.comboBoxCharacter.SelectedItem is PlayerSave ps
 			? ps.Name

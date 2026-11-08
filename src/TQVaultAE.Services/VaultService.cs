@@ -89,7 +89,7 @@ public class VaultService(
 			string vaultFile = kvp.Key;
 			PlayerCollection vault = kvp.Value.Value;
 
-			if (vault == null) continue;
+			if (vault is null) continue;
 
 			if (vault.IsModified)
 			{
@@ -145,7 +145,7 @@ public class VaultService(
 				foreach (var sack in pc)
 				{
 					sackNumber++;
-					if (sack == null)
+					if (sack is null)
 						continue;
 
 					foreach (var item in sack)

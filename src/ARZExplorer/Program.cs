@@ -117,7 +117,7 @@ public static class Program
 		for (int i = 0; i <= lastSubKey; ++i)
 		{
 			var subKey = key.OpenSubKey(path[i]);
-			if (subKey == null)
+			if (subKey is null)
 			{
 				return string.Empty;
 			}

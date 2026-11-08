@@ -54,7 +54,7 @@ public class ItemAttributeSubListCompare(IItemAttributeProvider itemAttributePro
 	private int CalcOrder(Variable variable)
 	{
 		ItemAttributesData? aa = ItemAttributeProvider.GetAttributeData(variable.Name);
-		if (aa == null)
+		if (aa is null)
 			return 3000000;
 
 		return CalcBaseOrder(aa.EffectType, aa.Suborder);

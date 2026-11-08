@@ -89,7 +89,7 @@ public class ItemAttributeListCompare(bool isArmor, IItemAttributeProvider itemA
 		if (v.Name.Equals("itemSkillName", StringComparison.Ordinal))
 			return 4000000;
 
-		if (aa == null)
+		if (aa is null)
 			return 3000000;
 
 		// This is a good first estimate.

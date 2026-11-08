@@ -37,9 +37,9 @@ public partial class SackPanel : Panel, IScalingControl
 
 		try
 		{
-			if (this.Sack == null)
+			if (this.Sack is null)
 			{
-				if (DefaultImage != null)
+				if (DefaultImage is not null)
 					// Draw the medallion if the sack is not created
 					e.Graphics.DrawImage(DefaultImage, 0, 0, this.Width, this.Height);
 			}
@@ -94,7 +94,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 		Color highlightColor = this.HighlightInvalidItemColor;
 
-		if ((this.ItemsUnderDragItem == null || this.ItemsUnderDragItem.Count <= 1) && this.IsItemValidForPlacement(this.DragInfo.Item))
+		if ((this.ItemsUnderDragItem is null || this.ItemsUnderDragItem.Count <= 1) && this.IsItemValidForPlacement(this.DragInfo.Item))
 			highlightColor = this.HighlightValidItemColor;
 
 		Point topLeft = this.CellTopLeft(this.CellsUnderDragItem.Location);
@@ -189,7 +189,7 @@ public partial class SackPanel : Panel, IScalingControl
 				alpha = AdjustAlpha(alpha);
 
 			// See if this item is under the drag item
-			if (this.DragInfo.IsActive && this.ItemsUnderDragItem != null && this.ItemsUnderDragItem.Contains(item))
+			if (this.DragInfo.IsActive && this.ItemsUnderDragItem is not null && this.ItemsUnderDragItem.Contains(item))
 			{
 				// Use highlight color if it is the only item under the drag point, else use invalid
 				backgroundColor = this.ItemsUnderDragItem.Count > 1 ? this.HighlightInvalidItemColor : this.HighlightValidItemColor;
@@ -217,7 +217,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="redrawRectangle">Rectangle containing the screen coordinated which will be redrawn</param>
 	protected void RedrawGrid(Graphics graphics, Rectangle redrawRectangle)
 	{
-		if (this.DisableGrid || graphics == null)
+		if (this.DisableGrid || graphics is null)
 			return;
 
 		for (int x = redrawRectangle.X; x < redrawRectangle.Right; x += UIService.ItemUnitSize)
@@ -253,7 +253,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="imageAttributes">ImageAttributes used for drawing the image, <see langword="null"/> to draw it as it is.</param>
 	protected void DrawItem(Graphics graphics, Item item, Point screenLocation, System.Drawing.Imaging.ImageAttributes? imageAttributes)
 	{
-		if (item == null || graphics == null || this.UIService.GetBitmap(item) is not { } ibmp)
+		if (item is null || graphics is null || this.UIService.GetBitmap(item) is not { } ibmp)
 			return;
 
 		Rectangle itemRect = new Rectangle(
@@ -269,7 +269,7 @@ public partial class SackPanel : Panel, IScalingControl
 		if (item.HasRelicOrCharmSlot1 || item.HasRelicOrCharmSlot2)
 		{
 			Bitmap? relicOverlay = UIService.LoadRelicOverlayBitmap();
-			if (relicOverlay != null)
+			if (relicOverlay is not null)
 			{
 				// draw it in the bottom-right most cell of this item
 				int x2 = screenLocation.X + ((item.Width - 1) * UIService.ItemUnitSize);
@@ -312,7 +312,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="alpha">alpha value for the color</param>
 	protected virtual void DrawItemAccent(Graphics graphics, Item item, Color accentColor, int alpha)
 	{
-		if (item == null)
+		if (item is null)
 			return;
 
 		Point screenLocation = this.CellTopLeft(item.Location);
@@ -328,7 +328,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="alpha">alpha value for the color</param>
 	protected virtual void DrawItemAccent(Graphics graphics, Rectangle itemRectangle, Color accentColor, int alpha)
 	{
-		if (graphics == null)
+		if (graphics is null)
 			return;
 
 		System.Drawing.Imaging.ColorMatrix colorMatrix = new System.Drawing.Imaging.ColorMatrix()
@@ -355,7 +355,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="alpha">alpha value for the color</param>
 	protected virtual void ShadeAreaUnderItem(Graphics graphics, Item item, Color backgroundColor, int alpha, bool highlight)
 	{
-		if (item == null)
+		if (item is null)
 			return;
 
 		Point screenLocation = this.CellTopLeft(item.Location);
@@ -371,7 +371,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="alpha">alpha value for the color</param>
 	protected virtual void ShadeAreaUnderItem(Graphics graphics, Rectangle backgroundRectangle, Color backgroundColor, int alpha, bool highlight)
 	{
-		if (graphics == null)
+		if (graphics is null)
 			return;
 
 		using (SolidBrush brush = new SolidBrush(Color.FromArgb(alpha, backgroundColor)))
@@ -457,7 +457,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="graphics">graphics instance</param>
 	private void DrawBorder(Graphics graphics)
 	{
-		if (this.DisableBorder || graphics == null)
+		if (this.DisableBorder || graphics is null)
 			return;
 
 		graphics.DrawRectangle(this.borderPen, 0, 0, this.Size.Width, this.Size.Height);
@@ -469,7 +469,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="graphics">graphics instance</param>
 	private void DrawGrid(Graphics graphics)
 	{
-		if (this.DisableGrid || graphics == null)
+		if (this.DisableGrid || graphics is null)
 			return;
 
 		for (int x = 1; x < this.SackSize.Width; ++x)

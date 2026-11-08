@@ -390,7 +390,7 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <summary>
 	/// Gets a value indicating whether items have been selected
 	/// </summary>
-	public bool SelectionActive => this.selectedItems != null && this.selectedItems.Count > 0;
+	public bool SelectionActive => this.selectedItems is not null && this.selectedItems.Count > 0;
 
 	/// <summary>
 	/// Gets the list of selected items.

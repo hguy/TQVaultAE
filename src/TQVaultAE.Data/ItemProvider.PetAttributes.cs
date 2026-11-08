@@ -54,7 +54,7 @@ public partial class ItemProvider
 		}
 		var skillRecordspawnObjects = skillRecord.GetString("spawnObjects", 0);
 		DBRecordCollection? petRecord = Database.GetRecordFromFile(skillRecordspawnObjects);
-		if (petRecord != null)
+		if (petRecord is not null)
 		{
 			// Print out Pet attributes
 			if (!TranslationService.TryTranslateXTag("SkillPetDescriptionHeading", out formatSpec))
@@ -185,7 +185,7 @@ public partial class ItemProvider
 			for (int i = 0; i < numSkills; i++)
 			{
 				string recordID = skills[i];
-				if (recordID != null && !recordID.StartsWith("records", StringComparison.OrdinalIgnoreCase))
+				if (recordID is not null && !recordID.StartsWith("records", StringComparison.OrdinalIgnoreCase))
 					continue;
 
 				DBRecordCollection? skillRecord1 = Database.GetRecordFromFile(recordID);
@@ -211,7 +211,7 @@ public partial class ItemProvider
 				{
 					// This is a buff skill
 					DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
-					if (buffSkillRecord != null)
+					if (buffSkillRecord is not null)
 					{
 						record = buffSkillRecord;
 						recordID = buffSkillName;

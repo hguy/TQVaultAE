@@ -179,13 +179,13 @@ public partial class MainForm
 	/// </summary>
 	private void ClearPlayer()
 	{
-		if (this.playerPanel.Player != null)
+		if (this.playerPanel.Player is not null)
 		{
 			this.playerPanel.Player = null;
 			this.stashPanel.Player = null;
 			this.stashPanel.CurrentBag = BagIdConstants.BAGID_EQUIPMENTPANEL;
 
-			if (this.stashPanel.Stash != null)
+			if (this.stashPanel.Stash is not null)
 				this.stashPanel.Stash = null;
 		}
 	}
@@ -206,10 +206,10 @@ public partial class MainForm
 
 		if (selectedSave.IsImmortalThrone)
 		{
-			if (this.stashPanel.RelicVaultStash == null)
+			if (this.stashPanel.RelicVaultStash is null)
 				LoadRelicVaultStash();
 
-			if (this.stashPanel.TransferStash == null)
+			if (this.stashPanel.TransferStash is null)
 				LoadTransferStash();
 		}
 		else // Titan Quest original

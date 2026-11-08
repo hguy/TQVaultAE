@@ -132,13 +132,13 @@ public class VaultProgressBar : UserControl
 	/// <param name="e">PaintEventArgs data</param>
 	protected override void OnPaint(PaintEventArgs e)
 	{
-		if (this.backgroundImage != null)
+		if (this.backgroundImage is not null)
 		{
 			Rectangle destRect = new Rectangle(0, 0, this.Width, this.Height);
 			e.Graphics.DrawImage(this.backgroundImage, destRect, 0, 0, this.backgroundImage.Width, this.backgroundImage.Height, GraphicsUnit.Pixel);
 		}
 
-		if (this.Value > 0 && this.fillImage != null)
+		if (this.Value > 0 && this.fillImage is not null)
 		{
 			float factor = (float)this.Value / Math.Max(1.0F, (float)this.Maximum);
 			Rectangle destRect = new Rectangle(0, 0, Convert.ToInt32((float)this.Width * factor), this.Height);

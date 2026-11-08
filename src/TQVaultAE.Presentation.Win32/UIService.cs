@@ -47,7 +47,7 @@ public class UIService : IUIService
 	{
 		get
 		{
-			if (this._DefaultBitmap == null)
+			if (this._DefaultBitmap is null)
 				this.CreateDefaultBitmap();
 
 			return this._DefaultBitmap;
@@ -253,7 +253,7 @@ public class UIService : IUIService
 			return this.DefaultBitmap;
 
 		Bitmap bitmap;
-		if (texData == null)
+		if (texData is null)
 		{
 			if (USettings.DatabaseDebugLevel > 0)
 				Log.LogDebug("Failure loading resource.  Using default bitmap");

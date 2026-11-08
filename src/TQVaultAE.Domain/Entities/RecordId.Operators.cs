@@ -32,7 +32,7 @@ public partial class RecordId
 
 	public int CompareTo(object? obj)
 	{
-		if (obj == null)
+		if (obj is null)
 			return 1;
 
 		if (obj is not RecordId other)

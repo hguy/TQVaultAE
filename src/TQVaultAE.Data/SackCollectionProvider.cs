@@ -168,7 +168,7 @@ public class SackCollectionProvider(ILogger<SackCollectionProvider> log, IItemPr
 				ItemProvider.Parse(item, reader);
 
 				// Stack sc item with the previous item if necessary
-				if ((prevItem != null) && item.DoesStack && (item.PositionX == -1) && (item.PositionY == -1))
+				if ((prevItem is not null) && item.DoesStack && (item.PositionX == -1) && (item.PositionY == -1))
 					prevItem.StackSize++;
 				else
 				{

@@ -11,7 +11,7 @@ public partial class MainForm
 	private void HandleClipboardExport()
 	{
 		var selectedItems = GetActivePanelSelectedItems();
-		if (selectedItems == null || selectedItems.Count == 0)
+		if (selectedItems is null || selectedItems.Count == 0)
 			return;
 
 		try

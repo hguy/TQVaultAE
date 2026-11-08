@@ -51,7 +51,7 @@ public class StashService(
 					stash.Sack.StashType = StashType.PlayerStash;
 
 				// Add stash items to the search database
-				if (stash.Sack != null)
+				if (stash.Sack is not null)
 				{
 					foreach (var item in stash.Sack)
 						this.ItemDatabaseService.AddItemToDatabase(item, k, selectedSave.Name, BagIdConstants.BAGID_PLAYERSTASH, SackType.Stash, StashType.PlayerStash);
@@ -98,7 +98,7 @@ public class StashService(
 					stash.Sack.StashType = StashType.TransferStash;
 
 				// Add transfer stash items to the search database
-				if (stash.Sack != null)
+				if (stash.Sack is not null)
 				{
 					foreach (var item in stash.Sack)
 						this.ItemDatabaseService.AddItemToDatabase(item, k, Resources.GlobalTransferStash, BagIdConstants.BAGID_TRANSFERSTASH, SackType.Stash, StashType.TransferStash);
@@ -148,7 +148,7 @@ public class StashService(
 					stash.Sack.StashType = StashType.RelicVaultStash;
 
 				// Add relic vault stash items to the search database
-				if (stash.Sack != null)
+				if (stash.Sack is not null)
 				{
 					foreach (var item in stash.Sack)
 						this.ItemDatabaseService.AddItemToDatabase(item, k, Resources.GlobalRelicVaultStash, BagIdConstants.BAGID_RELICVAULTSTASH, SackType.Stash, StashType.RelicVaultStash);
@@ -193,7 +193,7 @@ public class StashService(
 			string stashFile = kvp.Key;
 			Stash stash = kvp.Value.Value;
 
-			if (stash == null) continue;
+			if (stash is null) continue;
 
 			if (stash.IsModified)
 			{

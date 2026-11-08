@@ -69,7 +69,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 		if (!this.DragInfo.IsActive)
 		{
-			if (this.Sack != null && !this.Sack.IsEmpty)
+			if (this.Sack is not null && !this.Sack.IsEmpty)
 			{
 				var plan = new AutoMovePlan(AutoMovePlanner.Order(this.Sack), this.AutoMoveLocation, destination);
 				this.RaiseAutoMove(this.Sack, plan);
@@ -92,13 +92,13 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="desintationSack">int containing the number of the destination sack.</param>
 	private void QuickMoveSack(int sackNumber)
 	{
-		if (Sack == null)
+		if (Sack is null)
 			return;
 
 		var isEquipmentReadOnly = (USettings.PlayerReadonly == true && SackType == SackType.Equipment);
 		Item? focusedItem = FindItem(LastCellWithFocus);
 
-		if ((focusedItem == null && selectedItems == null) || isEquipmentReadOnly)
+		if ((focusedItem is null && selectedItems is null) || isEquipmentReadOnly)
 			return;
 
 		if (MaxSacks > 1 && sackNumber < MaxSacks)
@@ -125,13 +125,13 @@ public partial class SackPanel : Panel, IScalingControl
 	/// <param name="destIndex">Bag index within the destination (or -1 for auto-find)</param>
 	private void QuickMovePanel(AutoMoveLocation location, int destIndex = -1)
 	{
-		if (Sack == null)
+		if (Sack is null)
 			return;
 
 		var isEquipmentReadOnly = (USettings.PlayerReadonly == true && SackType == SackType.Equipment);
 		Item? focusedItem = FindItem(LastCellWithFocus);
 
-		if ((focusedItem == null && selectedItems == null) || isEquipmentReadOnly)
+		if ((focusedItem is null && selectedItems is null) || isEquipmentReadOnly)
 			return;
 
 		var destination = AutoMovePlanner.QuickMoveDestination(location, this.AutoMoveLocation, this.SecondaryVaultShown);
@@ -140,7 +140,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 		this.RaiseAutoMove(this.Sack, AutoMovePlanner.Plan(this.selectedItems, focusedItem, destination, destIndex));
 
-		if (this.selectedItems != null)
+		if (this.selectedItems is not null)
 			this.ClearSelectedItems();
 
 		ItemTooltip.HideTooltip();

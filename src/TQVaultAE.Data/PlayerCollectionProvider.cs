@@ -39,9 +39,9 @@ public class PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IIt
 
 	public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
 	{
-		if (pc.PlayerInfo == null) return;
-		if (playerInfo == null) return;
-		if (pc.rawData == null || pc.rawData.Length == 0) return;
+		if (pc.PlayerInfo is null) return;
+		if (playerInfo is null) return;
+		if (pc.rawData is null || pc.rawData.Length == 0) return;
 
 		pc.PlayerInfo.CurrentLevel = playerInfo.CurrentLevel;
 		pc.PlayerInfo.MasteriesAllowed = playerInfo.MasteriesAllowed;

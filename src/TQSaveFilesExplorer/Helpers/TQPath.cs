@@ -49,7 +49,7 @@ public static class TQPath
 		get
 		{
 			string path = SaveDirectoryTQIT;
-			if (path != null)
+			if (path is not null)
 				return path;
 			return SaveDirectoryTQ;
 		}

@@ -59,11 +59,11 @@ public partial class EquipmentPanel : SackPanel, IScalingControl
 	/// </summary>
 	public void GetGearStatBonus()
 	{
-		if (Sack == null)
+		if (Sack is null)
 			return;
 
 		var currentPlayer = userContext.CurrentPlayer;
-		if (currentPlayer == null)
+		if (currentPlayer is null)
 			return;
 
 		// The item being dragged does not count.
@@ -106,7 +106,7 @@ public partial class EquipmentPanel : SackPanel, IScalingControl
 			if (newItem != lastItem || redrawSelection)
 			{
 				// We have moved to a different item
-				if (lastItem != null && lastItem.Is2HWeapon)
+				if (lastItem is not null && lastItem.Is2HWeapon)
 				{
 					if (this.GetItemFromShadowSlot(lastItem.PositionY) is { } last2HItem)
 						this.Invalidate(this.FindSlotRect(last2HItem.Location.X, last2HItem.Location.Y));
@@ -114,7 +114,7 @@ public partial class EquipmentPanel : SackPanel, IScalingControl
 
 				if (newItem != lastItem)
 				{
-					if (newItem != null && newItem.Is2HWeapon)
+					if (newItem is not null && newItem.Is2HWeapon)
 					{
 						// Now we need to highlight the current item
 						// Check if the item is selected and use a different background

@@ -70,7 +70,7 @@ public partial class FoundResultsTooltip : BaseTooltip
 	{
 		lock (ToImage)
 		{
-			if (_Current != null) _Current.Close();
+			if (_Current is not null) _Current.Close();
 			_Current = null;
 		}
 	}

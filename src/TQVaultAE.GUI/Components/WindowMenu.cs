@@ -228,7 +228,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 	/// <param name="command">command to be sent.</param>
 	private void SendSysCommand(User32.SystemMenuCommand command)
 	{
-		if (this.SystemEvent != null)
+		if (this.SystemEvent is not null)
 		{
 			WindowMenuEventArgs ev = new WindowMenuEventArgs((int)command);
 			this.SystemEvent(this, ev);

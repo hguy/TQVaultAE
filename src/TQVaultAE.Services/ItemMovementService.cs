@@ -27,7 +27,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
     /// <returns>Point with coordinates for the upper left cell, or (-1, -1) if no space.</returns>
     public Point FindOpenCells(SackCollection sack, int itemWidth, int itemHeight, int sackWidth, int sackHeight)
     {
-        if (sack == null || itemWidth <= 0 || itemHeight <= 0 || sackWidth <= 0 || sackHeight <= 0)
+        if (sack is null || itemWidth <= 0 || itemHeight <= 0 || sackWidth <= 0 || sackHeight <= 0)
             return new Point(-1, -1);
 
         // Search vertically for open space
@@ -37,7 +37,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
             {
                 var foundItems = FindAllItems(sack, new Rectangle(x, y, itemWidth, itemHeight));
                 
-                if ((foundItems == null || foundItems.Count == 0) && itemWidth + x <= sackWidth)
+                if ((foundItems is null || foundItems.Count == 0) && itemWidth + x <= sackWidth)
                 {
                     if (y + itemHeight <= sackHeight)
                     {
@@ -45,7 +45,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
                         return new Point(x, y);
                     }
                 }
-                else if (foundItems != null && foundItems.Count > 0)
+                else if (foundItems is not null && foundItems.Count > 0)
                 {
                     // Skip over the item
                     y += foundItems[0].Height - 1;
@@ -63,7 +63,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
     /// </summary>
     public bool CanPlaceItem(SackCollection sack, Item item, int sackWidth, int sackHeight)
     {
-        if (sack == null || item == null)
+        if (sack is null || item is null)
             return false;
 
         // Check if item is valid for the stash type
@@ -81,7 +81,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
     /// </summary>
     public bool IsItemValidForStashType(Item item, StashType? stashType)
     {
-        if (item == null)
+        if (item is null)
             return false;
 
         // Relic Vault Stash only accepts artifacts, relics, charms, or formulae
@@ -98,17 +98,17 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
     /// </summary>
     public ItemMoveResult MoveItem(Item item, SackCollection sourceSack, SackCollection destinationSack, Point destinationPosition)
     {
-        if (item == null)
+        if (item is null)
             return ItemMoveResultFailed("Item is null");
 
-        if (destinationSack == null)
+        if (destinationSack is null)
             return ItemMoveResultFailed("Destination sack is null", item);
 
         if (destinationPosition.X < 0 || destinationPosition.Y < 0)
             return ItemMoveResultFailed("Invalid destination position", item, destinationSack);
 
         // Remove from source sack if provided
-        if (sourceSack != null)
+        if (sourceSack is not null)
         {
             sourceSack.RemoveItem(item);
         }
@@ -133,7 +133,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
     public void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, 
         int destinationSackNumber, StashType? destinationStashType = null, string? containerName = null)
     {
-        if (item == null || destinationPlayer == null)
+        if (item is null || destinationPlayer is null)
             return;
 
         // Update the item's location properties to reflect its new home
@@ -290,7 +290,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
             {
                 var item = FindItem(sack, new Point(x, y));
 
-                if (item != null)
+                if (item is not null)
                 {
                     // Add this item to the collection if it is not already in there
                     if (!items.Contains(item))
@@ -315,7 +315,7 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
     /// <returns>The item covering the cell, or null.</returns>
     public Item? FindItem(SackCollection sack, Point cellLocation, Item? ignoredItem = null)
     {
-        if (sack == null)
+        if (sack is null)
             return null;
 
         // Find the item for this point

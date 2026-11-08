@@ -61,7 +61,7 @@ public class TextExceptionFormatter
 
 	private void WriteException(Exception exceptionToFormat, Exception? outerException)
 	{
-		if (outerException != null)
+		if (outerException is not null)
 		{
 			this.innerDepth++;
 			this.Indent();
@@ -85,12 +85,12 @@ public class TextExceptionFormatter
 		this.WriteHelpLink(exceptionToFormat.HelpLink);
 		this.WriteReflectionInfo(exceptionToFormat);
 		this.WriteStackTrace(exceptionToFormat.StackTrace);
-		if (outerException == null)
+		if (outerException is null)
 		{
 			this.WriteAdditionalInfo(this.AdditionalInfo);
 		}
 		Exception? innerException = exceptionToFormat.InnerException;
-		if (innerException != null)
+		if (innerException is not null)
 		{
 			this.WriteException(innerException, exceptionToFormat);
 		}
@@ -158,7 +158,7 @@ public class TextExceptionFormatter
 		this.Indent();
 		this.stringBuilder.Append(propertyInfo.Name);
 		this.stringBuilder.Append(" : ");
-		if (value == null)
+		if (value is null)
 		{
 			this.stringBuilder.AppendLine("{null}");
 		}
@@ -173,7 +173,7 @@ public class TextExceptionFormatter
 		this.Indent();
 		this.stringBuilder.Append(fieldInfo.Name);
 		this.stringBuilder.Append(" : ");
-		if (value == null)
+		if (value is null)
 		{
 			this.stringBuilder.AppendLine("{null}");
 		}
@@ -187,7 +187,7 @@ public class TextExceptionFormatter
 	{
 		this.Indent();
 		this.stringBuilder.Append("StackTrace: ");
-		if ((stackTrace == null) || (stackTrace.Length == 0))
+		if ((stackTrace is null) || (stackTrace.Length == 0))
 		{
 			this.stringBuilder.AppendLine("Stack Trace Unavailable");
 		}
@@ -236,7 +236,7 @@ public class TextExceptionFormatter
 	{
 		get
 		{
-			if (this.additionalInfo == null)
+			if (this.additionalInfo is null)
 			{
 				this.additionalInfo = new NameValueCollection();
 				this.additionalInfo.Add("MachineName", GetMachineName());

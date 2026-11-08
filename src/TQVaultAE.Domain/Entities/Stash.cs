@@ -131,6 +131,6 @@ public class Stash
 	/// Gets the number of sack contained in this stash
 	/// </summary>
 	public int NumberOfSacks
-		=> this.Sack == null ? 0 : this.numberOfSacks;
+		=> this.Sack is null ? 0 : this.numberOfSacks;
 
 }

@@ -181,7 +181,7 @@ public partial class Database : IDatabase
 		{
 			// Added by VillageIdiot
 			// Check if the user configured the language
-			if (this.gameLanguage == null)
+			if (this.gameLanguage is null)
 			{
 				if (!this.AutoDetectLanguage)
 					this.gameLanguage = this.TQLanguage;
@@ -287,7 +287,7 @@ public partial class Database : IDatabase
 		{
 			DBRecordCollection? record = GetRecordFromFile(k);
 
-			if (record == null)
+			if (record is null)
 				return null;
 
 			return new Info(record);
@@ -320,7 +320,7 @@ public partial class Database : IDatabase
 	public string GetItemAttributeFriendlyText(string itemAttribute, bool addVariable = true)
 	{
 		ItemAttributesData? data = ItemAttributeProvider.GetAttributeData(itemAttribute);
-		if (data == null)
+		if (data is null)
 		{
 			this.Log.LogDebug("Attribute unknown : {ItemAttribute}", itemAttribute);
 			return string.Concat("?", itemAttribute, "?");
@@ -365,7 +365,7 @@ public partial class Database : IDatabase
 		// Load all available loot randomizer table
 		var lootRandomizerTableList = new[] {
 			(Priority: 0, ArzFile: this.ArzFileMod),
-			(Priority: 1, ArzFile: this.ArzFileIT != null && this.ArzFileIT != this.ArzFile ? this.ArzFileIT : null),
+			(Priority: 1, ArzFile: this.ArzFileIT is not null && this.ArzFileIT != this.ArzFile ? this.ArzFileIT : null),
 			(Priority: 2, ArzFile: this.ArzFile)
 		}
 		.Where(db => db.ArzFile is not null)
@@ -404,7 +404,7 @@ public partial class Database : IDatabase
 		// Load all available loot randomizer
 		var lootRandomizerList = new[] {
 			(Priority: 0, ArzFile: this.ArzFileMod),
-			(Priority: 1, ArzFile: this.ArzFileIT != null && this.ArzFileIT != this.ArzFile ? this.ArzFileIT : null),
+			(Priority: 1, ArzFile: this.ArzFileIT is not null && this.ArzFileIT != this.ArzFile ? this.ArzFileIT : null),
 			(Priority: 2, ArzFile: this.ArzFile)
 		}
 		.Where(db => db.ArzFile is not null)
@@ -460,7 +460,7 @@ public partial class Database : IDatabase
 		var data = new[]
 			{
 				this.ArzFileMod,
-				this.ArzFileIT != null && this.ArzFileIT != this.ArzFile ? this.ArzFileIT : null,
+				this.ArzFileIT is not null && this.ArzFileIT != this.ArzFile ? this.ArzFileIT : null,
 				this.ArzFile
 			}
 			.Where(db => db is not null)
@@ -618,21 +618,21 @@ public partial class Database : IDatabase
 		var cachedDBRecordCollection = this.dbRecordCollections.GetOrAddAtomic(itemId, key =>
 		{
 
-			if (this.ArzFileMod != null)
+			if (this.ArzFileMod is not null)
 			{
 				DBRecordCollection? recordMod = arzProv.GetItem(this.ArzFileMod, key);
-				if (recordMod != null)
+				if (recordMod is not null)
 				{
 					// Custom Map records have highest precedence.
 					return recordMod;
 				}
 			}
 
-			if (this.ArzFileIT != null)
+			if (this.ArzFileIT is not null)
 			{
 				// see if it's in IT ARZ file
 				DBRecordCollection? recordIT = arzProv.GetItem(this.ArzFileIT, key);
-				if (recordIT != null)
+				if (recordIT is not null)
 				{
 					// IT file takes precedence over TQ.
 					return recordIT;
@@ -699,7 +699,7 @@ public partial class Database : IDatabase
 			}
 
 			// We either didn't load the resource or didn't find what we were looking for so check the normal game resources.
-			if (arcFileData == null)
+			if (arcFileData is null)
 			{
 				// See if this guy is from Immortal Throne expansion pack.
 				if (USettings.DatabaseDebugLevel > 1)
@@ -728,7 +728,7 @@ public partial class Database : IDatabase
 			// Added by VillageIdiot
 			// Maybe the arc file is in the XPack folder even though the record does not state it.
 			// Also could be that it says xpack in the record but the file is in the root.
-			if (arcFileData == null)
+			if (arcFileData is null)
 			{
 				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack");
 				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
@@ -741,7 +741,7 @@ public partial class Database : IDatabase
 			}
 
 			// Now, let's check if the item is in Ragnarok DLC
-			if (arcFileData == null && GamePathResolver.IsRagnarokInstalled)
+			if (arcFileData is null && GamePathResolver.IsRagnarokInstalled)
 			{
 				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack2");
 				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
@@ -753,7 +753,7 @@ public partial class Database : IDatabase
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
-			if (arcFileData == null && GamePathResolver.IsAtlantisInstalled)
+			if (arcFileData is null && GamePathResolver.IsAtlantisInstalled)
 			{
 				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack3");
 				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
@@ -765,7 +765,7 @@ public partial class Database : IDatabase
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
-			if (arcFileData == null && GamePathResolver.IsEmbersInstalled)
+			if (arcFileData is null && GamePathResolver.IsEmbersInstalled)
 			{
 				rootFolder = this.PathIO.Combine(GamePathResolver.GamePathTQIT, "Resources", "XPack4");
 				arcFile = this.PathIO.Combine(rootFolder, this.PathIO.ChangeExtension(arcFileBase, ".arc"));
@@ -777,7 +777,7 @@ public partial class Database : IDatabase
 					Log.LogError(@"Resource misplaced ""{resourceId}"" into ""{arcFile}""", key, arcFile);
 			}
 
-			if (arcFileData == null)
+			if (arcFileData is null)
 			{
 				// We are either vanilla TQ or have not found our resource yet.
 				// from the original TQ folder
@@ -894,7 +894,7 @@ public partial class Database : IDatabase
 			Log.LogDebug("baseFile = {BaseFile}", baseFile);
 		}
 
-		if (gameLanguage != null)
+		if (gameLanguage is not null)
 		{
 			// Try this method of getting the culture
 			if (USettings.DatabaseDebugLevel > 2)
@@ -914,7 +914,7 @@ public partial class Database : IDatabase
 
 			// Titan Quest doesn't use the ISO language code for some languages
 			// Added null check to fix exception when there is no culture found.
-			if (cultureID != null)
+			if (cultureID is not null)
 			{
 				if (cultureID.Equals("CS", StringComparison.OrdinalIgnoreCase))
 				{
@@ -938,7 +938,7 @@ public partial class Database : IDatabase
 
 			// Moved this inital check for the file into the loop
 			// and added a check to verify that we actually have a cultureID
-			if (cultureID != null)
+			if (cultureID is not null)
 			{
 				filename = string.Concat(baseFile, cultureID, suffix);
 				if (USettings.DatabaseDebugLevel > 1)
@@ -967,7 +967,7 @@ public partial class Database : IDatabase
 
 		// Added a check to verify that we actually have a cultureID
 		// though it may not be needed
-		if (cultureID != null)
+		if (cultureID is not null)
 		{
 			filename = string.Concat(baseFile, cultureID, suffix);
 			if (USettings.DatabaseDebugLevel > 1)
@@ -1007,7 +1007,7 @@ public partial class Database : IDatabase
 		string[] files = DirectoryIO.GetFiles(rootFolder, "Text_??.arc");
 
 		// Added check that files is not null.
-		if (files != null && files.Length > 0)
+		if (files is not null && files.Length > 0)
 		{
 			if (USettings.DatabaseDebugLevel > 1)
 			{
@@ -1158,7 +1158,7 @@ public partial class Database : IDatabase
 				Log.LogDebug("dbFile = {DatabaseFile}", databaseFile);
 			}
 
-			if (databaseFile != null)
+			if (databaseFile is not null)
 				this.ParseTextDB(databaseFile, "text\\modstrings.txt");
 		}
 
@@ -1216,7 +1216,7 @@ public partial class Database : IDatabase
 
 		byte[]? data = this.ReadARCFile(databaseFile, filename);
 
-		if (data == null)
+		if (data is null)
 		{
 			// Changed for mod support.  Sometimes the text file has more entries than just the x or non-x prefix files.
 			if (USettings.DatabaseDebugLevel > 0)

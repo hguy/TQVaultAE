@@ -310,7 +310,7 @@ public partial class VaultForm : Form, IScalingControl
 	{
 		if (this.DrawCustomBorder)
 		{
-			if (this.titleFont != null && ZoomScope.IsZooming && factor.Width != 1.0F)
+			if (this.titleFont is not null && ZoomScope.IsZooming && factor.Width != 1.0F)
 			{
 				var previous = this.titleFont;
 				this.titleFont = new Font(previous.Name, previous.SizeInPoints * factor.Width);
@@ -352,7 +352,7 @@ public partial class VaultForm : Form, IScalingControl
 				e.Graphics.DrawImage(this.topBorder, topBorderRect);
 
 				// Show the title text if we are drawing the top border.
-				if (!string.IsNullOrEmpty(this.Text) && this.titleFont != null)
+				if (!string.IsNullOrEmpty(this.Text) && this.titleFont is not null)
 				{
 					Size textSize = TextRenderer.MeasureText(this.Text, this.titleFont);
 					Rectangle textRect = new Rectangle(new Point((this.ClientSize.Width - textSize.Width) / 2, (this.topBorder.Height - textSize.Height) / 2), textSize);

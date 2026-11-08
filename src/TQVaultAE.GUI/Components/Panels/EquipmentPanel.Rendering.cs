@@ -238,7 +238,7 @@ public partial class EquipmentPanel
 	/// <param name="alpha">alpha value for the color</param>
 	protected override void DrawItemAccent(Graphics graphics, Item item, Color accentColor, int alpha)
 	{
-		if (item == null)
+		if (item is null)
 			return;
 
 		Rectangle rect = this.FindSlotRect(item.PositionX, item.PositionY);
@@ -381,7 +381,7 @@ public partial class EquipmentPanel
 			return;
 		}
 
-		if (this.UIService.GetBitmap(item2H) == null)
+		if (this.UIService.GetBitmap(item2H) is null)
 			return;
 
 		Point screenLocation;

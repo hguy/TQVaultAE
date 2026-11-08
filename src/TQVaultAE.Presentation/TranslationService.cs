@@ -98,7 +98,7 @@ public class TranslationService : ITranslationService
 			, static (key, culture) => Resources.ResourceManager.GetString($"TextTag_{key.Tag}", culture), culture);
 
 		// Check if the value is a @redirectTag 
-		if (resx != null && resx.StartsWith('@'))
+		if (resx is not null && resx.StartsWith('@'))
 			resx = this.Database.GetFriendlyName(resx.TrimStart('@'));
 
 		if (resx is null)

@@ -114,7 +114,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		get
 		{
 			// look through each sack and see if the sack has been modified
-			if (this.Sacks != null)
+			if (this.Sacks is not null)
 			{
 				foreach (SackCollection sack in this.Sacks)
 				{
@@ -123,10 +123,10 @@ public class PlayerCollection : IEnumerable<SackCollection>
 				}
 			}
 
-			if (this.EquipmentSack != null && this.EquipmentSack.IsModified)
+			if (this.EquipmentSack is not null && this.EquipmentSack.IsModified)
 				return true;
 
-			if (this.PlayerInfo != null && this.PlayerInfo.Modified)
+			if (this.PlayerInfo is not null && this.PlayerInfo.Modified)
 				return true;
 
 			return false;
@@ -138,16 +138,16 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public void Saved()
 	{
-		if (this.Sacks != null)
+		if (this.Sacks is not null)
 		{
 			foreach (SackCollection sack in this.Sacks)
 				sack.IsModified = false;
 		}
 
-		if (this.EquipmentSack != null && this.EquipmentSack.IsModified)
+		if (this.EquipmentSack is not null && this.EquipmentSack.IsModified)
 			this.EquipmentSack.IsModified = false;
 
-		if (this.PlayerInfo != null && this.PlayerInfo.Modified)
+		if (this.PlayerInfo is not null && this.PlayerInfo.Modified)
 			this.PlayerInfo.Modified = false;
 	}
 
@@ -166,7 +166,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public int NumberOfSacks
 	{
-		get => (this.Sacks == null) ? 0 : this.Sacks.Length;
+		get => (this.Sacks is null) ? 0 : this.Sacks.Length;
 	}
 
 	/// <summary>
@@ -175,7 +175,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <returns>Each Sack in the sack array.</returns>
 	public IEnumerator<SackCollection> GetEnumerator()
 	{
-		if (this.Sacks == null)
+		if (this.Sacks is null)
 			yield break;
 
 		foreach (SackCollection sack in this.Sacks)
@@ -213,7 +213,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <param name="sackNumber">Number of the sack we are retrieving</param>
 	/// <returns>Sack instace for the corresponding sack number</returns>
 	public SackCollection? GetSack(int sackNumber)
-		=> (this.Sacks == null || sackNumber < 0 || this.Sacks.Length <= sackNumber) ? null : this.Sacks[sackNumber];
+		=> (this.Sacks is null || sackNumber < 0 || this.Sacks.Length <= sackNumber) ? null : this.Sacks[sackNumber];
 
 	/// <summary>
 	/// Moves a sack within the instance.  Used for renumbering the sacks.
@@ -224,7 +224,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	public bool MoveSack(int source, int destination)
 	{
 		// Do a little bit of error handling
-		if (this.Sacks == null
+		if (this.Sacks is null
 		    || destination < 0 || destination > this.Sacks.Length
 		    || source < 0 || source > this.Sacks.Length || source == destination)
 		{
@@ -257,7 +257,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	public bool CopySack(int source, int destination)
 	{
 		// Do a little bit of error handling
-		if (this.Sacks == null
+		if (this.Sacks is null
 		    || destination < 0 || destination > this.Sacks.Length
 		    || source < 0 || source > this.Sacks.Length || source == destination)
 		{
@@ -266,7 +266,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 
 		SackCollection newSack = this.Sacks[source].Duplicate();
 
-		if (newSack != null)
+		if (newSack is not null)
 		{
 			this.Sacks[destination] = newSack;
 			return true;
@@ -280,7 +280,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public void ClearPlayerGearBonuses()
 	{
-		if (PlayerInfo?.GearBonus == null)
+		if (PlayerInfo?.GearBonus is null)
 			return;
 
 		PlayerInfo.GearBonus.StrengthBonus = 0;
@@ -304,7 +304,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public void ClearPlayerSkillBonuses()
 	{
-		if (PlayerInfo?.SkillBonus == null)
+		if (PlayerInfo?.SkillBonus is null)
 			return;
 
 		PlayerInfo.SkillBonus.StrengthBonus = 0;
@@ -331,7 +331,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	{
 		if (this.IsVault || this.PlayerInfo is null) return;
 
-		if (PlayerInfo.GearBonus == null)
+		if (PlayerInfo.GearBonus is null)
 			PlayerInfo.GearBonus = new PlayerStatBonus();
 
 		PlayerInfo.GearBonus.StrengthBonus += statBonusVariables.GetValueOrDefault("CHARACTERSTRENGTH");
@@ -358,7 +358,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	{
 		if (this.IsVault || this.PlayerInfo is null) return;
 
-		if (PlayerInfo.SkillBonus == null)
+		if (PlayerInfo.SkillBonus is null)
 			PlayerInfo.SkillBonus = new PlayerStatBonus();
 
 		PlayerInfo.SkillBonus.StrengthBonus += skillStatBonusVariables.GetValueOrDefault("CHARACTERSTRENGTH");

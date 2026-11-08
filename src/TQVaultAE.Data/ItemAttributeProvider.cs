@@ -650,7 +650,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	{
 		string result = string.Empty;
 
-		if (data == null)
+		if (data is null)
 			return result;
 
 		if (string.IsNullOrEmpty(data.Effect))
@@ -713,7 +713,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	public string GetAttributeTextTag(string attribute)
 	{
 		ItemAttributesData? data = GetAttributeData(attribute);
-		if (data == null)
+		if (data is null)
 			return attribute;
 
 		return GetAttributeTextTag(data);
@@ -727,11 +727,11 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>true if the variable == variable name</returns>
 	public bool AttributeHas(Variable? variable, string variableName)
 	{
-		if (variable == null)
+		if (variable is null)
 			return false;
 
 		ItemAttributesData? data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (data is null)
 			return false;
 
 		return string.Equals(data.Variable, variableName, StringComparison.OrdinalIgnoreCase);
@@ -749,7 +749,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 			return false;
 
 		ItemAttributesData? data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (data is null)
 			return false;
 
 		return string.Equals(data.Effect, effect, StringComparison.OrdinalIgnoreCase);
@@ -767,7 +767,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 			return false;
 
 		ItemAttributesData? data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (data is null)
 			return false;
 
 		return data.EffectType == type;
@@ -784,7 +784,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 			return ItemAttributesEffectType.Other;
 
 		ItemAttributesData? data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (data is null)
 			return ItemAttributesEffectType.Other;
 
 		return data.EffectType;

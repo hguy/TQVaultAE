@@ -435,8 +435,8 @@ public partial class MainForm : Form
 		if (this.SelectedFile.FileType == CompressedFileType.Unknown)
 			return;
 
-		if ((this.SelectedFile.FileType == CompressedFileType.ArzFile && this.SelectedFile.ARZFile == null)
-			|| (this.SelectedFile.FileType == CompressedFileType.ArcFile && this.SelectedFile.ARCFile == null)
+		if ((this.SelectedFile.FileType == CompressedFileType.ArzFile && this.SelectedFile.ARZFile is null)
+			|| (this.SelectedFile.FileType == CompressedFileType.ArcFile && this.SelectedFile.ARCFile is null)
 		)
 		{
 			MessageBox.Show("Please Open a source file.");
@@ -722,7 +722,7 @@ public partial class MainForm : Form
 							{
 								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 
-								if (tag.RawData == null)
+								if (tag.RawData is null)
 									return;
 
 								// UTF-16 with a BOM, or cp1252 without one, like the game.
@@ -739,13 +739,13 @@ public partial class MainForm : Form
 							{
 								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 
-								if (tag.RawData == null)
+								if (tag.RawData is null)
 									return;
 
 								tag.Bitmap = BitmapService.LoadFromTexMemory(tag.RawData, 0, tag.RawData.Length);
 							}
 
-							if (tag.Bitmap != null)
+							if (tag.Bitmap is not null)
 							{
 								ShowPictureBox(tag.Bitmap);
 								StackNavigation();
@@ -757,7 +757,7 @@ public partial class MainForm : Form
 							{
 								tag.RawData = arcProv.GetData(this.SelectedFile.Arc, arcDataRecordId);
 
-								if (tag.RawData == null)
+								if (tag.RawData is null)
 									return;
 
 								SoundService.SetSoundResource(arcDataRecordId, tag.RawData);
@@ -765,7 +765,7 @@ public partial class MainForm : Form
 							}
 
 							// Display SoundPlayer
-							if (tag.SoundPlayer != null)
+							if (tag.SoundPlayer is not null)
 							{
 								ShowSoundPlayer(
 									arcDataRecordId
@@ -839,7 +839,7 @@ public partial class MainForm : Form
 
 	private void hideZeroValuesToolStripMenuItem_Click(object sender, EventArgs e)
 	{
-		if (this.SelectedFile.Records != null)
+		if (this.SelectedFile.Records is not null)
 		{
 			List<string> recordText = new List<string>();
 			foreach (Variable variable in this.SelectedFile.Records)
@@ -1251,12 +1251,12 @@ public partial class MainForm : Form
 
 		// Search in record variables (ARZ files only)
 		var file = tag.File;
-		if (file?.FileType == CompressedFileType.ArzFile && file.ARZFile != null)
+		if (file?.FileType == CompressedFileType.ArzFile && file.ARZFile is not null)
 		{
 			try
 			{
 				var records = this.arzProv.GetRecordNotCached(file.ARZFile, key.Normalized);
-				if (records != null)
+				if (records is not null)
 				{
 					foreach (Variable variable in records)
 					{

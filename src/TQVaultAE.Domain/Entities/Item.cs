@@ -323,7 +323,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_SCROLL, noCase);
 			else if (this.BaseItemId is not null
 				&& (this.IsImmortalThrone || this.IsRagnarok || this.IsAtlantis || this.IsEmbers)
@@ -357,7 +357,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_FORMULA, noCase);
 			else if (this.BaseItemId is not null
 				&& (this.IsImmortalThrone || this.IsRagnarok || this.IsAtlantis || this.IsEmbers)
@@ -375,7 +375,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_ARTIFACT, noCase);
 			else if (this.BaseItemId is not null
 				&& (this.IsImmortalThrone || this.IsRagnarok || this.IsAtlantis || this.IsEmbers)
@@ -390,13 +390,13 @@ public class Item
 	/// Gets a value indicating whether the item is a shield.
 	/// </summary>
 	public bool IsShield
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_SHIELD, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_SHIELD, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is armor.
 	/// </summary>
 	public bool IsArmor
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.StartsWith("ARMORPROTECTIVE", noCase)
 		: false;
 
@@ -404,25 +404,25 @@ public class Item
 	/// Gets a value indicating whether the item is a helm.
 	/// </summary>
 	public bool IsHelm
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_HEAD, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_HEAD, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a bracer.
 	/// </summary>
 	public bool IsBracer
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_FOREARM, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_FOREARM, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is torso armor.
 	/// </summary>
 	public bool IsTorsoArmor
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_UPPERBODY, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_UPPERBODY, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a greave.
 	/// </summary>
 	public bool IsGreave
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_LOWERBODY, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_LOWERBODY, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is Jewellery.
@@ -434,19 +434,19 @@ public class Item
 	/// Gets a value indicating whether the item is a ring.
 	/// </summary>
 	public bool IsRing
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_RING, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_RING, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is an amulet.
 	/// </summary>
 	public bool IsAmulet
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_AMULET, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_AMULET, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a weapon.
 	/// </summary>
 	public bool IsWeapon
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? !this.IsShield && this.baseItemInfo.ItemClass.StartsWith("WEAPON", noCase)
 		: false;
 
@@ -454,7 +454,7 @@ public class Item
 	/// Gets a value indicating whether the item is a thrown weapon.
 	/// </summary>
 	public bool IsThrownWeapon
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.Equals(ICLASS_RANGEDONEHAND, noCase)
 		: false;
 
@@ -462,7 +462,7 @@ public class Item
 	/// Gets a value indicating whether the item is a two handed weapon.
 	/// </summary>
 	public bool Is2HWeapon
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.Equals(ICLASS_BOW, noCase)
 			|| this.baseItemInfo.ItemClass.Equals(ICLASS_STAFF, noCase)
 		: false;
@@ -471,7 +471,7 @@ public class Item
 	/// Gets a value indicating whether the item is a weapon or shield.
 	/// </summary>
 	public bool IsWeaponShield
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.StartsWith("WEAPON", noCase)
 		: false;
 
@@ -482,7 +482,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 			{
 				if (this.baseItemInfo.ItemClassification.Equals("QUEST", noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_QUESTITEM, noCase))
@@ -560,7 +560,7 @@ public class Item
 			if (this.IsQuestItem)
 				return ItemStyle.Quest;
 
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 			{
 				if (this.baseItemInfo.ItemClassification.Equals("EPIC", noCase))
 					return ItemStyle.Epic;
@@ -578,7 +578,7 @@ public class Item
 			) return ItemStyle.Rare;
 
 			// Not rare.  If we have a suffix or prefix, then call it common, else mundane
-			if (this.suffixInfo != null || this.prefixInfo != null)
+			if (this.suffixInfo is not null || this.prefixInfo is not null)
 				return ItemStyle.Common;
 
 			return ItemStyle.Mundane;
@@ -589,7 +589,7 @@ public class Item
 	/// Gets the item class
 	/// </summary>
 	public string ItemClass
-		=> (this.baseItemInfo == null) ? string.Empty : this.baseItemInfo.ItemClass;
+		=> (this.baseItemInfo is null) ? string.Empty : this.baseItemInfo.ItemClass;
 
 	/// <summary>
 	/// Gets a value indicating whether or not the item will stack.
@@ -695,7 +695,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_POTIONHEALTH, noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_POTIONMANA, noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_SCROLL_ETERNAL, noCase); //AMS: New EE Potions (Mystical Potions)
@@ -711,7 +711,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_CHARM, noCase);
 
 			return this.BaseItemId is not null && this.BaseItemId.IsCharm;
@@ -725,7 +725,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_RELIC, noCase);
 
 			return this.BaseItemId is not null && this.BaseItemId.IsRelic;
@@ -739,7 +739,7 @@ public class Item
 	{
 		get
 		{
-			if (this.RelicInfo != null)
+			if (this.RelicInfo is not null)
 				return this.RelicInfo.ItemClass.Equals(ICLASS_CHARM, noCase);
 
 			return this.RelicInfo?.ItemId.IsCharm ?? false;
@@ -753,7 +753,7 @@ public class Item
 	{
 		get
 		{
-			if (this.Relic2Info != null)
+			if (this.Relic2Info is not null)
 				return this.Relic2Info.ItemClass.Equals(ICLASS_CHARM, noCase);
 
 			return this.Relic2Info?.ItemId.IsCharm ?? false;
@@ -767,7 +767,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_RELIC, noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_CHARM, noCase);
 
@@ -779,19 +779,19 @@ public class Item
 	/// Indicate if this item is a completed relic.
 	/// </summary>
 	public bool IsRelicComplete
-		=> (this.baseItemInfo != null) ? this.Var1 >= this.baseItemInfo.CompletedRelicLevel : false;
+		=> (this.baseItemInfo is not null) ? this.Var1 >= this.baseItemInfo.CompletedRelicLevel : false;
 
 	/// <summary>
 	/// Indicate if the first relic completion bonus apply.
 	/// </summary>
 	public bool IsRelicBonus1Complete
-		=> (this.RelicBonusInfo != null) ? this.Var1 >= this.RelicBonusInfo.CompletedRelicLevel : false;
+		=> (this.RelicBonusInfo is not null) ? this.Var1 >= this.RelicBonusInfo.CompletedRelicLevel : false;
 
 	/// <summary>
 	/// Indicate if the second relic completion bonus apply.
 	/// </summary>
 	public bool IsRelicBonus2Complete
-		=> (this.RelicBonus2Info != null) ? this.Var2 >= this.RelicBonus2Info.CompletedRelicLevel : false;
+		=> (this.RelicBonus2Info is not null) ? this.Var2 >= this.RelicBonus2Info.CompletedRelicLevel : false;
 
 	#region	ItemClass const
 
@@ -872,7 +872,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo == null)
+			if (this.baseItemInfo is null)
 				return 0;
 
 			var iclass = this.baseItemInfo.ItemClass;

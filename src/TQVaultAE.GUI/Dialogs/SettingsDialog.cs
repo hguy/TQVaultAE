@@ -302,7 +302,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 	{
 		// Force English since there was some issue with getting the proper language setting.
 		var gl = this.Services.SettingsPersistence.GameLanguage;
-		var language = gl == null ? "English" : gl;
+		var language = gl is null ? "English" : gl;
 
 		this.editor = new SettingsEditor(SettingsValues.From(USettings, language, GamePathResolver.GamePathTQ, GamePathResolver.GamePathTQIT));
 
@@ -381,7 +381,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		this.pasteBinApiKeyTextBox.Text = values.PasteBinApiKey;
 
 		PasteBinExpirationOptions.TryGetValue(values.PasteBinExpiration, out var expLabel);
-		if (expLabel != null)
+		if (expLabel is not null)
 		{
 			this.pasteBinExpirationComboBox.SelectedItem = this.pasteBinExpirationComboBox.Items
 				.OfType<PasteBinExpirationComboBoxItem>()

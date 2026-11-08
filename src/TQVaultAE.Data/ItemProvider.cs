@@ -97,7 +97,7 @@ public partial class ItemProvider : IItemProvider
 
 	public bool InvalidateFriendlyNamesCache(params IEnumerable<Item> items)
 	{
-		items = items.Where(i => i != null).ToList();
+		items = items.Where(i => i is not null).ToList();
 		var keylist = this.FriendlyNamesCache.Where(i => items.Contains(i.Key.Item)).Select(i => i.Key).ToList();
 		foreach (var k in keylist) this.FriendlyNamesCache.TryRemove(k, out var outVal);
 		return keylist.Count != 0;
@@ -123,9 +123,9 @@ public partial class ItemProvider : IItemProvider
 			string parameters = string.Format(
 				CultureInfo.InvariantCulture,
 				"\", '{0}', '{1}', '{2}'>",
-				parameter1 == null ? "NULL" : parameter1,
-				parameter2 == null ? "NULL" : parameter2,
-				parameter3 == null ? "NULL" : parameter3);
+				parameter1 is null ? "NULL" : parameter1,
+				parameter2 is null ? "NULL" : parameter2,
+				parameter3 is null ? "NULL" : parameter3);
 
 			string error = string.Concat("FormatErr(\"", formatSpec, parameters);
 
@@ -193,7 +193,7 @@ public partial class ItemProvider : IItemProvider
 			if (!k.Item.IsRelicOrCharm && !RecordId.IsNullOrEmpty(k.Item.prefixID))
 			{
 				res.PrefixInfoDescription = k.Item.prefixID.Raw;
-				if (k.Item.prefixInfo != null)
+				if (k.Item.prefixInfo is not null)
 				{
 					if (TranslationService.TryTranslateXTag(k.Item.prefixInfo.DescriptionTag, out var desc))
 						res.PrefixInfoDescription = desc.TQCleanup(true);
@@ -205,14 +205,14 @@ public partial class ItemProvider : IItemProvider
 			#region Base Item translation
 
 			// Load common relic translations if item is relic related by any means
-			if (k.Item.IsRelicOrCharm || k.Item.HasRelicOrCharmSlot1 || k.Item.HasRelicOrCharmSlot2 || k.Item.RelicInfo != null || k.Item.Relic2Info != null)
+			if (k.Item.IsRelicOrCharm || k.Item.HasRelicOrCharmSlot1 || k.Item.HasRelicOrCharmSlot2 || k.Item.RelicInfo is not null || k.Item.Relic2Info is not null)
 			{
 				res.ItemWith = this.TranslationService.ItemWith;
 
-				if (k.Item.RelicInfo != null)
+				if (k.Item.RelicInfo is not null)
 					this.TryTranslateXTag(k.Item.RelicInfo.DescriptionTag, v => res.RelicInfo1Description = v);
 
-				if (k.Item.Relic2Info != null)
+				if (k.Item.Relic2Info is not null)
 					this.TryTranslateXTag(k.Item.Relic2Info.DescriptionTag, v => res.RelicInfo2Description = v);
 
 				var labelCompleted = "Completed";
@@ -253,7 +253,7 @@ public partial class ItemProvider : IItemProvider
 			// Set Rarity translation
 			res.BaseItemRarity = TranslationService.Translate(k.Item.ItemStyle);
 
-			if (k.Item.baseItemInfo != null)
+			if (k.Item.baseItemInfo is not null)
 			{
 				// style quality description
 				if (!string.IsNullOrEmpty(k.Item.baseItemInfo.StyleTag))
@@ -374,7 +374,7 @@ public partial class ItemProvider : IItemProvider
 
 			if (!k.Item.IsRelicOrCharm && !RecordId.IsNullOrEmpty(k.Item.suffixID))
 			{
-				if (k.Item.suffixInfo != null)
+				if (k.Item.suffixInfo is not null)
 				{
 					res.SuffixInfoDescription =
 							this.TryTranslateXTag(k.Item.suffixInfo.DescriptionTag, v => res.SuffixInfoDescription = v)
@@ -417,7 +417,7 @@ public partial class ItemProvider : IItemProvider
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.PrefixAttributes) ?? false)
 			{
-				if (k.Item.prefixInfo != null)
+				if (k.Item.prefixInfo is not null)
 					res.PrefixInfoRecords = Database.GetRecordFromFile(k.Item.prefixID);
 
 				if (res.PrefixInfoRecords is { Count: > 0 })
@@ -433,7 +433,7 @@ public partial class ItemProvider : IItemProvider
 				results.Clear();
 				ranges.Clear();
 
-				if (k.Item.suffixInfo != null)
+				if (k.Item.suffixInfo is not null)
 					res.SuffixInfoRecords = Database.GetRecordFromFile(k.Item.suffixID);
 
 				if (res.SuffixInfoRecords is { Count: > 0 })
@@ -462,7 +462,7 @@ public partial class ItemProvider : IItemProvider
 			{
 				var tmp = new List<string>();
 
-				if (k.Item.RelicInfo != null)
+				if (k.Item.RelicInfo is not null)
 					res.RelicInfoRecords = Database.GetRecordFromFile(k.Item.relicID);
 
 				if (res.RelicInfoRecords is { Count: > 0 })
@@ -475,7 +475,7 @@ public partial class ItemProvider : IItemProvider
 			{
 				var tmp = new List<string>();
 
-				if (k.Item.Relic2Info != null)
+				if (k.Item.Relic2Info is not null)
 					res.Relic2InfoRecords = Database.GetRecordFromFile(k.Item.relic2ID);
 
 				if (res.Relic2InfoRecords is { Count: > 0 })
@@ -498,7 +498,7 @@ public partial class ItemProvider : IItemProvider
 			#region Extra Attributes for specific types
 
 			// Shows Artifact stats for the formula
-			if (k.Item.IsFormulae && k.Item.baseItemInfo != null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.BaseAttributes) ?? false))
+			if (k.Item.IsFormulae && k.Item.baseItemInfo is not null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.BaseAttributes) ?? false))
 			{
 				string artifactName = k.Item.baseItemInfo.GetString("artifactName");
 
@@ -523,7 +523,7 @@ public partial class ItemProvider : IItemProvider
 			}
 
 			// Show the completion bonus.
-			if (k.Item.RelicBonusInfo != null
+			if (k.Item.RelicBonusInfo is not null
 				&& (k.Scope?.HasFlag(FriendlyNamesExtraScopes.RelicAttributes) ?? false)
 				&& (k.Item.IsArtifact // Artifact completion bonus
 					|| k.Item.IsRelicOrCharm // Relic completion bonus
@@ -542,7 +542,7 @@ public partial class ItemProvider : IItemProvider
 			}
 
 			// Show the Relic2 completion bonus.
-			if (k.Item.HasRelicOrCharmSlot2 && k.Item.RelicBonus2Info != null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.Relic2Attributes) ?? false))
+			if (k.Item.HasRelicOrCharmSlot2 && k.Item.RelicBonus2Info is not null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.Relic2Attributes) ?? false))
 			{
 				var tmp = new List<string>();
 				res.RelicBonus2InfoRecords = Database.GetRecordFromFile(k.Item.RelicBonus2Id);
@@ -570,7 +570,7 @@ public partial class ItemProvider : IItemProvider
 		{
 			string? tag = string.Empty;
 			string resartifactClass = string.Empty;
-			if (artifactClassificationKey == null)
+			if (artifactClassificationKey is null)
 				tag = null;
 			else if (artifactClassificationKey == "LESSER")
 				tag = "xtagArtifactClass01";
@@ -581,7 +581,7 @@ public partial class ItemProvider : IItemProvider
 			else
 				tag = null;
 
-			if (tag != null)
+			if (tag is not null)
 				resartifactClass = TranslationService.TranslateXTag(tag);
 			else
 				resartifactClass = "Unknown Artifact Class";
