@@ -1730,7 +1730,9 @@ public partial class ItemProvider
 				&& !(modifierChance != null && normalizedAttributeVariable == "MODIFIERCHANCE")
 				&& !(damageRatio != null && normalizedAttributeVariable == "DAMAGERATIO")
 				&& normalizedAttributeVariable != "GLOBAL"
-				&& !(normalizedAttributeVariable == "XOR" && isGlobal)
+				// XOR is a flag, not an effect: in a global group it makes "Chance for one of the following:", elsewhere
+				// (e.g. the durations of Rune Storm) it has nothing to show.
+				&& normalizedAttributeVariable != "XOR"
 			)
 			{
 				string? line = null;
