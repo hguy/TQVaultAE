@@ -12,6 +12,7 @@ using System.Collections.Concurrent;
 using TQVaultAE.Application;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.Logs;
 
 namespace TQVaultAE.GUI.Forms;
 
@@ -156,6 +157,38 @@ public partial class MainForm
 		}
 
 		return playersModified;
+	}
+
+	/// <summary>
+	/// Runs a save of players, vaults or stashes. On a file error, logs it and asks: Abort rethrows, Retry saves again,
+	/// Ignore gives up this save.
+	/// </summary>
+	/// <param name="save">The save; returns whether something was saved.</param>
+	/// <param name="nameInError">The name of the file being saved when the error happened.</param>
+	/// <returns>Whether something was saved.</returns>
+	private bool SaveWithRetry(Func<bool> save, Func<string?> nameInError)
+	{
+		while (true)
+		{
+			try
+			{
+				return save();
+			}
+			catch (IOException exception)
+			{
+				string title = string.Format(CultureInfo.CurrentCulture, Resources.MainFormSaveError, nameInError());
+				Log.LogError(exception, "{Message}", title);
+				switch (this.Services.MessageBoxes.Ask(Log.FormatException(exception), title, MessageBoxButtons.AbortRetryIgnore, MessageBoxIcon.Exclamation))
+				{
+					case DialogResult.Abort:
+						throw;
+					case DialogResult.Retry:
+						continue;
+					default:
+						return false;
+				}
+			}
+		}
 	}
 
 	#endregion

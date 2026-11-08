@@ -159,8 +159,7 @@ public partial class MainForm
 	/// </summary>
 	private bool SaveAllModifiedStashes()
 	{
-		// Use service with ref parameter
 		Stash? stashOnError = null;
-		return this.stashService.SaveAllModifiedStashes(ref stashOnError) > 0;
+		return this.SaveWithRetry(() => this.stashService.SaveAllModifiedStashes(ref stashOnError) > 0, () => stashOnError?.PlayerName);
 	}
 }

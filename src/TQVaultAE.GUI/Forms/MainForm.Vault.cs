@@ -341,9 +341,8 @@ public partial class MainForm
 	/// </summary>
 	private bool SaveAllModifiedVaults()
 	{
-		// Use service with ref parameter
 		PlayerCollection? vaultOnError = null;
-		return this.vaultService.SaveAllModifiedVaults(ref vaultOnError) > 0;
+		return this.SaveWithRetry(() => this.vaultService.SaveAllModifiedVaults(ref vaultOnError) > 0, () => vaultOnError?.PlayerName);
 	}
 
 	/// <summary>
