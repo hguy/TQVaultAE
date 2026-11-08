@@ -239,10 +239,49 @@ public class ItemDatabaseService(
 		var watch = System.Diagnostics.Stopwatch.StartNew();
 		long allocated = GC.GetTotalAllocatedBytes();
 		int collections = GC.CollectionCount(0);
-		int failed = 0;
 
 		// Half the cores, so the main window stays responsive while this runs.
 		var options = new ParallelOptions { MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount / 2) };
+		int failed = this.LoadAll(items, options, "Search warm-up", null);
+
+		// Allocations and collections cover the whole process while this runs, as other startup work goes on too.
+		this._log.LogInformation("Search data warmed up in {Elapsed} ms ({Count} items, {Failed} failed, {Allocated} MB allocated, {Collections} gen0 collections)"
+			, watch.ElapsedMilliseconds, items.Length, failed, (GC.GetTotalAllocatedBytes() - allocated) >> 20, GC.CollectionCount(0) - collections);
+	}
+
+	/// <inheritdoc/>
+	public void PrepareForSearch(IProgress<int>? progress = null)
+	{
+		var items = this.ItemDatabase.ToArray();
+		int processed = 0;
+
+		// Report in batches: one UI message per item floods the message loop on large vaults.
+		int batch = Math.Max(1, items.Length / 200);
+		int failed = this.LoadAll(items, new ParallelOptions(), "Search data", () =>
+		{
+			if (Interlocked.Increment(ref processed) % batch == 0)
+				progress?.Report(batch);
+		});
+		if (processed % batch != 0)
+			progress?.Report(processed % batch);
+
+		// Drop the items without a name (broken ones included): ConcurrentBag has no RemoveAll, so the database is rebuilt.
+		var validItems = items.Where(r => !string.IsNullOrWhiteSpace(r.ItemName)).ToList();
+		this.ResetAllItemDatabase(validItems);
+
+		if (failed != 0)
+			this._log.LogWarning("Search data: {Failed} of {Count} items could not be loaded and are left out", failed, items.Length);
+	}
+
+	/// <summary>
+	/// Loads the display data of <paramref name="items"/> in parallel. A broken item does not stop the others: the first
+	/// failure is logged and the failures counted.
+	/// </summary>
+	/// <param name="onItemDone">Called after each item, loaded or not.</param>
+	/// <returns>The number of items that could not be loaded.</returns>
+	private int LoadAll(SearchResult[] items, ParallelOptions options, string what, Action? onItemDone)
+	{
+		int failed = 0;
 		Parallel.ForEach(items, options, item =>
 		{
 			try
@@ -253,13 +292,11 @@ public class ItemDatabaseService(
 			{
 				// The search dialog drops items without a name; one broken item must not stop the others.
 				if (Interlocked.Increment(ref failed) == 1)
-					this._log.LogWarning(ex, "Search warm-up failed for {Item}", item.Item?.BaseItemId);
+					this._log.LogWarning(ex, "{What} failed for {Item}", what, item.Item?.BaseItemId);
 			}
+			onItemDone?.Invoke();
 		});
-
-		// Allocations and collections cover the whole process while this runs, as other startup work goes on too.
-		this._log.LogInformation("Search data warmed up in {Elapsed} ms ({Count} items, {Failed} failed, {Allocated} MB allocated, {Collections} gen0 collections)"
-			, watch.ElapsedMilliseconds, items.Length, failed, (GC.GetTotalAllocatedBytes() - allocated) >> 20, GC.CollectionCount(0) - collections);
+		return failed;
 	}
 
 	/// <inheritdoc/>

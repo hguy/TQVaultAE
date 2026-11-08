@@ -121,6 +121,42 @@ public class ItemDatabaseServiceFilterTests
 		result.Should().BeEmpty();
 	}
 
+	[Fact]
+	public void PrepareForSearch_LoadsItems_ReportsEachOne_AndDropsNamelessAndBrokenItems()
+	{
+		// Arrange: two named items, one without a name, one whose display data cannot be built
+		var itemProvider = new Mock<IItemProvider>();
+		var service = new ItemDatabaseService(new Mock<ILogger<ItemDatabaseService>>().Object, itemProvider.Object, new SessionContext());
+		var named = new[] { new Item(), new Item() };
+		var nameless = new Item();
+		var broken = new Item();
+		foreach (var item in named)
+			itemProvider.Setup(x => x.GetFriendlyNames(item, It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
+				.Returns(new ToFriendlyNameResult(item) { BaseItemInfoDescription = "Sword" });
+		itemProvider.Setup(x => x.GetFriendlyNames(nameless, It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
+			.Returns(new ToFriendlyNameResult(nameless));
+		itemProvider.Setup(x => x.GetFriendlyNames(broken, It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
+			.Throws(new InvalidOperationException("broken record"));
+		foreach (var item in named.Append(nameless).Append(broken))
+			service.TryAddItemToDatabase(item);
+		var reported = 0;
+		var progress = new SyncProgress(n => Interlocked.Add(ref reported, n));
+
+		// Act
+		service.PrepareForSearch(progress);
+
+		// Assert
+		reported.Should().Be(4, "every item is reported, loaded or not");
+		service.ItemDatabase.Select(r => r.Item).Should().BeEquivalentTo(named);
+		service.ItemDatabase.Should().OnlyContain(r => r.ItemName == "Sword");
+	}
+
+	/// <summary>Reports on the calling thread (<see cref="Progress{T}"/> posts to the thread pool).</summary>
+	private sealed class SyncProgress(Action<int> report) : IProgress<int>
+	{
+		public void Report(int value) => report(value);
+	}
+
 	[Theory]
 	// Ordered: nothing changes
 	[InlineData(3, 5, true, 3, 5)]

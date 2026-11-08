@@ -90,4 +90,12 @@ public interface IItemDatabaseService
     /// dialog opens. Calling it again while it runs returns the running task.
     /// </summary>
     Task WarmUpAsync();
+
+    /// <summary>
+    /// Loads the display data of every item in the database (the part of <see cref="WarmUpAsync"/> not done yet), at
+    /// full speed, then drops the items without a name, broken ones included. Run by the search dialog before it builds
+    /// its categories; it blocks, so call it off the UI thread.
+    /// </summary>
+    /// <param name="progress">Receives the number of items loaded since the last report; the reports add up to the item count.</param>
+    void PrepareForSearch(IProgress<int>? progress = null);
 }

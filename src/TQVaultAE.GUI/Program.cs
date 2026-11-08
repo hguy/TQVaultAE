@@ -150,6 +150,7 @@ public static class Program
 		.AddSingleton<IItemEditService, ItemEditService>()
 		.AddSingleton<IItemStackingService, ItemStackingService>()
 		.AddTransient<ISaveOrchestrator, SaveOrchestrator>()
+		.AddSingleton<ISearchCategoryService, SearchCategoryService>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()
