@@ -58,6 +58,8 @@ public partial class ItemProvider
 			"SKILLMAXLEVEL",
 			"FORCEHIDEICONFROMQUICKSLOT",
 			"TARGETCASTER",
+			// Said by the skill descriptions ("Allows and requires dual wielding.", "A Dual Wield technique...").
+			"DUALWIELDONLY",
 			"EXPANSIONTIME",
 			"SKILLTIER",
 			"CAMERASHAKEDURATIONSECS",
