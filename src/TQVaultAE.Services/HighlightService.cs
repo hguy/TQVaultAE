@@ -60,7 +60,7 @@ public class HighlightService(
 
             // Check for Vaults
             var sacksVault = this._sessionContext.Vaults.Select(p => p.Value.Value)
-                .SelectMany(p => p.Sacks ?? Array.Empty<SackCollection>())
+                .SelectMany(p => p.Sacks ?? [])
                 .Where(s => s.Count > 0);
 
             // Check for Stash

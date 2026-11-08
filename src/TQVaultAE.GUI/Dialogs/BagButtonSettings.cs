@@ -31,10 +31,10 @@ public partial class BagButtonSettings : VaultForm
 	private readonly Dictionary<IconCategory, IconGrid> GridByCategory;
 
 	// From Database
-	private ReadOnlyCollection<IconInfo> Pictures = ReadOnlyCollection<IconInfo>.Empty;
+	private ReadOnlyCollection<IconInfo> Pictures = [];
 
 	/// <summary>Icon picture for each resource id, from the first icon that has it.</summary>
-	private readonly Dictionary<RecordId, Cell> CellById = new();
+	private readonly Dictionary<RecordId, Cell> CellById = [];
 
 	// Pictures chosen for the button, kept while the default icon is shown.
 	private Cell? SelectedOn;

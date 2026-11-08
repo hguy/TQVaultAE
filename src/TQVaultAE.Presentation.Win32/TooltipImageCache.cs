@@ -17,7 +17,7 @@ public sealed class TooltipImageCache<TKey, TPayload> : IDisposable where TKey :
 	private sealed record Entry(TKey Key, Bitmap Image, TPayload Payload, long Bytes);
 
 	private readonly object _lock = new();
-	private readonly Dictionary<TKey, LinkedListNode<Entry>> _byKey = new();
+	private readonly Dictionary<TKey, LinkedListNode<Entry>> _byKey = [];
 	/// <summary>Most recently used first.</summary>
 	private readonly LinkedList<Entry> _usage = new();
 

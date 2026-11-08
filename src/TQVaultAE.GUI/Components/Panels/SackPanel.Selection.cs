@@ -160,7 +160,7 @@ public partial class SackPanel
 
 		// Allocate the List if needed.
 		if (this.selectedItems is null)
-			this.selectedItems = new List<Item>();
+			this.selectedItems = [];
 
 		// Check to see if the item is already selected
 		if (!this.IsItemSelected(item))

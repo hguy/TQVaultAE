@@ -200,7 +200,7 @@ public class VaultServiceTests
 		var sackCollection = new SackCollection();
 		var sacksField = sackCollection.GetType().GetProperty("IsModified");
 		sacksField?.SetValue(sackCollection, true);
-		vault.Sacks = new SackCollection[1] { sackCollection };
+		vault.Sacks = [sackCollection];
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 

@@ -29,7 +29,7 @@ internal sealed record TooltipDumpRow(
 /// </summary>
 internal sealed class ItemTooltipRecorder
 {
-	private readonly List<TooltipDumpRow> _rows = new();
+	private readonly List<TooltipDumpRow> _rows = [];
 	private readonly Queue<List<TooltipDumpRow>> _skillBlocks = new();
 
 	internal IReadOnlyList<TooltipDumpRow> Rows => this._rows;

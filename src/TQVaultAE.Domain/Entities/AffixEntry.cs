@@ -66,7 +66,7 @@ public class AffixGroup : IEnumerable<AffixEntry>
 	public AffixGroup(AffixGroupKey key, IEnumerable<AffixEntry> entries)
 	{
 		this.Key = key;
-		this._entries = entries?.ToList() ?? new List<AffixEntry>();
+		this._entries = entries?.ToList() ?? [];
 	}
 
 	/// <summary>

@@ -40,7 +40,7 @@ internal sealed unsafe class MappedFile : IDisposable
 	public ReadOnlySpan<byte> Span(long offset, int length)
 	{
 		this.Check(offset, length);
-		return length == 0 ? ReadOnlySpan<byte>.Empty : new ReadOnlySpan<byte>(this._base + offset, length);
+		return length == 0 ? [] : new ReadOnlySpan<byte>(this._base + offset, length);
 	}
 
 	/// <summary>Stream over [offset, offset+length) with no copy.</summary>

@@ -46,7 +46,7 @@ public partial class ForgePanel : UserControl, IScalingControl
 
 	/// <summary>Items placed in the slots, and the sacks they come from.</summary>
 	private readonly ForgeSelection Selection = new();
-	private readonly Dictionary<ForgeSlot, SackCollection?> Sacks = new();
+	private readonly Dictionary<ForgeSlot, SackCollection?> Sacks = [];
 	private readonly SlotView[] Slots;
 	private readonly ForgeRules Rules;
 

@@ -53,7 +53,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 	/// <summary>
 	/// Array of autosort buttons
 	/// </summary>
-	private Collection<AutoSortButton> autoSortButtons = new();
+	private Collection<AutoSortButton> autoSortButtons = [];
 
 	/// <summary>
 	/// Holds the currently selected bag.
@@ -151,7 +151,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		this.BagSackPanel.IsPlayerBagPanel = false;
 		this.BagSackPanel.MaxSacks = numberOfBags;
 		// Create the buttons
-		this.bagButtons = new Collection<BagButtonBase>();
+		this.bagButtons = [];
 		this.CreateBagButtons(numberOfBags);
 
 		// Assume it's the trash panel if we are not autosorting it.
@@ -161,7 +161,7 @@ public partial class VaultPanel : Panel, INotifyPropertyChanged, IScalingControl
 		}
 		else
 		{
-			this.autoSortButtons = new Collection<AutoSortButton>();
+			this.autoSortButtons = [];
 
 			for (int i = 0; i < numberOfAutosortButtons; ++i)
 			{

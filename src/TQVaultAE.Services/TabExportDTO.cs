@@ -14,7 +14,7 @@ public class TabExportDTO
 	public BagButtonIconInfo? IconInfo { get; set; }
 
 	[JsonPropertyName("items")]
-	public List<ItemDto> Items { get; set; } = new();
+	public List<ItemDto> Items { get; set; } = [];
 
 	public static TabExportDTO FromSackCollection(SackCollection sack, int sackNumber)
 	{

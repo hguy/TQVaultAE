@@ -20,7 +20,7 @@ public class SackCollection : IEnumerable<Item>
 	/// Indicates the upper left cell of the slot.
 	/// </summary>
 	private static Point[] equipmentLocationOffsets =
-	{
+	[
 		new Point(4, 0),  // Head
 		new Point(4, 3),  // Neck
 		new Point(4, 5),  // Body
@@ -36,13 +36,13 @@ public class SackCollection : IEnumerable<Item>
 		new Point(Item.WeaponSlotIndicator, 2), // Weapon2
 		new Point(Item.WeaponSlotIndicator, 3), // Shield2
 		new Point(1, 6), // Artifact
-	};
+	];
 
 	/// <summary>
 	/// Sizes of the slots in the equipment panel
 	/// </summary>
 	private static Size[] equipmentLocationSizes =
-	{
+	[
 		new Size(2, 2), // Head
 		new Size(2, 1), // Neck
 		new Size(2, 3), // Body
@@ -55,19 +55,19 @@ public class SackCollection : IEnumerable<Item>
 		new Size(2, 5), // Weapon2
 		new Size(2, 5), // Shield2
 		new Size(2, 2), // Artifact
-	};
+	];
 
 	/// <summary>
 	/// Used to properly draw the weapon the weapon box on the equipment panel
 	/// These values are the upper left corner of the weapon box
 	/// </summary>
 	private static Point[] weaponLocationOffsets =
-	{
+	[
 		new Point(1, 0), // Weapon1
 		new Point(7, 0), // Shield1
 		new Point(1, 9), // Weapon2
 		new Point(7, 9), // Shield2
-	};
+	];
 
 	/// <summary>
 	/// Size of the weapon slots in the equipment panel
@@ -109,7 +109,7 @@ public class SackCollection : IEnumerable<Item>
 	/// </summary>
 	public SackCollection()
 	{
-		this.items = new List<Item>();
+		this.items = [];
 		this.SackType = SackType.Player;
 	}
 

@@ -8,8 +8,8 @@ namespace TQVaultAE.Tests;
 public static class TestingConditions
 {
 	// Default game installation paths to check (WSL first, then Windows)
-	private static readonly string[] GamePaths = new[]
-	{
+	private static readonly string[] GamePaths =
+	[
 		"/mnt/d/DATA/Titan Quest Anniversary Edition",
 		"/mnt/d/DATA/Titan Quest",
 		"""D:\DATA\Titan Quest Anniversary Edition""",
@@ -17,7 +17,7 @@ public static class TestingConditions
 		"""d:\games\steam\SteamApps\common\Titan Quest Anniversary Edition""",
 		"""E:\GAMES\Steam\steamapps\common\Titan Quest Anniversary Edition""",
 		"""C:\Games\Titan Quest Anniversary Edition"""
-	};
+	];
 
 	// Cache for game path
 	private static string? _GamePath;

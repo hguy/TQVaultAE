@@ -84,7 +84,7 @@ internal static partial class AutomationTools
 				var text = line.RemoveAllTQTags() ?? line;
 				foreach (System.Text.RegularExpressions.Match m in raw.Matches(text))
 				{
-					var g = groups.TryGetValue(m.Value, out var v) ? v : (0, new HashSet<string>(), text.Trim());
+					var g = groups.TryGetValue(m.Value, out var v) ? v : (0, [], text.Trim());
 					if (g.Item2.Count < examples)
 						g.Item2.Add(where);
 					groups[m.Value] = (g.Item1 + 1, g.Item2, g.Item3);

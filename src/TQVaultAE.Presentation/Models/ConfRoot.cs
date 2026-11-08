@@ -6,7 +6,7 @@ namespace TQVaultAE.Presentation.Models;
 
 public class ConfRoot
 {
-	public List<ConfFile> list = new();
+	public List<ConfFile> list = [];
 }
 
 public class ConfFile
@@ -14,7 +14,7 @@ public class ConfFile
 	[JsonPropertyName("file")]
 	public string fileName = string.Empty;
 	[JsonPropertyName("img")]
-	public List<ConfMatch> imgMatch = new();
+	public List<ConfMatch> imgMatch = [];
 }
 
 public class ConfMatch

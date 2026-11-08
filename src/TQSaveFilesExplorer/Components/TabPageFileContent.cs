@@ -61,20 +61,20 @@ private bool _DisplayDataDecimal = true;
 
 		// Init comboBoxCopyType
 		this.comboBoxCopyType.Items.Clear();
-		this.comboBoxCopyType.Items.AddRange(new object[] {
+		this.comboBoxCopyType.Items.AddRange([
 			new ComboBoxItem(){ DisplayName = "Keys Only", Value = CopyKeysType.KeysOnly.ToString()  },
 			new ComboBoxItem(){ DisplayName = "Keys + Type", Value = CopyKeysType.KeysType.ToString()  },
 			new ComboBoxItem(){ DisplayName = "Keys + Type + Data", Value = CopyKeysType.KeysTypeData.ToString()  },
 			new ComboBoxItem(){ DisplayName = "Keys Only : Distinct", Value = CopyKeysType.DistinctKeys.ToString()  },
 			new ComboBoxItem(){ DisplayName = "Keys + Type : Distinct", Value = CopyKeysType.DistinctKeysType.ToString()  },
 			new ComboBoxItem(){ DisplayName = "Keys + Type + Data : Distinct", Value = CopyKeysType.DistinctKeysTypeData.ToString()  }
-		});
+		]);
 
 	}
 
 	private List<TreeNode> MakeTreeNode(List<TQFileRecord> childs)
 	{
-		List<TreeNode> currentLvl = new List<TreeNode>();
+		List<TreeNode> currentLvl = [];
 		foreach (var k in childs)
 		{
 			var tn = new TreeNode(k.KeyName) { Tag = k };
@@ -230,10 +230,10 @@ private bool _DisplayDataDecimal = true;
 
 	private string SanitizeString(byte[] dataAsByteArray)
 	{
-		List<string> result = new List<string>();
+		List<string> result = [];
 		foreach (var b in dataAsByteArray)
 		{
-			result.Add(b < 32 ? specialCharsMapping[b] : TQFileRecord.Encoding1252.GetString(new byte[] { b }));
+			result.Add(b < 32 ? specialCharsMapping[b] : TQFileRecord.Encoding1252.GetString([b]));
 		}
 		return string.Concat(result.ToArray());
 	}

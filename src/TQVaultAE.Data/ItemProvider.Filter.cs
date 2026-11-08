@@ -16,7 +16,7 @@ public partial class ItemProvider
 	#region Tag Lists
 
 	internal static readonly string[] unwantedTags =
-	{
+	[
 			"DEFENSIVEABSORPTION",
 			"MAXTRANSPARENCY",
 			"SCALE",
@@ -133,18 +133,18 @@ public partial class ItemProvider
 			"ONHITACTIVATIONCHANCE",
 			"DECREMENTSTATTYPE",
 			"ALLSKILLENHANCEMENT",
-		};
+		];
 
 	internal static readonly string[] requirementTags =
-	{
+	[
 			"LEVELREQUIREMENT",
 			"INTELLIGENCEREQUIREMENT",
 			"DEXTERITYREQUIREMENT",
 			"STRENGTHREQUIREMENT",
-		};
+		];
 
 	internal static readonly string[] statBonusTags =
-	{
+	[
 			"CHARACTERSTRENGTH",
 			"CHARACTERSTRENGTHMODIFIER",
 			"CHARACTERDEXTERITY",
@@ -155,10 +155,10 @@ public partial class ItemProvider
 			"CHARACTERLIFEMODIFIER",
 			"CHARACTERMANA",
 			"CHARACTERMANAMODIFIER",
-		};
+		];
 
 	internal static readonly string[] durationIndependentEffects =
-	{
+	[
 			"OFFENSIVESLOWTOTALSPEED",
 			"OFFENSIVESLOWATTACKSPEED",
 			"OFFENSIVESLOWRUNSPEED",
@@ -170,7 +170,7 @@ public partial class ItemProvider
 			"OFFENSIVETOTALDAMAGEREDUCTIONABSOLUTE",
 			"OFFENSIVETOTALRESISTANCEREDUCTIONPERCENT",
 			"OFFENSIVETOTALRESISTANCEREDUCTIONABSOLUTE"
-		};
+		];
 
 	#endregion
 	/// <summary>

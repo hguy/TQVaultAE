@@ -33,7 +33,7 @@ public class DBRecordCollectionProvider(IDirectoryIO directoryIO, IPathIO pathIO
 			DirectoryIO.CreateDirectory(destinationFolder);
 
 		// Write's all variables
-		List<string> content = new();
+		List<string> content = [];
 		foreach (Variable variable in drc)
 		{
 			content.Add(variable.ToString());

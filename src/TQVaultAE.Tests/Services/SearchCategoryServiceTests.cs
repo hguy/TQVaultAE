@@ -71,7 +71,7 @@ public class SearchCategoryServiceTests
 		string[] Lines() => Enumerable.Range(0, rnd.Next(4)).Select(_ => Text() ?? string.Empty).ToArray();
 		var sets = Enumerable.Range(0, 4).Select(i =>
 		{
-			var set = new SetItemInfo($"set{i}", $"tagSet{i}", new Dictionary<string, Info>(), new DBRecordCollection(RecordId.Create($"set{i}"), "ItemSet"));
+			var set = new SetItemInfo($"set{i}", $"tagSet{i}", [], new DBRecordCollection(RecordId.Create($"set{i}"), "ItemSet"));
 			set.Translations[$"tagSet{i}"] = i % 2 == 0 ? $"{{^G}}Set {i}" : $"Set {i}";
 			return set;
 		}).ToArray();

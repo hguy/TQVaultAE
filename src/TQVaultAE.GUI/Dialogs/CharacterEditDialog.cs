@@ -126,7 +126,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 	/// The last value handled of each attribute and of the level, to compute the points of a change: the value
 	/// changed event gives the new value only.
 	/// </summary>
-	private readonly Dictionary<NumericUpDown, int> _previousValues = new();
+	private readonly Dictionary<NumericUpDown, int> _previousValues = [];
 
 	private struct TagData
 	{

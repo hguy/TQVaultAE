@@ -43,7 +43,7 @@ public partial class SackPanel : Panel, IScalingControl
 	protected readonly IItemExchangeService ExchangeService;
 	private readonly Bitmap CustomContextMenuAffixUnknown;
 	private readonly Bitmap CustomContextMenuAffixUntranslated;
-	ItemStyle[] ItemStyleBackGroundColorEnable = new[] {
+	ItemStyle[] ItemStyleBackGroundColorEnable = [
 			ItemStyle.Epic,
 			ItemStyle.Legendary,
 			ItemStyle.Rare,
@@ -53,7 +53,7 @@ public partial class SackPanel : Panel, IScalingControl
 			ItemStyle.Quest,
 			ItemStyle.Scroll,
 			ItemStyle.Formulae,
-			ItemStyle.Parchment };
+			ItemStyle.Parchment ];
 
 	#region SackPanel Fields
 
@@ -237,8 +237,8 @@ public partial class SackPanel : Panel, IScalingControl
 		this.SackSize = new Size(sackWidth, sackHeight);
 		this.SackType = SackType.Player;
 
-		this.itemsUnderDragItem = new Collection<Item>();
-		this.itemsUnderOldDragLocation = new Collection<Item>();
+		this.itemsUnderDragItem = [];
+		this.itemsUnderOldDragLocation = [];
 
 		this.borderPen = new Pen(Color.FromArgb(223, 188, 97));
 		this.borderPen.Width = BorderWidth;

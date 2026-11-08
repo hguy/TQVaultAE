@@ -161,15 +161,15 @@ public class ItemExchangeServiceVaultTests
 
 		var importedItems = new Dictionary<int, List<Item>>
 		{
-			[0] = new()
-			{
+			[0] =
+			[
 				new Item { BaseItemId = "records/gear/new1.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 },
 				new Item { BaseItemId = "records/gear/new2.dbr", PositionX = 1, PositionY = 0, Width = 1, Height = 1 }
-			},
-			[1] = new()
-			{
+			],
+			[1] =
+			[
 				new Item { BaseItemId = "records/gear/new3.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 }
-			}
+			]
 		};
 
 		var importResult = ImportResult.SucceededVault("Imported", importedItems);
@@ -190,7 +190,7 @@ public class ItemExchangeServiceVaultTests
 	[Fact]
 	public void ImportVaultInto_WithNullVault_ShouldDoNothing()
 	{
-		var importData = ImportResult.SucceededVault("Test", new Dictionary<int, List<Item>>());
+		var importData = ImportResult.SucceededVault("Test", []);
 		var act = () => _service.ImportVaultInto(null!, importData);
 		act.Should().NotThrow();
 	}
@@ -226,8 +226,8 @@ public class ItemExchangeServiceVaultTests
 		vault.CreateEmptySacks(2);
 		var importedItems = new Dictionary<int, List<Item>>
 		{
-			[-1] = new() { new Item { BaseItemId = "neg.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 } },
-			[99] = new() { new Item { BaseItemId = "oor.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 } }
+			[-1] = [new Item { BaseItemId = "neg.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 }],
+			[99] = [new Item { BaseItemId = "oor.dbr", PositionX = 0, PositionY = 0, Width = 1, Height = 1 }]
 		};
 		var importResult = ImportResult.SucceededVault("Test", importedItems);
 

@@ -27,7 +27,7 @@ public class ArcFile
 	/// <summary>
 	/// Dictionary of the directory entries.
 	/// </summary>
-	public Dictionary<RecordId, ArcDirEntry> DirectoryEntries = new();
+	public Dictionary<RecordId, ArcDirEntry> DirectoryEntries = [];
 
 	/// <summary>
 	/// Ordered keys for the directoryEntries dictionary.

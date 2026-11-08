@@ -48,7 +48,7 @@ public enum ForgeMessage
 /// <summary>Items placed in the Forge slots.</summary>
 public sealed class ForgeSelection
 {
-	private readonly Dictionary<ForgeSlot, Item?> _items = new();
+	private readonly Dictionary<ForgeSlot, Item?> _items = [];
 
 	public Item? this[ForgeSlot slot]
 	{

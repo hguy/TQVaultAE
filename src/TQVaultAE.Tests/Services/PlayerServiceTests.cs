@@ -596,7 +596,7 @@ public class PlayerServiceTests
 		_mockPlayerCollectionProvider.Setup(x => x.LoadFile(It.IsAny<PlayerCollection>(), null))
 			.Callback<PlayerCollection, string>((pc, path) =>
 			{
-				pc.Sacks = new SackCollection[] { sackCollection };
+				pc.Sacks = [sackCollection];
 			});
 
 		// Load the player

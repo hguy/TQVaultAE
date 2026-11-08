@@ -15,7 +15,7 @@ internal sealed class NodeTag
 	internal TreeNode thisNode = null!; // Set with the node that holds the tag.
 	internal TQFileInfo File = null!; // Set with the node that holds the tag.
 	internal byte[]? RawData;
-	internal List<string> RecordText = new();
+	internal List<string> RecordText = [];
 	internal Bitmap? Bitmap;
 	internal SoundPlayer? SoundPlayer;
 }

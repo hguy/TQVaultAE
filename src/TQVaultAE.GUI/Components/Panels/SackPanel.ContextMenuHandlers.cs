@@ -59,7 +59,7 @@ public partial class SackPanel
 		{
 			// Allocate the List if not already done.
 			if (this.selectedItems is null)
-				this.selectedItems = new List<Item>();
+				this.selectedItems = [];
 
 			if (!this.IsItemSelected(focusedItem))
 			{
@@ -89,7 +89,7 @@ public partial class SackPanel
 
 		// Allocate the List if not already done.
 		if (this.selectedItems is null)
-			this.selectedItems = new List<Item>();
+			this.selectedItems = [];
 
 		Collection<Item> itemsUnderDraw = FindAllItems(FindAllCells(GetMouseDragRectangle()));
 

@@ -336,7 +336,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		}).OrderBy(cb => cb.DisplayName).ToArray();
 
 		// Reading failed so we default to English
-		if (languages.Length == 0) languages = new ComboBoxItem[] { new ComboBoxItem() { Value = "English", DisplayName = "English" } };
+		if (languages.Length == 0) languages = [new ComboBoxItem() { Value = "English", DisplayName = "English" }];
 
 		this.languageComboBox.Items.AddRange(languages);
 

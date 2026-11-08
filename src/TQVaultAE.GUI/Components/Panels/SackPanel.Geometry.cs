@@ -134,7 +134,7 @@ public partial class SackPanel
 	/// <returns>Array of items within the rectangle</returns>
 	protected virtual Collection<Item> FindAllItems(Rectangle cellRectangle)
 	{
-		Collection<Item> items = new Collection<Item>();
+		Collection<Item> items = [];
 		int minX = cellRectangle.X;
 		int maxX = cellRectangle.X + cellRectangle.Width;
 		int minY = cellRectangle.Y;

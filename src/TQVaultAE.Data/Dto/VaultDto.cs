@@ -24,5 +24,5 @@ public class VaultDto
 	/// <summary>
 	/// List of vault tabs
 	/// </summary>
-	public List<SackDto> sacks { get; set; } = new();
+	public List<SackDto> sacks { get; set; } = [];
 }

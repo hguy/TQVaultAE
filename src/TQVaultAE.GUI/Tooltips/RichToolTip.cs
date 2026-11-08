@@ -29,7 +29,7 @@ internal sealed class RichToolTip : IDisposable
 	private const int InitialDelay = 400;
 
 	private readonly ToolTip _toolTip = new() { OwnerDraw = true };
-	private readonly Dictionary<Control, Card> _cards = new();
+	private readonly Dictionary<Control, Card> _cards = [];
 
 	/// <summary>Opens the card once the pointer has rested on <see cref="_pending"/>.</summary>
 	private readonly System.Windows.Forms.Timer _delay = new() { Interval = InitialDelay };

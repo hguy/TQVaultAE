@@ -228,7 +228,7 @@ public static partial class StringHelper
 		return t.HasValue;
 	}
 
-	static char[] _Delim = new char[] { ' ' };
+	static char[] _Delim = [' '];
 	[GeneratedRegex(@"(?<number>\d+)")]
 	private static partial Regex PrettyFileNameRegExNumber();
 	[GeneratedRegex(@"(?<TitleCaseStart>BOW|DA|OA|XP|Mastery[A-Ha-h]|[A-Z][a-z]*)")]
@@ -401,7 +401,7 @@ public static partial class StringHelper
 	{
 		var tmp = TQText.ToArray();
 	repass:
-		List<string> res = new List<string>();
+		List<string> res = [];
 		for (int i = 0; i < tmp.Length; i++)
 		{
 			// Color Prefix alone
@@ -438,8 +438,8 @@ public static partial class StringHelper
 	/// <returns>List of wrapped text</returns>
 	public static Collection<string> WrapWords(string TQText, int Columns)
 	{
-		if (TQText is null) return new Collection<string>();
-		List<string> choppedLines = new List<string>();
+		if (TQText is null) return [];
+		List<string> choppedLines = [];
 		// First split on NL tag
 		choppedLines.AddRange(SplitOnTQNewLine(TQText));
 		// split on columns args length
@@ -453,7 +453,7 @@ public static partial class StringHelper
 				var batch = AllContiguousSpaceRegEx().Split(t);
 				string line = string.Empty;
 				string currentColor = string.Empty;
-				List<string> res = new List<string>();
+				List<string> res = [];
 				foreach (var word in batch)
 				{
 					var foundColor = TQColorHelper.GetColorFromTaggedString(word);

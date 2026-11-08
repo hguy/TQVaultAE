@@ -500,7 +500,7 @@ public partial class Database : IDatabase
 				}
 
 				// Read loot tables
-				Dictionary<string, (RecordId brokenRandomizerName, RecordId prefixRandomizerName, RecordId suffixRandomizerName)> dico = new();
+				Dictionary<string, (RecordId brokenRandomizerName, RecordId prefixRandomizerName, RecordId suffixRandomizerName)> dico = [];
 				foreach (var variable in rec)
 				{
 					var varname = "brokenRandomizerName";

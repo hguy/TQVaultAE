@@ -403,8 +403,8 @@ public partial class ItemProvider : IItemProvider
 
 			#endregion
 
-			List<string> results = new List<string>();
-			List<string?> ranges = new List<string?>();
+			List<string> results = [];
+			List<string?> ranges = [];
 
 			// In-game values (issue #552): jittered copies used for display only.
 			// The legacy display multiplier (attributeScalePercent) may remain from a render without in-game values.
@@ -504,7 +504,7 @@ public partial class ItemProvider : IItemProvider
 
 				if (!string.IsNullOrWhiteSpace(artifactName))
 				{
-					List<string> tmp = new List<string>();
+					List<string> tmp = [];
 
 					res.FormulaeArtifactRecords = Database.GetRecordFromFile(artifactName);
 

@@ -23,10 +23,10 @@ public class TQDataServiceTests
 	public void ReadCString_Span_EmptyString_ReturnsEmpty()
 	{
 		// Arrange: length=0
-		byte[] data = new byte[]
-		{
+		byte[] data =
+		[
 			0x00, 0x00, 0x00, 0x00  // length = 0
-		};
+		];
 		ReadOnlySpan<byte> span = data;
 		int offset = 0;
 
@@ -42,11 +42,11 @@ public class TQDataServiceTests
 	public void ReadCString_Span_SimpleAsciiString_ReturnsCorrectString()
 	{
 		// Arrange: "test"
-		byte[] data = new byte[]
-		{
+		byte[] data =
+		[
 			0x04, 0x00, 0x00, 0x00,  // length = 4
 			0x74, 0x65, 0x73, 0x74   // "test"
-		};
+		];
 		ReadOnlySpan<byte> span = data;
 		int offset = 0;
 
@@ -232,10 +232,10 @@ public class TQDataServiceTests
 	public void ReadUTF16String_Span_EmptyString_ReturnsEmpty()
 	{
 		// Arrange: charCount = 0
-		byte[] data = new byte[]
-		{
+		byte[] data =
+		[
 			0x00, 0x00, 0x00, 0x00  // charCount = 0
-		};
+		];
 		ReadOnlySpan<byte> span = data;
 		int offset = 0;
 
@@ -251,14 +251,14 @@ public class TQDataServiceTests
 	public void ReadUTF16String_Span_SimpleAsciiString_ReturnsCorrectString()
 	{
 		// Arrange: "test" in UTF-16 LE (4 characters)
-		byte[] data = new byte[]
-		{
+		byte[] data =
+		[
 			0x04, 0x00, 0x00, 0x00,  // charCount = 4
 			0x74, 0x00,              // 't'
 			0x65, 0x00,              // 'e'
 			0x73, 0x00,              // 's'
 			0x74, 0x00               // 't'
-		};
+		];
 		ReadOnlySpan<byte> span = data;
 		int offset = 0;
 
@@ -486,8 +486,8 @@ public class TQDataServiceTests
 		var testCases = new[]
 		{
 			(new byte[] { 0x6E, 0x75, 0x6D, 0x49, 0x74, 0x65, 0x6D, 0x73 }, TQDataService.Encoding1252.GetBytes("numItems")), // Key at start
-			(new byte[] { 0x00, 0x00, 0x6E, 0x75, 0x6D, 0x49, 0x74, 0x65, 0x6D, 0x73 }, TQDataService.Encoding1252.GetBytes("numItems")), // Key in middle
-			(new byte[] { 0x01, 0x02, 0x03, 0x04 }, TQDataService.Encoding1252.GetBytes("missing")), // Not found
+			([0x00, 0x00, 0x6E, 0x75, 0x6D, 0x49, 0x74, 0x65, 0x6D, 0x73], TQDataService.Encoding1252.GetBytes("numItems")), // Key in middle
+			([0x01, 0x02, 0x03, 0x04], TQDataService.Encoding1252.GetBytes("missing")), // Not found
 		};
 
 		foreach (var (data, key) in testCases)

@@ -190,7 +190,7 @@ public partial class ToFriendlyNameResult
 	public string? ItemWith { get; internal set; }
 	public string[] FlavorText { get; internal set; } = [];
 	public string[] Requirements { get; internal set; } = [];
-	public SortedList<string, Variable> RequirementVariables { get; internal set; } = new();
+	public SortedList<string, Variable> RequirementVariables { get; internal set; } = [];
 	public RequirementInfo? RequirementInfo { get; internal set; }
 	public string[] BaseAttributes { get; internal set; } = [];
 

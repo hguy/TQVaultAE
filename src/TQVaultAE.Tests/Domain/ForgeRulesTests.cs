@@ -16,7 +16,7 @@ public class ForgeRulesTests
 	/// <summary>Shield relic (Aegis of Athena).</summary>
 	private static readonly RecordId ShieldRelic = RelicAndCharm.AEGISOFATHENA_ACT1_01.GetRecordId();
 
-	private readonly Dictionary<Item, int> _levels = new();
+	private readonly Dictionary<Item, int> _levels = [];
 	private readonly ForgeRules _rules;
 
 	public ForgeRulesTests() => this._rules = new ForgeRules(i => this._levels.GetValueOrDefault(i));

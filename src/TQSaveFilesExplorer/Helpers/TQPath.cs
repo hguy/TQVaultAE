@@ -22,7 +22,7 @@ public static class TQPath
 		get
 		{
 			var p = SaveDirectoryTQITModded;
-			return p is null ? Array.Empty<string>() : Directory.GetDirectories(p, "_*");
+			return p is null ? [] : Directory.GetDirectories(p, "_*");
 		}
 	}
 
@@ -31,7 +31,7 @@ public static class TQPath
 		get
 		{
 			var sys = SaveDirectoryTQITTransferStash;
-			return sys is null ? Array.Empty<string>() : Directory.GetDirectories(sys);
+			return sys is null ? [] : Directory.GetDirectories(sys);
 		}
 	}
 

@@ -34,12 +34,12 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	/// Localized tab names
 	/// </summary>
 	private static string[] buttonNames =
-	{
+	[
 		Resources.StashPanelBtnEquipment,
 		Resources.StashPanelBtnTransferArea,
 		Resources.StashPanelBtnStorageArea,
 		Resources.GlobalRelicVaultStash
-	};
+	];
 
 	/// <summary>
 	/// Stash file instance
@@ -608,9 +608,9 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		// 
 		// buttonContextMenuStrip
 		// 
-		this.buttonContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+		this.buttonContextMenuStrip.Items.AddRange([
 			this.toolStripMenuItemEnableTooltip,
-			this.toolStripMenuItemDisableTooltip});
+			this.toolStripMenuItemDisableTooltip]);
 		this.buttonContextMenuStrip.Name = "contextMenuStrip";
 		this.buttonContextMenuStrip.Size = new System.Drawing.Size(151, 48);
 		this.buttonContextMenuStrip.Opening += new System.ComponentModel.CancelEventHandler(this.buttonContextMenuStrip_Opening);

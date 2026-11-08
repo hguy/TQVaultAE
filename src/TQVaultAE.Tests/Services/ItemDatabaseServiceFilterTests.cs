@@ -46,8 +46,8 @@ public class ItemDatabaseServiceFilterTests
 		var filters = new[]
 		{
 			new[] { this._a, this._b, this._c },
-			new[] { this._b, this._c, this._d },
-			new[] { this._c, this._b },
+			[this._b, this._c, this._d],
+			[this._c, this._b],
 		};
 
 		var result = this._service.CombineFilterResults(filters, SearchOperator.And);
@@ -61,7 +61,7 @@ public class ItemDatabaseServiceFilterTests
 		var filters = new[]
 		{
 			new[] { this._a, this._b },
-			new[] { this._b, this._c },
+			[this._b, this._c],
 		};
 
 		var result = this._service.CombineFilterResults(filters, SearchOperator.Or);

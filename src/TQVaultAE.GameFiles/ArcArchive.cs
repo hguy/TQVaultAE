@@ -36,7 +36,7 @@ internal sealed class ArcArchive : IArcArchive
 	private readonly Part[] _parts;
 	private readonly ArcEntry[] _entries;
 	private readonly Dictionary<string, ArcEntry> _byName;
-	private readonly ConditionalWeakTable<ArcEntry, Layout> _layouts = new();
+	private readonly ConditionalWeakTable<ArcEntry, Layout> _layouts = [];
 
 	public ArcArchive(string path)
 	{

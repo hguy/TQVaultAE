@@ -22,7 +22,7 @@ public partial class TQFile
 	/// <summary>
 	/// List of TQ save file extensions
 	/// </summary>
-	public static string[] Ext_All { get => new string[] { Ext_Player, Ext_SharedStashBackup, Ext_SharedStash }; }
+	public static string[] Ext_All { get => [Ext_Player, Ext_SharedStashBackup, Ext_SharedStash]; }
 
 
 	public byte[] Content { get; private set; }
@@ -165,7 +165,7 @@ public partial class TQFile
 
 		#region Remove all string keys that colide with values of another. Disambiguation of AnsiString values and keys
 
-		List<TQFileRecord> falseKeys = new List<TQFileRecord>();
+		List<TQFileRecord> falseKeys = [];
 		for (int i = 1; i < records.Count; i++)
 		{
 			var falsekey = records[i];
@@ -193,8 +193,8 @@ public partial class TQFile
 		#region Reveal unknown segments based on indexes gap
 
 		// check if some bytes are not include in records
-		List<byte> orphans = new List<byte>();
-		List<KeyValuePair<int, TQFileRecord>> orphansRecords = new List<KeyValuePair<int, TQFileRecord>>();
+		List<byte> orphans = [];
+		List<KeyValuePair<int, TQFileRecord>> orphansRecords = [];
 		TQFileRecord curr = null;
 		for (int cursor = 0; cursor < this.Content.Length; cursor++)
 		{
@@ -278,7 +278,7 @@ public partial class TQFile
 
 	private (List<TQFileRecord> nodes, int newidx) MakeTreeRecords(TQFileRecord parent = null, int idx = 0)
 	{
-		List<TQFileRecord> currentLvl = new List<TQFileRecord>();
+		List<TQFileRecord> currentLvl = [];
 		for (; idx < this.Records.Length; idx++)
 		{
 			var k = this.Records[idx];

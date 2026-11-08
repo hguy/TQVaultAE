@@ -47,7 +47,7 @@ public class TQFileRecord
 	public bool HasError { get => this.DataType == TQFileDataType.Unknown || this.IsUnknownSegment; }
 	public bool IsDataTypeError { get => this.DataType == TQFileDataType.Unknown && !this.IsUnknownSegment; }
 	public TQFileRecord Parent { get; internal set; }
-	public List<TQFileRecord> Childs { get; internal set; } = new List<TQFileRecord>();
+	public List<TQFileRecord> Childs { get; internal set; } = [];
 	/// <summary>
 	/// Indicate that the key is irrelevant as data. Only data have a meaning.
 	/// </summary>

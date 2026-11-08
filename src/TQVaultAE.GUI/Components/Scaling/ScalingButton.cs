@@ -176,7 +176,7 @@ public class ScalingButton : Button, IScalingControl
 	/// Copies of the up, over and down pictures at the button size, by source picture. The mouse and focus handlers put the
 	/// source back on each change, so without them every hover made a new bitmap.
 	/// </summary>
-	private readonly Dictionary<Image, Bitmap> scaledImages = new();
+	private readonly Dictionary<Image, Bitmap> scaledImages = [];
 
 	/// <summary>Size the <see cref="scaledImages"/> were made for.</summary>
 	private Size scaledSize;

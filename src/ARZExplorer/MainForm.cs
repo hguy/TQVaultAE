@@ -188,12 +188,12 @@ public partial class MainForm : Form
 	/// </summary>
 	string DataBasePath => Path.Combine(this.GamePathService.GamePathTQIT, @"Database\database.arz");
 
-	private readonly Dictionary<string, TQFileInfo> TQFileOpened = new();
+	private readonly Dictionary<string, TQFileInfo> TQFileOpened = [];
 
 	/// <summary>
 	/// Found Arc Files
 	/// </summary>
-	Dictionary<RecordId, string> ArcFileList = new();
+	Dictionary<RecordId, string> ArcFileList = [];
 
 	private void toolStripButtonLoadDataBase_Click(object sender, EventArgs e)
 	{
@@ -522,12 +522,12 @@ public partial class MainForm : Form
 	/// <summary>
 	/// Treeview node database
 	/// </summary>
-	internal Dictionary<string, TreeNode> dicoNodes = new();
+	internal Dictionary<string, TreeNode> dicoNodes = [];
 
 	/// <summary>
 	/// reverse directory of RecordId => TreeNode.Name
 	/// </summary>
-	internal Dictionary<RecordId, List<string>> dicoReverseKeys = new();
+	internal Dictionary<RecordId, List<string>> dicoReverseKeys = [];
 
 	/// <summary>
 	/// Builds the tree view.  Assumes the list is pre-sorted.
@@ -693,7 +693,7 @@ public partial class MainForm : Form
 
 			try
 			{
-				List<string> recordText = new List<string>();
+				List<string> recordText = [];
 				if (this.SelectedFile.FileType == CompressedFileType.ArzFile)
 				{
 					this.SelectedFile.Records = arzProv.GetRecordNotCached(this.SelectedFile.Arz, this.SelectedFile.DestFile);
@@ -799,7 +799,7 @@ public partial class MainForm : Form
 
 	#region Griv View
 
-	static char[] PopulateGridView_splitChars = new[] { ',' };
+	static char[] PopulateGridView_splitChars = [','];
 
 	static DataGridViewCellStyle PopulateGridView_hyperLinkCellStyle = new DataGridViewCellStyle
 	{
@@ -841,7 +841,7 @@ public partial class MainForm : Form
 	{
 		if (this.SelectedFile.Records is not null)
 		{
-			List<string> recordText = new List<string>();
+			List<string> recordText = [];
 			foreach (Variable variable in this.SelectedFile.Records)
 			{
 				if (variable.IsValueNonZero() || !hideZeroValuesToolStripMenuItem.Checked)
@@ -959,7 +959,7 @@ public partial class MainForm : Form
 
 	#region NavHistory
 
-	private readonly List<TreeNode> NavHistory = new();
+	private readonly List<TreeNode> NavHistory = [];
 	private readonly AssemblyName assemblyName;
 	private int NavHistoryIndex;
 
