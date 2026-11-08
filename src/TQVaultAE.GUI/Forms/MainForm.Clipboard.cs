@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Logging;
-using TQVaultAE.Application.DTOs;
-using TQVaultAE.Application.Results;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.GUI.Forms;
@@ -46,48 +44,8 @@ public partial class MainForm
 			if (string.IsNullOrWhiteSpace(text))
 				return;
 
-			ImportResult result;
-
-			// Check for PasteBin URL first
-			if (this.itemExchangeService.IsPasteBinUrl(text.Trim()))
-			{
-				try
-				{
-					var url = text.Trim();
-					var json = await this.itemExchangeService.ImportFromPasteBinAsync(url);
-					result = this.itemExchangeService.ImportFromJson(json);
-
-					if (result.Success)
-					{
-						if (result.Scope == ExportScope.Vault)
-							HandleVaultImportFromJson(result);
-						else
-							HandleNonVaultImport(result);
-					}
-					else
-						this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
-
-					return;
-				}
-				catch (Exception ex)
-				{
-					Log.LogError(ex, "Failed to import from PasteBin URL");
-					this.UIService.ShowError($"Failed to import from PasteBin: {ex.Message}");
-					return;
-				}
-			}
-
-			result = this.itemExchangeService.ImportFromJson(text);
-			if (!result.Success)
-			{
-				this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
-				return;
-			}
-
-			if (result.Scope == ExportScope.Vault)
-				HandleVaultImportFromJson(result);
-			else
-				HandleNonVaultImport(result);
+			var result = await this.itemExchangeService.ImportFromTextAsync(text);
+			this.HandleImportResult(result);
 		}
 		catch (Exception ex)
 		{
