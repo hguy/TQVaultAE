@@ -1170,4 +1170,16 @@ Oto złożony przykład: 'arktyczny &amp;mróz @miecz $pospolity | epicki'</valu
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 Udostępnij skarbiec</value>
   </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% odporności na obrażenia od drenażu energii</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>Rzucane w miejscu zabitego wroga</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
+  </data>
 </root>

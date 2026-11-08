@@ -5026,6 +5026,24 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {%.0f0}% Resistance to Energy Drain Damage.
+        /// </summary>
+        public static string TextTag_DefenseManaBurnRatio {
+            get {
+                return ResourceManager.GetString("TextTag_DefenseManaBurnRatio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to @DefensePercentLife.
+        /// </summary>
+        public static string TextTag_DefensePercentCurrentLife {
+            get {
+                return ResourceManager.GetString("TextTag_DefensePercentCurrentLife", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {%.0f0}% Defensive Total Speed Chance.
         /// </summary>
         public static string TextTag_defensiveTotalSpeedChance {
@@ -5049,6 +5067,15 @@ namespace TQVaultAE.Presentation {
         public static string TextTag_dropMeshDontOverrideTextures {
             get {
                 return ResourceManager.GetString("TextTag_dropMeshDontOverrideTextures", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to @xtagExclusiveSkill.
+        /// </summary>
+        public static string TextTag_exclusiveSkill {
+            get {
+                return ResourceManager.GetString("TextTag_exclusiveSkill", resourceCulture);
             }
         }
         
@@ -5238,6 +5265,15 @@ namespace TQVaultAE.Presentation {
         public static string TextTag_tailVelocity {
             get {
                 return ResourceManager.GetString("TextTag_tailVelocity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cast where the enemy was slain.
+        /// </summary>
+        public static string TextTag_tqvSkillCastOnTargetLocation {
+            get {
+                return ResourceManager.GetString("TextTag_tqvSkillCastOnTargetLocation", resourceCulture);
             }
         }
         

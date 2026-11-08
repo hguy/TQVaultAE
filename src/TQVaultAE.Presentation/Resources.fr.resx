@@ -1770,4 +1770,16 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
 	<data name="SearchItemSkills" xml:space="preserve">
     <value>Compétences d'objet</value>
   </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% de résistance aux dégâts du drain d'énergie</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>Lancé à l'emplacement de l'ennemi tué</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
+  </data>
 </root>
