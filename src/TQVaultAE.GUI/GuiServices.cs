@@ -31,10 +31,7 @@ public sealed class GuiServices
 		, ITranslationService translationService
 		, IBitmapService bitmapService
 		, ISoundService soundService
-		, IDatabase database
 		, IItemProvider itemProvider
-		, IPlayerCollectionProvider playerCollectionProvider
-		, ITQDataService tqData
 		, IGamePathService gamePathService
 		, IGameFileService gameFileService
 		, IHighlightService highlightService
@@ -57,6 +54,7 @@ public sealed class GuiServices
 		, ISearchCategoryService searchCategoryService
 		, ISearchQueryService searchQueryService
 		, ICharacterEditService characterEditService
+		, ISettingsPersistenceService settingsPersistence
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -68,10 +66,7 @@ public sealed class GuiServices
 		this.TranslationService = translationService;
 		this.BitmapService = bitmapService;
 		this.SoundService = soundService;
-		this.Database = database;
 		this.ItemProvider = itemProvider;
-		this.PlayerCollectionProvider = playerCollectionProvider;
-		this.TQData = tqData;
 		this.GamePathService = gamePathService;
 		this.GameFileService = gameFileService;
 		this.HighlightService = highlightService;
@@ -94,6 +89,7 @@ public sealed class GuiServices
 		this.SearchCategoryService = searchCategoryService;
 		this.SearchQueryService = searchQueryService;
 		this.CharacterEditService = characterEditService;
+		this.SettingsPersistence = settingsPersistence;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -106,10 +102,16 @@ public sealed class GuiServices
 	public ITranslationService TranslationService { get; }
 	public IBitmapService BitmapService { get; }
 	public ISoundService SoundService { get; }
-	public IDatabase Database { get; }
+
+	/// <summary>
+	/// Item display texts and their cache, for the tooltips, the item properties dialog and the panels.
+	/// </summary>
+	/// <remarks>
+	/// The last Data provider of the GUI: <see cref="IItemProvider.GetFriendlyNames"/>,
+	/// <see cref="IItemProvider.GetSetItems"/> and <see cref="IItemProvider.InvalidateFriendlyNamesCache"/>.
+	/// </remarks>
 	public IItemProvider ItemProvider { get; }
-	public IPlayerCollectionProvider PlayerCollectionProvider { get; }
-	public ITQDataService TQData { get; }
+
 	public IGamePathService GamePathService { get; }
 	public IGameFileService GameFileService { get; }
 	public IHighlightService HighlightService { get; }
@@ -154,6 +156,9 @@ public sealed class GuiServices
 
 	/// <summary>Character edits: level, experience, difficulty, attributes and masteries.</summary>
 	public ICharacterEditService CharacterEditService { get; }
+
+	/// <summary>Session state saved in the user settings, and the language of the installed game.</summary>
+	public ISettingsPersistenceService SettingsPersistence { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();

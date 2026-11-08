@@ -338,4 +338,19 @@ public class ItemEditServiceTests
 	}
 
 	#endregion
+
+	[Fact]
+	public void NewSetMember_KeepsTheBlockDataAndReadsTheMemberRecord()
+	{
+		var setItem = MakeItem("records/set/helm.dbr", Item.ICLASS_HEAD);
+		setItem.beginBlockCrap1 = 7;
+		var memberId = RecordId.Create("records/set/armor.dbr");
+
+		var member = this._service.NewSetMember(setItem, memberId);
+
+		member.Should().NotBeSameAs(setItem);
+		member.BaseItemId.Should().Be(memberId);
+		member.beginBlockCrap1.Should().Be(7);
+		this._itemProvider.Verify(p => p.GetDBData(member), Times.Once);
+	}
 }

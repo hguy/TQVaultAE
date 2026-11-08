@@ -139,6 +139,14 @@ public class ItemEditService(IDatabase database, IItemProvider itemProvider) : I
 		=> item.Duplicate(true);
 
 	/// <inheritdoc/>
+	public Item NewSetMember(Item setItem, RecordId memberId)
+	{
+		Item member = setItem.MakeEmptyCopy(memberId);
+		this._itemProvider.GetDBData(member);
+		return member;
+	}
+
+	/// <inheritdoc/>
 	public bool ForceSeed(SackCollection sack, Item item)
 	{
 		int originalSeed = item.Seed;

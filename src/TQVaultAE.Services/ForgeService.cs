@@ -27,6 +27,22 @@ public class ForgeService(
 		=> this.ItemProvider.GetRequirementVariables(item).TryGetValue(Variable.KEY_LEVELREQ, out var level) ? level.GetInt32(0) : 0;
 
 	/// <inheritdoc/>
+	public Item? Preview(ForgeSelection selection, bool godMode, Func<ForgeSlot, ForgePart?> godPart)
+	{
+		if (selection.Base is null)
+			return null;
+
+		var preview = selection.Base.Clone();
+		if (selection.Prefix is not null || selection.Suffix is not null || selection.Relic1 is not null || selection.Relic2 is not null)
+		{
+			ForgeMerge.Apply(preview, selection, godMode, godPart);
+			this.ItemProvider.GetDBData(preview);
+		}
+
+		return preview;
+	}
+
+	/// <inheritdoc/>
 	public IReadOnlyList<ForgePart> GodModeParts(Item item)
 	{
 		var parts = new List<ForgePart> { ForgePart.Base };

@@ -171,8 +171,7 @@ internal sealed partial class CharacterEditDialog : VaultForm
 				var recId = rec.ToRecordId();
 				var relatedSkills = Info.GetSkillsByBaseRecordName(recId);
 				var relatedPoints = relatedSkills.Sum(s => s.skillLevel);
-				var masteryInfo = this.Database.GetInfo(recId);
-				var masteryName = this.TranslationService.TranslateXTag(masteryInfo?.DescriptionTag ?? string.Empty);
+				var masteryName = this.TranslationService.TranslateXTag(this.Services.CharacterEditService.GetMasteryDescriptionTag(recId));
 				var label = this.Controls.Find($"Mastery{i + 1}NameScalingLabel", true).First();
 				label.Text = string.Format(label.Tag?.ToString() ?? "{0}", masteryName);
 				label.Visible = true;

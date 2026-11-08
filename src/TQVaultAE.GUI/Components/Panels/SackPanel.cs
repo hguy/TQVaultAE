@@ -36,9 +36,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 	protected readonly IFontService FontService;
 	protected readonly IUIService UIService;
-	protected readonly IDatabase Database;
 	protected readonly IItemProvider ItemProvider;
-	protected readonly ITQDataService TQData;
 	protected readonly GuiServices Services;
 	protected readonly IHighlightService HighlightService;
 	protected readonly IItemDatabaseService ItemDatabaseService;
@@ -220,9 +218,7 @@ public partial class SackPanel : Panel, IScalingControl
 		this.Services = services;
 		this.FontService = this.Services.FontService;
 		this.UIService = this.Services.UIService;
-		this.Database = this.Services.Database;
 		this.ItemProvider = this.Services.ItemProvider;
-		this.TQData = this.Services.TQData;
 		this.TranslationService = this.Services.TranslationService;
 		this.userContext = this.Services.Session;
 		this.USettings = this.Services.Settings;

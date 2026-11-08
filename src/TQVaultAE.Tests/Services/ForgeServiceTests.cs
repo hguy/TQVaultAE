@@ -150,4 +150,33 @@ public class ForgeServiceTests
 
 		calls.Should().Equal("invalidate", "add");
 	}
+
+	[Fact]
+	public void Preview_WithoutBaseItem_ReturnsNull()
+		=> this._service.Preview(new ForgeSelection(), godMode: false, _ => null).Should().BeNull();
+
+	[Fact]
+	public void Preview_BaseItemOnly_IsACopyWithoutReadingTheRecordAgain()
+	{
+		var baseItem = Sword();
+
+		var preview = this._service.Preview(With(baseItem), godMode: false, _ => null);
+
+		preview.Should().NotBeNull().And.NotBeSameAs(baseItem);
+		preview!.BaseItemId.Should().Be(baseItem.BaseItemId);
+		this._itemProvider.Verify(p => p.GetDBData(It.IsAny<Item>()), Times.Never);
+	}
+
+	[Fact]
+	public void Preview_WithAPrefixMaterial_MergesItIntoACopyAndReadsItsRecord()
+	{
+		var baseItem = Sword();
+		var material = Sword(prefix: """records\prefix\p01.dbr""");
+
+		var preview = this._service.Preview(With(baseItem, prefix: material), godMode: false, _ => null);
+
+		preview!.prefixID.Should().Be(material.prefixID);
+		baseItem.prefixID.Should().Be(RecordId.Empty);
+		this._itemProvider.Verify(p => p.GetDBData(preview), Times.Once);
+	}
 }

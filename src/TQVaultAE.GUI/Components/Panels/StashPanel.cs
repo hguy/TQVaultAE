@@ -6,7 +6,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using TQVaultAE.Application;
-using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.GUI.Components.Buttons;
 using TQVaultAE.GUI.Components.Layout;
@@ -108,7 +107,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 	int PLAYERINFO_HEIGHT => Convert.ToInt32(NORMAL_PLAYERINFO_HEIGHT * this.UIService.Scale);
 
 	private readonly ITranslationService TranslationService;
-	private readonly IDatabase Database;
 
 	private System.ComponentModel.IContainer components;
 	private ContextMenuStrip buttonContextMenuStrip;
@@ -135,7 +133,6 @@ public partial class StashPanel : VaultPanel, IScalingControl
 		InitializeComponent();
 
 		this.TranslationService = this.Services.TranslationService;
-		this.Database = this.Services.Database;
 
 		SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint, true);
 
