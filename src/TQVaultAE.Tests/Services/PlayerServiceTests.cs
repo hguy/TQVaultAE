@@ -340,62 +340,6 @@ public class PlayerServiceTests
 	}
 
 	/// <summary>
-	/// Test CreatePlayerFileWatcher with valid player - uses real temp directory
-	/// </summary>
-	[Fact]
-	public void CreatePlayerFileWatcher_WithValidPlayer_CreatesWatcher()
-	{
-		// Arrange - Use real temp directory for FileSystemWatcher
-		var tempDir = Path.Combine(Path.GetTempPath(), $"tqvault_test_{Guid.NewGuid()}");
-		Directory.CreateDirectory(tempDir);
-		var playerFile = Path.Combine(tempDir, "TestPlayer.plr");
-		File.WriteAllText(playerFile, "test"); // Create the file
-		var playerFolder = tempDir;
-		var playerSave = CreatePlayerSave(playerFolder);
-
-		_mockGamePathService.Setup(x => x.GetPlayerFile(It.IsAny<string>(), false, false))
-			.Returns(playerFile);
-
-		try
-		{
-			// Act
-			var result = _playerService.CreatePlayerFileWatcher(playerSave, (ps, b) => { });
-
-			// Assert
-			result.Should().NotBeNull();
-			result.Path.Should().Be(tempDir);
-			result.Filter.Should().Be("TestPlayer.plr");
-			result.EnableRaisingEvents.Should().BeTrue();
-		}
-		finally
-		{
-			// Cleanup
-			if (Directory.Exists(tempDir))
-				Directory.Delete(tempDir, true);
-		}
-	}
-
-	/// <summary>
-	/// Test CreatePlayerFileWatcher with invalid player file path
-	/// </summary>
-	[Fact]
-	public void CreatePlayerFileWatcher_WithInvalidPath_ReturnsNull()
-	{
-		// Arrange
-		var playerFolder = "/Test/Players/_TestPlayer";
-		var playerSave = CreatePlayerSave(playerFolder);
-
-		_mockGamePathService.Setup(x => x.GetPlayerFile("TestPlayer", false, false))
-			.Returns("");
-
-		// Act
-		var result = _playerService.CreatePlayerFileWatcher(playerSave, (ps, b) => { });
-
-		// Assert
-		result.Should().BeNull();
-	}
-
-	/// <summary>
 	/// Test SaveAllModifiedPlayers with no modified players
 	/// </summary>
 	[Fact]

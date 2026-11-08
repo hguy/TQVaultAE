@@ -29,10 +29,12 @@ container label helpers in Presentation.
 - `GuiServices`, the bundle every form and control receives, exposed four Data providers (`IDatabase`, `IItemProvider`,
   `IPlayerCollectionProvider`, `ITQDataService`). **Partial**: `IDatabase`, `IPlayerCollectionProvider` and `ITQDataService` are
   gone (`e1fba5c`); `IItemProvider` stays, see [What stays in the GUI](#what-stays-in-the-gui).
-- Some Services code was written but unused while the GUI kept its own copy. **Partial**: `ItemMovementService` is used
+- Some Services code was written but unused while the GUI kept its own copy. **Done**: `ItemMovementService` is used
   (`eae894c`), `VaultService.DeleteVault/RenameVault/GetVaultList` (`bd4a2ef`, `b993c50`) and `ItemDatabaseService.WarmUpAsync`
-  are used. Left: `PlayerService.CreatePlayerFileWatcher` and `StashService.Create*FileWatcher` are still unused,
-  `MainForm.Player.CreateFileWatcher` keeps its own copy.
+  are used. `PlayerService.CreatePlayerFileWatcher` and `StashService.Create*FileWatcher` are removed: they watched
+  `LastWrite | Size` (several events per write) on a thread pool thread, while the GUI watchers
+  (`MainForm.Player.CreateFileWatcher`, the stash watchers of `MainForm`) watch `Attributes`, which changes once after the
+  game writes, and raise on the UI thread.
 - Message boxes asked in the middle of a rule (`goto askAgain`, Abort/Retry/Ignore loops). **Done** for the moved code: it
   returns a result or takes a callback and the GUI asks.
 - Session state kept in form fields or combo selections belongs to `SessionContext`. **Partial**: the startup selection and

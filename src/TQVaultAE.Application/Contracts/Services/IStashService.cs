@@ -40,20 +40,6 @@ public interface IStashService
 	void SaveModifiedStash(string file, Stash stash);
 
 	/// <summary>
-	/// Creates a file watcher for the relic vault stash file.
-	/// </summary>
-	/// <param name="onChanged">Action to call when the file changes.</param>
-	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	FileSystemWatcher? CreateRelicStashFileWatcher(Action onChanged);
-
-	/// <summary>
-	/// Creates a file watcher for the transfer stash file.
-	/// </summary>
-	/// <param name="onChanged">Action to call when the file changes.</param>
-	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
-	FileSystemWatcher? CreateTransferStashFileWatcher(Action onChanged);
-
-	/// <summary>
 	/// Brings a stash panel bag id within the bags it has: below the equipment panel gives the equipment panel,
 	/// beyond the relic vault stash gives the relic vault stash.
 	/// </summary>
