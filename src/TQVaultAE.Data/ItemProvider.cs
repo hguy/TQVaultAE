@@ -406,6 +406,11 @@ public partial class ItemProvider : IItemProvider
 			List<string> results = [];
 			List<string?> ranges = [];
 
+			// The lines of each record with where the game lists them, merged in the game's order for the classic display.
+			List<GameAttributeSlot> prefixSlots = [];
+			List<GameAttributeSlot> suffixSlots = [];
+			List<GameAttributeSlot> baseSlots = [];
+
 			// In-game values (issue #552): jittered copies used for display only.
 			// The legacy display multiplier (attributeScalePercent) may remain from a render without in-game values.
 			if (this.USettings.ShowInGameValues)
@@ -422,7 +427,7 @@ public partial class ItemProvider : IItemProvider
 
 				if (res.PrefixInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, inGame?.Prefix ?? res.PrefixInfoRecords, k.FilterExtra, k.Item.prefixID, results
-						, valueRanges: inGame?.RangesOf(RollSource.Prefix), lineRanges: ranges);
+						, valueRanges: inGame?.RangesOf(RollSource.Prefix), lineRanges: ranges, lineSlots: prefixSlots);
 
 				res.PrefixAttributes = results.ToArray();
 				res.PrefixAttributeRanges = inGame is null ? [] : ranges.ToArray();
@@ -438,7 +443,7 @@ public partial class ItemProvider : IItemProvider
 
 				if (res.SuffixInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, inGame?.Suffix ?? res.SuffixInfoRecords, k.FilterExtra, k.Item.suffixID, results
-						, valueRanges: inGame?.RangesOf(RollSource.Suffix), lineRanges: ranges);
+						, valueRanges: inGame?.RangesOf(RollSource.Suffix), lineRanges: ranges, lineSlots: suffixSlots);
 
 				res.SuffixAttributes = results.ToArray();
 				res.SuffixAttributeRanges = inGame is null ? [] : ranges.ToArray();
@@ -452,11 +457,20 @@ public partial class ItemProvider : IItemProvider
 				// res.baseItemInfoRecords should be already loaded
 				if (res.BaseItemInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, inGame?.Base ?? res.BaseItemInfoRecords, k.FilterExtra, k.Item.BaseItemId, results
-						, valueRanges: inGame?.RangesOf(RollSource.Base), lineRanges: ranges);
+						, valueRanges: inGame?.RangesOf(RollSource.Base), lineRanges: ranges, lineSlots: baseSlots);
 			}
 
 			res.BaseAttributes = results.ToArray();
 			res.BaseAttributeRanges = inGame is null ? [] : ranges.ToArray();
+
+			if (prefixSlots.Count == res.PrefixAttributes.Length && suffixSlots.Count == res.SuffixAttributes.Length
+				&& baseSlots.Count == res.BaseAttributes.Length)
+			{
+				res.ClassicAttributes = GameAttributeOrder.Merge(GameAttributeOrder.ClassOf(k.Item)
+					, [.. res.BaseAttributes.Zip(baseSlots)]
+					, [.. res.PrefixAttributes.Zip(prefixSlots)]
+					, [.. res.SuffixAttributes.Zip(suffixSlots)]);
+			}
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.RelicAttributes) ?? false)
 			{
