@@ -130,16 +130,4 @@ public partial class EquipmentPanel : SackPanel, IScalingControl
 	}
 
 	#endregion EquipmentPanel Protected Methods
-
-	#region EquipmentPanel Private Methods
-
-	/// <summary>
-	/// Returns whether the equipment slot is a weapon slot
-	/// </summary>
-	/// <param name="slot">equipment slot we are checking</param>
-	/// <returns>True if it is an equipment slot.</returns>
-	private static bool IsWeaponSlot(int slot)
-		=> slot > 6 && slot < 11;
-
-	#endregion EquipmentPanel Private Methods
 }

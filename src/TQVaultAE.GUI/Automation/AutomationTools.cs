@@ -13,6 +13,7 @@ using ModelContextProtocol;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 using TQVaultAE.Application.Contracts.Providers;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Panels;
@@ -572,7 +573,7 @@ internal static partial class AutomationTools
 			width = item.Width,
 			height = item.Height,
 			quantity = item.DoesStack ? item.Number : (int?)null,
-			equipmentSlot = sack?.SackType == SackType.Equipment ? EquipmentPanel.FindEquipmentSlot(sack, item) : (int?)null,
+			equipmentSlot = sack?.SackType == SackType.Equipment ? EquipmentRules.FindSlot(sack, item) : (int?)null,
 		};
 	}
 

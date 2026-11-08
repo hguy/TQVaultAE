@@ -8,6 +8,7 @@
 /// </summary>
 
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
@@ -17,55 +18,6 @@ namespace TQVaultAE.GUI.Components.Panels;
 
 public partial class EquipmentPanel
 {
-	/// <summary>
-	/// Finds the equipment slot
-	/// </summary>
-	/// <param name="sack">current sack instance</param>
-	/// <param name="item">item we are checking</param>
-	/// <returns>slot number if the item is in an equipment slot otherwise -1</returns>
-	public static int FindEquipmentSlot(SackCollection sack, Item item)
-	{
-		if (sack == null || sack.SackType != SackType.Equipment || item == null)
-			// Make sure we are on the equipment panel
-			return -1;
-
-		// Iterate through the equipment slots
-		for (int slot = 0; slot < sack.NumberOfSlots; ++slot)
-		{
-			int itemX;
-			int itemY;
-
-			if (item.IsInWeaponSlot)
-			{
-				// adjust for weapon panel
-				itemX = SackCollection.GetWeaponLocationOffset(item.PositionY).X;
-				itemY = SackCollection.GetWeaponLocationOffset(item.PositionY).Y;
-			}
-			else
-			{
-				itemX = item.PositionX;
-				itemY = item.PositionY;
-			}
-
-			Point upperLeft = SackCollection.GetEquipmentLocationOffset(slot);
-			Size size = SackCollection.GetEquipmentLocationSize(slot);
-			if (SackCollection.IsWeaponSlot(slot))
-			{
-				// Adjust for the equipment slots
-				size = SackCollection.WeaponLocationSize;
-				upperLeft = SackCollection.GetWeaponLocationOffset(upperLeft.Y);
-			}
-
-			if (itemX < upperLeft.X || itemX > (upperLeft.X + size.Width - 1) || itemY < upperLeft.Y || itemY > (upperLeft.Y + size.Height - 1))
-				continue;
-			else
-				// We found it
-				return slot;
-		}
-
-		return -1;
-	}
-
 	/// <summary>
 	/// Gets an item at a cell location
 	/// </summary>
@@ -311,22 +263,7 @@ public partial class EquipmentPanel
 	/// <param name="weaponSlot">weapon slot that we are checking</param>
 	/// <returns>Base item instance</returns>
 	private Item? GetItemFromShadowSlot(int weaponSlot)
-	{
-		// Convert from weapon slot (0-3) to equipment slot (7-10).
-		int offset = weaponSlot + 7;
-
-		// Make sure it is valid.
-		if (!IsWeaponSlot(offset))
-			return null;
-
-		// Find the corresponding slot in the pair.  Should be either 7/8 or 9/10.
-		if ((offset % 2) == 1)
-			offset++;
-		else
-			offset--;
-
-		return this.ShownSack.GetItem(offset);
-	}
+		=> EquipmentRules.GetShadowSlotItem(this.ShownSack, weaponSlot);
 
 	/// <summary>
 	/// Gets the bounding rectangle for given cell.
@@ -370,29 +307,7 @@ public partial class EquipmentPanel
 	/// <param name="cell">cell we are searching</param>
 	/// <returns>-1 if nothing found, otherwise the slot location in the equiment sack is returned</returns>
 	private int FindEquipmentSlot(Point cell)
-	{
-		// Iterate through the equipment slots
-		for (int slot = 0; slot < this.ShownSack.NumberOfSlots; ++slot)
-		{
-			Size size = SackCollection.GetEquipmentLocationSize(slot);
-			Point ul = SackCollection.GetEquipmentLocationOffset(slot);
-
-			if (SackCollection.IsWeaponSlot(slot))
-			{
-				// Adjust for the equipment slots
-				size = SackCollection.WeaponLocationSize;
-				ul = SackCollection.GetWeaponLocationOffset(ul.Y);
-			}
-
-			if (cell.X < ul.X || cell.X > (ul.X + size.Width - 1) || cell.Y < ul.Y || cell.Y > (ul.Y + size.Height - 1))
-				continue;
-			else
-				// We found it
-				return slot;
-		}
-
-		return -1;
-	}
+		=> EquipmentRules.SlotAt(cell, this.ShownSack.NumberOfSlots);
 
 	/// <summary>
 	/// Used to find the equipment slot under the mouse based on the drag rectangle
@@ -400,31 +315,7 @@ public partial class EquipmentPanel
 	/// <param name="cellsUnderMouse">Rectangle containing all the cells under the mouse pointer</param>
 	/// <returns>-1 if nothing found, otherwise the slot location in the equiment sack is returned</returns>
 	private int FindEquipmentSlot(Rectangle cellsUnderMouse)
-	{
-		// Iterate through the equipment slots
-		Point slotUL;
-		Size slotSize;
-		Rectangle slotRect;
-		for (int slot = 0; slot < this.ShownSack.NumberOfSlots; ++slot)
-		{
-			slotUL = SackCollection.GetEquipmentLocationOffset(slot);
-			if (SackCollection.IsWeaponSlot(slot))
-			{
-				slotUL = SackCollection.GetWeaponLocationOffset(slotUL.Y);
-				slotSize = SackCollection.WeaponLocationSize;
-			}
-			else
-				slotSize = SackCollection.GetEquipmentLocationSize(slot);
-
-			slotRect = new Rectangle(slotUL, slotSize);
-			if (cellsUnderMouse.IntersectsWith(slotRect))
-				// Found it, so we return the slot number.
-				return slot;
-		}
-
-		// We didn't find it so we return -1
-		return -1;
-	}
+		=> EquipmentRules.SlotUnder(cellsUnderMouse, this.ShownSack.NumberOfSlots);
 
 	/// <summary>
 	/// Used to determine all slots under the current mouse cells and then creates a rectangle to encompass all of those cells.
