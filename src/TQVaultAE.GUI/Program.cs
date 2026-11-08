@@ -140,6 +140,7 @@ public static class Program
 		.AddSingleton<IItemDatabaseService, ItemDatabaseService>()
 		.AddSingleton<IItemExchangeService, ItemExchangeService>()
 		.AddSingleton<IPasteBinService, PasteBinService>()
+		.AddSingleton<IForgeService, ForgeService>()
 		.AddSingleton<HttpClient>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms

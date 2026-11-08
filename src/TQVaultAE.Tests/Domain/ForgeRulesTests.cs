@@ -59,6 +59,21 @@ public class ForgeRulesTests
 	}
 
 	[Theory]
+	[InlineData(ForgeMode.God, ForgeMode.Relax, true)]
+	[InlineData(ForgeMode.God, ForgeMode.Game, true)]
+	[InlineData(ForgeMode.Relax, ForgeMode.Strict, true)]
+	[InlineData(ForgeMode.Strict, ForgeMode.Game, true)]
+	[InlineData(ForgeMode.Game, ForgeMode.God, false)]
+	[InlineData(ForgeMode.Strict, ForgeMode.Relax, false)]
+	[InlineData(ForgeMode.Strict, ForgeMode.Strict, false)]
+	public void IsDowngrade_IsTrueForAStricterMode(ForgeMode previous, ForgeMode next, bool expected)
+		=> ForgeRules.IsDowngrade(previous, next).Should().Be(expected);
+
+	[Fact]
+	public void IsDowngrade_NoModeChosenBefore_IsFalse()
+		=> ForgeRules.IsDowngrade(null, ForgeMode.Game).Should().BeFalse();
+
+	[Theory]
 	[InlineData(ForgeSlot.Prefix)]
 	[InlineData(ForgeSlot.Suffix)]
 	[InlineData(ForgeSlot.Relic1)]
