@@ -160,30 +160,12 @@ public class ItemDragInfo
 	/// <param name="slot">slot if an equipment placement.</param>
 	public void MarkPlaced()
 	{
-		int slot = -1;
-
 		// modified items do not have a source sack.
 		// so no one needs to be notified of the placement.
 		if (!this.IsModifiedItem && this.srcSack is not null && this.srcItem is not null)
 		{
-			// Check to see if the dragged item is from one of the equipped slots.
-			if (this.srcSack.SackType == SackType.Equipment)
-				slot = EquipmentPanel.FindEquipmentSlot(this.srcSack, this.srcItem);
-
-			if (slot != -1)
-			{
-				// Remove the item out of the equipment slot
-				this.srcSack.RemoveAtItem(slot);
-
-				// Put a dummy item in it's place
-				Item newItem = this.srcItem.MakeEmptyItem();
-				newItem.PositionX = SackCollection.GetEquipmentLocationOffset(slot).X;
-				newItem.PositionY = SackCollection.GetEquipmentLocationOffset(slot).Y;
-				this.srcSack.InsertItem(slot, newItem);
-			}
-			else
-				// Remove the item from the old sack
-				this.srcSack.RemoveItem(this.srcItem);
+			// Remove the item from the old sack; an equipped item leaves an empty item in its slot.
+			EquipmentRules.TakeOut(this.srcSack, this.srcItem);
 
 			BagButtonTooltip.InvalidateCache(this.SrcSack, this.Original?.SrcSack);
 		}

@@ -8,6 +8,7 @@
 /// </summary>
 
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
@@ -94,8 +95,8 @@ public partial class EquipmentPanel
 
 				if (this.ItemsUnderDragItem.Count == 1)
 				{
-					int slot = FindEquipmentSlot(this.ShownSack, this.ItemsUnderDragItem[0]);
-					if (slot != -1 && this.CheckItemType(this.DragInfo.Item, slot))
+					int slot = EquipmentRules.FindSlot(this.ShownSack, this.ItemsUnderDragItem[0]);
+					if (slot != -1 && EquipmentRules.CanEquip(this.ShownSack, this.DragInfo.Item, slot))
 					{
 						backgroundColor = this.HighlightValidItemColor;
 						if (
@@ -169,7 +170,7 @@ public partial class EquipmentPanel
 				{
 					backgroundColor = this.HighlightValidItemColor;
 
-					if (!this.CheckItemType(this.DragInfo.Item, slot)
+					if (!EquipmentRules.CanEquip(this.ShownSack, this.DragInfo.Item, slot)
 						|| (
 							this.USettings.EnableItemRequirementRestriction
 							&& !this.PlayerMeetRequierements(DragInfo.Item)
@@ -184,7 +185,7 @@ public partial class EquipmentPanel
 					{
 						e.Graphics.FillRectangle(brush, tl.X, tl.Y, br.X - tl.X + 1, br.Y - tl.Y + 1);
 
-						if (IsWeaponSlot(slot))
+						if (SackCollection.IsWeaponSlot(slot))
 						{
 							// Draw additional weapon box area
 							e.Graphics.FillRectangle(
@@ -270,7 +271,7 @@ public partial class EquipmentPanel
 	{
 		// Fill the weapon box shape.
 		int slot = this.FindEquipmentSlot(this.FindCell(backgroundRectangle.Location));
-		if (IsWeaponSlot(slot))
+		if (SackCollection.IsWeaponSlot(slot))
 		{
 			// Since the weapon box is not a single rectangle, it needs to be drawn using CompositingMode.SourceCopy
 			// so that the alpha values remain consistent for the combined image.

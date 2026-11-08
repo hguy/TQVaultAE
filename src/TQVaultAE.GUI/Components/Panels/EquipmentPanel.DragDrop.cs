@@ -9,6 +9,7 @@
 
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
@@ -63,7 +64,7 @@ public partial class EquipmentPanel
 			{
 				// We need to adjust, just in case we clicked on the shadow item of a 2H item.
 				int focusSlot = FindEquipmentSlot(this.FindCell(location));
-				int itemSlot = FindEquipmentSlot(this.ShownSack, item);
+				int itemSlot = EquipmentRules.FindSlot(this.ShownSack, item);
 				if (focusSlot != itemSlot)
 					itemOffset = SackCollection.GetEquipmentLocationOffset(focusSlot).Y;
 			}
@@ -112,7 +113,7 @@ public partial class EquipmentPanel
 
 			// Check that the item is being dropped into the proper slot.
 			int slot = FindEquipmentSlot(this.CellsUnderDragItem);
-			if (slot == -1 || !this.CheckItemType(dragItem, slot))
+			if (slot == -1 || !EquipmentRules.CanEquip(this.ShownSack, dragItem, slot))
 				return;
 
 			//if (IsCurrentPlayerReadOnly())
@@ -150,112 +151,14 @@ public partial class EquipmentPanel
 			// then just add to the stack instead of picking up the other stack
 			if (!this.TryStackOnDrop(ref dragItem, ref itemUnderUs))
 			{
-				// If not stackable
-				if (slot != -1)
-				{
-					int slotRH = ((slot + 1) / 2) * 2;
-					if (dragItem.Is2HWeapon)
-					{
-						// The check function in the beginning ensures that 1 slot is open for 2H weapons.
-						// Find the RH weapon slot.
-						if (slot != slotRH)
-						{
-							// If I am not dropping on the RH slot then we may need to pick up the item in the LH slot.
-							if (itemUnderUs != null && !RecordId.IsNullOrEmpty(itemUnderUs.BaseItemId))
-							{
-								if (itemUnderUs.Is2HWeapon)
-									// For 2H weapons itemUnderUs points to the real item in the RH slot.
-									this.ShownSack.AddItem(this.ShownSack.GetItem(slotRH).Duplicate(true));
-								else
-									this.ShownSack.AddItem(this.ShownSack.GetItem(slot).Duplicate(true));
+				// If not stackable, equip it: the weapon swaps may pick up another item.
+				itemUnderUs = EquipmentRules.Equip(this.ShownSack, dragItem, slot, itemUnderUs);
 
-								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
-
-								// Clear the item in the LH slot.
-								// Put a dummy item in it's place
-								Item newItem = dragItem.MakeEmptyItem();
-								newItem.Location = SackCollection.GetEquipmentLocationOffset(slot);
-								this.ShownSack.RemoveAtItem(slot);
-								this.ShownSack.InsertItem(slot, newItem);
-							}
-							else if (!RecordId.IsNullOrEmpty(this.ShownSack.GetItem(slotRH).BaseItemId))
-							{
-								// There might be something in the other slot so we pick it up.
-								// Move the original item to the end of the sack temporarily
-								this.ShownSack.AddItem(this.ShownSack.GetItem(slotRH).Duplicate(true));
-								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
-
-								// Clear the item in the RH slot and put a dummy item in it's place
-								Item newItem = dragItem.MakeEmptyItem();
-								newItem.Location = SackCollection.GetEquipmentLocationOffset(slotRH);
-								this.ShownSack.RemoveAtItem(slotRH);
-								this.ShownSack.InsertItem(slotRH, newItem);
-							}
-
-							slot = slotRH;
-						}
-						else
-						{
-							// We are over the RH slot, but there may be something in the LH slot.
-							int slotLH = slotRH - 1;
-							if (itemUnderUs != null && !RecordId.IsNullOrEmpty(itemUnderUs.BaseItemId))
-							{
-								this.ShownSack.AddItem(this.ShownSack.GetItem(slot).Duplicate(true));
-								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
-
-								// Clear the item in the RH slot.
-								// Put a dummy item in it's place
-								Item newItem = dragItem.MakeEmptyItem();
-								newItem.Location = SackCollection.GetEquipmentLocationOffset(slot);
-								this.ShownSack.RemoveAtItem(slot);
-								this.ShownSack.InsertItem(slot, newItem);
-							}
-							else if (!RecordId.IsNullOrEmpty(this.ShownSack.GetItem(slotLH).BaseItemId))
-							{
-								// There might be something in the other slot so we pick it up.
-								// Move the original item to the end of the sack temporarily
-								this.ShownSack.AddItem(this.ShownSack.GetItem(slotLH).Duplicate(true));
-								itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
-
-								// Clear the item in the LH slot and put a dummy item in it's place
-								Item newItem = dragItem.MakeEmptyItem();
-								newItem.Location = SackCollection.GetEquipmentLocationOffset(slotLH);
-								this.ShownSack.RemoveAtItem(slotLH);
-								this.ShownSack.InsertItem(slotLH, newItem);
-							}
-						}
-					}
-
-					// Check to see if we dropped a 1H weapon onto a 2H weapon shadow slot
-					// Assume that the real 2H weapon is in the right hand slot.
-					if (IsWeaponSlot(slot) && slot != slotRH)
-					{
-						if (this.ShownSack.GetItem(slotRH).Is2HWeapon)
-						{
-							this.ShownSack.AddItem(this.ShownSack.GetItem(slotRH).Duplicate(true));
-							itemUnderUs = this.ShownSack.GetItem(this.ShownSack.Count - 1);
-
-							// Clear the item in the LH slot and put a dummy item in it's place
-							Item newItem = dragItem.MakeEmptyItem();
-							newItem.Location = SackCollection.GetEquipmentLocationOffset(slotRH);
-							this.ShownSack.RemoveAtItem(slotRH);
-							this.ShownSack.InsertItem(slotRH, newItem);
-						}
-					}
-
-					dragItem.Location = SackCollection.GetEquipmentLocationOffset(slot);
-
-					// The equipment sack always contains a fixed number of items (12)
-					// so we always remove and insert.
-					this.ShownSack.RemoveAtItem(slot);
-					this.ShownSack.InsertItem(slot, dragItem);
-
-					// Update item location properties to reflect new position
-					this.UpdateItemLocation(dragItem);
+				// Update item location properties to reflect new position
+				this.UpdateItemLocation(dragItem);
 
 				// Register new items in the database (existing items are already tracked)
 				this.ItemDatabaseService.TryAddItemToDatabase(dragItem);
-				}
 			}
 
 			// clear the "last drag" variables
@@ -443,70 +346,5 @@ public partial class EquipmentPanel
 		}
 
 		return new Rectangle(x, y, width, height);
-	}
-
-	/// <summary>
-	/// Used to check that the item is appropriate for the weapon slot
-	/// </summary>
-	/// <param name="item">Item we are checking</param>
-	/// <param name="slot">slot that we are trying to put the item into</param>
-	/// <returns>true if the item is appropriate for the slot</returns>
-	private bool CheckItemType(Item item, int slot)
-	{
-		if (item == null || slot < 0 || slot > this.ShownSack.NumberOfSlots)
-			return false;
-
-		switch (slot)
-		{
-			case 0: // Head
-				return item.IsHelm;
-
-			case 1: // Neck
-				return item.IsAmulet;
-
-			case 2: // Body
-				return item.IsTorsoArmor;
-
-			case 3: // Legs
-				return item.IsGreave;
-
-			case 4: // Arms
-				return item.IsBracer;
-
-			case 5: // Ring1
-			case 6: // Ring2
-				return item.IsRing;
-
-			case 7: // Weapon1
-			case 8: // Shield1
-			case 9: // Weapon2
-			case 10: // Shield2
-				if (item.IsWeaponShield)
-				{
-					if (item.Is2HWeapon)
-					{
-						// For 2H Weapons we need to check both weapon slots to make sure at least one is free
-						int itemOffset = slot;
-						if (((slot / 2) * 2) == slot)
-							itemOffset--;
-						else
-							itemOffset++;
-
-						return RecordId.IsNullOrEmpty(this.ShownSack.GetItem(itemOffset).BaseItemId) || RecordId.IsNullOrEmpty(this.ShownSack.GetItem(slot).BaseItemId);
-					}
-					else
-						return true;
-				}
-
-				break;
-
-			case 11: // Artifact
-				return item.IsArtifact;
-
-			default:
-				return false;
-		}
-
-		return false;
 	}
 }
