@@ -130,6 +130,20 @@ internal static partial class AutomationTools
 			return Serialize(report);
 		});
 
+	[McpServerTool(Name = "open_input_dialog", Destructive = true)]
+	[Description("Opens the text input dialog (InputDialog, used to name a duplicated character) modeless over the main window, to check its layout with capture and close it with close_dialog (button Cancel or OK).")]
+	public static string OpenInputDialog(
+		[Description("Prompt above the text box.")] string prompt = "New name of the character:",
+		[Description("Dialog title.")] string title = "Input",
+		[Description("Text box content.")] string value = "NewName")
+		=> AutomationHost.OnUi(main =>
+		{
+			AutomationHost.MarkDriving();
+			var dialog = new Dialogs.InputDialog(prompt, title, value);
+			dialog.Show(main);
+			return Serialize(new { title = dialog.Text, size = new { dialog.Width, dialog.Height }, deviceDpi = dialog.DeviceDpi });
+		});
+
 	[McpServerTool(Name = "open_bag_settings", Destructive = true)]
 	[Description("Opens the bag button settings (icon and label picker) for the current bag of a panel, like its 'Change icon' context menu entry. The dialog is modal: capture it with capture('Bag Button Settings') and close it with close_dialog('Bag Button Settings', 'Cancel'). The game icons load in the background after startup, so 'iconsLoaded' may be false right after launch.")]
 	public static async Task<string> OpenBagSettings(
