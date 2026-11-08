@@ -1415,7 +1415,6 @@ namespace TQVaultAE.GUI.Dialogs
 			Text = "Configure Settings";
 			TopMost = true;
 			Load += SettingsDialogLoad;
-			Shown += SettingsDialog_Shown;
 			Controls.SetChildIndex(bufferedTableLayoutPanelSkeleton, 0);
 			checkGroupBoxGitBackup.ResumeLayout(false);
 			checkGroupBoxGitBackup.PerformLayout();
