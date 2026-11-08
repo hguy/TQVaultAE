@@ -11,7 +11,6 @@ using System.Text.RegularExpressions;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
-using VisibilityItem = TQVaultAE.GUI.Models.Search.SearchQuery.VisibilityItem;
 
 namespace TQVaultAE.GUI.Dialogs;
 
@@ -28,7 +27,10 @@ public partial class SearchDialogAdvanced : VaultForm
 	private readonly List<BoxItem> SelectedFilters = new();
 	private readonly HashSet<BoxItem> SelectedFiltersSet = new();
 	private readonly List<VirtualCheckedListBox> CachedCheckedListBoxes = new();
-	private readonly SearchQueries SQueries;
+	private readonly ISearchQueryService SearchQueryService;
+
+	/// <summary>Live filters of each saved query (<see cref="LoadPersonnalQueries"/>).</summary>
+	private readonly Dictionary<SearchQuery, IReadOnlyList<BoxItem>> QueryFilters = new(ReferenceEqualityComparer.Instance);
 
 	public SearchResult[] QueryResults { get; private set; } = Array.Empty<SearchResult>();
 	private bool scalingCheckBoxReduceDuringSelection_LastChecked;
@@ -39,13 +41,12 @@ public partial class SearchDialogAdvanced : VaultForm
 	public SearchDialogAdvanced(
 		MainForm instance
 		, ILogger<SearchDialogAdvanced> log
-		, SearchQueries sQueries
 		, IItemDatabaseService itemDatabaseService
 	) : base(instance.Services)
 	{
 		this.Owner = instance;
 		this.Log = log;
-		this.SQueries = sQueries;
+		this.SearchQueryService = instance.Services.SearchQueryService;
 		this.ItemDatabaseService = itemDatabaseService;
 
 		this.InitializeComponent();
@@ -618,23 +619,20 @@ public partial class SearchDialogAdvanced : VaultForm
 		=> FoundResultsTooltip.HideTooltip();
 
 
-	private void SavePersonnalQueries()
-	{
-		this.SQueries.Save();
-	}
-
 	private void SearchQueriesInit()
 	{
 		scalingComboBoxQueryList.BeginUpdate();
 		scalingComboBoxQueryList.Items.Clear();
-		scalingComboBoxQueryList.Items.AddRange(this.SQueries.ToArray());
+		scalingComboBoxQueryList.Items.AddRange(this.SearchQueryService.Queries.ToArray());
 		scalingComboBoxQueryList.EndUpdate();
 	}
 
 	private void scalingComboBoxQueryList_SelectedIndexChanged(object? sender, EventArgs e)
 	{
-		var idx = scalingComboBoxQueryList.SelectedIndex;
-		Make_SelectedFilters(this.SQueries[idx]);
+		if (scalingComboBoxQueryList.SelectedItem is not SearchQuery query)
+			return;
+
+		Make_SelectedFilters(query, this.QueryFilters.GetValueOrDefault(query) ?? []);
 	}
 
 	private void scalingCheckBoxMinMaxReq_CheckedChanged(object? sender, EventArgs e)
