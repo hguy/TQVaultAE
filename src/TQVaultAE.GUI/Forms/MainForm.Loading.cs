@@ -407,61 +407,17 @@ public partial class MainForm
 		if (Automation.AutomationHost.IsSaveBlocked("save configuration"))
 			return;
 #endif
-		// Update last loaded vault
-		if (USettings.LoadLastVault)
-		{
-			// Changed by VillageIdiot
-			// Now check to see if the value is changed since the Main Vault would never auto load
-			if (this.vaultListComboBox.SelectedItem != null && !this.vaultListComboBox.SelectedItemText().Equals(USettings.LastVaultName, StringComparison.OrdinalIgnoreCase))
-			{
-				USettings.LastVaultName = this.vaultListComboBox.SelectedItemText();
-				this.configChanged = true;
-			}
-		}
+		string? vaultName = this.vaultListComboBox.SelectedItem != null ? this.vaultListComboBox.SelectedItemText() : null;
 
-		// Update last loaded character
-		if (USettings.LoadLastCharacter)
-		{
-			string? name = this.comboBoxCharacter.SelectedItem?.ToString();
-			var ps = this.comboBoxCharacter.SelectedItem as PlayerSave;
+		string? characterName = this.comboBoxCharacter.SelectedItem is PlayerSave ps
+			? ps.Name
+			: this.comboBoxCharacter.SelectedItem?.ToString();
 
-			if (ps is not null) name = ps.Name;
+		// No character is selected
+		if (characterName == Resources.MainFormSelectCharacter)
+			characterName = string.Empty;
 
-			if (name is not null && !name.Equals(USettings.LastCharacterName, StringComparison.OrdinalIgnoreCase))
-			{
-				// Clear the value if no character is selected
-				if (name == Resources.MainFormSelectCharacter)
-					name = string.Empty;
-
-				USettings.LastCharacterName = name;
-
-				this.configChanged = true;
-			}
-		}
-
-		// Update custom map settings
-		if (USettings.ModEnabled)
-			this.configChanged = true;
-
-		// Clear out the key if we are autodetecting.
-		if (USettings.AutoDetectLanguage)
-			USettings.TQLanguage = string.Empty;
-
-		// Clear out the settings if auto detecting.
-		if (USettings.AutoDetectGamePath)
-		{
-			USettings.TQITPath = string.Empty;
-			USettings.TQPath = string.Empty;
-		}
-
-		if (UIService.Zoom != 1.0F)
-		{
-			USettings.Scale = UIService.Zoom;
-			this.configChanged = true;
-		}
-
-		if (this.configChanged)
-			USettings.Save();
+		this.configChanged = this.settingsPersistenceService.SaveConfiguration(vaultName, characterName, UIService.Zoom, this.configChanged);
 	}
 
 	/// <summary>
@@ -476,9 +432,6 @@ public partial class MainForm
 		bool restart = false;
 		using (ZoomScope.Enter())
 			settingsDialog.Scale(new SizeF(UIService.Zoom, UIService.Zoom));
-
-		string title = string.Empty;
-		string message = string.Empty;
 
 		if (settingsDialog.ShowDialog() == DialogResult.OK && settingsDialog.ConfigurationChanged)
 		{
@@ -504,28 +457,21 @@ public partial class MainForm
 				soundSrv.InitAllPlayers();
 			}
 
-			if (settingsDialog.LanguageChanged || settingsDialog.GamePathChanged || settingsDialog.CustomMapsChanged || settingsDialog.UISettingChanged)
+			var restartReason = RestartRule.Evaluate(
+				settingsDialog.LanguageChanged
+				, settingsDialog.GamePathChanged
+				, settingsDialog.CustomMapsChanged
+				, settingsDialog.UISettingChanged);
+
+			if (restartReason != RestartReason.None)
 			{
-				if ((settingsDialog.GamePathChanged && settingsDialog.LanguageChanged) || settingsDialog.UISettingChanged)
+				var (title, message) = restartReason switch
 				{
-					title = Resources.MainFormSettingsChanged;
-					message = Resources.MainFormSettingsChangedMsg;
-				}
-				else if (settingsDialog.GamePathChanged)
-				{
-					title = Resources.MainFormPathsChanged;
-					message = Resources.MainFormPathsChangedMsg;
-				}
-				else if (settingsDialog.CustomMapsChanged)
-				{
-					title = Resources.MainFormMapsChanged;
-					message = Resources.MainFormMapsChangedMsg;
-				}
-				else
-				{
-					title = Resources.MainFormLanguageChanged;
-					message = Resources.MainFormLanguageChangedMsg;
-				}
+					RestartReason.Settings => (Resources.MainFormSettingsChanged, Resources.MainFormSettingsChangedMsg),
+					RestartReason.GamePath => (Resources.MainFormPathsChanged, Resources.MainFormPathsChangedMsg),
+					RestartReason.CustomMaps => (Resources.MainFormMapsChanged, Resources.MainFormMapsChangedMsg),
+					_ => (Resources.MainFormLanguageChanged, Resources.MainFormLanguageChangedMsg),
+				};
 
 				restart = this.Services.MessageBoxes.Confirm(message, title);
 			}
