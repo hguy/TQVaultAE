@@ -150,6 +150,7 @@ public static class Program
 		.AddTransient<ISaveOrchestrator, SaveOrchestrator>()
 		.AddSingleton<ISearchCategoryService, SearchCategoryService>()
 		.AddSingleton<ISearchQueryService, SearchQueryService>()
+		.AddSingleton<ICharacterEditService, CharacterEditService>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()
