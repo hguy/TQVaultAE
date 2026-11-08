@@ -1,0 +1,237 @@
+using Microsoft.Extensions.Logging;
+using System.Globalization;
+using TQVaultAE.Domain.Entities;
+
+namespace TQVaultAE.Data;
+
+public partial class ItemProvider
+{
+	/// <summary>
+	/// Gets the pet bonus string
+	/// </summary>
+	/// <param name="color">display font string</param>
+	/// <returns>formatted pet bonus name</returns>
+	private string GetPetBonusName(ref TQColor? color)
+	{
+		string tag = "xtagPetBonusNameAllPets";
+		if (!TranslationService.TryTranslateXTag(tag, out var formatSpec))
+		{
+			formatSpec = "?Bonus to All Pets:?";
+			color = ItemStyle.Legendary.TQColor();
+		}
+		else
+		{
+			if (USettings.ItemDebugLevel > 2)
+				Log.LogDebug("Item.formatspec (pet bonus) = {FormatSpec}", formatSpec);
+
+			formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+			color = ItemStyle.Relic.TQColor();
+		}
+
+		return formatSpec;
+	}
+
+	/// <summary>
+	/// Used for showing the pet statistics
+	/// </summary>
+	/// <param name="skillRecord">DBRecord of the skill</param>
+	/// <param name="results">List containing the results</param>
+	private void ConvertPetStats(Item itm, DBRecordCollection skillRecord, List<string> results)
+	{
+		string formatSpec, petLine;
+		int summonLimit = skillRecord.GetInt32("petLimit", 0);
+		if (summonLimit > 1)
+		{
+			if (!TranslationService.TryTranslateXTag("SkillPetLimit", out formatSpec))
+				formatSpec = "{0} Summon Limit";
+			else
+				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, summonLimit.ToString(CultureInfo.CurrentCulture));
+			var value = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+			results.Add(value);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(value);
+		}
+		var skillRecordspawnObjects = skillRecord.GetString("spawnObjects", 0);
+		DBRecordCollection? petRecord = Database.GetRecordFromFile(skillRecordspawnObjects);
+		if (petRecord != null)
+		{
+			// Print out Pet attributes
+			if (!TranslationService.TryTranslateXTag("SkillPetDescriptionHeading", out formatSpec))
+				formatSpec = "{0} Attributes:";
+			else
+				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+			string petNameTag = petRecord.GetString("description", 0);
+			string petName = TranslationService.TranslateXTag(petNameTag);
+			float value = 0.0F;
+
+			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, petName);
+			var valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+			results.Add(valueStr);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+
+			// Time to live: 0 is a permanent pet, which has no life time line.
+			float timeToLive = skillRecord.GetSingle("spawnObjectsTimeToLive", 0);
+			if (timeToLive > 0)
+			{
+				if (!TranslationService.TryTranslateXTag("tagSkillPetTimeToLive", out formatSpec))
+					formatSpec = "Life Time {0} Seconds";
+				else
+					formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+				petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, timeToLive);
+				valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+				results.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+			}
+
+			// Health
+			value = petRecord.GetSingle("characterLife", 0);
+			if (value != 0.0F)
+			{
+				if (!TranslationService.TryTranslateXTag("SkillPetDescriptionHealth", out formatSpec))
+					formatSpec = "{0}  Health";
+				else
+					formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+				petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value);
+				valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+				results.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+			}
+
+			// Energy
+			value = petRecord.GetSingle("characterMana", 0);
+			if (value != 0.0F)
+			{
+				if (!TranslationService.TryTranslateXTag("SkillPetDescriptionMana", out formatSpec))
+					formatSpec = "{0}  Energy";
+				else
+					formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+				petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value);
+				valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+				results.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+			}
+
+			// Add abilities text
+			results.Add(string.Empty);
+			if (!TranslationService.TryTranslateXTag("tagSkillPetAbilities", out formatSpec))
+				formatSpec = "{0} Abilities:";
+			else
+				formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+			petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, petName);
+			valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+			results.Add(valueStr);
+			itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+
+			// Show Physical Damage
+			value = petRecord.GetSingle("handHitDamageMin", 0);
+			float value2 = petRecord.GetSingle("handHitDamageMax", 0);
+
+			if (value > 1.0F || value2 > 2.0F)
+			{
+				if (value2 == 0.0F || value == value2)
+				{
+					if (!TranslationService.TryTranslateXTag("SkillPetDescriptionDamageMinOnly", out formatSpec))
+						formatSpec = "{0}  Damage";
+					else
+						formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+					petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value);
+					valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+					results.Add(valueStr);
+					itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+				}
+				else
+				{
+					if (!TranslationService.TryTranslateXTag("SkillPetDescriptionDamageMinMax", out formatSpec))
+						formatSpec = "{0} - {1}  Damage";
+					else
+						formatSpec = ItemAttributeProvider.ConvertFormat(formatSpec);
+
+					petLine = string.Format(CultureInfo.CurrentCulture, formatSpec, value, value2);
+					valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{petLine}";
+					results.Add(valueStr);
+					itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+				}
+			}
+
+			// Show the pet's skills
+			string[] skills = new string[17];  // Upto 17 skills in the tree
+			int[] skillLevels = new int[17];
+			int numSkills = 0;
+			string petskillName;
+			int petskillLevel;
+
+			for (int i = 0; i < skills.Length; i++)
+			{
+				petskillName = petRecord.GetString(string.Concat("skillName", i), 0);
+				if (string.IsNullOrEmpty(petskillName))
+					continue;
+
+				skills[numSkills] = petskillName;
+				petskillLevel = petRecord.GetInt32(string.Concat("skillLevel", i), 0);
+				if (petskillLevel < 1)
+					petskillLevel = 1;
+
+				skillLevels[numSkills] = petskillLevel;
+				numSkills++;
+			}
+
+			for (int i = 0; i < numSkills; i++)
+			{
+				string recordID = skills[i];
+				if (recordID != null && !recordID.StartsWith("records", StringComparison.OrdinalIgnoreCase))
+					continue;
+
+				DBRecordCollection? skillRecord1 = Database.GetRecordFromFile(recordID);
+				DBRecordCollection? record = null;
+				string skillClass = skillRecord1?.GetString("Class", 0) ?? string.Empty;
+
+				// Skip passive skills
+				if (skillClass.Equals("SKILL_PASSIVE", noCase))
+					continue;
+
+				string? skillNameTag = null;
+				string? skillName = null;
+				string buffSkillName = skillRecord1?.GetString("buffSkillName", 0) ?? string.Empty;
+
+				if (string.IsNullOrEmpty(buffSkillName))
+				{
+					record = skillRecord1;
+					skillNameTag = skillRecord1?.GetString("skillDisplayName", 0);
+					if (!string.IsNullOrWhiteSpace(skillNameTag))
+						TranslationService.TryTranslateXTag(skillNameTag, out skillName);
+				}
+				else
+				{
+					// This is a buff skill
+					DBRecordCollection? buffSkillRecord = Database.GetRecordFromFile(buffSkillName);
+					if (buffSkillRecord != null)
+					{
+						record = buffSkillRecord;
+						recordID = buffSkillName;
+						skillNameTag = buffSkillRecord.GetString("skillDisplayName", 0);
+						if (!string.IsNullOrWhiteSpace(skillNameTag))
+							TranslationService.TryTranslateXTag(skillNameTag, out skillName);
+					}
+				}
+
+				if (string.IsNullOrWhiteSpace(skillName))
+					valueStr = $"{ItemStyle.Legendary.TQColor().ColorTag()}{skillNameTag}";
+				else
+					valueStr = $"{ItemStyle.Mundane.TQColor().ColorTag()}{skillName}";
+
+				results.Add(valueStr);
+				itm.CurrentFriendlyNameResult?.TmpAttrib.Add(valueStr);
+
+				GetAttributesFromRecord(itm, record, true, recordID, results);
+				results.Add(string.Empty);
+			}
+		}
+	}
+}
