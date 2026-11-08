@@ -16,7 +16,10 @@ public partial class TabPageFileContent : UserControl
 private bool _DisplayDataDecimal = true;
 	private readonly TQFileService Service;
 
-	public TQFile File { get; private set; }
+	/// <summary>
+	/// File shown in this page. Set when the page loads.
+	/// </summary>
+	public TQFile? File { get; private set; }
 
 	public TabPageFileContent()
 	{
@@ -27,34 +30,36 @@ private bool _DisplayDataDecimal = true;
 
 	private void TabPageContent_Load(object sender, EventArgs e)
 	{
-		this.File = this.Service.ReadFile(this.Tag as string);
+		var path = this.Tag as string ?? throw new InvalidOperationException("The file path must be set in Tag before the page loads.");
+		var file = this.Service.ReadFile(path);
+		this.File = file;
 
-		var tree = MakeTreeNode(this.File.Childs.ToList()).ToArray();
+		var tree = MakeTreeNode(file.Childs.ToList()).ToArray();
 		this.treeViewKeys.Nodes.AddRange(tree);
 
 		RecurseColor(tree);
 
 		// init labels
-		var recordcount = this.File.Records.Length;
-		var errors = this.File.Records.Count(r => r.IsDataTypeError);
-		var unknown = this.File.Records.Count(r => r.IsUnknownSegment);
-		var foundkeys = this.File.Records.Count(r => !r.IsUnknownSegment);
+		var recordcount = file.Records.Length;
+		var errors = file.Records.Count(r => r.IsDataTypeError);
+		var unknown = file.Records.Count(r => r.IsUnknownSegment);
+		var foundkeys = file.Records.Count(r => !r.IsUnknownSegment);
 
 		#region File
 
-		this.linkLabelFilePath.Text = this.File.Path;
+		this.linkLabelFilePath.Text = file.Path;
 
 		this.labelFileDataTypeErrors.Text = string.Format(this.labelFileDataTypeErrors.Text, errors, recordcount);
 		if (errors > 0) this.labelFileDataTypeErrors.ForeColor = Color.Orange;
 
-		this.labelFileExtension.Text = string.Format(this.labelFileExtension.Text, this.File.Ext);
-		this.labelFileName.Text = string.Format(this.labelFileName.Text, Path.GetFileNameWithoutExtension(this.File.Path));
-		this.labelFileSize.Text = string.Format(this.labelFileSize.Text, this.File.Content.Length);
+		this.labelFileExtension.Text = string.Format(this.labelFileExtension.Text, file.Ext);
+		this.labelFileName.Text = string.Format(this.labelFileName.Text, Path.GetFileNameWithoutExtension(file.Path));
+		this.labelFileSize.Text = string.Format(this.labelFileSize.Text, file.Content.Length);
 
 		this.labelFileUnknownSegments.Text = string.Format(this.labelFileUnknownSegments.Text, unknown, recordcount);
 		if (unknown > 0) this.labelFileUnknownSegments.ForeColor = Color.Red;
 
-		this.labelFileVersion.Text = string.Format(this.labelFileVersion.Text, this.File.Version);
+		this.labelFileVersion.Text = string.Format(this.labelFileVersion.Text, file.Version);
 		this.labelFileFoundKeys.Text = string.Format(this.labelFileFoundKeys.Text, foundkeys);
 
 		#endregion
@@ -100,7 +105,8 @@ private bool _DisplayDataDecimal = true;
 		Color? errlvl = null;
 		foreach (var node in tree)
 		{
-			var k = node.Tag as TQFileRecord;
+			// Every node made by MakeTreeNode holds its record
+			if (node.Tag is not TQFileRecord k) continue;
 			var f = new Font("Microsoft Sans Serif", 8, FontStyle.Bold);
 
 			if (k.DataType == TQFileDataType.Unknown)
@@ -129,7 +135,7 @@ private bool _DisplayDataDecimal = true;
 		return errlvl;
 	}
 
-	private TQFileRecord SelectedRecord
+	private TQFileRecord? SelectedRecord
 	{
 		get => this.treeViewKeys.SelectedNode?.Tag as TQFileRecord;
 	}
@@ -143,9 +149,13 @@ private bool _DisplayDataDecimal = true;
 	private bool _flowLayoutPanelKeyInfos_FirstTime = true;
 	private void TreeViewKeys_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
 	{
-		var k = e.Node.Tag as TQFileRecord;
-		DisplayNodeInfos(k);
+		if (e.Node?.Tag is TQFileRecord k) DisplayNodeInfos(k);
 	}
+
+	/// <summary>
+	/// Text format kept in the <see cref="Control.Tag"/> of a label.
+	/// </summary>
+	private static string TagFormat(Control label) => label.Tag?.ToString() ?? string.Empty;
 
 	private void DisplayNodeInfos(TQFileRecord k)
 	{
@@ -160,13 +170,13 @@ private bool _DisplayDataDecimal = true;
 
 		#region Key
 
-		this.labelKeyIsDataTypeError.Text = string.Format(this.labelKeyIsDataTypeError.Tag.ToString(), k.IsDataTypeError);
-		this.labelKeyIsStructureClosing.Text = string.Format(this.labelKeyIsStructureClosing.Tag.ToString(), k.IsStructureClosing);
-		this.labelkeyIsSubStructureOpening.Text = string.Format(this.labelkeyIsSubStructureOpening.Tag.ToString(), k.IsSubStructureOpening);
-		this.labelKeyIsUnknownSegment.Text = string.Format(this.labelKeyIsUnknownSegment.Tag.ToString(), k.IsUnknownSegment);
-		this.labelKeyLength.Text = string.Format(this.labelKeyLength.Tag.ToString(), k.KeyLengthAsInt);
+		this.labelKeyIsDataTypeError.Text = string.Format(TagFormat(this.labelKeyIsDataTypeError), k.IsDataTypeError);
+		this.labelKeyIsStructureClosing.Text = string.Format(TagFormat(this.labelKeyIsStructureClosing), k.IsStructureClosing);
+		this.labelkeyIsSubStructureOpening.Text = string.Format(TagFormat(this.labelkeyIsSubStructureOpening), k.IsSubStructureOpening);
+		this.labelKeyIsUnknownSegment.Text = string.Format(TagFormat(this.labelKeyIsUnknownSegment), k.IsUnknownSegment);
+		this.labelKeyLength.Text = string.Format(TagFormat(this.labelKeyLength), k.KeyLengthAsInt);
 		this.textBoxKeyName.Text = k.KeyName;
-		this.labelIsKeyValue.Text = string.Format(this.labelIsKeyValue.Tag.ToString(), k.IsKeyValue);
+		this.labelIsKeyValue.Text = string.Format(TagFormat(this.labelIsKeyValue), k.IsKeyValue);
 
 		#endregion
 
@@ -176,8 +186,8 @@ private bool _DisplayDataDecimal = true;
 
 		#region DataInfos
 
-		this.labelDataType.Text = string.Format(this.labelDataType.Tag.ToString(), k.DataType);
-		this.labelDataLength.Text = string.Format(this.labelDataLength.Tag.ToString(), k.ValueEnd - k.ValueStart + 1);
+		this.labelDataType.Text = string.Format(TagFormat(this.labelDataType), k.DataType);
+		this.labelDataLength.Text = string.Format(TagFormat(this.labelDataLength), k.ValueEnd - k.ValueStart + 1);
 
 		Display_textData(k);
 
@@ -241,11 +251,11 @@ private bool _DisplayDataDecimal = true;
 	private void Display_labelOffset(TQFileRecord k)
 	{
 		var end = k.KeyName == TQFileRecord.unknown_segment ? k.ValueEnd : k.ValueStart - 1;
-		this.labelKeyOffset.Text = string.Format(this.labelKeyOffset.Tag.ToString()
+		this.labelKeyOffset.Text = string.Format(TagFormat(this.labelKeyOffset)
 			, _DisplayDataDecimal ? $"{k.KeyIndex}" : $"0x{k.KeyIndex:X8}"
 			, _DisplayDataDecimal ? $"{end}" : $"0x{end:X8}"
 		);
-		this.labelDataOffset.Text = string.Format(this.labelDataOffset.Tag.ToString()
+		this.labelDataOffset.Text = string.Format(TagFormat(this.labelDataOffset)
 			, _DisplayDataDecimal ? $"{k.ValueStart}" : $"0x{k.ValueStart:X8}"
 			, _DisplayDataDecimal ? $"{k.ValueEnd}" : $"0x{k.ValueEnd:X8}"
 		);
@@ -253,6 +263,8 @@ private bool _DisplayDataDecimal = true;
 
 	private void LinkLabelFilePath_Click(object sender, EventArgs e)
 	{
+		if (this.File is null) return;
+
 		// Focus in explorer
 		Process.Start(@"explorer.exe", $@"/select,""{this.File.Path}""");
 	}
@@ -260,6 +272,8 @@ private bool _DisplayDataDecimal = true;
 	private void LabelKeyOffset_Click(object sender, EventArgs e)
 	{
 		var k = this.SelectedRecord;
+		if (k is null) return;
+
 		_DisplayDataDecimal = !_DisplayDataDecimal;
 		Display_labelOffset(k);
 		Display_textData(k);
@@ -273,6 +287,8 @@ private bool _DisplayDataDecimal = true;
 			MainForm.SetStatusMessage("You must choose a format in the combobox !");
 			return;
 		}
+
+		if (this.File is null) return;
 
 		var type = Enums.Parse<CopyKeysType>(item.Value);
 		string keylist = string.Empty;
@@ -305,7 +321,6 @@ private bool _DisplayDataDecimal = true;
 
 	private void TreeViewKeys_AfterSelect(object sender, TreeViewEventArgs e)
 	{
-		var k = e.Node.Tag as TQFileRecord;
-		DisplayNodeInfos(k);
+		if (e.Node?.Tag is TQFileRecord k) DisplayNodeInfos(k);
 	}
 }

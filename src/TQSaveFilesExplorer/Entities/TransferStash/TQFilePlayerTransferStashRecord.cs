@@ -18,7 +18,7 @@ public class TQFilePlayerTransferStashRecord : TQFileRecord
 			select new PlayerTransferStashRecordKeyDescriptor
 			{
 				Enum = e.Key.Value,
-				Name = e.Key.AsString(EnumFormat.Description, EnumFormat.Name),
+				Name = e.Key.AsString(EnumFormat.Description, EnumFormat.Name) ?? e.Key.Name,
 				DataType = e.DataType,
 				Version = v
 			}
@@ -34,7 +34,7 @@ public class TQFilePlayerTransferStashRecord : TQFileRecord
 	public override void DefineDataType()
 	{
 		// Find the corresponding datatype according to the enum & version
-		var found = playerEnumDescriptor.FirstOrDefault(d => d.Name == this.KeyName && d.Version == this.File.Version);
+		var found = playerEnumDescriptor.FirstOrDefault(d => d.Name == this.KeyName && d.Version == this.AttachedFile.Version);
 		if (found is not null)
 		{
 			this.DataType = found.DataType;

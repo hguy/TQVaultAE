@@ -28,8 +28,8 @@ public partial class TQFile
 	public byte[] Content { get; private set; }
 	public string Path { get; private set; }
 	public string Ext { get; private set; }
-	public TQFileRecord[] Records { get; private set; }
-	public TQFileRecord[] Childs { get; private set; }
+	public TQFileRecord[] Records { get; private set; } = [];
+	public TQFileRecord[] Childs { get; private set; } = [];
 
 	private TQVersion? _Version = null;
 	public TQVersion Version
@@ -43,7 +43,7 @@ public partial class TQFile
 			// Define version by analysing records
 			FindFileVersion();
 
-			return _Version.Value;
+			return this._Version ?? throw new InvalidOperationException($"Unknown version for file \"{this.Path}\".");
 		}
 	}
 
@@ -57,18 +57,20 @@ public partial class TQFile
 	{
 		get => this.Ext.Equals(Ext_Player, StringComparison.OrdinalIgnoreCase);
 	}
-	private TQFile()
+	private TQFile(string path, string ext, byte[] content)
 	{
+		this.Path = path;
+		this.Ext = ext;
+		this.Content = content;
 	}
 
 	public static TQFile ReadFile(string path)
 	{
-		return new TQFile()
-		{
-			Path = path,
-			Ext = System.IO.Path.GetExtension(path).ToLowerInvariant(),
-			Content = File.ReadAllBytes(path),
-		};
+		return new TQFile(
+			path,
+			System.IO.Path.GetExtension(path).ToLowerInvariant(),
+			File.ReadAllBytes(path)
+		);
 	}
 
 	[GeneratedRegex(@"
@@ -109,7 +111,8 @@ public partial class TQFile
 		switch (this.Ext)
 		{
 			case Ext_Player:
-				var headerVersionKey = this.Records.FirstOrDefault(k => k.KeyName == TQFilePlayerRecordKey.headerVersion.ToString());
+				var headerVersionKey = this.Records.FirstOrDefault(k => k.KeyName == TQFilePlayerRecordKey.headerVersion.ToString())
+					?? throw new InvalidDataException($"No {TQFilePlayerRecordKey.headerVersion} key in file \"{this.Path}\".");
 				var fileVersionValue = BitConverter.ToInt32(new ArraySegment<byte>(this.Content, headerVersionKey.ValueStart, sizeof(int)).ToArray(), 0);
 				if (fileVersionValue == PLAYER_HEADERVERSION_VALUE_TQ)
 					_Version = TQVersion.TQ;
@@ -141,7 +144,7 @@ public partial class TQFile
 		var records = this.Records
 .Select(m =>
 		{
-			TQFileRecord retval = null;
+			TQFileRecord retval;
 			switch (this.Ext)
 			{
 				case Ext_Player:
@@ -175,7 +178,7 @@ public partial class TQFile
 					continue;// Je passe sur les éléments déja écartés
 
 				var legitkey = records[ii];
-				if (falsekey.RegExMatch.Index == legitkey.ValueStart)
+				if (falsekey.KeyIndex == legitkey.ValueStart)
 				{
 					falseKeys.Add(falsekey);
 					break;
@@ -195,16 +198,15 @@ public partial class TQFile
 		// check if some bytes are not include in records
 		List<byte> orphans = [];
 		List<KeyValuePair<int, TQFileRecord>> orphansRecords = [];
-		TQFileRecord curr = null;
 		for (int cursor = 0; cursor < this.Content.Length; cursor++)
 		{
 			for (var ii = 0; ii < records.Count; ii++)
 			{
-				curr = records[ii];
+				var curr = records[ii];
 
 				if (
 					curr.DataType == TQFileDataType.Unknown
-					&& curr.RegExMatch.Index <= cursor && cursor < curr.ValueStart // byte is part of an unknown key
+					&& curr.KeyIndex <= cursor && cursor < curr.ValueStart // byte is part of an unknown key
 				)
 				{
 					MakeUnknownSegment(records, orphans, orphansRecords, ii);
@@ -213,7 +215,7 @@ public partial class TQFile
 				}
 				else if (
 					curr.DataType != TQFileDataType.Unknown
-					&& curr.RegExMatch.Index <= cursor && cursor <= curr.ValueEnd
+					&& curr.KeyIndex <= cursor && cursor <= curr.ValueEnd
 				)
 				{
 					MakeUnknownSegment(records, orphans, orphansRecords, ii);
@@ -276,7 +278,7 @@ public partial class TQFile
 	}
 
 
-	private (List<TQFileRecord> nodes, int newidx) MakeTreeRecords(TQFileRecord parent = null, int idx = 0)
+	private (List<TQFileRecord> nodes, int newidx) MakeTreeRecords(TQFileRecord? parent = null, int idx = 0)
 	{
 		List<TQFileRecord> currentLvl = [];
 		for (; idx < this.Records.Length; idx++)
