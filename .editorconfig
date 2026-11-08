@@ -19,6 +19,13 @@ csharp_style_namespace_declarations = file_scoped:suggestion
 csharp_using_directive_placement = outside_namespace:suggestion
 dotnet_sort_system_directives_first = true
 
+# Null checks and pattern matching: `is null` / `is not null`, `x is T t` rather than `as` then a null check.
+csharp_style_prefer_null_check_over_type_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+
+# Collection expressions: `List<T> x = [];`, `int[] a = [1, 2];`.
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
+
 # Braces are mandatory for multi-line statements (CONTRIBUTING.md).
 csharp_prefer_braces = when_multiline:suggestion
 
