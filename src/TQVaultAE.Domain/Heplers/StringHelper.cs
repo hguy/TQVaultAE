@@ -426,7 +426,7 @@ public static partial class StringHelper
 		return string.Join(delim, res.ToArray());
 	}
 
-	[GeneratedRegex(@"(?i)\{\^N}", RegexOptions.Compiled)]
+	[GeneratedRegex(@"(?i)\{\^N}")]
 	private static partial Regex SplitOnTQNewLineRegEx();
 	public static IEnumerable<string> SplitOnTQNewLine(this string TQText) => SplitOnTQNewLineRegEx().Split(TQText);
 

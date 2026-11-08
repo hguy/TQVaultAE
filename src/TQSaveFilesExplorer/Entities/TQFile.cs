@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace TQ.SaveFilesExplorer.Entities
 {
-	public class TQFile
+	public partial class TQFile
 	{
 		public const string Ext_Player = ".chr";
 		/// <summary>
@@ -71,14 +71,15 @@ namespace TQ.SaveFilesExplorer.Entities
 			};
 		}
 
-		private static Regex RegexKeyMatch = new Regex(@"
+		[GeneratedRegex(@"
 (?<Len>.\x00{3})
 (?<Key>
 	(?<Open>\(\*)?
 		(?<Name>[a-zA-Z0-9_\.]+)
 			(?<Close>\))?
 			(?<Ext>\[i\])?
-)", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline);
+)", RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline)]
+		private static partial Regex RegexKeyMatch();
 
 		/// <summary>
 		/// Parse file data to raw records
@@ -88,7 +89,7 @@ namespace TQ.SaveFilesExplorer.Entities
 			var asString = TQFileRecord.Encoding1252.GetString(this.Content);
 
 			// Regex save file / Where the magic lies
-			var keyMatches = RegexKeyMatch.Matches(asString)
+			var keyMatches = RegexKeyMatch().Matches(asString)
 				.Cast<Match>().Where(m => m.Success).ToList();
 
 			this.Records = keyMatches.Select(m => new TQFileRecord(this, m))

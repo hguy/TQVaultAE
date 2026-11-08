@@ -20,6 +20,12 @@ public partial class GamePathServiceWin : IGamePathService
 	[GeneratedRegex(@"^(?<SteamappsRoot>.+steamapps).*", RegexOptions.IgnoreCase)]
 	private static partial Regex SteamappsRootRegex();
 
+	[GeneratedRegex(@"\\Main\\_", RegexOptions.IgnoreCase)]
+	private static partial Regex MainCharacterFolderRegex();
+
+	[GeneratedRegex(@"\\User\\_", RegexOptions.IgnoreCase)]
+	private static partial Regex UserCharacterFolderRegex();
+
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
 	internal const string LOCAL_GIT_REPOSITORY_DIRNAME = "LocalGitRepository";
@@ -226,8 +232,8 @@ public partial class GamePathServiceWin : IGamePathService
 			return newFolder;
 		}
 
-		newFolder = Regex.Replace(oldFolder, @"\\Main\\_", @$"\Main\{this.ArchiveDirName}\_", RegexOptions.IgnoreCase);
-		newFolder = Regex.Replace(newFolder, @"\\User\\_", @$"\User\{this.ArchiveDirName}\_", RegexOptions.IgnoreCase);// Cannot be both
+		newFolder = MainCharacterFolderRegex().Replace(oldFolder, @$"\Main\{this.ArchiveDirName}\_");
+		newFolder = UserCharacterFolderRegex().Replace(newFolder, @$"\User\{this.ArchiveDirName}\_");// Cannot be both
 
 		return newFolder;
 	}
