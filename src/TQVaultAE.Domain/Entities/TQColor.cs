@@ -194,6 +194,30 @@ public static partial class TQColorHelper
 		return RegExStartingColorTagOrEmptyInstance().Replace(TQText, string.Empty);
 	}
 
+	/// <summary>
+	/// Splits the leading color tag from <paramref name="TQText"/>.
+	/// </summary>
+	/// <param name="TQText">Text that may start with a color tag.</param>
+	/// <returns>The color of the leading tag (null when there is none) and the text without it.</returns>
+	public static (TQColor? Color, string Text) SplitLeadingColorTag(this string TQText)
+		=> (TQText.GetColorFromTaggedString(), TQText.RemoveLeadingColorTag());
+
+	/// <summary>
+	/// Splits <paramref name="TQText"/> on its color tags ('{'), each segment keeping the 4 chars color tag it starts with.
+	/// </summary>
+	/// <remarks>
+	/// Empty segments are dropped. A segment that does not start with a color tag (text before the first tag,
+	/// or after a lone '{') is returned without its '{'.
+	/// </remarks>
+	/// <param name="TQText">Text with color tags in the middle, like "{^Y}Name {^W}(level 3)".</param>
+	/// <returns>The segments, in order.</returns>
+	public static string[] SplitColorSegments(this string TQText)
+		=> TQText
+			.Split('{')
+			.Where(t => !string.IsNullOrEmpty(t))
+			.Select(t => t[0] == '^' ? '{' + t : t)
+			.ToArray();
+
 
 	/// <summary>
 	/// Gets the Color for a particular TQ defined color

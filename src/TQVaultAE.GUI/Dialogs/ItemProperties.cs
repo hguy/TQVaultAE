@@ -167,15 +167,10 @@ internal sealed partial class ItemProperties : VaultForm
 		// Replace TQNewLine with regular newline for multi-line support
 		propertyText = propertyText.Replace(StringHelper.TQNewLineTag, "\n");
 
-		// Extract color from tag if present
-		Color fgColor = defaultColor ?? Color.White;
-		var tqColor = propertyText.GetColorFromTaggedString();
-		if (tqColor.HasValue)
-		{
-			fgColor = tqColor.Value.Color();
-			// Remove the color tag from the text
-			propertyText = propertyText.RemoveLeadingColorTag();
-		}
+		// Extract color from tag if present, and remove the tag from the text
+		var (tqColor, untaggedText) = propertyText.SplitLeadingColorTag();
+		Color fgColor = tqColor?.Color() ?? defaultColor ?? Color.White;
+		propertyText = untaggedText;
 
 		// Add row with the text value - the column's DefaultCellStyle provides the base styling
 		int rowIndex = gridView.Rows.Add(propertyText);
