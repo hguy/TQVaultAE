@@ -5,9 +5,9 @@
 //-----------------------------------------------------------------------
 
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
@@ -402,7 +402,7 @@ public partial class SackPanel : Panel, IScalingControl
 		}
 		catch (NullReferenceException exception)
 		{
-			Log.ErrorException(exception);
+			Log.LogError(exception, "Failed to redraw the dragged item {Item} at {Location}", dragged.BaseItemId, location);
 			this.Services.MessageBoxes.ShowException(exception);
 		}
 	}

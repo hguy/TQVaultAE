@@ -7,11 +7,11 @@
 /// Class for holding all of the UI functions of the sack panel in the stash panel.
 /// </summary>
 
+using Microsoft.Extensions.Logging;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;
@@ -36,7 +36,7 @@ public partial class EquipmentPanel
 			}
 			catch (NullReferenceException exception)
 			{
-				Log.ErrorException(exception);
+				Log.LogError(exception, "Failed to restore the shadow slot of the two-handed weapon {Item}", dragged.BaseItemId);
 				this.Services.MessageBoxes.ShowException(exception);
 			}
 		}

@@ -12,7 +12,6 @@ using System.Text;
 using System.Text.Json;
 using TQVaultAE.Data.Dto;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data;
 
@@ -506,7 +505,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				catch (ArgumentException exception)
 				{
 					var ex = new ArgumentException($"Error parsing player file Item Block- '{pc.PlayerName}'", exception);
-					Log.ErrorException(ex);
+					this.Log.LogError(ex, "Failed to parse the item block of {Player} ({PlayerFile})", pc.PlayerName, pc.PlayerFile);
 					throw ex;
 				}
 			}
@@ -521,7 +520,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				catch (ArgumentException exception)
 				{
 					var ex = new ArgumentException($"Error parsing player file Equipment Block - '{pc.PlayerName}'", exception);
-					Log.ErrorException(ex);
+					this.Log.LogError(ex, "Failed to parse the equipment block of {Player} ({PlayerFile})", pc.PlayerName, pc.PlayerFile);
 					throw ex;
 				}
 			}
@@ -535,7 +534,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				catch (ArgumentException ex)
 				{
 					var exx = new ArgumentException($"Error parsing player player info Block - '{pc.PlayerName}'", ex);
-					Log.ErrorException(exx);
+					this.Log.LogError(exx, "Failed to parse the player info of {Player} ({PlayerFile})", pc.PlayerName, pc.PlayerFile);
 					throw exx;
 				}
 			}

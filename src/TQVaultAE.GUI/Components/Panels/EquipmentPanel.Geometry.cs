@@ -11,7 +11,6 @@ using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components.Panels;

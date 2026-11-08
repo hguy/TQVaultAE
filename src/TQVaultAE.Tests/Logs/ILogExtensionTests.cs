@@ -10,58 +10,6 @@ namespace TQVaultAE.Tests.Logs;
 /// </summary>
 public class ILogExtensionTests
 {
-	private readonly Mock<ILogger> _mockLogger;
-
-	public ILogExtensionTests()
-	{
-		_mockLogger = new Mock<ILogger>();
-	}
-
-	#region ErrorException Tests
-
-	[Fact]
-	public void ErrorException_LogsErrorWithException()
-	{
-		// Arrange
-		var ex = new InvalidOperationException("Test error");
-
-		// Act
-		_mockLogger.Object.ErrorException(ex);
-
-		// Assert - verify LogError was called with the exception and message
-		_mockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.Is<It.IsAnyType>((v, t) => v.ToString() == "Test error"),
-				ex,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
-	}
-
-	[Fact]
-	public void ErrorException_WithNullMessage_LogsExceptionMessage()
-	{
-		// Arrange
-		var ex = new Exception();
-		var mockLogger = new Mock<ILogger>();
-
-		// Act
-		mockLogger.Object.ErrorException(ex);
-
-		// Assert
-		mockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.IsAny<It.IsAnyType>(),
-				ex,
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
-	}
-
-	#endregion
-
 	#region FormatException Tests
 
 	[Fact]
@@ -160,27 +108,6 @@ public class ILogExtensionTests
 
 		// Assert
 		result.Should().Contain("AggregateException");
-	}
-
-	[Fact]
-	public void ErrorException_LogsToCorrectLogLevel()
-	{
-		// Arrange
-		var ex = new Exception("Test");
-		var mockLogger = new Mock<ILogger>();
-
-		// Act
-		mockLogger.Object.ErrorException(ex);
-
-		// Assert - verify Log was called with Error level (just verify the method was called)
-		mockLogger.Verify(
-			x => x.Log(
-				LogLevel.Error,
-				It.IsAny<EventId>(),
-				It.IsAny<It.IsAnyType>(),
-				It.IsAny<Exception>(),
-				It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-			Times.Once);
 	}
 
 	#endregion

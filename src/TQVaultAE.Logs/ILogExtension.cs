@@ -7,17 +7,6 @@ namespace TQVaultAE.Logs;
 /// </summary>
 public static class ILogExtension
 {
-
-	/// <summary>
-	/// Error Exception Only
-	/// </summary>
-	/// <param name="Log"></param>
-	/// <param name="ex"></param>
-	public static void ErrorException(this ILogger Log, Exception ex)
-	{
-		Log.LogError(ex, "{Message}", ex.Message);
-	}
-
 	/// <summary>
 	/// format l'exception seulement
 	/// </summary>

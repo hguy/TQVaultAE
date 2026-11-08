@@ -18,7 +18,6 @@ using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Forms;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.GUI.Tooltips;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation;
 using TQVaultAE.Presentation.Win32.Contracts;
 
@@ -417,7 +416,7 @@ public partial class SackPanel
 			}
 			catch (NullReferenceException exception)
 			{
-				Log.ErrorException(exception);
+				Log.LogError(exception, "Failed to reset the drag target when the mouse left sack panel {Panel}", this.Name);
 				this.Services.MessageBoxes.ShowException(exception);
 			}
 		}

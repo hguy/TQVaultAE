@@ -14,7 +14,6 @@ using TQVaultAE.Config;
 using TQVaultAE.GameFiles;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
-using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data;
 
@@ -216,7 +215,8 @@ public partial class Database : IDatabase
 				}
 				catch (IOException exception)
 				{
-					Log.ErrorException(exception);
+					this.Log.LogError(exception, "Failed to read the game language from {SettingsFile} or {SettingsFileIT}"
+						, GamePathResolver.SettingsFileTQ, GamePathResolver.SettingsFileTQIT);
 					return null;
 				}
 			}

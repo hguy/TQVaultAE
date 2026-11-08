@@ -14,7 +14,6 @@ using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
-using TQVaultAE.Logs;
 using TQVaultAE.Presentation.Win32.Contracts;
 using TQVaultAE.Services.Win32;
 
@@ -792,7 +791,7 @@ public partial class MainForm : Form
 			}
 			catch (Exception ex)
 			{
-				this.Log.ErrorException(ex);
+				this.Log.LogError(ex, "Failed to show the entry {Entry} of {File}", this.SelectedFile.DestFile, this.SelectedFile.SourceFile);
 			}
 		}
 		else
