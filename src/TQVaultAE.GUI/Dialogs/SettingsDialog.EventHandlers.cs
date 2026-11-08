@@ -36,8 +36,8 @@ internal partial class SettingsDialog
 		this.folderBrowserDialog.ShowDialog();
 		if (!this.folderBrowserDialog.SelectedPath.Trim().Equals(this.VaultPath.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
-			this.VaultPath = this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant();
-			this.vaultPathTextBox.Text = this.VaultPath.Trim().ToUpperInvariant();
+			this.VaultPath = this.folderBrowserDialog.SelectedPath.Trim();
+			this.vaultPathTextBox.Text = this.VaultPath;
 			this.vaultPathTextBox.Invalidate();
 			this.ConfigurationChanged = true;
 			this.VaultPathChanged = true;
@@ -388,8 +388,8 @@ internal partial class SettingsDialog
 		this.folderBrowserDialog.ShowDialog();
 		if (!this.folderBrowserDialog.SelectedPath.Trim().Equals(this.titanQuestPath.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
-			this.titanQuestPath = this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant();
-			this.titanQuestPathTextBox.Text = this.titanQuestPath.Trim().ToUpperInvariant();
+			this.titanQuestPath = this.folderBrowserDialog.SelectedPath.Trim();
+			this.titanQuestPathTextBox.Text = this.titanQuestPath;
 			this.titanQuestPathTextBox.Invalidate();
 			this.ConfigurationChanged = this.GamePathChanged = true;
 		}
@@ -408,8 +408,8 @@ internal partial class SettingsDialog
 		this.folderBrowserDialog.ShowDialog();
 		if (!this.folderBrowserDialog.SelectedPath.Trim().Equals(this.immortalThronePath.Trim(), StringComparison.OrdinalIgnoreCase))
 		{
-			this.immortalThronePath = this.folderBrowserDialog.SelectedPath.Trim().ToUpperInvariant();
-			this.immortalThronePathTextBox.Text = this.immortalThronePath.Trim().ToUpperInvariant();
+			this.immortalThronePath = this.folderBrowserDialog.SelectedPath.Trim();
+			this.immortalThronePathTextBox.Text = this.immortalThronePath;
 			this.immortalThronePathTextBox.Invalidate();
 			this.ConfigurationChanged = this.GamePathChanged = true;
 		}
