@@ -203,9 +203,23 @@ public partial class SackPanel
 			else
 				this.HighlightItemUnderMouse(this.FindCell(e.Location));
 		}
+		else if (this.RepaintsDragAreaOnly)
+		{
+			// Only the area of the drag, not the whole sack at each mouse move: where the item, the cells and the items
+			// under it were, and where they are now. The target is updated first, so the paint shades the current cells.
+			Rectangle before = this.GetRepaintDragRect();
+			this.UpdateDragTarget(new Point(e.Location.X - this.DragInfo.MouseOffset.X, e.Location.Y - this.DragInfo.MouseOffset.Y));
+			this.Invalidate(Rectangle.Union(before, this.GetRepaintDragRect()));
+		}
 		else
 			this.Invalidate();
 	}
+
+	/// <summary>
+	/// Whether a drag over this panel repaints only the area of the dragged item (<see cref="GetRepaintDragRect"/>);
+	/// otherwise the whole panel.
+	/// </summary>
+	protected virtual bool RepaintsDragAreaOnly => true;
 
 	/// <summary>
 	/// Callback for key down

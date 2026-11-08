@@ -96,6 +96,9 @@ public partial class EquipmentPanel : SackPanel, IScalingControl
 	protected override void ScaleControl(SizeF factor, BoundsSpecified specified)
 		=> base.ScaleControl(factor, specified);
 
+	/// <summary>The equipment slots and their frames are drawn apart from the cell grid: a drag repaints the whole panel.</summary>
+	protected override bool RepaintsDragAreaOnly => false;
+
 	/// <summary>
 	/// Changes the background of the item under the mouse so that it appears highlighted
 	/// </summary>

@@ -397,39 +397,7 @@ public partial class SackPanel : Panel, IScalingControl
 
 		try
 		{
-			// Identify all the cells and items under the drag item.  We want the actual cells that we will
-			// drop into so we add 1/2 a cell to the drag location so that we pick the cells closest
-			// to the center of the item.
-			Point topLeftCell = this.FindCell(new Point(location.X + UIService.HalfUnitSize, location.Y + UIService.HalfUnitSize));
-			if (topLeftCell.X < 0 || topLeftCell.Y < 0)
-			{
-				// out of area
-				this.CellsUnderDragItem = InvalidDragRectangle;
-			}
-			else
-			{
-				this.CellsUnderDragItem = new Rectangle(topLeftCell, dragged.Size);
-
-				// See if the area is big enough to hold the item (ie the item does not go off the panel)
-				int right = this.CellsUnderDragItem.Right - 1;
-				int bottom = this.CellsUnderDragItem.Bottom - 1;
-				if (right >= this.SackSize.Width || bottom >= this.SackSize.Height)
-				{
-					// uh oh we do not fit!
-					// reset the cells to "out of area"
-					this.CellsUnderDragItem = InvalidDragRectangle;
-				}
-			}
-
-			this.ItemsUnderDragItem.Clear();
-			foreach (Item item in this.FindAllItems(this.CellsUnderDragItem))
-				this.ItemsUnderDragItem.Add(item);
-
-			this.LastDragLocation = location;
-			this.ItemsUnderOldDragLocation.Clear();
-			foreach (Item item in this.ItemsUnderDragItem)
-				this.ItemsUnderOldDragLocation.Add(item);
-
+			this.UpdateDragTarget(location);
 			this.DrawItem(graphics, dragged, this.LastDragLocation);
 		}
 		catch (NullReferenceException exception)
@@ -437,6 +405,50 @@ public partial class SackPanel : Panel, IScalingControl
 			Log.ErrorException(exception);
 			this.Services.MessageBoxes.ShowException(exception);
 		}
+	}
+
+	/// <summary>
+	/// Sets the drop target of the dragged item drawn at <paramref name="location"/>: the cells under it, the items in
+	/// them and the drag location. Done on a mouse move, before the repaint, and again by the paint.
+	/// </summary>
+	/// <param name="location">screen coordinates of the dragged item</param>
+	protected void UpdateDragTarget(Point location)
+	{
+		if (this.DragInfo.Item is not { } dragged)
+			return;
+
+		// Identify all the cells and items under the drag item.  We want the actual cells that we will
+		// drop into so we add 1/2 a cell to the drag location so that we pick the cells closest
+		// to the center of the item.
+		Point topLeftCell = this.FindCell(new Point(location.X + UIService.HalfUnitSize, location.Y + UIService.HalfUnitSize));
+		if (topLeftCell.X < 0 || topLeftCell.Y < 0)
+		{
+			// out of area
+			this.CellsUnderDragItem = InvalidDragRectangle;
+		}
+		else
+		{
+			this.CellsUnderDragItem = new Rectangle(topLeftCell, dragged.Size);
+
+			// See if the area is big enough to hold the item (ie the item does not go off the panel)
+			int right = this.CellsUnderDragItem.Right - 1;
+			int bottom = this.CellsUnderDragItem.Bottom - 1;
+			if (right >= this.SackSize.Width || bottom >= this.SackSize.Height)
+			{
+				// uh oh we do not fit!
+				// reset the cells to "out of area"
+				this.CellsUnderDragItem = InvalidDragRectangle;
+			}
+		}
+
+		this.ItemsUnderDragItem.Clear();
+		foreach (Item item in this.FindAllItems(this.CellsUnderDragItem))
+			this.ItemsUnderDragItem.Add(item);
+
+		this.LastDragLocation = location;
+		this.ItemsUnderOldDragLocation.Clear();
+		foreach (Item item in this.ItemsUnderDragItem)
+			this.ItemsUnderOldDragLocation.Add(item);
 	}
 
 	/// <summary>
