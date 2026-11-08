@@ -235,21 +235,9 @@ public partial class SackPanel
 				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
 				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(itemUnderUs);
 
-				if (table != null && table.Length > 0)
-				{
-					int i = table.Length;
-					foreach (var e1 in table)
-					{
-						i--;
-						if (randPercent <= e1.Value.WeightPercent || i == 0)
-						{
-							itemUnderUs.RelicBonusId = e1.Key;
-							break;
-						}
-						else
-							randPercent -= e1.Value.WeightPercent;
-					}
-				}
+				RecordId? bonusId = table?.PickWeighted(randPercent);
+				if (bonusId is not null)
+					itemUnderUs.RelicBonusId = bonusId;
 
 				ItemProvider.GetDBData(itemUnderUs);
 			}
