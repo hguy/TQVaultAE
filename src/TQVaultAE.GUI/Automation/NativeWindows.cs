@@ -13,7 +13,7 @@ namespace TQVaultAE.GUI.Automation;
 /// that are not part of <see cref="System.Windows.Forms.Application.OpenForms"/>.
 /// All calls work from any thread.
 /// </summary>
-internal static class NativeWindows
+internal static partial class NativeWindows
 {
 	private const int WM_COMMAND = 0x0111;
 	private const int BN_CLICKED = 0;
@@ -145,47 +145,53 @@ internal static class NativeWindows
 	private const uint SWP_NOZORDER = 0x0004;
 	private const uint SWP_NOACTIVATE = 0x0010;
 
-	[DllImport("user32.dll")]
-	private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
 
 	/// <summary>Moves a window without resizing it, as Windows does while the user drags it.</summary>
 	public static void MoveTo(IntPtr hwnd, int x, int y) => SetWindowPos(hwnd, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 
 	private delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
 
+	// EnumWindows and EnumChildWindows stay [DllImport]: source-generated P/Invokes do not marshal delegates,
+	// and the callbacks are closures over local state.
 	[DllImport("user32.dll")]
 	private static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
 	[DllImport("user32.dll")]
 	private static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
 
-	[DllImport("user32.dll")]
-	private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
+	[LibraryImport("user32.dll")]
+	private static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint processId);
 
-	[DllImport("user32.dll")]
-	private static extern bool IsWindowVisible(IntPtr hWnd);
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool IsWindowVisible(IntPtr hWnd);
 
-	[DllImport("user32.dll")]
-	private static extern bool IsWindowEnabled(IntPtr hWnd);
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool IsWindowEnabled(IntPtr hWnd);
 
-	[DllImport("user32.dll")]
-	private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+	[LibraryImport("user32.dll")]
+	private static partial IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
-	[DllImport("user32.dll")]
-	private static extern IntPtr GetParent(IntPtr hWnd);
+	[LibraryImport("user32.dll")]
+	private static partial IntPtr GetParent(IntPtr hWnd);
 
-	[DllImport("user32.dll")]
-	private static extern int GetDlgCtrlID(IntPtr hWnd);
+	[LibraryImport("user32.dll")]
+	private static partial int GetDlgCtrlID(IntPtr hWnd);
 
-	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
-	private static extern int GetWindowTextLength(IntPtr hWnd);
+	[LibraryImport("user32.dll", EntryPoint = "GetWindowTextLengthW")]
+	private static partial int GetWindowTextLength(IntPtr hWnd);
 
-	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
-	private static extern int GetWindowText(IntPtr hWnd, [Out] char[] lpString, int nMaxCount);
+	[LibraryImport("user32.dll", EntryPoint = "GetWindowTextW", StringMarshalling = StringMarshalling.Utf16)]
+	private static partial int GetWindowText(IntPtr hWnd, [Out] char[] lpString, int nMaxCount);
 
-	[DllImport("user32.dll", CharSet = CharSet.Unicode)]
-	private static extern int GetClassName(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
+	[LibraryImport("user32.dll", EntryPoint = "GetClassNameW", StringMarshalling = StringMarshalling.Utf16)]
+	private static partial int GetClassName(IntPtr hWnd, [Out] char[] lpClassName, int nMaxCount);
 
-	[DllImport("user32.dll")]
-	private static extern bool PostMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+	[LibraryImport("user32.dll", EntryPoint = "PostMessageW")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool PostMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
 }
