@@ -888,13 +888,18 @@ public class Item
 	#region Item Public Static Methods
 
 
+	/// <summary>Highest item seed: the seeds in the player files are limited to 0x7FFF.</summary>
+	public const int MaxSeed = 0x7FFF;
+
+	/// <summary>Whether a seed can be given to an item: from 1 to <see cref="MaxSeed"/>.</summary>
+	public static bool IsValidSeed(int seed) => seed is >= 1 and <= MaxSeed;
+
 	/// <summary>
 	/// Generates a new seed that can be used on a new item
 	/// </summary>
-	/// <returns>New seed from 0 to 0x7FFF</returns>
+	/// <returns>New seed from 1 to <see cref="MaxSeed"/></returns>
 	public static int GenerateSeed()
-		// The seed values in the player files seem to be limitted to 0x00007fff or less.
-		=> random.Next(0x00007fff);
+		=> random.Next(1, MaxSeed + 1);
 
 	#endregion Item Public Static Methods
 

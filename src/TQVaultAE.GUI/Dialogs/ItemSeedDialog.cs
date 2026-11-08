@@ -100,8 +100,7 @@ internal sealed partial class ItemSeedDialog : VaultForm
 	private void OKButton_Click(object? sender, EventArgs e)
 	{
 		// Get the seed value in the textbox
-		int newSeed;
-		if (int.TryParse(this.itemSeedBox.Text, out newSeed) && newSeed > 0 && newSeed < 0x7fff)
+		if (int.TryParse(this.itemSeedBox.Text, NumberStyles.Integer, CultureInfo.CurrentCulture, out int newSeed) && Item.IsValidSeed(newSeed))
 		{
 			this.selectedItem.Seed = newSeed;
 			this.selectedItem.IsModified = true;
