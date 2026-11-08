@@ -18,10 +18,10 @@ public enum SaveDecision
 	/// <summary>Stops the whole save: the file error is rethrown.</summary>
 	Abort,
 
-	/// <summary>Runs the failed step again, the other steps are not repeated.</summary>
+	/// <summary>Writes the failed file again; the files already saved are not written again.</summary>
 	Retry,
 
-	/// <summary>Gives up the failed step, which counts as nothing saved, and goes on with the next steps.</summary>
+	/// <summary>Gives up the failed file, which stays unsaved, and goes on with the next files.</summary>
 	Ignore,
 }
 
@@ -29,9 +29,10 @@ public enum SaveDecision
 /// A file that could not be written during a save.
 /// </summary>
 /// <param name="Step">The step that failed.</param>
-/// <param name="Name">The name of the character, vault or stash being saved, when known.</param>
-/// <param name="Exception">The file error.</param>
-public sealed record SaveError(SaveStep Step, string? Name, IOException Exception);
+/// <param name="Name">The name of the character, vault or stash being saved.</param>
+/// <param name="Exception">The file error: an <see cref="IOException"/> (file locked, disk full, path not found)
+/// or an <see cref="UnauthorizedAccessException"/> (read-only file, no permission, protected folder).</param>
+public sealed record SaveError(SaveStep Step, string? Name, Exception Exception);
 
 /// <summary>
 /// The state of the session written to the user settings after the files.
@@ -62,17 +63,17 @@ public sealed record SaveRequest(bool Files, SessionConfiguration? Configuration
 public sealed class SaveResult
 {
 	/// <summary>
-	/// Gets whether characters were saved. False when the character step was ignored after an error.
+	/// Gets whether characters were saved. False when every modified character failed and was ignored.
 	/// </summary>
 	public bool PlayersSaved { get; init; }
 
 	/// <summary>
-	/// Gets the number of vaults saved by the last run of the vault step.
+	/// Gets the number of vaults saved; the ignored ones are not counted.
 	/// </summary>
 	public int VaultsSaved { get; init; }
 
 	/// <summary>
-	/// Gets the number of stashes saved by the last run of the stash step.
+	/// Gets the number of stashes saved; the ignored ones are not counted.
 	/// </summary>
 	public int StashesSaved { get; init; }
 

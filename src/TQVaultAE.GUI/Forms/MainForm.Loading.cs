@@ -85,7 +85,8 @@ public partial class MainForm
 	}
 
 	/// <summary>
-	/// Logs a file error of a save and asks the user: Abort rethrows, Retry saves that step again, Ignore gives it up.
+	/// Logs a file error of a save and asks the user: Abort rethrows, Retry writes that file again, Ignore leaves it unsaved
+	/// and goes on with the next files.
 	/// </summary>
 	private SaveDecision AskSaveDecision(SaveError error)
 	{

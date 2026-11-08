@@ -147,39 +147,23 @@ public class PlayerService(
 	public StashLoadResult LoadPlayerStash(PlayerSave playerSave, bool fromFileWatcher = false)
 		=> StashService.LoadPlayerStash(playerSave, fromFileWatcher);
 
-	/// <summary>
-	/// Attempts to save all modified player files.
-	/// </summary>
-	/// <param name="playerOnError">If save fails, this will contain the player that failed.</param>
-	/// <returns>True if there were any modified player files.</returns>
-	/// <exception cref="IOException">can happen during file save</exception>
-	public bool SaveAllModifiedPlayers(ref PlayerCollection? playerOnError)
+	/// <inheritdoc/>
+	public IReadOnlyList<(string File, PlayerCollection Player)> GetModifiedPlayers()
+		=> [.. this.userContext.Players
+			.Select(kvp => (File: kvp.Key, Player: kvp.Value.Value))
+			.Where(p => p.Player is not null && p.Player.IsModified)];
+
+	/// <inheritdoc/>
+	public void SaveModifiedPlayer(string file, PlayerCollection player)
 	{
-		int numModified = 0;
-
-		// Save each player as necessary
-		foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in this.userContext.Players)
+		if (!this.UserSettings.DisableLegacyBackup)
 		{
-			string playerFile = kvp.Key;
-			PlayerCollection player = kvp.Value.Value;
-
-			if (player is null) continue;
-
-			if (player.IsModified)
-			{
-				++numModified;
-				playerOnError = player;// if needed by caller
-				if (!this.UserSettings.DisableLegacyBackup)
-				{
-					GameFileService.BackupFile(player.PlayerName, playerFile);
-					GameFileService.BackupStupidPlayerBackupFolder(playerFile);
-				}
-				PlayerCollectionProvider.Save(player, playerFile);
-				player.Saved();
-			}
+			this.GameFileService.BackupFile(player.PlayerName, file);
+			this.GameFileService.BackupStupidPlayerBackupFolder(file);
 		}
 
-		return numModified > 0;
+		this.PlayerCollectionProvider.Save(player, file);
+		player.Saved();
 	}
 
 	/// <summary>

@@ -92,12 +92,16 @@ public interface IVaultService
 	bool RenameVault(string oldName, string newName);
 
 	/// <summary>
-	/// Attempts to save all modified vault files.
+	/// Gets the loaded vaults that have unsaved changes, with their file.
 	/// </summary>
-	/// <param name="vaultOnError">If save fails, this will contain the vault that failed.</param>
-	/// <returns>Number of vaults saved.</returns>
-	/// <exception cref="IOException">can happen during file save</exception>
-	int SaveAllModifiedVaults(ref PlayerCollection? vaultOnError);
+	IReadOnlyList<(string File, PlayerCollection Vault)> GetModifiedVaults();
+
+	/// <summary>
+	/// Backs up (unless legacy backups are disabled) and saves one vault file, then marks the vault saved.
+	/// </summary>
+	/// <exception cref="IOException">The file could not be written.</exception>
+	/// <exception cref="UnauthorizedAccessException">The file or folder cannot be written to.</exception>
+	void SaveModifiedVault(string file, PlayerCollection vault);
 
 	/// <summary>
 	/// Updates VaultPath key from the configuration UI.

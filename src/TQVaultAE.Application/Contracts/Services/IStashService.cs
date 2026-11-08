@@ -28,12 +28,16 @@ public interface IStashService
 	StashLoadResult LoadTransferStash(bool fromFileWatcher = false);
 
 	/// <summary>
-	/// Attempts to save all modified stash files.
+	/// Gets the loaded stashes that have unsaved changes, with their file.
 	/// </summary>
-	/// <param name="stashOnError">If save fails, this will contain the stash that failed.</param>
-	/// <returns>Number of stash saved.</returns>
-	/// <exception cref="IOException">can happen during file save</exception>
-	int SaveAllModifiedStashes(ref Stash? stashOnError);
+	IReadOnlyList<(string File, Stash Stash)> GetModifiedStashes();
+
+	/// <summary>
+	/// Backs up (unless legacy backups are disabled) and saves one stash file and its .dxg twin, then marks the stash saved.
+	/// </summary>
+	/// <exception cref="IOException">The file could not be written.</exception>
+	/// <exception cref="UnauthorizedAccessException">The file or folder cannot be written to.</exception>
+	void SaveModifiedStash(string file, Stash stash);
 
 	/// <summary>
 	/// Creates a file watcher for the relic vault stash file.

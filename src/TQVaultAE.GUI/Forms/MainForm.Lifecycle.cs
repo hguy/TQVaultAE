@@ -80,8 +80,9 @@ public partial class MainForm
 
 			ok = true;
 		}
-		catch (IOException exception)
+		catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
 		{
+			// The user chose Abort after a file error: the window stays open.
 			Log.LogError(exception, "Save files failed !");
 			this.Services.MessageBoxes.ShowException(exception, icon: MessageBoxIcon.None);
 		}

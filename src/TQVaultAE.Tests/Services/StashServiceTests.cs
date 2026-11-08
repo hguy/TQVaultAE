@@ -262,14 +262,11 @@ public class StashServiceTests
 
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => stash);
 
-		Stash? stashOnError = null;
-
 		// Act
-		var result = _stashService.SaveAllModifiedStashes(ref stashOnError);
+		var result = this.SaveAllModifiedStashes();
 
 		// Assert
 		result.Should().Be(0);
-		stashOnError.Should().BeNull();
 		_mockStashProvider.Verify(x => x.Save(It.IsAny<Stash>(), It.IsAny<string>()), Times.Never);
 	}
 
@@ -289,17 +286,15 @@ public class StashServiceTests
 
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => stash);
 
-		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		try
 		{
 			// Act
-			var result = _stashService.SaveAllModifiedStashes(ref stashOnError);
+			var result = this.SaveAllModifiedStashes();
 
 			// Assert
 			result.Should().Be(1);
-			stashOnError.Should().Be(stash);
 			_mockGameFileService.Verify(x => x.BackupFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 			_mockStashProvider.Verify(x => x.Save(stash, "TestPlayer.dxb"), Times.Once);
 			stash.IsModified.Should().BeFalse();
@@ -326,15 +321,13 @@ public class StashServiceTests
 
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => stash);
 
-		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = false;
 
 		// Act
-		var result = _stashService.SaveAllModifiedStashes(ref stashOnError);
+		var result = this.SaveAllModifiedStashes();
 
 		// Assert
 		result.Should().Be(1);
-		stashOnError.Should().Be(stash);
 		_mockGameFileService.Verify(x => x.BackupFile("TestPlayer - Immortal Throne", "TestPlayer.dxb"), Times.Once);
 		_mockStashProvider.Verify(x => x.Save(stash, "TestPlayer.dxb"), Times.Once);
 		stash.IsModified.Should().BeFalse();
@@ -364,13 +357,12 @@ public class StashServiceTests
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer1.dxb", _ => stash1);
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer2.dxb", _ => stash2);
 
-		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		try
 		{
 			// Act
-			var result = _stashService.SaveAllModifiedStashes(ref stashOnError);
+			var result = this.SaveAllModifiedStashes();
 
 			// Assert
 			result.Should().Be(2);
@@ -394,14 +386,11 @@ public class StashServiceTests
 		// Arrange
 		_sessionContext.Stashes.GetOrAddAtomic("TestPlayer.dxb", _ => null!);
 
-		Stash? stashOnError = null;
-
 		// Act
-		var result = _stashService.SaveAllModifiedStashes(ref stashOnError);
+		var result = this.SaveAllModifiedStashes();
 
 		// Assert
 		result.Should().Be(0);
-		stashOnError.Should().BeNull();
 	}
 
 	/// <summary>
@@ -605,12 +594,12 @@ public class StashServiceTests
 		_mockStashProvider.Setup(x => x.Save(It.IsAny<Stash>(), It.IsAny<string>()))
 			.Throws(new IOException("Disk full"));
 
-		Stash? stashOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		// Act & Assert
-		var act = () => _stashService.SaveAllModifiedStashes(ref stashOnError);
+		var act = () => this.SaveAllModifiedStashes();
 		act.Should().Throw<IOException>();
+		stash.IsModified.Should().BeTrue("a failed save keeps the stash modified, so Retry and the next save write it again");
 	}
 
 	/// <summary>
@@ -688,5 +677,17 @@ public class StashServiceTests
 		_stashService.GetBagSack(BagIdConstants.BAGID_PLAYERSTASH, null, null, emptyStash, null).Should().BeNull();
 		_stashService.GetBagSack(BagIdConstants.BAGID_TRANSFERSTASH, null, null, emptyStash, null).Should().BeNull();
 		_stashService.GetBagSack(BagIdConstants.BAGID_EQUIPMENTPANEL, null, null, emptyStash, null).Should().BeNull();
+	}
+
+	/// <summary>
+	/// Saves every modified file the way the save orchestrator does, one by one.
+	/// </summary>
+	private int SaveAllModifiedStashes()
+	{
+		var modified = this._stashService.GetModifiedStashes();
+		foreach (var (file, stash) in modified)
+			this._stashService.SaveModifiedStash(file, stash);
+
+		return modified.Count;
 	}
 }

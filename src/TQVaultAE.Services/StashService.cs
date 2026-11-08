@@ -178,36 +178,20 @@ public class StashService(
 		return result;
 	}
 
-	/// <summary>
-	/// Attempts to save all modified stash files.
-	/// </summary>
-	/// <param name="stashOnError">If save fails, this will contain the stash that failed.</param>
-	/// <returns>Number of stash saved.</returns>
-	/// <exception cref="IOException">can happen during file save</exception>
-	public int SaveAllModifiedStashes(ref Stash? stashOnError)
+	/// <inheritdoc/>
+	public IReadOnlyList<(string File, Stash Stash)> GetModifiedStashes()
+		=> [.. this.userContext.Stashes
+			.Select(kvp => (File: kvp.Key, Stash: kvp.Value.Value))
+			.Where(s => s.Stash is not null && s.Stash.IsModified)];
+
+	/// <inheritdoc/>
+	public void SaveModifiedStash(string file, Stash stash)
 	{
-		// Save each stash as necessary
-		int saved = 0;
-		foreach (KeyValuePair<string, Lazy<Stash>> kvp in userContext.Stashes)
-		{
-			string stashFile = kvp.Key;
-			Stash stash = kvp.Value.Value;
+		if (!this.UserSettings.DisableLegacyBackup)
+			this.GameFileService.BackupFile(stash.PlayerName, file);
 
-			if (stash is null) continue;
-
-			if (stash.IsModified)
-			{
-				stashOnError = stash;
-
-				if (!UserSettings.DisableLegacyBackup)
-					GameFileService.BackupFile(stash.PlayerName, stashFile);
-
-				StashProvider.Save(stash, stashFile);
-				stash.Saved();
-				saved++;
-			}
-		}
-		return saved;
+		this.StashProvider.Save(stash, file);
+		stash.Saved();
 	}
 
 	/// <summary>
