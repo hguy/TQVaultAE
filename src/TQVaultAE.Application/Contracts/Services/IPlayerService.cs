@@ -61,4 +61,16 @@ public interface IPlayerService
 	/// <param name="oldPath">The old file path of the player.</param>
 	/// <param name="newPath">The new file path of the player.</param>
 	void UpdatePlayerFilePath(string oldPath, string newPath);
+
+	/// <summary>
+	/// Archives a character (moves its save folder) and keys the loaded player by its new file path.
+	/// </summary>
+	/// <returns><see langword="true"/> when the save was archived.</returns>
+	bool Archive(PlayerSave ps);
+
+	/// <summary>
+	/// Unarchives a character (moves its save folder back) and keys the loaded player by its new file path.
+	/// </summary>
+	/// <returns><see langword="true"/> when the save was unarchived.</returns>
+	bool Unarchive(PlayerSave ps);
 }

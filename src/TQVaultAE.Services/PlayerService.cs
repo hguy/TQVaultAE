@@ -284,4 +284,24 @@ public class PlayerService : IPlayerService
 			}
 		}
 	}
+
+	/// <inheritdoc/>
+	public bool Archive(PlayerSave ps) => this.MoveSave(ps, archive: true);
+
+	/// <inheritdoc/>
+	public bool Unarchive(PlayerSave ps) => this.MoveSave(ps, archive: false);
+
+	/// <summary>
+	/// Archives or unarchives a save, then moves the loaded player from its old file path to the new one, so the player
+	/// is found, saved and reloaded at its new place.
+	/// </summary>
+	private bool MoveSave(PlayerSave ps, bool archive)
+	{
+		var oldPath = this.GamePathResolver.GetPlayerFile(ps.Name, ps.IsImmortalThrone, !archive);
+		bool moved = archive ? this.GameFileService.Archive(ps) : this.GameFileService.Unarchive(ps);
+		if (moved)
+			this.UpdatePlayerFilePath(oldPath, this.GamePathResolver.GetPlayerFile(ps.Name, ps.IsImmortalThrone, archive));
+
+		return moved;
+	}
 }
