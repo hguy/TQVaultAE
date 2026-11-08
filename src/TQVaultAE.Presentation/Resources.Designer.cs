@@ -4652,6 +4652,15 @@ namespace TQVaultAE.Presentation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You must enter a valid Git Url..
+        /// </summary>
+        public static string SettingsGitRepositoryUrlInvalid {
+            get {
+                return ResourceManager.GetString("SettingsGitRepositoryUrlInvalid", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to How to play....
         /// </summary>
         public static string SettingsHowToPlay {

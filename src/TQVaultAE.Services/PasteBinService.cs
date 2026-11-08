@@ -27,7 +27,7 @@ public class PasteBinService : IPasteBinService
 			["api_option"] = "paste",
 			["api_paste_code"] = text,
 			["api_paste_private"] = "1",
-			["api_paste_expire_date"] = _userSettings.PasteBinExpiration ?? "1M"
+			["api_paste_expire_date"] = _userSettings.PasteBinExpiration ?? UserSettings.DefaultPasteBinExpiration
 		};
 
 		if (!string.IsNullOrWhiteSpace(pasteName))

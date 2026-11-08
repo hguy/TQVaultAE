@@ -166,8 +166,13 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(PasteBinApiKey))]
 	public string PasteBinApiKey { get; set; } = string.Empty;
 
+	/// <summary>
+	/// PasteBin expiration used when none is set: one month.
+	/// </summary>
+	public const string DefaultPasteBinExpiration = "1M";
+
 	[XmlElement(ElementName = nameof(PasteBinExpiration))]
-	public string PasteBinExpiration { get; set; } = "1M";
+	public string PasteBinExpiration { get; set; } = DefaultPasteBinExpiration;
 
 	#endregion
 
