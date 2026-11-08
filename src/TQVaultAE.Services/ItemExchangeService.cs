@@ -16,12 +16,18 @@ public class ItemExchangeService(
 	, IPasteBinService pasteBinService = null!
 	, UserSettings userSettings = null!
 	, IItemProvider itemProvider = null!
+	, IItemMovementService itemMovementService = null!
+	, IFileIO fileIO = null!
+	, IVaultService vaultService = null!
 ) : IItemExchangeService
 {
 	private readonly JsonSerializerOptions _jsonOptions = jsonOptions;
 	private readonly IPasteBinService _pasteBinService = pasteBinService;
 	private readonly UserSettings _userSettings = userSettings;
 	private readonly IItemProvider _itemProvider = itemProvider;
+	private readonly IItemMovementService _itemMovementService = itemMovementService;
+	private readonly IFileIO _fileIO = fileIO;
+	private readonly IVaultService _vaultService = vaultService;
 
 	public string SerializeItem(Item item)
 	{
@@ -254,5 +260,118 @@ public class ItemExchangeService(
 
 		var payload = await _pasteBinService.FetchPasteAsync(pasteUrl);
 		return payload;
+	}
+
+	public async Task<ImportResult> ImportFromTextAsync(string text)
+	{
+		if (string.IsNullOrWhiteSpace(text))
+			return ImportResult.Failed("Nothing to import.");
+
+		var trimmed = text.Trim();
+		if (!this.IsPasteBinUrl(trimmed))
+			return this.ImportFromJson(text);
+
+		string json;
+		try
+		{
+			json = await this.ImportFromPasteBinAsync(trimmed);
+		}
+		catch (Exception ex)
+		{
+			return ImportResult.Failed($"Failed to import from PasteBin: {ex.Message}");
+		}
+
+		return this.ImportFromJson(json);
+	}
+
+	public ImportResult ImportFromFile(string path)
+		=> this.ImportFromJson(this._fileIO.ReadAllText(path));
+
+	public void ExportVaultToFile(PlayerCollection vault, string path)
+		=> this._fileIO.WriteAllText(path, this.SerializePlayerCollection(vault));
+
+	public int PlaceImportedItems(SackCollection sack, ImportResult importResult, int sackWidth, int sackHeight)
+	{
+		IReadOnlyList<Item> items = importResult.Scope == ExportScope.Item
+			? (importResult.Item is { } single ? [single] : [])
+			: importResult.Items;
+
+		var imported = 0;
+		foreach (var item in items)
+		{
+			var x = Math.Max(0, item.PositionX);
+			var y = Math.Max(0, item.PositionY);
+			var w = item.Width;
+			var h = item.Height;
+
+			if (!this.AreCellsFree(sack, x, y, w, h, sackWidth, sackHeight))
+			{
+				var pos = this._itemMovementService.FindOpenCells(sack, w, h, sackWidth, sackHeight);
+				if (pos.X < 0)
+					continue;
+
+				x = pos.X;
+				y = pos.Y;
+			}
+
+			item.PositionX = x;
+			item.PositionY = y;
+			sack.AddItem(item);
+			imported++;
+		}
+
+		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo != null)
+			sack.BagButtonIconInfo = importResult.TabIconInfo;
+
+		sack.IsModified = true;
+		return imported;
+	}
+
+	private bool AreCellsFree(SackCollection sack, int x, int y, int width, int height, int sackWidth, int sackHeight)
+	{
+		if (x < 0 || y < 0 || width < 1 || height < 1)
+			return false;
+
+		if (x + width > sackWidth || y + height > sackHeight)
+			return false;
+
+		for (var cx = x; cx < x + width; cx++)
+		{
+			for (var cy = y; cy < y + height; cy++)
+			{
+				if (this._itemMovementService.FindItem(sack, new System.Drawing.Point(cx, cy)) != null)
+					return false;
+			}
+		}
+
+		return true;
+	}
+
+	public bool IsVaultEmpty(PlayerCollection vault)
+	{
+		for (int i = 0; i < vault.NumberOfSacks; i++)
+		{
+			var sack = vault.GetSack(i);
+			if (sack != null && !sack.IsEmpty)
+				return false;
+		}
+
+		return true;
+	}
+
+	public string BuildImportedVaultName(string baseName, DateTime now)
+		=> $"{baseName}_{now.ToString("yyyyMMdd_HHmmss", System.Globalization.CultureInfo.InvariantCulture)}";
+
+	public string ImportAsNewVault(ImportResult importResult, DateTime now)
+	{
+		var newName = this.BuildImportedVaultName(importResult.VaultName, now);
+
+		var newVault = this._vaultService.CreateVault(newName);
+		this.ImportVaultInto(newVault, importResult);
+		foreach (var sack in newVault)
+			sack.IsModified = true;
+
+		this._vaultService.SaveVault(newVault, newName);
+		return newName;
 	}
 }

@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Globalization;
-using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.Presentation;
@@ -116,8 +115,7 @@ public partial class MainForm
 		{
 			try
 			{
-				var json = this.itemExchangeService.SerializePlayerCollection(vault);
-				System.IO.File.WriteAllText(saveDialog.FileName, json);
+				this.itemExchangeService.ExportVaultToFile(vault, saveDialog.FileName);
 				this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ExportVaultSuccessFile, saveDialog.FileName));
 			}
 			catch (Exception ex)
@@ -192,25 +190,31 @@ public partial class MainForm
 
 		try
 		{
-			var json = File.ReadAllText(dialog.FileName);
-			var result = this.itemExchangeService.ImportFromJson(json);
-
-			if (!result.Success)
-			{
-				this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
-				return;
-			}
-
-			if (result.Scope == ExportScope.Vault)
-				HandleVaultImportFromJson(result);
-			else
-				HandleNonVaultImport(result);
+			var result = this.itemExchangeService.ImportFromFile(dialog.FileName);
+			this.HandleImportResult(result);
 		}
 		catch (Exception ex)
 		{
 			Log.LogError(ex, "Failed to import from file");
 			this.UIService.NotifyUser(Resources.ImportFailFile);
 		}
+	}
+
+	/// <summary>
+	/// Shows the error of a failed import, or puts the imported items or vault in place.
+	/// </summary>
+	private void HandleImportResult(ImportResult result)
+	{
+		if (!result.Success)
+		{
+			this.UIService.NotifyUser(result.ErrorMessage ?? string.Empty);
+			return;
+		}
+
+		if (result.Scope == ExportScope.Vault)
+			this.HandleVaultImportFromJson(result);
+		else
+			this.HandleNonVaultImport(result);
 	}
 
 	private void HandleNonVaultImport(ImportResult importResult)
@@ -229,46 +233,14 @@ public partial class MainForm
 			return;
 		}
 
-		IReadOnlyList<Item> items = importResult.Scope == ExportScope.Item
-			? (importResult.Item is { } single ? [single] : [])
-			: importResult.Items;
-
-		var imported = 0;
-
-		foreach (var item in items)
-		{
-			var x = Math.Max(0, item.PositionX);
-			var y = Math.Max(0, item.PositionY);
-			var w = item.Width;
-			var h = item.Height;
-
-			if (sackPanel.IsCellAvailable(x, y, w, h))
-			{
-				item.PositionX = x;
-				item.PositionY = y;
-			}
-			else
-			{
-				var pos = sackPanel.FindOpenCells(w, h);
-				if (pos.X < 0)
-					continue;
-
-				item.PositionX = pos.X;
-				item.PositionY = pos.Y;
-			}
-
-			sack.AddItem(item);
-			imported++;
-		}
+		var imported = this.itemExchangeService.PlaceImportedItems(sack, importResult, sackPanel.SackSize.Width, sackPanel.SackSize.Height);
 
 		if (importResult.Scope == ExportScope.Tab && importResult.TabIconInfo != null)
 		{
-			sack.BagButtonIconInfo = importResult.TabIconInfo;
 			var button = this.vaultPanel.BagButtons[this.vaultPanel.CurrentBag];
 			button.ApplyIconInfo(sack);
 		}
 
-		sack.IsModified = true;
 		this.vaultPanel.Refresh();
 		this.UIService.NotifyUser(string.Format(CultureInfo.InvariantCulture, Resources.ImportSuccessCount, imported, importResult.TotalCount));
 	}
@@ -304,16 +276,7 @@ public partial class MainForm
 
 		if (result == createButton)
 		{
-			var baseName = importResult.VaultName;
-			var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss", CultureInfo.InvariantCulture);
-			var newName = $"{baseName}_{timestamp}";
-
-			var newVault = this.vaultService.CreateVault(newName);
-			this.itemExchangeService.ImportVaultInto(newVault, importResult);
-			foreach (var sack in newVault)
-				sack.IsModified = true;
-
-			this.vaultService.SaveVault(newVault, newName);
+			var newName = this.itemExchangeService.ImportAsNewVault(importResult, DateTime.Now);
 
 			this.GetVaultList(false);
 			this.vaultListComboBox.SelectedItem = newName;
@@ -323,18 +286,7 @@ public partial class MainForm
 			return;
 		}
 
-		var nonEmpty = false;
-		for (int i = 0; i < targetVault.NumberOfSacks; i++)
-		{
-			var sack = targetVault.GetSack(i);
-			if (sack != null && !sack.IsEmpty)
-			{
-				nonEmpty = true;
-				break;
-			}
-		}
-
-		if (nonEmpty)
+		if (!this.itemExchangeService.IsVaultEmpty(targetVault))
 		{
 			var warning = this.UIService.ShowWarning(
 				Resources.ImportVaultWarning,
