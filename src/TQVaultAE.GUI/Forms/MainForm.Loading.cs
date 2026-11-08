@@ -294,7 +294,8 @@ public partial class MainForm
 	{
 		token.ThrowIfCancellationRequested();
 
-		CommandLineArgs args = new CommandLineArgs();
+		var args = this.commandLineArgs;
+		args.ThrowIfInvalid();
 
 		// Check to see if we loaded something from the command line.
 		if (args.HasMapName)
@@ -380,7 +381,7 @@ public partial class MainForm
 		this.splashScreen.UpdateText();
 		this.splashScreen.ShowMainForm = true;
 
-		CommandLineArgs args = new CommandLineArgs();
+		var args = this.commandLineArgs;
 
 		// Allows skipping of title screen with setting
 		if (args.IsAutomatic || USettings.SkipTitle == true)
