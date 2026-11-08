@@ -157,4 +157,82 @@ public class PlayerLevel
 		}
 		throw new ArgumentOutOfRangeException(nameof(level), level, "Level does not exist or is not supported");
 	}
+
+	/// <summary>
+	/// Money the character gets at least when it unlocks Epic.
+	/// </summary>
+	public static int EpicMoneyFloor => 5000000;
+
+	/// <summary>
+	/// Money the character gets at least when it unlocks Legendary.
+	/// </summary>
+	public static int LegendaryMoneyFloor => 7500000;
+
+	/// <summary>
+	/// Number of masteries a character of <paramref name="level"/> may choose: none under 2, one under 8, else two.
+	/// </summary>
+	public static int GetMasteriesAllowed(int level)
+		=> level < 2 ? 0
+		: level < 8 ? 1
+		: 2;
+
+	/// <summary>
+	/// Attribute points invested in the base attributes over their minimum, which a reset of the attributes gives back.
+	/// </summary>
+	public static int GetInvestedAttributePoints(int strength, int dexterity, int intelligence, int health, int mana)
+		=> (strength - MinStrength) / AtrributeIncrementPerPoint
+		+ (dexterity - MinDexterity) / AtrributeIncrementPerPoint
+		+ (intelligence - MinIntelligence) / AtrributeIncrementPerPoint
+		+ (health - MinHealth) / HealthAndManaIncrementPerPoint
+		+ (mana - MinMana) / HealthAndManaIncrementPerPoint;
+
+	/// <summary>
+	/// Money of a character that unlocked another difficulty: at least 5M for Epic, 7.5M for Legendary.
+	/// </summary>
+	/// <param name="money">The money of the character.</param>
+	/// <param name="previousDifficulty">The difficulty unlocked before the edit.</param>
+	/// <param name="difficulty">The difficulty unlocked by the edit.</param>
+	public static int GetMoneyAfterDifficultyChange(int money, int previousDifficulty, int difficulty)
+	{
+		if (difficulty == previousDifficulty)
+			return money;
+
+		return difficulty switch
+		{
+			1 => Math.Max(money, EpicMoneyFloor),
+			2 => Math.Max(money, LegendaryMoneyFloor),
+			_ => money,
+		};
+	}
+
+	/// <summary>
+	/// The attribute and skill points a level change gives, or takes back when the level goes down.
+	/// </summary>
+	/// <param name="previousLevel">The level before the change.</param>
+	/// <param name="level">The new level.</param>
+	public static (int AttributePoints, int SkillPoints) GetLevelChangePoints(int previousLevel, int level)
+	{
+		var levels = level - previousLevel;
+		return (levels * AtrributePointsPerLevel, levels * SkillPointsPerLevel);
+	}
+
+	/// <summary>
+	/// The attribute point pool after a base attribute moved from <paramref name="previousValue"/> to
+	/// <paramref name="value"/>: raising it spends points, lowering it gives them back.
+	/// </summary>
+	/// <param name="previousValue">The attribute before the change.</param>
+	/// <param name="value">The attribute after the change.</param>
+	/// <param name="incrementPerPoint">How much of the attribute one point buys.</param>
+	/// <param name="pool">The attribute points left before the change.</param>
+	/// <param name="newPool">The attribute points left after the change.</param>
+	/// <returns>false when the pool cannot pay for the raise: the change must be undone.</returns>
+	public static bool TryChangeAttribute(int previousValue, int value, int incrementPerPoint, int pool, out int newPool)
+	{
+		newPool = pool + (previousValue - value) / incrementPerPoint;
+		if (newPool >= 0)
+			return true;
+
+		newPool = pool;
+		return false;
+	}
 }

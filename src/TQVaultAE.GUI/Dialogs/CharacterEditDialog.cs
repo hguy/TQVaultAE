@@ -1,4 +1,5 @@
 using TQVaultAE.Application;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Forms;
 
@@ -79,27 +80,6 @@ internal sealed partial class CharacterEditDialog : VaultForm
 	private void CancelButton_Click(object? sender, EventArgs e) => this.Close();
 
 	/// <summary>
-	/// 
-	/// </summary>
-	/// <param name="playerInfo"></param>
-	private void UpdateMoneySituation(PlayerInfo playerInfoSrc, PlayerInfo playerInfoDst)
-	{
-		if (playerInfoDst.DifficultyUnlocked != playerInfoSrc.DifficultyUnlocked)
-		{
-			if (playerInfoDst.DifficultyUnlocked == 1)
-			{
-				if (playerInfoDst.Money < 5000000)
-					playerInfoDst.Money = 5000000;
-			}
-			if (playerInfoDst.DifficultyUnlocked == 2)
-			{
-				if (playerInfoDst.Money < 7500000)
-					playerInfoDst.Money = 7500000;
-			}
-		}
-	}
-
-	/// <summary>
 	/// OK button handler
 	/// </summary>
 	/// <param name="sender">sender object</param>
@@ -115,63 +95,21 @@ internal sealed partial class CharacterEditDialog : VaultForm
 		if (PlayerCollection.PlayerInfo == null) return;
 		try
 		{
-			var playerInfo = new PlayerInfo(this.PathIO);
-			playerInfo.CurrentLevel = Convert.ToInt32(levelNumericUpDown.Value);
+			var request = new CharacterEditRequest(
+				Level: Convert.ToInt32(levelNumericUpDown.Value)
+				, XpText: xpTextBox.Text
+				, DifficultyUnlocked: difficultlyComboBox.Enabled ? difficultlyComboBox.SelectedIndex : null
+				, SkillPoints: Convert.ToInt32(skillPointsNumericUpDown.Value)
+				, AttributePoints: Convert.ToInt32(attributeNumericUpDown.Value)
+				, Strength: Convert.ToInt32(strengthUpDown.Value)
+				, Dexterity: Convert.ToInt32(dexterityUpDown.Value)
+				, Intelligence: Convert.ToInt32(intelligenceUpDown.Value)
+				, Health: Convert.ToInt32(healthUpDown.Value)
+				, Mana: Convert.ToInt32(manacUpDown.Value)
+				, ResetAttributes: mustResetAttributes
+				, ResetMasteries: masteriesResetRequired);
 
-			if (playerInfo.CurrentLevel < 2)
-				playerInfo.MasteriesAllowed = 0;
-			else if (playerInfo.CurrentLevel < 8)
-				playerInfo.MasteriesAllowed = 1;
-			else
-				playerInfo.MasteriesAllowed = 2;
-
-			playerInfo.CurrentXP = int.Parse(xpTextBox.Text);
-			playerInfo.Money = Info.Money > 0 ? Info.Money : 0;
-
-			if (difficultlyComboBox.Enabled)
-				playerInfo.DifficultyUnlocked = difficultlyComboBox.SelectedIndex;
-			else 
-				playerInfo.DifficultyUnlocked = Info.DifficultyUnlocked;
-
-			playerInfo.SkillPoints = Convert.ToInt32(skillPointsNumericUpDown.Value);
-			playerInfo.SkillRecordList.AddRange(Info.SkillRecordList);
-
-			playerInfo.AttributesPoints = Convert.ToInt32(attributeNumericUpDown.Value);
-			playerInfo.BaseStrength = Convert.ToInt32(strengthUpDown.Value);
-			playerInfo.BaseDexterity = Convert.ToInt32(dexterityUpDown.Value);
-			playerInfo.BaseIntelligence = Convert.ToInt32(intelligenceUpDown.Value);
-			playerInfo.BaseHealth = Convert.ToInt32(healthUpDown.Value);
-			playerInfo.BaseMana = Convert.ToInt32(manacUpDown.Value);
-
-			if (mustResetAttributes)
-			{
-				playerInfo.AttributesPoints = Info.AttributesPoints;
-				playerInfo.BaseStrength = PlayerLevel.MinStrength;
-				playerInfo.BaseDexterity = PlayerLevel.MinDexterity;
-				playerInfo.BaseIntelligence = PlayerLevel.MinIntelligence;
-				playerInfo.BaseHealth = PlayerLevel.MinHealth;
-				playerInfo.BaseMana = PlayerLevel.MinMana;
-
-				// Return invested points into attributes point pool
-				playerInfo.AttributesPoints += (Info.BaseStrength - PlayerLevel.MinStrength) / PlayerLevel.AtrributeIncrementPerPoint;
-				playerInfo.AttributesPoints += (Info.BaseDexterity - PlayerLevel.MinDexterity) / PlayerLevel.AtrributeIncrementPerPoint;
-				playerInfo.AttributesPoints += (Info.BaseIntelligence - PlayerLevel.MinIntelligence) / PlayerLevel.AtrributeIncrementPerPoint;
-				playerInfo.AttributesPoints += (Info.BaseHealth - PlayerLevel.MinHealth) / PlayerLevel.HealthAndManaIncrementPerPoint;
-				playerInfo.AttributesPoints += (Info.BaseMana - PlayerLevel.MinMana) / PlayerLevel.HealthAndManaIncrementPerPoint;
-			}
-
-			playerInfo.MasteriesResetRequiered = masteriesResetRequired;
-
-			if (playerInfo.MustResetMasteries)
-			{
-				playerInfo.ResetMasteries();
-
-				// Adjust "skillPoints"
-				playerInfo.SkillPoints += playerInfo.ReleasedSkillPoints;
-				playerInfo.Class = string.Empty;
-			}
-			UpdateMoneySituation(PlayerCollection.PlayerInfo, playerInfo);
-			PlayerCollectionProvider.CommitPlayerInfo(PlayerCollection, playerInfo);
+			this.Services.CharacterEditService.Apply(PlayerCollection, request);
 
 			this.Close();
 		}
@@ -183,6 +121,12 @@ internal sealed partial class CharacterEditDialog : VaultForm
 	}
 
 	private bool _loaded = false;
+
+	/// <summary>
+	/// The last value handled of each attribute and of the level, to compute the points of a change: the value
+	/// changed event gives the new value only.
+	/// </summary>
+	private readonly Dictionary<NumericUpDown, int> _previousValues = new();
 
 	private struct TagData
 	{
@@ -300,6 +244,9 @@ internal sealed partial class CharacterEditDialog : VaultForm
 			levelingCheckBox.Visible = false;
 		}
 
+		foreach (var upDown in new[] { strengthUpDown, dexterityUpDown, intelligenceUpDown, healthUpDown, manacUpDown, levelNumericUpDown })
+			this._previousValues[upDown] = Convert.ToInt32(upDown.Value);
+
 		_loaded = true;
 	}
 
@@ -310,14 +257,14 @@ internal sealed partial class CharacterEditDialog : VaultForm
 		try
 		{
 			var upDown = (NumericUpDown)sender!;
-			var prevLvl = Convert.ToInt32(upDown.Text);
+			var prevLvl = this._previousValues[upDown];
 			var level = Convert.ToInt32(upDown.Value);
+			this._previousValues[upDown] = level;
+
 			var xp = PlayerLevel.GetLevelMinXP(level);
 			xpTextBox.Text = string.Format("{0}", (xp + 1));
 
-			var dif = level - prevLvl;
-			var attr = dif * PlayerLevel.AtrributePointsPerLevel;
-			var skills = dif * PlayerLevel.SkillPointsPerLevel;
+			var (attr, skills) = PlayerLevel.GetLevelChangePoints(prevLvl, level);
 
 			var newAttr = attributeNumericUpDown.Value + attr;
 
@@ -349,20 +296,18 @@ internal sealed partial class CharacterEditDialog : VaultForm
 		var upDwnCtrl = (NumericUpDown)sender!;
 		if (upDwnCtrl.Tag == null) return;
 
-		var prevValue = Convert.ToInt32(((UpDownBase)sender!).Text);
+		var prevValue = this._previousValues[upDwnCtrl];
 		var value = Convert.ToInt32(upDwnCtrl.Value);
 
-		var dif = prevValue - value;
-
 		var tag = (TagData)upDwnCtrl.Tag;
-		var newValue = Convert.ToInt32(dif / tag.IncrementValue);
-		var newAttr = attributeNumericUpDown.Value + newValue;
-
-		if (newAttr < 0)
+		if (!PlayerLevel.TryChangeAttribute(prevValue, value, tag.IncrementValue, Convert.ToInt32(attributeNumericUpDown.Value), out var newAttr))
 		{
-			((NumericUpDown)sender!).Value = prevValue;
+			// Not enough points: undo, which raises this handler again with no change.
+			upDwnCtrl.Value = prevValue;
 			return;
 		}
+
+		this._previousValues[upDwnCtrl] = value;
 
 		if (newAttr <= Convert.ToInt32(attributeNumericUpDown.Maximum)
 		    && newAttr >= Convert.ToInt32(attributeNumericUpDown.Minimum))
