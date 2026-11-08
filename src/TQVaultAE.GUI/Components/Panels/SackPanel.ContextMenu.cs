@@ -6,6 +6,7 @@
 
 using System.Collections.ObjectModel;
 using System.Globalization;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Forms;
@@ -208,35 +209,27 @@ public partial class SackPanel
 	private void AddItemSetMenuItems(Item focusedItem)
 	{
 		// If the item is a set item, then add a menu to create the rest of the set
-		var setItems = ItemProvider.GetSetItems(focusedItem);
-		if (setItems?.setMembers is { Count: > 0 })
+		var setMembers = this.Services.AffixCatalogService.GetSetMemberChoices(focusedItem);
+		if (setMembers.Count > 0)
 		{
 			var choices = new List<ToolStripItem>();
-			foreach (var setPiece in setItems.setMembers)
+			foreach (var setMember in setMembers)
 			{
-				// do not put the current item in the menu
-				var setPieceId = setPiece.Key.ToRecordId();
-				if (focusedItem.BaseItemId == setPieceId) continue;
-
-				// Get the name of the item
-				Info info = setPiece.Value;
-				if (info is null) continue;
-
 				var choice = new ToolStripMenuItem()
 				{
-					Text = this.TranslationService.TranslateXTag(info.DescriptionTag),
-					Name = setPiece.Key,
+					Text = setMember.Label,
+					Name = setMember.RecordId,
 					BackColor = this.CustomContextMenu.BackColor,
 					Font = this.CustomContextMenu.Font,
 					ForeColor = this.CustomContextMenu.ForeColor,
-					ToolTipText = setPiece.Key,
+					ToolTipText = setMember.RecordId,
 				};
 				choice.Click += NewSetItemClicked;
 
 				choices.Add(choice);
 			}
 
-			var subMenu = new ToolStripMenuItem(Resources.SackPanelMenuSet, null, choices.OrderBy(i => i.Text).ToArray())
+			var subMenu = new ToolStripMenuItem(Resources.SackPanelMenuSet, null, choices.ToArray())
 			{
 				BackColor = this.CustomContextMenu.BackColor,
 				Font = this.CustomContextMenu.Font,
@@ -250,143 +243,82 @@ public partial class SackPanel
 
 	private void AddSocketedItemCompletionBonusMenuItems(Item focusedItem)
 	{
-		// If the item contains completed relic/charm 
+		// If the item contains completed relic/charm
 		// add a menu of possible completion bonuses to choose from.
-		if (ItemProvider.BonusTableSocketedRelic(focusedItem, out var ltrel1, out var ltrel2))
-		{
-			var text = $"{Resources.SackPanelMenuBonus} {TranslationService.TranslateXTag("tagRelic")}";
+		var (relic1, relic2) = this.Services.AffixCatalogService.GetSocketedBonusChoices(focusedItem);
+		var text = $"{Resources.SackPanelMenuBonus} {TranslationService.TranslateXTag("tagRelic")}";
 
-			if (ltrel1 is { Length: > 0 })
-				BuildMenu(focusedItem, ltrel1, $"{text} 1", true);
+		if (relic1.Count > 0)
+			this.AddBonusMenu(relic1, $"{text} 1", ChangeSocketedBonusItemClicked, true);
 
-			if (ltrel2 is { Length: > 0 })
-				BuildMenu(focusedItem, ltrel2, $"{text} 2", false);
-
-		}
-
-		void BuildMenu(Item itm, LootTableCollection table, string menuText, bool isRelic1)
-		{
-			var choices = new List<ToolStripItem>();
-			foreach (var tableitem in table)
-			{
-				var choice = new ToolStripMenuItem()
-				{
-					Text = string.Format("{2} : {0} ({1:p2}) {3}"
-						, tableitem.Key.PrettyFileName
-						, tableitem.Value.WeightPercent
-						, tableitem.Value.LootRandomizer.Translation
-						, tableitem.Key.Dlc.GetSuffix()
-					),
-					Name = tableitem.Key.Raw,
-					BackColor = this.CustomContextMenu.BackColor,
-					Font = this.CustomContextMenu.Font,
-					ForeColor = this.CustomContextMenu.ForeColor,
-					ToolTipText = tableitem.Key.Raw,
-					Tag = isRelic1,
-					DisplayStyle = ToolStripItemDisplayStyle.ImageAndText
-				};
-				choice.Click += ChangeSocketedBonusItemClicked;
-
-				if (tableitem.Value.LootRandomizer.Unknown)
-				{
-					choice.Image = this.CustomContextMenuAffixUnknown;
-					choice.ToolTipText = "Unknown : " + choice.ToolTipText;
-				}
-				else if (tableitem.Value.LootRandomizer.TranslationTagIsEmpty)
-				{
-					choice.Image = this.CustomContextMenuAffixUntranslated;
-					choice.ToolTipText = "No Translation : " + choice.ToolTipText;
-				}
-
-				// make the currently selected bonus bold
-				var relicId = isRelic1 ? itm.RelicBonusId : itm.RelicBonus2Id;
-				if (tableitem.Key == relicId)
-				{
-					choice.Font = new Font(choice.Font, FontStyle.Bold);
-					choice.BackColor = ControlPaint.Dark(choice.BackColor);
-				}
-
-				choices.Add(choice);
-			}
-
-			var subMenu = new ToolStripMenuItem(menuText, null, choices.OrderBy(i => i.Text).ToArray())
-			{
-				BackColor = this.CustomContextMenu.BackColor,
-				Font = this.CustomContextMenu.Font,
-				ForeColor = this.CustomContextMenu.ForeColor,
-				DisplayStyle = ToolStripItemDisplayStyle.Text,
-			};
-
-			this.CustomContextMenu.Items.Add(subMenu);
-		}
+		if (relic2.Count > 0)
+			this.AddBonusMenu(relic2, $"{text} 2", ChangeSocketedBonusItemClicked, false);
 	}
 
 	private void AddRelicOrArticaftCompletionBonusMenuItems(Item focusedItem)
 	{
 		// If the item is a completed relic/charm/artifact then
 		// add a menu of possible completion bonuses to choose from.
-		if ((focusedItem.IsRelicOrCharm && focusedItem.IsRelicComplete)
-			|| focusedItem.IsArtifact
-		)
+		var choices = this.Services.AffixCatalogService.GetCompletionBonusChoices(focusedItem);
+		if (choices.Count > 0)
+			this.AddBonusMenu(choices, Resources.SackPanelMenuBonus, ChangeBonusItemClicked, null);
+	}
+
+	/// <summary>
+	/// Adds a sub menu listing completion bonuses.
+	/// </summary>
+	/// <param name="bonuses">The bonuses, already sorted.</param>
+	/// <param name="menuText">Text of the sub menu.</param>
+	/// <param name="handler">Click handler of each bonus.</param>
+	/// <param name="tag">Tag of each bonus menu item (which socket for socketed relics).</param>
+	private void AddBonusMenu(IReadOnlyList<BonusChoice> bonuses, string menuText, EventHandler handler, object? tag)
+	{
+		var choices = new List<ToolStripItem>();
+		foreach (var bonus in bonuses)
 		{
-			LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
-			if (table is { Length: > 0 })
+			var choice = new ToolStripMenuItem()
 			{
-				var choices = new List<ToolStripItem>();
-				foreach (var tableitem in table)
-				{
-					var choice = new ToolStripMenuItem()
-					{
-						Text = string.Format("{0} : {1} ({2:p2}) {3}"
-							, tableitem.Value.LootRandomizer.Translation
-							, tableitem.Key.PrettyFileName
-							, tableitem.Value.WeightPercent
-							, tableitem.Key.Dlc.GetSuffix()
-						),
-						Name = tableitem.Key.Raw,
-						BackColor = this.CustomContextMenu.BackColor,
-						Font = this.CustomContextMenu.Font,
-						ForeColor = this.CustomContextMenu.ForeColor,
-						ToolTipText = tableitem.Key.Raw,
-						DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
-					};
-					choice.Click += ChangeBonusItemClicked;
+				Text = bonus.Label,
+				Name = bonus.Id.Raw,
+				BackColor = this.CustomContextMenu.BackColor,
+				Font = this.CustomContextMenu.Font,
+				ForeColor = this.CustomContextMenu.ForeColor,
+				ToolTipText = bonus.Id.Raw,
+				Tag = tag,
+				DisplayStyle = ToolStripItemDisplayStyle.ImageAndText,
+			};
+			choice.Click += handler;
 
-					if (tableitem.Value.LootRandomizer.Unknown)
-					{
-						choice.Image = this.CustomContextMenuAffixUnknown;
-						choice.ToolTipText = "Unknown : " + choice.ToolTipText;
-					}
-					else if (tableitem.Value.LootRandomizer.TranslationTagIsEmpty)
-					{
-						choice.Image = this.CustomContextMenuAffixUntranslated;
-						choice.ToolTipText = "No Translation : " + choice.ToolTipText;
-					}
-
-					// make the currently selected bonus bold
-					if (tableitem.Key == focusedItem.RelicBonusId)
-					{
-						choice.Font = new Font(choice.Font, FontStyle.Bold);
-						choice.BackColor = ControlPaint.Dark(choice.BackColor);
-					}
-
-					choices.Add(choice);
-				}
-
-				var subMenu = new ToolStripMenuItem()
-				{
-					Text = Resources.SackPanelMenuBonus,
-					BackColor = this.CustomContextMenu.BackColor,
-					Font = this.CustomContextMenu.Font,
-					ForeColor = this.CustomContextMenu.ForeColor,
-					DisplayStyle = ToolStripItemDisplayStyle.Text,
-				};
-
-				subMenu.DropDownItems.AddRange(choices.OrderBy(i => i.Text).ToArray());
-
-				this.CustomContextMenu.Items.Add(subMenu);
+			if (bonus.Unknown)
+			{
+				choice.Image = this.CustomContextMenuAffixUnknown;
+				choice.ToolTipText = "Unknown : " + choice.ToolTipText;
 			}
+			else if (bonus.Untranslated)
+			{
+				choice.Image = this.CustomContextMenuAffixUntranslated;
+				choice.ToolTipText = "No Translation : " + choice.ToolTipText;
+			}
+
+			// make the currently selected bonus bold
+			if (bonus.IsCurrent)
+			{
+				choice.Font = new Font(choice.Font, FontStyle.Bold);
+				choice.BackColor = ControlPaint.Dark(choice.BackColor);
+			}
+
+			choices.Add(choice);
 		}
+
+		var subMenu = new ToolStripMenuItem(menuText, null, choices.ToArray())
+		{
+			BackColor = this.CustomContextMenu.BackColor,
+			Font = this.CustomContextMenu.Font,
+			ForeColor = this.CustomContextMenu.ForeColor,
+			DisplayStyle = ToolStripItemDisplayStyle.Text,
+		};
+
+		this.CustomContextMenu.Items.Add(subMenu);
 	}
 
 	#region ContextMenuMouseWheel
@@ -428,186 +360,126 @@ public partial class SackPanel
 
 		#region Add Prefix/Suffix pickup
 
-		if (focusedItem.IsArmor || focusedItem.IsWeaponShield || focusedItem.IsJewellery)
+		AffixCatalog? affixes = this.Services.AffixCatalogService.GetAffixCatalog(focusedItem, this.USettings.EnableEpicLegendaryAffixes);
+		if (affixes is not null)
 		{
-			ItemAffixes? affixes;
-			if (USettings.EnableEpicLegendaryAffixes
-				&& (focusedItem.Rarity == Rarity.Epic || focusedItem.Rarity == Rarity.Legendary))
+			this.CustomContextMenu.Items.Add("-");
+
+			var fnt = this.CustomContextMenu.Font;
+			var foreC = this.CustomContextMenu.ForeColor;
+			var backC = this.CustomContextMenu.BackColor;
+			var dispStl = ToolStripItemDisplayStyle.Text;
+			var tagSRemove = TranslationService.TranslateXTag("tagSRemove");
+
+			ToolStripMenuItem currentchoicesMenu;
+
+			#region Broken
+
+			if (affixes.HasBroken)
 			{
-				// Get all available affixes for an item type
-				affixes = this.ItemProvider.GetAllAvailableAffixes(focusedItem.GearType);
-			}
-			else
-			{
-				// Get affixes related to a specific item
-				affixes = this.ItemProvider.GetItemAffixes(focusedItem.BaseItemId);
-			}
-
-			if (affixes is not null)
-			{
-				this.CustomContextMenu.Items.Add("-");
-
-				var fnt = this.CustomContextMenu.Font;
-				var foreC = this.CustomContextMenu.ForeColor;
-				var backC = this.CustomContextMenu.BackColor;
-				var dispStl = ToolStripItemDisplayStyle.Text;
-				var tagSRemove = TranslationService.TranslateXTag("tagSRemove");
-
-				#region curate all affixes at once
-
-				var AffixTypes = new[] { // UNPIVOT
-						(AffixTypeId: 0, AffixType: affixes.Broken),
-						(AffixTypeId: 1, AffixType: affixes.Prefix),
-						(AffixTypeId: 2, AffixType: affixes.Suffix)
-					};
-
-				var curatedAffixes =
-					from types in AffixTypes
-					from dlc in types.AffixType
-					from ltvalues in dlc.Value
-					from value in ltvalues
-					select new
-					{
-						TypeId = types.AffixTypeId,
-						AffixId = value.Key,
-						value.Value.WeightPercent,
-						value.Value.LootRandomizer
-					} into flat
-					group flat by new { flat.TypeId, flat.AffixId } into grp
-					let f = grp.First()
-					let _AffixIdDlc = grp.Key.AffixId.Dlc
-					let _translation = f.LootRandomizer.Translation
-					let _WeightPercent = grp.Max(v => v.WeightPercent)
-					let affixEntry = new AffixEntry(
-						grp.Key.TypeId,
-						grp.Key.AffixId,
-						_AffixIdDlc,
-						_translation,
-						_WeightPercent,
-						string.Format("{0} : {1} ({2:p2}) {3}" // Default format for Order by affix name
-							, _translation
-							, grp.Key.AffixId.PrettyFileName
-							, _WeightPercent
-							, _AffixIdDlc.GetSuffix()
-						),
-						f.LootRandomizer
-					)
-					group affixEntry by new AffixGroupKey(affixEntry.TypeId, affixEntry.Translation) into grp2
-					orderby grp2.Key.TypeId, grp2.Key.Translation // Order by affix name
-					select new AffixGroup(grp2.Key, grp2);
-
-				#endregion
-
-				ToolStripMenuItem currentchoicesMenu;
-
-				#region Broken
-
-				if (affixes.Broken.Count > 0)
+				currentchoicesMenu = new ToolStripMenuItem()
 				{
-					currentchoicesMenu = new ToolStripMenuItem()
-					{
-						Text = TranslationService.TranslateXTag("tagTutorialTip05TextC"),// Broken
-						BackColor = backC,
-						Font = fnt,
-						ForeColor = foreC,
-						DisplayStyle = dispStl,
-					};
-					this.CustomContextMenu.Items.Add(currentchoicesMenu);
-
-					BuildAffixesMenuItems(focusedItem.prefixID, currentchoicesMenu, ChangePrefixItemClicked
-						, curatedAffixes.Where(fp => fp.Key.TypeId == 0) // Broken
-					);
-				}
-
-				#endregion
-
-				#region Prefix
-
-				if (affixes.Prefix.Count > 0)
-				{
-					currentchoicesMenu = new ToolStripMenuItem()
-					{
-						Text = Resources.GlobalPrefix,
-						BackColor = backC,
-						Font = fnt,
-						ForeColor = foreC,
-						DisplayStyle = dispStl,
-					};
-					this.CustomContextMenu.Items.Add(currentchoicesMenu);
-
-					BuildAffixesMenuItems(focusedItem.prefixID, currentchoicesMenu, ChangePrefixItemClicked
-						, curatedAffixes.Where(fp => fp.Key.TypeId == 1) // Prefix
-					);
-				}
-
-				if (focusedItem.HasPrefix)
-				{
-					var prefixMenu = new ToolStripMenuItem()
-					{
-						Text = $"{tagSRemove} {Resources.GlobalPrefix}",
-						BackColor = backC,
-						Font = fnt,
-						ForeColor = foreC,
-						DisplayStyle = dispStl,
-					};
-					prefixMenu.Click += RemovePrefixItemClicked;
-					this.CustomContextMenu.Items.Add(prefixMenu);
-				}
-
-				#endregion
-
-				#region Suffix
-
-				if (affixes.Suffix.Count > 0)
-				{
-					currentchoicesMenu = new ToolStripMenuItem()
-					{
-						Text = Resources.GlobalSuffix,
-						BackColor = backC,
-						Font = fnt,
-						ForeColor = foreC,
-						DisplayStyle = dispStl,
-					};
-					this.CustomContextMenu.Items.Add(currentchoicesMenu);
-
-					BuildAffixesMenuItems(focusedItem.suffixID, currentchoicesMenu, ChangeSuffixItemClicked
-						, curatedAffixes.Where(fp => fp.Key.TypeId == 2) // Suffix
-					);
-				}
-
-				if (focusedItem.HasSuffix)
-				{
-					var suffixMenu = new ToolStripMenuItem()
-					{
-						Text = $"{tagSRemove} {Resources.GlobalSuffix}",
-						BackColor = backC,
-						Font = fnt,
-						ForeColor = foreC,
-						DisplayStyle = dispStl,
-					};
-					suffixMenu.Click += RemoveSuffixItemClicked;
-					this.CustomContextMenu.Items.Add(suffixMenu);
-				}
-
-				#endregion
-
-				#region Swap Affixes Display by Effect/Name
-
-				var swapDisplayMenuItem = new ToolStripMenuItem()
-				{
-					Text = _DisplayAffixesByEffect
-						? Resources.AffixesDisplayByName
-						: Resources.AffixesDisplayByEffect,
+					Text = TranslationService.TranslateXTag("tagTutorialTip05TextC"),// Broken
 					BackColor = backC,
 					Font = fnt,
 					ForeColor = foreC,
 					DisplayStyle = dispStl,
 				};
-				swapDisplayMenuItem.Click += SwapAffixesDisplayModeClicked;
-				this.CustomContextMenu.Items.Add(swapDisplayMenuItem);
+				this.CustomContextMenu.Items.Add(currentchoicesMenu);
 
-				#endregion
+				BuildAffixesMenuItems(focusedItem.prefixID, currentchoicesMenu, ChangePrefixItemClicked
+					, affixes.Broken
+				);
 			}
+
+			#endregion
+
+			#region Prefix
+
+			if (affixes.HasPrefix)
+			{
+				currentchoicesMenu = new ToolStripMenuItem()
+				{
+					Text = Resources.GlobalPrefix,
+					BackColor = backC,
+					Font = fnt,
+					ForeColor = foreC,
+					DisplayStyle = dispStl,
+				};
+				this.CustomContextMenu.Items.Add(currentchoicesMenu);
+
+				BuildAffixesMenuItems(focusedItem.prefixID, currentchoicesMenu, ChangePrefixItemClicked
+					, affixes.Prefix
+				);
+			}
+
+			if (focusedItem.HasPrefix)
+			{
+				var prefixMenu = new ToolStripMenuItem()
+				{
+					Text = $"{tagSRemove} {Resources.GlobalPrefix}",
+					BackColor = backC,
+					Font = fnt,
+					ForeColor = foreC,
+					DisplayStyle = dispStl,
+				};
+				prefixMenu.Click += RemovePrefixItemClicked;
+				this.CustomContextMenu.Items.Add(prefixMenu);
+			}
+
+			#endregion
+
+			#region Suffix
+
+			if (affixes.HasSuffix)
+			{
+				currentchoicesMenu = new ToolStripMenuItem()
+				{
+					Text = Resources.GlobalSuffix,
+					BackColor = backC,
+					Font = fnt,
+					ForeColor = foreC,
+					DisplayStyle = dispStl,
+				};
+				this.CustomContextMenu.Items.Add(currentchoicesMenu);
+
+				BuildAffixesMenuItems(focusedItem.suffixID, currentchoicesMenu, ChangeSuffixItemClicked
+					, affixes.Suffix
+				);
+			}
+
+			if (focusedItem.HasSuffix)
+			{
+				var suffixMenu = new ToolStripMenuItem()
+				{
+					Text = $"{tagSRemove} {Resources.GlobalSuffix}",
+					BackColor = backC,
+					Font = fnt,
+					ForeColor = foreC,
+					DisplayStyle = dispStl,
+				};
+				suffixMenu.Click += RemoveSuffixItemClicked;
+				this.CustomContextMenu.Items.Add(suffixMenu);
+			}
+
+			#endregion
+
+			#region Swap Affixes Display by Effect/Name
+
+			var swapDisplayMenuItem = new ToolStripMenuItem()
+			{
+				Text = _DisplayAffixesByEffect
+					? Resources.AffixesDisplayByName
+					: Resources.AffixesDisplayByEffect,
+				BackColor = backC,
+				Font = fnt,
+				ForeColor = foreC,
+				DisplayStyle = dispStl,
+			};
+			swapDisplayMenuItem.Click += SwapAffixesDisplayModeClicked;
+			this.CustomContextMenu.Items.Add(swapDisplayMenuItem);
+
+			#endregion
 		}
 
 		#endregion
@@ -639,30 +511,7 @@ public partial class SackPanel
 
 
 		if (_DisplayAffixesByEffect)// Group By Effect
-		{
-			currentaffixGroup =
-				from grp in currentaffixGroup
-				from av in grp
-				let effect = av.AffixId.PrettyFileNameExploded.Effect
-				let flattenedAffix = new AffixEntry(
-					av.TypeId,
-					av.AffixId,
-					av.AffixIdDlc,
-					effect,
-					av.WeightPercent,
-					string.Format("{0} : ({1}) {2} ({3:p2}) {4}"
-						, effect
-						, av.AffixId.PrettyFileNameExploded.Number
-						, av.Translation
-						, av.WeightPercent
-						, av.AffixIdDlc.GetSuffix()
-					),
-					av.LootRandomizer
-				)
-				orderby flattenedAffix.Translation, flattenedAffix.AffixId.PrettyFileNameExploded.Number
-				group flattenedAffix by new AffixGroupKey(flattenedAffix.TypeId, flattenedAffix.Translation) into grp2
-				select new AffixGroup(grp2.Key, grp2);
-		}
+			currentaffixGroup = this.Services.AffixCatalogService.GroupByEffect(currentaffixGroup);
 
 		foreach (var grp in currentaffixGroup)
 		{
@@ -710,23 +559,7 @@ public partial class SackPanel
 				}
 
 				if (affixMenu is not null)
-				{
-					choice.Text = _DisplayAffixesByEffect
-							// By Effect
-							? string.Format("({0}) {1} ({2:p2}) {3}"
-								, val.AffixId.PrettyFileNameExploded.Number
-								, val.LootRandomizer.Translation // Sub menu item display affix Name
-								, val.WeightPercent
-								, val.AffixIdDlc.GetSuffix()
-							)
-							// By Name
-							: string.Format("({0}) {1} ({2:p2}) {3}"
-								, val.AffixId.PrettyFileNameExploded.Number
-								, val.AffixId.PrettyFileNameExploded.Effect // Sub menu item display affix Effect
-								, val.WeightPercent
-								, val.AffixIdDlc.GetSuffix()
-							);
-				}
+					choice.Text = this.Services.AffixCatalogService.FormatVariantLabel(val, _DisplayAffixesByEffect);
 
 				// make the currently selected affix bold
 				if (val.AffixId == currentSelectedAffix)

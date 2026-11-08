@@ -41,6 +41,7 @@ public sealed class GuiServices
 		, IItemDatabaseService itemDatabaseService
 		, IItemExchangeService itemExchangeService
 		, IItemMovementService itemMovementService
+		, IAffixCatalogService affixCatalogService
 		, IIconService iconService
 		, IPathIO pathIO
 		, IFileIO fileIO
@@ -67,6 +68,7 @@ public sealed class GuiServices
 		this.ItemDatabaseService = itemDatabaseService;
 		this.ItemExchangeService = itemExchangeService;
 		this.ItemMovementService = itemMovementService;
+		this.AffixCatalogService = affixCatalogService;
 		this.IconService = iconService;
 		this.PathIO = pathIO;
 		this.FileIO = fileIO;
@@ -94,6 +96,7 @@ public sealed class GuiServices
 	public IItemDatabaseService ItemDatabaseService { get; }
 	public IItemExchangeService ItemExchangeService { get; }
 	public IItemMovementService ItemMovementService { get; }
+	public IAffixCatalogService AffixCatalogService { get; }
 	public IIconService IconService { get; }
 	public IPathIO PathIO { get; }
 	public IFileIO FileIO { get; }
