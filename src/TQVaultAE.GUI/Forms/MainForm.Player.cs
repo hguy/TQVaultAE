@@ -228,11 +228,7 @@ public partial class MainForm
 		// Get the player
 		try
 		{
-			if (resultDTO.Player?.ArgumentException != null)
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, resultDTO.PlayerFile, resultDTO.Player.ArgumentException.Message);
-				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
-			}
+			this.ShowLoadMessages(LoadMessages.ForPlayer(resultDTO));
 
 			if (!fromFileWatcher)
 			{
@@ -244,7 +240,7 @@ public partial class MainForm
 		}
 		catch (IOException exception)
 		{
-			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, resultDTO.PlayerFile, exception.ToString());
+			string msg = LoadMessages.ReadError(resultDTO.PlayerFile, exception);
 			this.Services.MessageBoxes.Inform(msg, Resources.MainFormPlayerReadError, MessageBoxIcon.Error);
 			Log.LogError(exception, "{Message}", msg);
 			this.playerPanel.Player = null;
@@ -268,30 +264,29 @@ public partial class MainForm
 		var resultStash = this.stashService.LoadPlayerStash(selectedSave, fromFileWatcher);
 		try
 		{
-			// Throw a message if the stash is not present.
-			if (resultStash.Stash is { StashFound: false })
-			{
-				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nCharacter : ", selectedSave);
-				this.Services.MessageBoxes.Inform(msg, Resources.StashNotFound, MessageBoxIcon.Information);
-			}
-
-			if (resultStash.Stash?.ArgumentException != null)
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, resultStash.StashFile, resultStash.Stash.ArgumentException.Message);
-				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
-			}
+			// Throw a message if the stash is not present or unreadable.
+			this.ShowLoadMessages(LoadMessages.ForStash(resultStash, $"Character : {selectedSave}"));
 
 			if (!fromFileWatcher) this.stashPanel.Stash = resultStash.Stash;
 		}
 		catch (IOException exception)
 		{
-			string msg = string.Concat(Resources.MainFormReadError, resultStash.StashFile, exception.ToString());
+			string msg = LoadMessages.ReadError(resultStash.StashFile, exception);
 			this.Services.MessageBoxes.Inform(msg, Resources.MainFormStashReadError, MessageBoxIcon.Error);
 			Log.LogError(exception, "{Message}", msg);
 			this.stashPanel.Stash = null;
 		}
 
 		return resultStash;
+	}
+
+	/// <summary>
+	/// Shows the messages of a player or stash load, errors and informations.
+	/// </summary>
+	private void ShowLoadMessages(IReadOnlyList<LoadMessage> messages)
+	{
+		foreach (var message in messages)
+			this.Services.MessageBoxes.Inform(message.Text, message.Caption, message.IsError ? MessageBoxIcon.Error : MessageBoxIcon.Information);
 	}
 
 	/// <summary>

@@ -58,24 +58,14 @@ public partial class MainForm
 		// Get the transfer stash
 		try
 		{
-			if (result.Stash is { StashFound: false })
-			{
-				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nTransfer Stash\n\n", result.StashFile);
-				this.Services.MessageBoxes.Inform(msg, Resources.StashNotFound, MessageBoxIcon.Information);
-			}
-
-			if (result.Stash?.ArgumentException != null)
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
-				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
-			}
+			this.ShowLoadMessages(LoadMessages.ForStash(result, $"Transfer Stash\n\n{result.StashFile}"));
 
 			if (!fromFileWatcher)
 				this.stashPanel.TransferStash = result.Stash;
 		}
 		catch (IOException exception)
 		{
-			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, result.StashFile, exception.ToString());
+			string msg = LoadMessages.ReadError(result.StashFile, exception);
 			this.Services.MessageBoxes.Inform(msg, Resources.MainFormStashReadError, MessageBoxIcon.Error);
 			Log.LogError(exception, "{Message}", msg);
 			this.stashPanel.TransferStash = null;
@@ -103,24 +93,14 @@ public partial class MainForm
 		// Get the relic vault stash
 		try
 		{
-			if (result.Stash is { StashFound: false })
-			{
-				var msg = string.Concat(Resources.StashNotFoundMsg, "\n\nRelic Stash\n\n", result.StashFile);
-				this.Services.MessageBoxes.Inform(msg, Resources.StashNotFound, MessageBoxIcon.Information);
-			}
-
-			if (result.Stash?.ArgumentException != null)
-			{
-				string msg = string.Format(CultureInfo.CurrentUICulture, "{0}\n{1}\n{2}", Resources.MainFormPlayerReadError, result.StashFile, result.Stash.ArgumentException.Message);
-				this.Services.MessageBoxes.Inform(msg, Resources.GlobalError, MessageBoxIcon.Error);
-			}
+			this.ShowLoadMessages(LoadMessages.ForStash(result, $"Relic Stash\n\n{result.StashFile}"));
 
 			if (!fromFileWatcher)
 				this.stashPanel.RelicVaultStash = result.Stash;
 		}
 		catch (IOException exception)
 		{
-			string msg = string.Format(CultureInfo.InvariantCulture, Resources.MainFormReadError, result.StashFile, exception.ToString());
+			string msg = LoadMessages.ReadError(result.StashFile, exception);
 			this.Services.MessageBoxes.Inform(msg, Resources.MainFormStashReadError, MessageBoxIcon.Error);
 
 			this.stashPanel.RelicVaultStash = null;
