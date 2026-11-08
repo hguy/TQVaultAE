@@ -2,8 +2,8 @@
 
 internal sealed class ComboBoxItem
 {
-	public string DisplayName;
-	public string Value;
+	public required string DisplayName;
+	public required string Value;
 
 	public override string ToString()
 	{
