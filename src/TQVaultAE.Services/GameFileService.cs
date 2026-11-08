@@ -1,9 +1,9 @@
-using Medallion.Shell;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Presentation;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Helpers;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO.Compression;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
@@ -39,12 +39,11 @@ public partial class GameFileService : IGameFileService
 	{
 		var repoUrl = this.UserSettings.GitBackupRepository;
 		string errMess = string.Format(Resources.GitUnableToFetch, repoUrl);
-		Action<Shell.Options> options = (opt) => opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
 
-		var fetch = Command.Run("git", new[] { "fetch", "origin" }, options);
+		var fetch = this.RunGitInRepository("fetch", "origin");
 		if (HandleExecuteOut(fetch, errMess, out var fetchoutStd, out var fetcherrStd))
 		{
-			var status = Command.Run("git", new[] { "status", "--ahead-behind" }, options);
+			var status = this.RunGitInRepository("status", "--ahead-behind");
 			if (HandleExecuteOut(status, errMess, out var statusoutStd, out var statuserrStd))
 			{
 				var output = statusoutStd.JoinString(" ");
@@ -60,9 +59,9 @@ public partial class GameFileService : IGameFileService
 		string errMess = string.Format(Resources.GitUnableToClone, repoUrl);
 		DirectoryIO.CreateDirectory(GamePathService.LocalGitRepositoryDirectory);
 
-		var clone = Command.Run("git"
+		var clone = ShellCommand.Run("git"
 			, new[] { "clone", repoUrl, GamePathService.LocalGitRepositoryDirectory }
-			, opt => { opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory); }
+			, GamePathService.LocalGitRepositoryDirectory
 		);
 
 		return HandleExecuteOut(clone, errMess, out var outStd, out var errStd);
@@ -75,9 +74,8 @@ public partial class GameFileService : IGameFileService
 
 		var repoUrl = this.UserSettings.GitBackupRepository;
 		string errMess = string.Format(Resources.GitUnableToPush, repoUrl);
-		Action<Shell.Options> options = (opt) => opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
 
-		Command? status, stageAll, commit, tagVersion, tagLatest, push, pushTags;
+		ShellCommand? status, stageAll, commit, tagVersion, tagLatest, push, pushTags;
 		status = stageAll = commit = tagVersion = tagLatest = push = pushTags = null;
 
 		try
@@ -96,39 +94,32 @@ public partial class GameFileService : IGameFileService
 				 */
 
 			// Is there anything new to commit ?
-			status = Command.Run("git", new[] { "status", "-suall" }, options);
+			status = this.RunGitInRepository("status", "-suall");
 			var statusSuccess = HandleExecuteOut(status, errMess, out var statusoutStd, out var statuserrStd);
 			if (statusSuccess && statusoutStd.Count > 0)
 			{
-				stageAll = Command.Run("git", new[] { "stage", "*" }, options);
+				stageAll = this.RunGitInRepository("stage", "*");
 				if (HandleExecuteOut(stageAll, errMess, out var stageAlloutStd, out var stageAllerrStd))
 				{
-					commit = Command.Run("git", new[] { "commit", "-m", @"TQVaultAE update!" }, options);
+					commit = this.RunGitInRepository("commit", "-m", @"TQVaultAE update!");
 					if (HandleExecuteOut(commit, errMess, out var commitoutStd, out var commiterrStd))
 					{
 						var tag = DateTime.Now.ToString("yy.MM.dd.HHmmss");// Use date for versioning
 
-						tagVersion = Command.Run("git", new[] { "tag", tag, }, options);
+						tagVersion = this.RunGitInRepository("tag", tag);
 						if (HandleExecuteOut(tagVersion, errMess, out var tagVersionoutStd, out var tagVersionerrStd))
 						{
-							tagLatest = Command.Run("git", new[] { "tag", "-f", "latest" }, options);
+							tagLatest = this.RunGitInRepository("tag", "-f", "latest");
 							if (HandleExecuteOut(tagLatest, errMess, out var tagLatestoutStd, out var tagLatesterrStd))
 							{
-								using (push = Command.Run("git", new[] { "push", "-v", "--progress" } // You need "--progress" to capture percentage in StandardError
-										   , (opt) =>
-										   {
-											   opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory);
-											   //opt.DisposeOnExit(false); // needed for RedirectStandardError = true
-											   //opt.StartInfo(si => { si.RedirectStandardError = true; }); // needed for ConsumeStandardOutputAsync
-										   })
-									  )
+								using (push = this.RunGitInRepository("push", "-v", "--progress")) // You need "--progress" to capture percentage in StandardError
 								{
 									if (HandleExecuteOut(push, errMess, out var pushoutStd, out var pusherrStd))
 									{
-										pushTags = Command.Run("git", new[] { "push", "origin", "latest", "-f" }, options);
+										pushTags = this.RunGitInRepository("push", "origin", "latest", "-f");
 										if (HandleExecuteOut(pushTags, errMess, out var pushTagsoutStd, out var pushTagserrStd))
 										{
-											pushTags = Command.Run("git", new[] { "push", "origin", tag }, options);
+											pushTags = this.RunGitInRepository("push", "origin", tag);
 											return HandleExecuteOut(pushTags, errMess, out pushTagsoutStd, out pushTagserrStd);
 										}
 									}
@@ -323,11 +314,107 @@ public partial class GameFileService : IGameFileService
 		var repoUrl = this.UserSettings.GitBackupRepository;
 		string errMess = string.Format(Resources.GitUnableToPull, repoUrl);
 
-		var pull = Command.Run("git", new[] { "pull", "origin" }, opt => { opt.WorkingDirectory(GamePathService.LocalGitRepositoryDirectory); });
+		var pull = this.RunGitInRepository("pull", "origin");
 		return HandleExecuteOut(pull, errMess, out var pulloutStd, out var pullerrStd);
 	}
 
-	protected bool HandleExecuteOut(Command cmd, string errMess, out BindingList<string> outputLines, out BindingList<string> errorLines, bool pipeOutputStandard = true)
+	/// <summary>
+	/// Starts git in the local backup repository.
+	/// </summary>
+	private ShellCommand RunGitInRepository(params string[] arguments)
+		=> ShellCommand.Run("git", arguments, this.GamePathService.LocalGitRepositoryDirectory);
+
+	/// <summary>
+	/// An external command started by <see cref="Run"/>: it runs hidden, and its standard output and error are read
+	/// asynchronously from the start, so the process never blocks on a full pipe.
+	/// </summary>
+	protected sealed class ShellCommand : IDisposable
+	{
+		private readonly Process _process;
+		private readonly List<string> _outputLines = new();
+		private readonly List<string> _errorLines = new();
+
+		private ShellCommand(Process process)
+		{
+			this._process = process;
+		}
+
+		/// <summary>
+		/// Starts <paramref name="fileName"/> with <paramref name="arguments"/>, each one quoted as needed.
+		/// </summary>
+		/// <param name="workingDirectory">The working directory, or <c>null</c> for the current one.</param>
+		/// <exception cref="System.ComponentModel.Win32Exception">The program cannot be started.</exception>
+		public static ShellCommand Run(string fileName, IEnumerable<string> arguments, string? workingDirectory = null)
+		{
+			var startInfo = new ProcessStartInfo(fileName)
+			{
+				UseShellExecute = false,
+				CreateNoWindow = true,
+				RedirectStandardInput = true,
+				RedirectStandardOutput = true,
+				RedirectStandardError = true,
+			};
+			foreach (var argument in arguments)
+				startInfo.ArgumentList.Add(argument);
+			if (workingDirectory is not null)
+				startInfo.WorkingDirectory = workingDirectory;
+
+			var process = new Process { StartInfo = startInfo };
+			var command = new ShellCommand(process);
+			// Each stream raises its events one at a time, and each one fills its own list.
+			process.OutputDataReceived += (_, e) => { if (e.Data is not null) command._outputLines.Add(e.Data); };
+			process.ErrorDataReceived += (_, e) => { if (e.Data is not null) command._errorLines.Add(e.Data); };
+			try
+			{
+				process.Start();
+			}
+			catch
+			{
+				process.Dispose();
+				throw;
+			}
+			process.BeginOutputReadLine();
+			process.BeginErrorReadLine();
+			return command;
+		}
+
+		/// <summary>
+		/// Blocks until the process has exited and both streams are read to the end, then releases the process.
+		/// </summary>
+		/// <param name="outputLines">Receives the standard output lines, unless <c>null</c>.</param>
+		/// <param name="errorLines">Receives the standard error lines, unless <c>null</c>.</param>
+		/// <returns>The exit code.</returns>
+		public int WaitForExit(ICollection<string>? outputLines, ICollection<string>? errorLines)
+		{
+			try
+			{
+				// Without a timeout, WaitForExit also waits for the end of the redirected streams.
+				this._process.WaitForExit();
+
+				if (outputLines is not null)
+				{
+					foreach (var line in this._outputLines)
+						outputLines.Add(line);
+				}
+
+				if (errorLines is not null)
+				{
+					foreach (var line in this._errorLines)
+						errorLines.Add(line);
+				}
+
+				return this._process.ExitCode;
+			}
+			finally
+			{
+				this._process.Dispose();
+			}
+		}
+
+		public void Dispose() => this._process.Dispose();
+	}
+
+	protected bool HandleExecuteOut(ShellCommand cmd, string errMess, out BindingList<string> outputLines, out BindingList<string> errorLines, bool pipeOutputStandard = true)
 	{
 		outputLines = new BindingList<string>();
 		errorLines = new BindingList<string>();
@@ -335,24 +422,17 @@ public partial class GameFileService : IGameFileService
 		return HandleExecuteRef(cmd, errMess, ref outputLines, ref errorLines, pipeOutputStandard);
 	}
 
-	protected bool HandleExecuteRef(Command cmd, string errMess, ref BindingList<string> outputLines, ref BindingList<string> errorLines, bool pipeOutputStandard = true)
+	protected bool HandleExecuteRef(ShellCommand cmd, string errMess, ref BindingList<string> outputLines, ref BindingList<string> errorLines, bool pipeOutputStandard = true)
 	{
 		string errLog = string.Empty;
 		try
 		{
-			Task stdout = Task.CompletedTask, stderr = Task.CompletedTask, fullTask;
-			if (pipeOutputStandard)
-			{
-				stdout = cmd.StandardOutput.PipeToAsync(outputLines);
-				stderr = cmd.StandardError.PipeToAsync(errorLines);
-			}
-
 			// Deliberately synchronous: callers (e.g. the push on app close) must finish before continuing.
-			// GetResult() rethrows the real exception instead of an AggregateException, so the log shows the cause.
-			fullTask = Task.WhenAll(stdout, stderr, cmd.Task);
-			fullTask.GetAwaiter().GetResult();
+			var exitCode = pipeOutputStandard
+				? cmd.WaitForExit(outputLines, errorLines)
+				: cmd.WaitForExit(null, null);
 
-			var success = cmd.Task.GetAwaiter().GetResult().Success;
+			var success = exitCode == 0;
 			if (!success)
 				errLog = errorLines.JoinString(Environment.NewLine);
 
