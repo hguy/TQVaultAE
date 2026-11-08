@@ -57,7 +57,6 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingLabelProgress = new ScalingLabel();
 			toolTip = new ToolTip(components);
 			tableLayoutPanelBottom = new TableLayoutPanel();
-			scalingLabelProgressPanelAlignText = new Panel();
 			scalingCheckedListBoxCharacters = new VirtualCheckedListBox();
 			flowLayoutPanelCharacters = new FlowLayoutPanel();
 			flowLayoutPanelItemType = new FlowLayoutPanel();
@@ -181,7 +180,6 @@ namespace TQVaultAE.GUI.Dialogs
 			typeAssistantSearchBox = new TypeAssistant();
 			typeAssistantFilterCategories = new TypeAssistant();
 			tableLayoutPanelBottom.SuspendLayout();
-			scalingLabelProgressPanelAlignText.SuspendLayout();
 			flowLayoutPanelCharacters.SuspendLayout();
 			flowLayoutPanelItemType.SuspendLayout();
 			flowLayoutPanelItemAttributes.SuspendLayout();
@@ -298,7 +296,8 @@ namespace TQVaultAE.GUI.Dialogs
 			// 
 			// scalingLabelProgress
 			// 
-			scalingLabelProgress.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+			scalingLabelProgress.Anchor = AnchorStyles.None;
+			scalingLabelProgress.AutoSize = true;
 			scalingLabelProgress.BackColor = Color.Transparent;
 			scalingLabelProgress.Font = new Font("Microsoft Sans Serif", 9F);
 			scalingLabelProgress.ForeColor = Color.DarkOrange;
@@ -309,7 +308,6 @@ namespace TQVaultAE.GUI.Dialogs
 			scalingLabelProgress.Text = "Building Data...";
 			scalingLabelProgress.TextAlign = ContentAlignment.MiddleCenter;
 			scalingLabelProgress.UseMnemonic = false;
-			scalingLabelProgress.TextChanged += scalingLabelProgress_TextChanged;
 			scalingLabelProgress.MouseEnter += scalingLabelProgress_MouseEnter;
 			scalingLabelProgress.MouseLeave += scalingLabelProgress_MouseLeave;
 			// 
@@ -324,7 +322,7 @@ namespace TQVaultAE.GUI.Dialogs
 			tableLayoutPanelBottom.Controls.Add(vaultProgressBar, 1, 1);
 			tableLayoutPanelBottom.Controls.Add(applyButton, 0, 1);
 			tableLayoutPanelBottom.Controls.Add(cancelButton, 2, 1);
-			tableLayoutPanelBottom.Controls.Add(scalingLabelProgressPanelAlignText, 1, 0);
+			tableLayoutPanelBottom.Controls.Add(scalingLabelProgress, 1, 0);
 			tableLayoutPanelBottom.Location = new Point(3, 748);
 			tableLayoutPanelBottom.Name = "tableLayoutPanelBottom";
 			tableLayoutPanelBottom.RowCount = 2;
@@ -332,16 +330,6 @@ namespace TQVaultAE.GUI.Dialogs
 			tableLayoutPanelBottom.RowStyles.Add(new RowStyle(SizeType.Absolute, 50F));
 			tableLayoutPanelBottom.Size = new Size(1379, 84);
 			tableLayoutPanelBottom.TabIndex = 6;
-			// 
-			// scalingLabelProgressPanelAlignText
-			// 
-			scalingLabelProgressPanelAlignText.Controls.Add(scalingLabelProgress);
-			scalingLabelProgressPanelAlignText.Dock = DockStyle.Fill;
-			scalingLabelProgressPanelAlignText.Location = new Point(209, 3);
-			scalingLabelProgressPanelAlignText.Name = "scalingLabelProgressPanelAlignText";
-			scalingLabelProgressPanelAlignText.Size = new Size(959, 20);
-			scalingLabelProgressPanelAlignText.TabIndex = 6;
-			scalingLabelProgressPanelAlignText.SizeChanged += scalingLabelProgressPanelAlignText_SizeChanged;
 			// 
 			// scalingCheckedListBoxCharacters
 			// 
@@ -2369,7 +2357,6 @@ namespace TQVaultAE.GUI.Dialogs
 			Load += SearchDialogAdvanced_Load;
 			Controls.SetChildIndex(tableLayoutPanelContent, 0);
 			tableLayoutPanelBottom.ResumeLayout(false);
-			scalingLabelProgressPanelAlignText.ResumeLayout(false);
 			flowLayoutPanelCharacters.ResumeLayout(false);
 			flowLayoutPanelCharacters.PerformLayout();
 			flowLayoutPanelItemType.ResumeLayout(false);
@@ -2525,7 +2512,6 @@ namespace TQVaultAE.GUI.Dialogs
 		private ScalingLabel scalingLabelOperator;
 		private ScalingComboBox scalingComboBoxOperator;
 		private Components.TypeAssistant typeAssistantSearchBox;
-		private System.Windows.Forms.Panel scalingLabelProgressPanelAlignText;
 		private ScalingLabel scalingLabelFilterCategories;
 		private ScalingTextBox scalingTextBoxFilterCategories;
 		private TypeAssistant typeAssistantFilterCategories;

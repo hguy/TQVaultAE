@@ -1,4 +1,5 @@
 ﻿﻿using System.ComponentModel;
+using TQVaultAE.GUI.Infrastructure;
 
 namespace TQVaultAE.GUI.Components.Character;
 
@@ -25,7 +26,7 @@ public partial class ComboBoxCharacterDropDown : UserControl
 	private void ResizeAllItems()
 	{
 		foreach (var ctr in Items)
-			ctr.Width = this.Width - SystemInformation.VerticalScrollBarWidth;
+			ctr.Width = this.Width - this.VerticalScrollBarWidth();
 	}
 
 	internal readonly BindingList<ComboBoxCharacterItem> Items = new();
@@ -43,7 +44,7 @@ public partial class ComboBoxCharacterDropDown : UserControl
 		{
 			case ListChangedType.ItemAdded:
 				var itm = Items[e.NewIndex];
-				itm.MinimumSize = new Size(this.Width - SystemInformation.VerticalScrollBarWidth, 0);
+				itm.MinimumSize = new Size(this.Width - this.VerticalScrollBarWidth(), 0);
 				this.bufferedFlowLayoutPanelVertical.Controls.Add(itm);
 				break;
 		}

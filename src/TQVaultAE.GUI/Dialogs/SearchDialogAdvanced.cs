@@ -614,29 +614,6 @@ public partial class SearchDialogAdvanced : VaultForm
 	private void scalingLabelProgress_MouseLeave(object? sender, EventArgs e)
 		=> FoundResultsTooltip.HideTooltip();
 
-	private void scalingLabelProgress_TextChanged(object? sender, EventArgs e)
-	{
-		var ctrl = (Control)sender!;
-		ScalingLabelProgressAdjustSizeAndPosition(ctrl);
-	}
-
-	private static void ScalingLabelProgressAdjustSizeAndPosition(Control ctrl)
-	{
-		// Adjust Control Size & position manualy because center align the control in it's container doesn't work with AutoSize = true
-		ctrl.Size = TextRenderer.MeasureText(ctrl.Text, ctrl.Font);
-		var loc = ctrl.Location;
-		if (ctrl.Parent is { } parent)
-			loc.X = (parent.Size.Width / 2) - (ctrl.Width / 2);
-		ctrl.Location = loc;
-	}
-
-	private void scalingLabelProgressPanelAlignText_SizeChanged(object? sender, EventArgs e)
-	{
-		// Prevent child text truncation during resize
-		var ctrl = (Control)sender!;
-		var label = ctrl.Controls.OfType<ScalingLabel>().First();
-		ScalingLabelProgressAdjustSizeAndPosition(label);
-	}
 
 	private void SavePersonnalQueries()
 	{

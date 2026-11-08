@@ -174,6 +174,10 @@ public class VirtualCheckedListBox : Control, IScalingControl
 		if (this._updateDepth > 0)
 			return;
 
+		// The height for this monitor: created in code, the bar keeps the system DPI height (21 pixels at 120 DPI) on a
+		// monitor of another DPI, and the dialog sizes the list for this height (AdjustCheckBoxesHeight).
+		this._scroll.Height = SystemInformation.GetHorizontalScrollBarHeightForDpi(this.DeviceDpi);
+
 		// Rows depend on whether the scroll bar takes space: decide with it hidden first.
 		this._scroll.Visible = false;
 		bool overflow = this.ColumnCount > this.VisibleColumns;

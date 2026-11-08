@@ -8,6 +8,17 @@ public static class WinFormExtension
 	public static string SelectedItemText(this ComboBox comboBox)
 		=> comboBox.SelectedItem?.ToString() ?? string.Empty;
 
+	/// <summary>
+	/// Width of a vertical scroll bar on the monitor of <paramref name="ctrl"/>. <see cref="SystemInformation.VerticalScrollBarWidth"/>
+	/// stays at the system DPI when the window is on a monitor of another DPI.
+	/// </summary>
+	public static int VerticalScrollBarWidth(this Control ctrl)
+		=> SystemInformation.GetVerticalScrollBarWidthForDpi(ctrl.DeviceDpi);
+
+	/// <summary>Height of a horizontal scroll bar on the monitor of <paramref name="ctrl"/> (see <see cref="VerticalScrollBarWidth"/>).</summary>
+	public static int HorizontalScrollBarHeight(this Control ctrl)
+		=> SystemInformation.GetHorizontalScrollBarHeightForDpi(ctrl.DeviceDpi);
+
 	public static void ProcessAllControls(this Control rootControl, Action<Control> action)
 	{
 		foreach (Control childControl in rootControl.Controls)
@@ -37,7 +48,7 @@ public static class WinFormExtension
 		var width = ctrl.GetMaxTextWidth();
 
 		// i add this for the size of the checkbox control in the begining of the item {CheckBoxWidth} + {TextWidth}
-		width += SystemInformation.VerticalScrollBarWidth;
+		width += ctrl.VerticalScrollBarWidth();
 
 		ctrl.Width = ctrl.ColumnWidth = width;// The control must fit the size of the column
 	}
