@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Config;
 using TQVaultAE.Application.Results;
@@ -199,38 +200,81 @@ public class VaultService : IVaultService
 		}
 	}
 
-	/// <summary>
-	/// Deletes a vault file.
-	/// </summary>
-	/// <param name="vaultName">Name of the vault to delete.</param>
-	/// <returns>True if deletion succeeded, false otherwise.</returns>
-	public bool DeleteVault(string vaultName)
+	/// <inheritdoc />
+	public VaultMaintenanceError ValidateMaintenance(VaultMaintenance action, string? source, string? target, IEnumerable<string> existingVaults)
 	{
-		var fileName = this.GamePathResolver.GetVaultFile(vaultName);
-		this.FileIO.Delete(fileName);
+		var existing = existingVaults as ICollection<string> ?? existingVaults.ToList();
+
+		bool Exists(string? name)
+			=> name is not null && existing.Any(vault => name.Equals(vault, StringComparison.OrdinalIgnoreCase));
+
+		bool needsSource = action is VaultMaintenance.Copy or VaultMaintenance.Delete or VaultMaintenance.Rename;
+		bool needsTarget = action is VaultMaintenance.New or VaultMaintenance.Copy or VaultMaintenance.Rename;
+
+		if (needsTarget && string.IsNullOrWhiteSpace(target))
+			return VaultMaintenanceError.EmptyName;
+
+		if (needsSource && !Exists(source))
+			return VaultMaintenanceError.SourceMissing;
+
+		if (needsTarget)
+		{
+			if (target!.IndexOfAny(this.PathIO.GetInvalidFileNameChars()) != -1)
+				return VaultMaintenanceError.InvalidCharacters;
+
+			if (Exists(target))
+				return VaultMaintenanceError.DuplicateName;
+		}
+
+		return VaultMaintenanceError.None;
+	}
+
+	/// <inheritdoc />
+	public bool CopyVault(string sourceName, string targetName)
+	{
+		var sourceFileName = this.GamePathResolver.GetVaultFile(sourceName);
+		var targetFileName = this.GamePathResolver.GetVaultFile(targetName);
+
+		if (!this.FileIO.Exists(sourceFileName) || this.FileIO.Exists(targetFileName))
+			return false;
+
+		this.FileIO.Copy(sourceFileName, targetFileName);
+
+		// A vault created but never saved under the target name may sit in the cache.
+		this.userContext.Vaults.TryRemove(targetFileName, out _);
 		return true;
 	}
 
-	/// <summary>
-	/// Renames a vault file.
-	/// </summary>
-	/// <param name="oldName">Current name of the vault.</param>
-	/// <param name="newName">New name for the vault.</param>
-	/// <returns>True if rename succeeded, false otherwise.</returns>
+	/// <inheritdoc />
+	public bool DeleteVault(string vaultName)
+	{
+		var fileName = this.GamePathResolver.GetVaultFile(vaultName);
+		bool deleted = false;
+
+		if (this.FileIO.Exists(fileName))
+		{
+			this.FileIO.Delete(fileName);
+			deleted = true;
+		}
+
+		this.userContext.Vaults.TryRemove(fileName, out _);
+		return deleted;
+	}
+
+	/// <inheritdoc />
 	public bool RenameVault(string oldName, string newName)
 	{
 		var oldFileName = this.GamePathResolver.GetVaultFile(oldName);
 		var newFileName = this.GamePathResolver.GetVaultFile(newName);
 
-		// Invalidate the cache
-		this.userContext.Vaults.TryRemove(oldFileName, out _);
-
-		// Rename the file
-		if (this.FileIO.Exists(newFileName))
+		if (!this.FileIO.Exists(oldFileName) || this.FileIO.Exists(newFileName))
 			return false;
 
 		this.FileIO.Move(oldFileName, newFileName);
 
+		this.userContext.Vaults.TryRemove(oldFileName, out _);
+		// The Main Vault, or a vault created but never saved, may sit in the cache under the new name.
+		this.userContext.Vaults.TryRemove(newFileName, out _);
 		return true;
 	}
 

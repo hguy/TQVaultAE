@@ -8,6 +8,7 @@ using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
 using TQVaultAE.Application;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.GUI.Components.Scaling;
 
 namespace TQVaultAE.GUI.Forms;
@@ -211,7 +212,7 @@ public partial class MainForm
 				bool handled = false;
 
 				// Create a new vault?
-				if (dlg.Action == VaultMaintenanceDialog.VaultMaintenance.New && newName != null)
+				if (dlg.Action == VaultMaintenance.New && newName != null)
 				{
 					// Add the name to the list
 					this.vaultListComboBox.Items.Add(newName);
@@ -223,19 +224,13 @@ public partial class MainForm
 					this.LoadVault(newName, false);
 					handled = true;
 				}
-				else if (dlg.Action == VaultMaintenanceDialog.VaultMaintenance.Copy && newName != null && oldName != null)
+				else if (dlg.Action == VaultMaintenance.Copy && newName != null && oldName != null)
 				{
-					string oldFilename = GamePathResolver.GetVaultFile(oldName);
-					string newFilename = GamePathResolver.GetVaultFile(newName);
-
 					// Make sure we save all modifications first.
 					this.SaveAllModifiedFiles();
 
-					// Make sure the vault file to copy exists and the new name does not.
-					if (FileIO.Exists(oldFilename) && !FileIO.Exists(newFilename))
+					if (this.vaultService.CopyVault(oldName, newName))
 					{
-						FileIO.Copy(oldFilename, newFilename);
-
 						// Add the new name to the list
 						this.vaultListComboBox.Items.Add(newName);
 
@@ -247,21 +242,12 @@ public partial class MainForm
 						handled = true;
 					}
 				}
-				else if (dlg.Action == VaultMaintenanceDialog.VaultMaintenance.Delete && oldName != null)
+				else if (dlg.Action == VaultMaintenance.Delete && oldName != null)
 				{
-					string filename = GamePathResolver.GetVaultFile(oldName);
-
 					// Make sure we save all modifications first.
 					this.SaveAllModifiedFiles();
 
-					// Make sure the vault file to delete exists.
-					if (FileIO.Exists(filename))
-					{
-						FileIO.Delete(filename);
-					}
-
-					// Remove the file from the cache.
-					userContext.Vaults.TryRemove(filename, out var remVault);
+					this.vaultService.DeleteVault(oldName);
 
 					// Remove the deleted file from the list.
 					this.vaultListComboBox.Items.Remove(oldName);
@@ -271,32 +257,20 @@ public partial class MainForm
 
 					handled = true;
 				}
-				else if (dlg.Action == VaultMaintenanceDialog.VaultMaintenance.Rename && newName != null && oldName != null)
+				else if (dlg.Action == VaultMaintenance.Rename && newName != null && oldName != null)
 				{
-					string oldFilename = GamePathResolver.GetVaultFile(oldName);
-					string newFilename = GamePathResolver.GetVaultFile(newName);
-
 					// Make sure we save all modifications first.
 					this.SaveAllModifiedFiles();
 
-					// Make sure the vault file to rename exists and the new name does not.
-					if (FileIO.Exists(oldFilename) && !FileIO.Exists(newFilename))
+					if (this.vaultService.RenameVault(oldName, newName))
 					{
-						FileIO.Move(oldFilename, newFilename);
-
-						// Remove the old vault from the cache.
-						userContext.Vaults.TryRemove(oldFilename, out var remOldVault);
-
 						// Get rid of the old name from the list
 						this.vaultListComboBox.Items.Remove(oldName);
 
 						// If we renamed something to main vault we need to remove it,
 						// since the list always contains Main Vault.
 						if (newName == VaultService.MAINVAULT)
-						{
-							userContext.Vaults.TryRemove(newFilename, out var remMainVault);
 							this.vaultListComboBox.Items.Remove(newName);
-						}
 
 						// Add the new name to the list
 						this.vaultListComboBox.Items.Add(newName);
