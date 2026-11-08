@@ -159,7 +159,7 @@ Debug builds of `TQVaultAE.GUI` host an MCP server inside the app at `http://127
 | Purpose | Tools |
 |---|---|
 | Windows and dialogs | `list_windows`, `close_dialog` (for example "Default Vault Path" → OK), `list_forms`, `open_form(name, show?)` to create any registered form or dialog, `open_bag_settings(panel)` for the bag icon picker |
-| Read the state from the app's models | `get_state(panel?)`, which returns characters, vaults, panels and items with their cells; `owned_skill_items` for every owned item that grants a skill |
+| Read the state from the app's models | `get_state(panel?)`, which returns characters, vaults, panels and items with their cells; `owned_skill_items` for every owned item that grants a skill; `raw_tooltip_lines` for the tooltip lines still shown raw |
 | Navigation | `select_character`, `select_vault`, `select_bag` |
 | Drag and drop through the panels' own handlers | `pick_item`, `move_drag`, `drop_item`, `cancel_drag`; `create_item` drags a new item built from record ids |
 | Item tooltips | `hover_item(panel, x, y)`, which returns the tooltip as a PNG; `hover_end` |
