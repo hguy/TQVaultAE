@@ -5,6 +5,7 @@ using System.Drawing;
 using System.Text.Json;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Config.Tags;
 using TQVaultAE.Services;
 
@@ -420,5 +421,42 @@ public class TagServiceTests
 		result.Should().BeTrue();
 		playerSave.Tags.Should().NotContainKey(tagNameOld);
 		playerSave.Tags.Should().ContainKey(tagNameNew);
+	}
+
+	[Theory]
+	[InlineData(null, TagNameError.Empty)]
+	[InlineData("", TagNameError.Empty)]
+	[InlineData("   ", TagNameError.Empty)]
+	[InlineData("Farm", TagNameError.AlreadyExists)]
+	[InlineData("FARM", TagNameError.AlreadyExists)]
+	[InlineData("Mules", TagNameError.None)]
+	public void ValidateTagName_ForANewTag_RefusesEmptyAndExistingNamesIgnoringCase(string? name, TagNameError expected)
+	{
+		// Arrange
+		_tagService.AddTag("Farm");
+
+		// Act
+		var error = _tagService.ValidateTagName(name);
+
+		// Assert
+		error.Should().Be(expected);
+	}
+
+	[Theory]
+	[InlineData("Farm", TagNameError.SameAsCurrent)]
+	[InlineData("farm", TagNameError.SameAsCurrent)]
+	[InlineData("Trade", TagNameError.AlreadyExists)]
+	[InlineData("Mules", TagNameError.None)]
+	public void ValidateTagName_ForARename_TellsASameNameApartFromAnotherTagsName(string name, TagNameError expected)
+	{
+		// Arrange - the current name is also an existing name, so it must be told apart first
+		_tagService.AddTag("Farm");
+		_tagService.AddTag("Trade");
+
+		// Act
+		var error = _tagService.ValidateTagName(name, currentName: "Farm");
+
+		// Assert
+		error.Should().Be(expected);
 	}
 }

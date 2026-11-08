@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Rendering;
 using TQVaultAE.GUI.Forms;
@@ -619,29 +620,9 @@ public partial class ComboBoxCharacter : UserControl
 		}
 		else if (e.KeyCode == Keys.Enter)
 		{
-			// No string.Empty
 			var newTagName = textBox.Text;
-			if (string.IsNullOrWhiteSpace(newTagName))
-			{
-				e.Handled = true;// Cancel event
+			if (!this.AcceptTagName(e, newTagName, oldTagName))
 				return;
-			}
-
-			// Tag Exist
-			if (this.TagService.Tags.Keys.Any(t => t.Equals(newTagName, StringComparison.OrdinalIgnoreCase)))
-			{
-				e.Handled = true;// Cancel event
-				this.UIService.ShowError(Resources.TagExists, Buttons: ShowMessageButtons.OK);
-				return;
-			}
-
-			// Tag must be different
-			if (oldTagName.Equals(newTagName, StringComparison.OrdinalIgnoreCase))
-			{
-				e.Handled = true;// Cancel event
-				this.UIService.ShowError(Resources.TagMustBeDifferent, Buttons: ShowMessageButtons.OK);
-				return;
-			}
 
 			// Update tag
 			var col = this.TagService.Tags[oldTagName];
@@ -654,6 +635,32 @@ public partial class ComboBoxCharacter : UserControl
 			RefreshContent();
 		}
 
+	}
+
+	/// <summary>
+	/// Checks a tag name typed in a menu text box. When it is refused, cancels the key and tells why (nothing for an empty name).
+	/// </summary>
+	/// <param name="e">The Enter key event, cancelled when the name is refused.</param>
+	/// <param name="newName">The name typed.</param>
+	/// <param name="currentName">The tag being renamed, or null for a new tag.</param>
+	/// <returns>Whether the name can be used.</returns>
+	private bool AcceptTagName(KeyEventArgs e, string newName, string? currentName)
+	{
+		var error = this.TagService.ValidateTagName(newName, currentName);
+		if (error == TagNameError.None)
+			return true;
+
+		e.Handled = true;
+		string? message = error switch
+		{
+			TagNameError.AlreadyExists => Resources.TagExists,
+			TagNameError.SameAsCurrent => Resources.TagMustBeDifferent,
+			_ => null,
+		};
+		if (message is not null)
+			this.UIService.ShowError(message, Buttons: ShowMessageButtons.OK);
+
+		return false;
 	}
 
 	private void TagDeleteItem_Click(object? sender, EventArgs e)
@@ -717,21 +724,9 @@ public partial class ComboBoxCharacter : UserControl
 		}
 		else if (e.KeyCode == Keys.Enter)
 		{
-			// No string.Empty
 			var txt = textBox.Text;
-			if (string.IsNullOrWhiteSpace(txt))
-			{
-				e.Handled = true;// Cancel event
+			if (!this.AcceptTagName(e, txt, null))
 				return;
-			}
-
-			// Tag Exist
-			if (this.TagService.Tags.Keys.Any(t => t.Equals(txt, StringComparison.OrdinalIgnoreCase)))
-			{
-				e.Handled = true;// Cancel event
-				this.UIService.ShowError(Resources.TagExists, Buttons: ShowMessageButtons.OK);
-				return;
-			}
 
 			// Add tag
 			this.TagService.AddTag(txt);

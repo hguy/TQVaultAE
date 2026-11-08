@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Drawing;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 
 namespace TQVaultAE.Services;
 
@@ -31,6 +32,22 @@ public class TagService : ITagService
 		this.PathIO = pathIO;
 		this.JsonOptions = jsonOptions;
 		this.ReadConfig();
+	}
+
+	/// <inheritdoc/>
+	public TagNameError ValidateTagName(string? newName, string? currentName = null)
+	{
+		if (string.IsNullOrWhiteSpace(newName))
+			return TagNameError.Empty;
+
+		// Before the existing names, which hold the current one too.
+		if (currentName is not null && currentName.Equals(newName, StringComparison.OrdinalIgnoreCase))
+			return TagNameError.SameAsCurrent;
+
+		if (this.TagConfig.tags.Any(t => t.name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+			return TagNameError.AlreadyExists;
+
+		return TagNameError.None;
 	}
 
 	public bool AddTag(string tagName)

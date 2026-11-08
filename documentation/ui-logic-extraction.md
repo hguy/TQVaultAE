@@ -83,7 +83,7 @@ Risk: low (pure code, few callers), med (state or threading), high (core drag an
 | V2 | `MainForm.Vault.cs:67-158` | Vault list: Main Vault first, the other panel's vault excluded | `VaultService.BuildVaultChoices` | low | done `b993c50` |
 | V3 | `VaultPanel.ContextMenu.cs:30-84, 219-418` | Bag copy/move/merge, CSV rows (2 copies), icon info copy (2 copies) | `VaultService`, `BagButtonIconInfo.Clone` | low | done `9fc20fe` |
 | V4 | `MainForm.Player.cs:59-87, 331-392` | Character list, new name validation, duplication with rollback | `PlayerService` | low-med | done `0d74d9d` |
-| V5 | `ComboBoxCharacter.cs:617-867` | Archive/unarchive (6 copies), tag name validation | `GameFileService`/`PlayerService`, `TagService` | low | partial: archive/unarchive done `27e033c`; left: the tag name check (empty, already used ignoring case) is still written twice in `ComboBoxCharacter` (rename and new tag) |
+| V5 | `ComboBoxCharacter.cs:617-867` | Archive/unarchive (6 copies), tag name validation | `GameFileService`/`PlayerService`, `TagService` | low | done: archive/unarchive `27e033c`; tag name check in `TagService.ValidateTagName` |
 | V6 | `MainForm.Player.cs:201-296`, `MainForm.Stash.cs:46-130` | Load error → message mapping, copied 5 times | a load facade returning results + messages | low | done `186297d` |
 | V7 | `StashPanel.cs:384-614`, `StashPanel.BagButtons.cs:113-206`, `BagButtonBase.cs:245-263` | Bag id clamping, tooltip settings switch (3 copies) | `StashService`, a tooltip policy over `UserSettings` | low | done `a10f6bd` |
 
@@ -136,7 +136,7 @@ Each lot is one commit (or a few), with unit tests on the moved code, and is che
 `tqvault` MCP.
 
 1. **Bugs** found above, each with a test where the code allows it. Done.
-2. **Quick wins, low risk**: I1, I3, I6, T4, T6, V5, V6, S6. Done (T6 and V5 partial).
+2. **Quick wins, low risk**: I1, I3, I6, T4, T6, V5, V6, S6. Done (T6 partial).
 3. **Vaults and characters**: V1, V2, V3, V4, V7. Done.
 4. **Item editing and moves**: I5, I7, I10, T7, T8, I2, I4. Done.
 5. **Import/export and startup**: S7, S2, S4, S3. Done.
