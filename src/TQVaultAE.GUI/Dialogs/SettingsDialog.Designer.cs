@@ -1241,6 +1241,7 @@ namespace TQVaultAE.GUI.Dialogs
 			// bufferedTableLayoutPanelSkeleton
 			// 
 			bufferedTableLayoutPanelSkeleton.AutoSize = true;
+			bufferedTableLayoutPanelSkeleton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 			bufferedTableLayoutPanelSkeleton.ColumnCount = 5;
 			bufferedTableLayoutPanelSkeleton.ColumnStyles.Add(new ColumnStyle());
 			bufferedTableLayoutPanelSkeleton.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 5F));
