@@ -350,15 +350,6 @@ public partial class MainForm
 
 		if (settingsDialog.ShowDialog() == DialogResult.OK && settingsDialog.ConfigurationChanged)
 		{
-			if (settingsDialog.PlayerFilterChanged)
-			{
-				this.comboBoxCharacter.SelectedItem = Resources.MainFormSelectCharacter;
-				if (this.playerPanel.Player != null)
-					this.playerPanel.Player = null;
-
-				this.GetPlayerList();
-			}
-
 			if (settingsDialog.VaultPathChanged)
 			{
 				GamePathResolver.TQVaultSaveFolder = settingsDialog.VaultPath;
@@ -372,11 +363,7 @@ public partial class MainForm
 				soundSrv.InitAllPlayers();
 			}
 
-			var restartReason = RestartRule.Evaluate(
-				settingsDialog.LanguageChanged
-				, settingsDialog.GamePathChanged
-				, settingsDialog.CustomMapsChanged
-				, settingsDialog.UISettingChanged);
+			var restartReason = settingsDialog.RestartReason;
 
 			if (restartReason != RestartReason.None)
 			{

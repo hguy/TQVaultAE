@@ -17,6 +17,7 @@ using System.Diagnostics;
 using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Services;
 
 namespace TQVaultAE.GUI.Dialogs;
 
@@ -27,142 +28,25 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 {
 	#region Properties & Fields
 
-	public string BaseFont { get; private set; } = string.Empty;
-
 	/// <summary>
-	/// Indicates whether the last opened vault will be loaded at startup
+	/// The settings being edited, with the rules between them and the changes made.
 	/// </summary>
-	private bool loadLastVault;
-
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.EnableTQVaultSounds"/> setting has been changed
-	/// </summary>
-	public bool enableTQVaultSounds;
-
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.EnableItemRequirementRestriction"/> setting has been changed
-	/// </summary>
-	public bool enableItemRequirementRestriction;
-
-	/// <summary>
-	/// Indicates whether the title screen will be skipped on startup
-	/// </summary>
-	private bool skipTitle;
+	private SettingsEditor editor = new(new SettingsValues());
 
 	/// <summary>
 	/// Save path for the vault files
 	/// </summary>
-	public string VaultPath { get; private set; } = string.Empty;
-
-	/// <summary>
-	/// Indicates whether item copying is allowed
-	/// </summary>
-	private bool allowItemCopy;
-
-	/// <summary>
-	/// Indicates whether item editing is allowed
-	/// </summary>
-	private bool allowItemEdit;
-
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.EnableEpicLegendaryAffixes"/> setting has been changed
-	/// </summary>
-	public bool EnableEpicLegendaryAffixes;
-
-	/// <summary>
-	/// Indicates whether character editing is allowed
-	/// </summary>
-	private bool allowCharacterEdit;
-
-	/// <summary>
-	/// Indicates whether the last opened character will be loaded at startup
-	/// </summary>
-	private bool loadLastCharacter;
-
-	/// <summary>
-	/// Indicates whether the language will be auto detected
-	/// </summary>
-	private bool detectLanguage;
-
-	/// <summary>
-	/// Activate the alternative Tooltip display
-	/// </summary>
-	private bool enableDetailedTooltipView;
-	private bool showInGameValues;
-	private bool tooltipShowInGameRolls;
-	private bool tooltipShowValueRanges;
-	private bool tooltipShowGrantedSkills;
-	private bool tooltipShowSetPieceCounts;
-
-	/// <summary>
-	/// Value Range (0-255) for item background color opacity
-	/// </summary>
-	private int itemBGColorOpacity;
-
-	/// <summary>
-	/// The language we will be using.
-	/// </summary>
-	private string titanQuestLanguage = string.Empty;
-
-	/// <summary>
-	/// Indicates whether the game paths will be auto detected
-	/// </summary>
-	private bool detectGamePath;
-
-	/// <summary>
-	/// Titan Quest game path
-	/// </summary>
-	private string titanQuestPath = string.Empty;
-
-	/// <summary>
-	/// Immortal Throne game path
-	/// </summary>
-	private string immortalThronePath = string.Empty;
-
-	/// <summary>
-	/// Indicates whether custom maps have been enabled
-	/// </summary>
-	private bool enableMods;
-
-	/// <summary>
-	/// Current custom map
-	/// </summary>
-	private string customMap = string.Empty;
-
-	/// <summary>
-	/// Indicates whether we are loading all data files on startup
-	/// </summary>
-	private bool loadAllFiles;
-
-	/// <summary>
-	/// Indicates whether warning messages are suppressed
-	/// </summary>
-	private bool suppressWarnings;
-
-	/// <summary>
-	/// Indicates whether player items will be readonly.
-	/// </summary>
-	private bool playerReadonly;
+	public string VaultPath => this.editor.Current.VaultPath;
 
 	/// <summary>
 	/// Indicates whether the vault path has been changed
 	/// </summary>
-	public bool VaultPathChanged { get; private set; }
-
-	/// <summary>
-	/// Indicates whether the play list filter has been changed
-	/// </summary>
-	public bool PlayerFilterChanged { get; private set; }
+	public bool VaultPathChanged => this.editor.VaultPathChanged;
 
 	/// <summary>
 	/// Indicates that any configuration item has been changed
 	/// </summary>
-	public bool ConfigurationChanged { get; private set; }
-
-	/// <summary>
-	/// Indicates that the UI setting has changed.
-	/// </summary>
-	public bool UISettingChanged { get; private set; }
+	public bool ConfigurationChanged => this.editor.ConfigurationChanged;
 
 	/// <summary>
 	/// Indicates that the settings have been loaded
@@ -172,127 +56,27 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 	/// <summary>
 	/// Indicates that the ItemBGColorOpacity setting has been changed
 	/// </summary>
-	public bool ItemBGColorOpacityChanged { get; private set; }
+	public bool ItemBGColorOpacityChanged => this.editor.ItemBGColorOpacityChanged;
 
 	/// <summary>
 	/// Indicates that the <see cref="Config.UserSettings.EnableItemRequirementRestriction"/> setting has been changed
 	/// </summary>
-	public bool EnableItemRequirementRestrictionChanged { get; private set; }
+	public bool EnableItemRequirementRestrictionChanged => this.editor.EnableItemRequirementRestrictionChanged;
 
 	/// <summary>
 	/// Indicates that the allow character edit setting has been changed.
 	/// </summary>
-	public bool EnableCharacterEditChanged { get; private set; }
-
-	/// <summary>
-	/// Enale the hot reload feature
-	/// </summary>
-	private bool enableHotReload;
-
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.EnableHotReload"/> setting has been changed
-	/// </summary>
-	public bool EnableHotReloadChanged { get; private set; }
-
-	/// <summary>
-	/// Indicates that the language setting has been changed
-	/// </summary>
-	public bool LanguageChanged { get; private set; }
-
-	/// <summary>
-	/// Indicates that the game language has been changed
-	/// </summary>
-	public bool GamePathChanged { get; private set; }
-
-	/// <summary>
-	/// Indicates that the custom map selection has changed
-	/// </summary>
-	public bool CustomMapsChanged { get; private set; }
+	public bool EnableCharacterEditChanged => this.editor.EnableCharacterEditChanged;
 
 	/// <summary>
 	/// Indicates that the <see cref="Config.UserSettings.EnableTQVaultSounds"/> setting has been changed
 	/// </summary>
-	public bool EnableTQVaultSoundsChanged { get; private set; }
+	public bool EnableTQVaultSoundsChanged => this.editor.EnableTQVaultSoundsChanged;
 
 	/// <summary>
-	/// Disable auto stacking last value
+	/// Why the changes need a restart, if they do.
 	/// </summary>
-	private bool disableAutoStacking;
-
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.DisableAutoStacking"/> setting has been changed
-	/// </summary>
-	public bool DisableAutoStackingChanged { get; private set; }
-
-	/// <summary>
-	/// AllowCheats last value
-	/// </summary>
-	private bool allowCheats;
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.AllowCheats"/> setting has been changed
-	/// </summary>
-	public bool AllowCheatsChanged { get; private set; }
-
-	/// <summary>
-	/// enableGitBackup last value
-	/// </summary>
-	private bool enableGitBackup;
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.GitBackupEnabled"/> setting has been changed
-	/// </summary>
-	public bool GitBackupEnabledChanged { get; private set; }
-
-	/// <summary>
-	/// gitBackupRepository last value
-	/// </summary>
-	private string gitBackupRepository = string.Empty;
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.GitBackupRepository"/> setting has been changed
-	/// </summary>
-	public bool GitBackupRepositoryChanged { get; private set; }
-
-	/// <summary>
-	/// disableLegacyBackup last value
-	/// </summary>
-	private bool disableLegacyBackup;
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.DisableLegacyBackup"/> setting has been changed
-	/// </summary>
-	public bool DisableLegacyBackupChanged { get; private set; }
-
-	/// <summary>
-	/// enableBackupPlayerSaves last value
-	/// </summary>
-	private bool enableBackupPlayerSaves;
-
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.GitBackupPlayerSavesEnabled"/> setting has been changed
-	/// </summary>
-	public bool EnableBackupPlayerSavesChanged { get; private set; }
-
-	/// <summary>
-	/// enableOriginalTQSupport last value
-	/// </summary>
-	private bool enableOriginalTQSupport;
-	/// <summary>
-	/// Indicates that the <see cref="Config.UserSettings.EnableOriginalTQSupport"/> setting has been changed
-	/// </summary>
-	public bool EnableOriginalTQSupportChanged { get; private set; }
-
-	/// <summary>
-	/// PasteBin API Key
-	/// </summary>
-	private string pasteBinApiKey = string.Empty;
-
-	/// <summary>
-	/// PasteBin paste expiration
-	/// </summary>
-	private string pasteBinExpiration = string.Empty;
-
-	/// <summary>
-	/// Indicates that the PasteBin settings have been changed
-	/// </summary>
-	public bool PasteBinSettingsChanged { get; private set; }
+	public RestartReason RestartReason => this.editor.RestartReason;
 
 	private static readonly Dictionary<string, string> PasteBinExpirationOptions = new()
 	{
@@ -516,57 +300,13 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 	/// </summary>
 	private void LoadSettings()
 	{
-		this.BaseFont = USettings.BaseFont;
-
-		this.skipTitle = USettings.SkipTitle;
-		this.VaultPath = USettings.VaultPath;
-		this.allowItemCopy = USettings.AllowItemCopy;
-		this.allowItemEdit = USettings.AllowItemEdit;
-		this.allowCharacterEdit = USettings.AllowCharacterEdit;
-		this.loadLastCharacter = USettings.LoadLastCharacter;
-		this.loadLastVault = USettings.LoadLastVault;
-		this.detectLanguage = USettings.AutoDetectLanguage;
-		this.enableDetailedTooltipView = USettings.EnableDetailedTooltipView;
-		this.showInGameValues = USettings.ShowInGameValues;
-		this.tooltipShowInGameRolls = USettings.TooltipShowInGameRolls;
-		this.tooltipShowValueRanges = USettings.TooltipShowValueRanges;
-		this.tooltipShowGrantedSkills = USettings.TooltipShowGrantedSkills;
-		this.tooltipShowSetPieceCounts = USettings.TooltipShowSetPieceCounts;
-		this.itemBGColorOpacity = USettings.ItemBGColorOpacity;
-		this.enableItemRequirementRestriction = USettings.EnableItemRequirementRestriction;
-		this.enableHotReload = USettings.EnableHotReload;
-		this.enableTQVaultSounds = USettings.EnableTQVaultSounds;
-		this.EnableEpicLegendaryAffixes = USettings.EnableEpicLegendaryAffixes;
-		this.disableAutoStacking = USettings.DisableAutoStacking;
-		this.allowCheats = USettings.AllowCheats;
-		this.enableGitBackup = USettings.GitBackupEnabled;
-		this.disableLegacyBackup = USettings.DisableLegacyBackup;
-		this.gitBackupRepository = USettings.GitBackupRepository;
-		this.enableBackupPlayerSaves = USettings.GitBackupPlayerSavesEnabled;
-		this.enableOriginalTQSupport = USettings.EnableOriginalTQSupport;
-		this.pasteBinApiKey = USettings.PasteBinApiKey ?? string.Empty;
-		this.pasteBinExpiration = USettings.PasteBinExpiration ?? UserSettings.DefaultPasteBinExpiration;
-
 		// Force English since there was some issue with getting the proper language setting.
 		var gl = Database.GameLanguage;
-		this.titanQuestLanguage = gl == null ? "English" : gl;
+		var language = gl == null ? "English" : gl;
 
-		this.detectGamePath = USettings.AutoDetectGamePath;
-		this.titanQuestPath = GamePathResolver.GamePathTQ;
-		this.immortalThronePath = GamePathResolver.GamePathTQIT;
-		this.enableMods = USettings.ModEnabled;
-		this.customMap = USettings.CustomMap;
-		this.loadAllFiles = USettings.LoadAllFiles;
-		this.suppressWarnings = USettings.SuppressWarnings;
-		this.playerReadonly = USettings.PlayerReadonly;
+		this.editor = new SettingsEditor(SettingsValues.From(USettings, language, GamePathResolver.GamePathTQ, GamePathResolver.GamePathTQIT));
 
 		this.settingsLoaded = true;
-		this.ConfigurationChanged = false;
-		this.VaultPathChanged = false;
-		this.PlayerFilterChanged = false;
-		this.LanguageChanged = false;
-		this.GamePathChanged = false;
-		this.UISettingChanged = false;
 	}
 
 	/// <summary>
@@ -577,6 +317,11 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 		// Check to see that we can update things
 		if (!this.settingsLoaded)
 			return;
+
+		var values = this.editor.Current;
+
+		// Read before the language combo box is cleared, which can raise its handler with no selection.
+		var language = values.TQLanguage;
 
 		this.SuspendLayout();
 
@@ -595,64 +340,65 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 
 		this.languageComboBox.Items.AddRange(languages);
 
-		this.vaultPathTextBox.Text = this.VaultPath;
-		this.skipTitleCheckBox.Checked = this.skipTitle;
-		this.allowItemEditCheckBox.Checked = this.allowItemEdit;
-		this.allowItemCopyCheckBox.Checked = this.allowItemCopy;
-		this.characterEditCheckBox.Checked = this.allowCharacterEdit;
-		this.loadLastCharacterCheckBox.Checked = this.loadLastCharacter;
-		this.loadLastVaultCheckBox.Checked = this.loadLastVault;
-		this.detectLanguageCheckBox.Checked = this.detectLanguage;
-		this.detectGamePathsCheckBox.Checked = this.detectGamePath;
-		this.immortalThronePathTextBox.Text = this.immortalThronePath;
-		this.immortalThronePathTextBox.Enabled = !this.detectGamePath;
-		this.immortalThronePathBrowseButton.Enabled = !this.detectGamePath;
-		this.titanQuestPathTextBox.Text = this.titanQuestPath;
-		this.titanQuestPathTextBox.Enabled = !this.detectGamePath;
-		this.titanQuestPathBrowseButton.Enabled = !this.detectGamePath;
-		this.loadAllFilesCheckBox.Checked = this.loadAllFiles;
-		this.suppressWarningsCheckBox.Checked = this.suppressWarnings;
-		this.playerReadonlyCheckbox.Checked = this.playerReadonly;
-		this.checkGroupBoxTooltipEnhanced.Checked = this.enableDetailedTooltipView;
-		this.scalingCheckBoxTooltipInGameRolls.Checked = this.tooltipShowInGameRolls;
-		this.scalingCheckBoxTooltipValueRanges.Checked = this.tooltipShowValueRanges;
-		this.scalingCheckBoxTooltipGrantedSkills.Checked = this.tooltipShowGrantedSkills;
-		this.scalingCheckBoxTooltipSetPieceCounts.Checked = this.tooltipShowSetPieceCounts;
-		this.ShowInGameValuesCheckBox.Checked = this.showInGameValues;
-		this.ItemBGColorOpacityTrackBar.Value = this.itemBGColorOpacity;
-		this.EnableItemRequirementRestrictionCheckBox.Checked = this.enableItemRequirementRestriction;
-		this.hotReloadCheckBox.Checked = this.enableHotReload;
-		this.scalingCheckBoxEnableSounds.Checked = this.enableTQVaultSounds;
-		this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked = this.EnableEpicLegendaryAffixes;
-		this.scalingCheckBoxDisableAutoStacking.Checked = this.disableAutoStacking;
-		this.checkGroupBoxAllowCheats.Checked = this.allowCheats;
-		this.checkGroupBoxGitBackup.Checked = this.enableGitBackup;
-		this.scalingCheckBoxDisableLegacyBackup.Checked = this.disableLegacyBackup;
-		this.scalingTextBoxGitRepository.Text = this.gitBackupRepository;
-		this.scalingCheckBoxBackupPlayerSaves.Checked = this.enableBackupPlayerSaves;
-		this.checkGroupBoxOriginalTQSupport.Checked = this.enableOriginalTQSupport;
+		// The controls raise their handlers, which write back to the editor and apply its rules, as the fields did.
+		this.vaultPathTextBox.Text = values.VaultPath;
+		this.skipTitleCheckBox.Checked = values.SkipTitle;
+		this.allowItemEditCheckBox.Checked = values.AllowItemEdit;
+		this.allowItemCopyCheckBox.Checked = values.AllowItemCopy;
+		this.characterEditCheckBox.Checked = values.AllowCharacterEdit;
+		this.loadLastCharacterCheckBox.Checked = values.LoadLastCharacter;
+		this.loadLastVaultCheckBox.Checked = values.LoadLastVault;
+		this.detectLanguageCheckBox.Checked = values.AutoDetectLanguage;
+		this.detectGamePathsCheckBox.Checked = values.AutoDetectGamePath;
+		this.immortalThronePathTextBox.Text = values.TQITPath;
+		this.immortalThronePathTextBox.Enabled = !values.AutoDetectGamePath;
+		this.immortalThronePathBrowseButton.Enabled = !values.AutoDetectGamePath;
+		this.titanQuestPathTextBox.Text = values.TQPath;
+		this.titanQuestPathTextBox.Enabled = !values.AutoDetectGamePath;
+		this.titanQuestPathBrowseButton.Enabled = !values.AutoDetectGamePath;
+		this.loadAllFilesCheckBox.Checked = values.LoadAllFiles;
+		this.suppressWarningsCheckBox.Checked = values.SuppressWarnings;
+		this.playerReadonlyCheckbox.Checked = values.PlayerReadonly;
+		this.checkGroupBoxTooltipEnhanced.Checked = values.EnableDetailedTooltipView;
+		this.scalingCheckBoxTooltipInGameRolls.Checked = values.TooltipShowInGameRolls;
+		this.scalingCheckBoxTooltipValueRanges.Checked = values.TooltipShowValueRanges;
+		this.scalingCheckBoxTooltipGrantedSkills.Checked = values.TooltipShowGrantedSkills;
+		this.scalingCheckBoxTooltipSetPieceCounts.Checked = values.TooltipShowSetPieceCounts;
+		this.ShowInGameValuesCheckBox.Checked = values.ShowInGameValues;
+		this.ItemBGColorOpacityTrackBar.Value = values.ItemBGColorOpacity;
+		this.EnableItemRequirementRestrictionCheckBox.Checked = values.EnableItemRequirementRestriction;
+		this.hotReloadCheckBox.Checked = values.EnableHotReload;
+		this.scalingCheckBoxEnableSounds.Checked = values.EnableTQVaultSounds;
+		this.scalingCheckBoxEnableEpicLegendaryAffixes.Checked = values.EnableEpicLegendaryAffixes;
+		this.scalingCheckBoxDisableAutoStacking.Checked = values.DisableAutoStacking;
+		this.checkGroupBoxAllowCheats.Checked = values.AllowCheats;
+		this.checkGroupBoxGitBackup.Checked = values.GitBackupEnabled;
+		this.scalingCheckBoxDisableLegacyBackup.Checked = values.DisableLegacyBackup;
+		this.scalingTextBoxGitRepository.Text = values.GitBackupRepository;
+		this.scalingCheckBoxBackupPlayerSaves.Checked = values.GitBackupPlayerSavesEnabled;
+		this.checkGroupBoxOriginalTQSupport.Checked = values.EnableOriginalTQSupport;
 
-		this.pasteBinApiKeyTextBox.Text = this.pasteBinApiKey;
+		this.pasteBinApiKeyTextBox.Text = values.PasteBinApiKey;
 
-		PasteBinExpirationOptions.TryGetValue(this.pasteBinExpiration, out var expLabel);
+		PasteBinExpirationOptions.TryGetValue(values.PasteBinExpiration, out var expLabel);
 		if (expLabel != null)
 		{
 			this.pasteBinExpirationComboBox.SelectedItem = this.pasteBinExpirationComboBox.Items
 				.OfType<PasteBinExpirationComboBoxItem>()
-				.FirstOrDefault(i => i.Key == this.pasteBinExpiration);
+				.FirstOrDefault(i => i.Key == values.PasteBinExpiration);
 		}
 
-		this.enableCustomMapsCheckBox.Checked = this.enableMods;
+		this.enableCustomMapsCheckBox.Checked = values.ModEnabled;
 
 		var lst = this.mapListComboBox.Items.Cast<GamePathEntry>();
-		var found = lst.Where(m => m.Path == this.customMap).FirstOrDefault();
+		var found = lst.Where(m => m.Path == values.CustomMap).FirstOrDefault();
 		this.mapListComboBox.SelectedItem = found;
 
-		this.mapListComboBox.Enabled = this.enableMods;
+		this.mapListComboBox.Enabled = values.ModEnabled;
 
-		this.languageComboBox.SelectedItem = languages.FirstOrDefault(cb => cb.Value.Equals(this.titanQuestLanguage, StringComparison.OrdinalIgnoreCase));
+		this.languageComboBox.SelectedItem = languages.FirstOrDefault(cb => cb.Value.Equals(language,StringComparison.OrdinalIgnoreCase));
 
-		this.languageComboBox.Enabled = !this.detectLanguage;
+		this.languageComboBox.Enabled = !values.AutoDetectLanguage;
 
 		// Build Font combo box
 		this.baseFontComboBox.Items.Clear();
@@ -663,7 +409,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 				DisplayName = m.AsString(EnumFormat.Description, EnumFormat.Name) ?? string.Empty
 			}).ToArray();
 		this.baseFontComboBox.Items.AddRange(listItem);
-		this.baseFontComboBox.SelectedItem = listItem.Where(i => i.Value == this.BaseFont).FirstOrDefault() ?? listItem.First();
+		this.baseFontComboBox.SelectedItem = listItem.Where(i => i.Value == values.BaseFont).FirstOrDefault() ?? listItem.First();
 
 		// Build CsvDelim combo box
 		this.scalingComboBoxCSVDelim.Items.Clear();
@@ -691,8 +437,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 
 	private void ItemBGColorOpacityTrackBar_Scroll(object? sender, EventArgs e)
 	{
-		this.itemBGColorOpacity = this.ItemBGColorOpacityTrackBar.Value;
-		this.ConfigurationChanged = this.ItemBGColorOpacityChanged = true;
+		this.editor.Current.ItemBGColorOpacity = this.ItemBGColorOpacityTrackBar.Value;
 	}
 
 	/// <summary>
@@ -717,12 +462,7 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 
 	private void scalingTextBoxGitRepository_TextChanged(object? sender, EventArgs e)
 	{
-		// Changed
-		if (this.gitBackupRepository != scalingTextBoxGitRepository.Text)
-		{
-			this.gitBackupRepository = scalingTextBoxGitRepository.Text;
-			this.ConfigurationChanged = this.UISettingChanged = this.GitBackupRepositoryChanged = true;
-		}
+		this.editor.Current.GitBackupRepository = this.scalingTextBoxGitRepository.Text;
 	}
 
 	private void linkLabelTQOriginalSupport_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
@@ -737,11 +477,6 @@ internal sealed partial class SettingsDialog : VaultForm, IScalingControl
 
 	private void PasteBinApiKeyTextBoxTextChanged(object? sender, EventArgs e)
 	{
-		string newValue = this.pasteBinApiKeyTextBox.Text ?? string.Empty;
-		if (newValue != this.pasteBinApiKey)
-		{
-			this.pasteBinApiKey = newValue;
-			this.ConfigurationChanged = this.PasteBinSettingsChanged = true;
-		}
+		this.editor.Current.PasteBinApiKey = this.pasteBinApiKeyTextBox.Text ?? string.Empty;
 	}
 }
