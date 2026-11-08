@@ -441,6 +441,7 @@ public partial class SearchDialogAdvanced : VaultForm
 			this.flowLayoutPanelMain.ResumeLayout(true);
 			stepTimes.Add(stepWatch.ElapsedMilliseconds);
 		}
+		this.FitCategoriesHeight();
 		this.Log.LogInformation(
 			"Search dialog build: data {DataMs} ms, UI steps [{Steps}] ms (last is ResumeLayout), list items [{Items}]"
 			, dataBuilt
@@ -465,6 +466,28 @@ public partial class SearchDialogAdvanced : VaultForm
 		base.OnDpiChanged(e);
 		this.AdjustCheckBoxesWidth();
 		this.AdjustCheckBoxesHeight();
+		this.FitCategoriesHeight();
+	}
+
+	/// <summary>
+	/// Grows the dialog when the categories overflow their area by a few pixels: the rows are sized from the fonts, which
+	/// do not scale exactly with the DPI (at 96 DPI the five rows took 10 pixels more than the area and both scroll bars
+	/// showed). A larger overflow, from more visible elements per category, is left to the scroll bars.
+	/// </summary>
+	private void FitCategoriesHeight()
+	{
+		var area = this.flowLayoutPanelMainAutoScroll;
+		area.PerformLayout();
+		int overflow = this.flowLayoutPanelMain.Height + this.flowLayoutPanelMain.Margin.Vertical
+			- (area.Height - area.Padding.Vertical);
+		if (overflow <= 0 || overflow > area.Height / 10)
+			return;
+
+		var screen = Screen.FromControl(this).WorkingArea;
+		int height = Math.Min(this.Height + overflow, screen.Height);
+		int top = Math.Max(screen.Top, Math.Min(this.Top, screen.Bottom - height));
+		this.SetBounds(this.Left, top, this.Width, height);
+		this.LastFormSize = this.Size;
 	}
 
 	private void AdjustCheckBoxesWidth()
