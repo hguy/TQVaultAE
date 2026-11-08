@@ -6,6 +6,7 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.Extensions.Logging;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Dialogs;
@@ -348,11 +349,7 @@ public partial class SackPanel
 		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
-			// change the item
-			focusedItem.suffixID = RecordId.Empty;
-			focusedItem.suffixInfo = null;
-			// mark the sack as modified also
-			this.ShownSack.IsModified = focusedItem.IsModified = true;
+			this.Services.ItemEditService.RemoveSuffix(this.ShownSack, focusedItem);
 			this.InvalidateItemCacheAll(focusedItem);
 		}
 	}
@@ -362,11 +359,7 @@ public partial class SackPanel
 		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem is not null)
 		{
-			// change the item
-			focusedItem.prefixID = RecordId.Empty;
-			focusedItem.prefixInfo = null;
-			// mark the sack as modified also
-			this.ShownSack.IsModified = focusedItem.IsModified = true;
+			this.Services.ItemEditService.RemovePrefix(this.ShownSack, focusedItem);
 			this.InvalidateItemCacheAll(focusedItem);
 		}
 	}
@@ -382,21 +375,10 @@ public partial class SackPanel
 		if (focusedItem is not null)
 		{
 			ToolStripMenuItem? menuItem = sender as ToolStripMenuItem;
-			if (menuItem is not null)
+			if (menuItem is not null
+				&& this.Services.ItemEditService.ChangeSuffix(this.ShownSack, focusedItem, menuItem.Name.ToRecordId()))
 			{
-				string? newAffix = menuItem.Name;
-				var newAffixId = newAffix.ToRecordId();
-
-				// See if the bonus is different
-				if (newAffixId != focusedItem.suffixID)
-				{
-					// change the item
-					focusedItem.suffixID = newAffixId;
-					focusedItem.suffixInfo = Database.GetInfo(newAffixId);
-					// mark the sack as modified also
-					this.ShownSack.IsModified = focusedItem.IsModified = true;
-					this.InvalidateItemCacheAll(focusedItem);
-				}
+				this.InvalidateItemCacheAll(focusedItem);
 			}
 		}
 	}
@@ -412,21 +394,10 @@ public partial class SackPanel
 		if (focusedItem is not null)
 		{
 			ToolStripMenuItem? menuItem = sender as ToolStripMenuItem;
-			if (menuItem is not null)
+			if (menuItem is not null
+				&& this.Services.ItemEditService.ChangePrefix(this.ShownSack, focusedItem, menuItem.Name.ToRecordId()))
 			{
-				string? newAffix = menuItem.Name;
-				var newAffixId = newAffix.ToRecordId();
-
-				// See if the bonus is different
-				if (newAffixId != focusedItem.prefixID)
-				{
-					// change the item
-					focusedItem.prefixID = newAffixId;
-					focusedItem.prefixInfo = Database.GetInfo(newAffixId);
-					// mark the sack as modified also
-					this.ShownSack.IsModified = focusedItem.IsModified = true;
-					this.InvalidateItemCacheAll(focusedItem);
-				}
+				this.InvalidateItemCacheAll(focusedItem);
 			}
 		}
 	}
@@ -446,30 +417,10 @@ public partial class SackPanel
 
 			var isRelic1 = (menuItem?.Tag as bool?) ?? false;
 
-			if (menuItem is not null)
+			if (menuItem is not null
+				&& this.Services.ItemEditService.ChangeCompletionBonus(this.ShownSack, focusedItem, menuItem.Name.ToRecordId(), secondRelic: !isRelic1))
 			{
-				string? newBonus = menuItem.Name;
-				var newBonusId = newBonus.ToRecordId();
-
-				// See if the bonus is different
-				var relicId = isRelic1 ? focusedItem.RelicBonusId : focusedItem.RelicBonus2Id;
-				if (newBonusId != relicId)
-				{
-					// change the item
-					if (isRelic1)
-					{
-						focusedItem.RelicBonusId = newBonusId;
-						focusedItem.RelicBonusInfo = Database.GetInfo(newBonusId);
-					}
-					else
-					{
-						focusedItem.RelicBonus2Id = newBonusId;
-						focusedItem.RelicBonus2Info = Database.GetInfo(newBonusId);
-					}
-					// mark the sack as modified also
-					this.ShownSack.IsModified = focusedItem.IsModified = true;
-					this.InvalidateItemCacheAll(focusedItem);
-				}
+				this.InvalidateItemCacheAll(focusedItem);
 			}
 		}
 	}
@@ -486,23 +437,10 @@ public partial class SackPanel
 		if (focusedItem != null)
 		{
 			ToolStripMenuItem? item = (ToolStripMenuItem)sender!;
-			if (item != null)
+			if (item != null
+				&& this.Services.ItemEditService.ChangeCompletionBonus(this.ShownSack, focusedItem, item.Name.ToRecordId()))
 			{
-				string? newBonus = item.Name;
-				var newBonusId = newBonus.ToRecordId();
-
-				// See if the bonus is different
-				if (newBonusId != focusedItem.RelicBonusId)
-				{
-					// change the item
-					focusedItem.RelicBonusId = newBonusId;
-					focusedItem.RelicBonusInfo = Database.GetInfo(newBonusId);
-					focusedItem.IsModified = true;
-
-					// mark the sack as modified also
-					this.ShownSack.IsModified = true;
-					this.InvalidateItemCacheAll(focusedItem);
-				}
+				this.InvalidateItemCacheAll(focusedItem);
 			}
 		}
 	}
@@ -517,8 +455,8 @@ public partial class SackPanel
 		Item? focusedItem = this.FindItem(this.contextMenuCellWithFocus);
 		if (focusedItem != null || this.selectedItems != null)
 		{
-			string? selectedMenuItem = e.ClickedItem?.Text;
-			if (selectedMenuItem == Resources.SackPanelMenuDelete)
+			var action = e.ClickedItem?.Tag as ItemActions? ?? ItemActions.None;
+			if (action == ItemActions.Delete)
 			{
 				if (this.selectedItems != null)
 				{
@@ -539,8 +477,7 @@ public partial class SackPanel
 			{
 				// The other entries apply to the focused item.
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuRemoveRelic
-				|| selectedMenuItem == Resources.SackPanelMenuRemoveRelic2)
+			else if (action is ItemActions.RemoveRelic or ItemActions.RemoveRelic2)
 			{
 				if (USettings.SuppressWarnings || this.Services.MessageBoxes.Confirm(Resources.SackPanelRemoveRelicMsg, Resources.SackPanelMenuRemoveRelic))
 				{
@@ -548,16 +485,11 @@ public partial class SackPanel
 					this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 					// pull out the relic
-					Item? relic = selectedMenuItem == Resources.SackPanelMenuRemoveRelic
-						? ItemProvider.RemoveRelic1(focusedItem)
-						: ItemProvider.RemoveRelic2(focusedItem);
-
-					if (relic is null || !relic.IsRelicOrCharm)
+					Item? relic = this.Services.ItemEditService.RemoveRelic(this.ShownSack, focusedItem, secondSlot: action == ItemActions.RemoveRelic2);
+					if (relic is null)
 					{
-						// God mode in the Forge can socket anything (a weapon, an affix...). Only relics and charms
-						// come back to be placed; anything else is simply removed with the slot.
+						// Only relics and charms come back to be placed; anything else is removed with the slot.
 						this.DragInfo.Cancel();
-						this.ShownSack.IsModified = true;
 						this.UIService.NotifyUser(Resources.SackPanelSocketedNotAnItem, TQColor.Yellow);
 					}
 					else
@@ -570,37 +502,27 @@ public partial class SackPanel
 					Refresh();
 				}
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuCopy)
+			else if (action is ItemActions.Copy or ItemActions.Duplicate)
 			{
 				// Set DragInfo to focused item.
 				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// copy the item
-				Item newItem = focusedItem.Duplicate(false);
+				Item newItem = action == ItemActions.Copy
+					? this.Services.ItemEditService.Copy(focusedItem)
+					: this.Services.ItemEditService.Duplicate(focusedItem);
 
 				// now drag it
 				this.DragInfo.MarkModified(newItem);
 				Refresh();
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuDuplicate)
-			{
-				// Set DragInfo to focused item.
-				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
-
-				// copy the item
-				Item newItem = focusedItem.Duplicate(true);
-
-				// now drag it
-				this.DragInfo.MarkModified(newItem);
-				Refresh();
-			}
-			else if (selectedMenuItem == Resources.SackPanelMenuProperties)
+			else if (action == ItemActions.Properties)
 			{
 				var dlg = this.Services.Forms.Create<ItemProperties>();
 				dlg.Item = focusedItem;
 				dlg.ShowDialog();
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuSeed)
+			else if (action == ItemActions.Seed)
 			{
 				var dlg = this.Services.Forms.Create<ItemSeedDialog>();
 				dlg.SelectedItem = focusedItem;
@@ -615,59 +537,26 @@ public partial class SackPanel
 					this.InvalidateItemCacheItemTooltip(focusedItem);
 				}
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuSeedForce)
+			else if (action == ItemActions.ForceSeed)
 			{
-				int origSeed = focusedItem.Seed;
-				focusedItem.Seed = Item.GenerateSeed();
-				focusedItem.IsModified = true;
-
-				// See if the seed was changed
-				if (focusedItem.Seed != origSeed)
-				{
-					// Tell the sack that it has been modified
-					this.ShownSack.IsModified = true;
+				if (this.Services.ItemEditService.ForceSeed(this.ShownSack, focusedItem))
 					this.InvalidateItemCacheItemTooltip(focusedItem);
-				}
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuCharm || selectedMenuItem == Resources.SackPanelMenuRelic)
+			else if (action == ItemActions.CompleteRelic)
 			{
-				focusedItem.Number = 10;
-
-				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
-				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(focusedItem);
-
-				RecordId? bonusId = table?.PickWeighted(randPercent);
-				if (bonusId is not null)
-					focusedItem.RelicBonusId = bonusId;
-
-				ItemProvider.GetDBData(focusedItem);
-
-				focusedItem.IsModified = true;
-				this.ShownSack.IsModified = true;
+				this.Services.ItemEditService.CompleteRelic(this.ShownSack, focusedItem);
 				InvalidateItemCacheItemTooltip(focusedItem);
 				Refresh();
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuFormulae)
+			else if (action == ItemActions.CraftArtifact)
 			{
 				// Set DragInfo to focused item.
 				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// create artifact
-				Item? artifact = ItemProvider.CraftArtifact(focusedItem);
+				Item? artifact = this.Services.ItemEditService.CraftArtifact(focusedItem);
 				if (artifact is null)
 					return;
-
-				// generate bonus
-				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
-				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(artifact);
-
-				RecordId? bonusId = table?.PickWeighted(randPercent);
-				if (bonusId is not null)
-				{
-					artifact.RelicBonusId = bonusId;
-					artifact.RelicBonusInfo = Database.GetInfo(bonusId);
-					artifact.IsModified = true;
-				}
 
 				// Put artifact in DragInfo
 				this.DragInfo.MarkModified(artifact);
@@ -676,13 +565,13 @@ public partial class SackPanel
 
 				Refresh();
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuSplit)
+			else if (action == ItemActions.Split)
 			{
 				// Set DragInfo to focused item.
 				this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
 
 				// pull out all but one item
-				Item? newItem = focusedItem.PopAllButOneItem();
+				Item? newItem = this.Services.ItemEditService.Split(focusedItem);
 
 				// Put the item in DragInfo
 				if (newItem is not null)
@@ -692,7 +581,7 @@ public partial class SackPanel
 
 				Refresh();
 			}
-			else if (selectedMenuItem == Resources.SackPanelMenuClear)
+			else if (action == ItemActions.ClearSelection)
 			{
 				this.ClearSelection();
 				Refresh();

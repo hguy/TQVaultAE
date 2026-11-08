@@ -51,6 +51,7 @@ public sealed class GuiServices
 		, IStashService stashService
 		, IPlayerService playerService
 		, IForgeService forgeService
+		, IItemEditService itemEditService
 	)
 	{
 		this._loggerFactory = loggerFactory;
@@ -82,6 +83,7 @@ public sealed class GuiServices
 		this.StashService = stashService;
 		this.PlayerService = playerService;
 		this.ForgeService = forgeService;
+		this.ItemEditService = itemEditService;
 	}
 
 	/// <summary>Creates dialogs and gives access to the main form.</summary>
@@ -124,6 +126,9 @@ public sealed class GuiServices
 
 	/// <summary>Forge rules, God mode parts and the forge itself.</summary>
 	public IForgeService ForgeService { get; }
+
+	/// <summary>Item edits of the sack context menu: affixes, bonuses, relics, seed, copies.</summary>
+	public IItemEditService ItemEditService { get; }
 
 	/// <summary>Logger for <typeparamref name="T"/>.</summary>
 	public ILogger<T> Logger<T>() => this._loggerFactory.CreateLogger<T>();
