@@ -96,7 +96,11 @@ public partial class ItemTooltip
 				int height = 0;
 				foreach (var block in blocks)
 				{
-					if (columns.Count == 0 || height + separator + block.Height > maxHeight)
+					bool newColumn = columns.Count == 0 || height + separator + block.Height > maxHeight;
+#if DEBUG
+					this.AutomationRecorder?.PlaceSkill(newColumn);
+#endif
+					if (newColumn)
 					{
 						columns.Add([]);
 						height = -separator;
@@ -157,6 +161,9 @@ public partial class ItemTooltip
 
 		this.Controls.Add(panel);
 		panel.PerformLayout();
+#if DEBUG
+		this.AutomationRecorder?.SkillBlock(panel);
+#endif
 		try
 		{
 			return Rasterize(panel);
