@@ -101,7 +101,7 @@ internal static partial class AutomationTools
 					// A name without translation falls back to the record file name; a real name can be the same word
 					// ("Thunderclap"), so only the ones that look like a file name count: underscores or all lowercase.
 					if (skill.Name.Equals(System.IO.Path.GetFileNameWithoutExtension(skill.SkillId.Raw), StringComparison.OrdinalIgnoreCase)
-						&& (skill.Name.Contains('_') || skill.Name == skill.Name.ToLowerInvariant()))
+						&& (skill.Name.Contains('_') || !skill.Name.Any(char.IsUpper)))
 						Scan($"?file name as skill name {skill.Name}?", $"skill {skill.SkillId.Raw}");
 
 					foreach (var line in skill.Description.Concat(skill.Attributes))
