@@ -195,6 +195,12 @@ public partial class ToFriendlyNameResult
 	public string[] BaseAttributes { get; internal set; } = [];
 
 	/// <summary>
+	/// The lines of <see cref="BaseAttributes"/>, <see cref="PrefixAttributes"/> and <see cref="SuffixAttributes"/> merged in
+	/// the order the game lists them, for the classic display; null when they could not be merged.
+	/// </summary>
+	public string[]? ClassicAttributes { get; internal set; }
+
+	/// <summary>
 	/// One line per value changed by the in-game jitter ("database → in-game"), when <c>ShowInGameValues</c> is on.
 	/// </summary>
 	public string[] InGameRolls { get; internal set; } = [];

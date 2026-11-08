@@ -27,8 +27,10 @@ public partial class ItemProvider
 	/// <param name="recordId">string containing the database record id</param>
 	/// <param name="results">List for the results</param>
 	/// <param name="convertStrings">flag on whether we convert attributes to strings.</param>
+	/// <param name="lineSlots">Receives, for each line added to <paramref name="results"/>, where the game lists its attribute group.</param>
 	private void GetAttributesFromRecord(Item itm, DBRecordCollection? record, bool filtering, RecordId recordId, List<string> results, bool convertStrings = true
-		, IReadOnlyDictionary<string, ValueRange>? valueRanges = null, List<string?>? lineRanges = null, int? skillLevelIndex = null)
+		, IReadOnlyDictionary<string, ValueRange>? valueRanges = null, List<string?>? lineRanges = null, int? skillLevelIndex = null
+		, List<GameAttributeSlot>? lineSlots = null)
 	{
 		if (USettings.ItemDebugLevel > 0)
 		{
@@ -45,6 +47,8 @@ public partial class ItemProvider
 				Log.LogDebug("Error - record was null.");
 
 			results.Add("<unknown>");
+			while (lineSlots is not null && lineSlots.Count < results.Count)
+				lineSlots.Add(GameAttributeSlot.Other);
 			return;
 		}
 
@@ -187,9 +191,11 @@ public partial class ItemProvider
 			}
 		}
 
-		// Keep lineRanges aligned with results (one entry per line, null when no range).
+		// Keep lineRanges and lineSlots aligned with results (one entry per line).
 		while (lineRanges is not null && lineRanges.Count < results.Count)
 			lineRanges.Add(null);
+		while (lineSlots is not null && lineSlots.Count < results.Count)
+			lineSlots.Add(GameAttributeSlot.Other);
 
 		foreach (List<Variable?> attrList in attrArray)
 		{
@@ -202,6 +208,13 @@ public partial class ItemProvider
 			else
 				ConvertAttributeListToString(itm, record, attrList, recordId, results, skillLevelIndex);
 
+			if (lineSlots is not null)
+			{
+				var slot = this.GameSlotOf(itm, attrList);
+				while (lineSlots.Count < results.Count)
+					lineSlots.Add(slot);
+			}
+
 			// The group's possible in-game values go on its last line.
 			if (lineRanges is not null)
 			{
@@ -213,6 +226,18 @@ public partial class ItemProvider
 
 		if (USettings.ItemDebugLevel > 0)
 			Log.LogDebug("Exiting Item.GetAttributesFromRecord()");
+	}
+
+	/// <summary>
+	/// Gets where the game lists an attribute group, from its first variable.
+	/// </summary>
+	private GameAttributeSlot GameSlotOf(Item itm, List<Variable?> attributeList)
+	{
+		if (attributeList.FirstOrDefault(v => v is not null) is not { } first)
+			return GameAttributeSlot.Other;
+
+		bool isGlobal = ItemAttributeProvider.AttributeGroupHas(new Collection<Variable?>(attributeList), "Global");
+		return GameAttributeOrder.SlotOf(first.Name, ItemAttributeProvider.GetAttributeData(first.Name), isGlobal, physicalIsBase: itm.IsWeapon || itm.IsShield);
 	}
 
 	/// <summary>

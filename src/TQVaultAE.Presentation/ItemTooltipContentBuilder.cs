@@ -178,10 +178,9 @@ public class ItemTooltipContentBuilder
 		}
 		else
 		{
-			// Classic display
-			lines.AddRange(data.BaseAttributes.Select(s => TooltipLine.Of(s)));
-			lines.AddRange(data.PrefixAttributes.Select(s => TooltipLine.Of(s)));
-			lines.AddRange(data.SuffixAttributes.Select(s => TooltipLine.Of(s)));
+			// Classic display: base, prefix and suffix lines in the game's order.
+			var attributes = data.ClassicAttributes ?? [.. data.BaseAttributes, .. data.PrefixAttributes, .. data.SuffixAttributes];
+			lines.AddRange(attributes.Select(s => TooltipLine.Of(s)));
 		}
 
 		// In-game jitter comparison (database -> in-game), detailed view only
