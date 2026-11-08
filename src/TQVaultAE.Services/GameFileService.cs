@@ -509,10 +509,12 @@ public partial class GameFileService : IGameFileService
 			return null;
 	}
 
+	public string GetDuplicateCharacterFolder(string playerSaveDirectory, string newname)
+		=> this.PathIO.Combine(this.PathIO.GetDirectoryName(playerSaveDirectory), $"_{newname}");
+
 	public string DuplicateCharacterFiles(string playerSaveDirectory, string newname)
 	{
-		var baseFolder = this.PathIO.GetDirectoryName(playerSaveDirectory);
-		var newFolder = this.PathIO.Combine(baseFolder, $"_{newname}");
+		var newFolder = this.GetDuplicateCharacterFolder(playerSaveDirectory, newname);
 		var newPlayerFile = this.PathIO.Combine(newFolder, GamePathService.PlayerSaveFileName);
 
 		var playerFile = this.PathIO.Combine(playerSaveDirectory, GamePathService.PlayerSaveFileName);

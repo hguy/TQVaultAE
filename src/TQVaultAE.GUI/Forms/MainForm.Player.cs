@@ -8,6 +8,7 @@ using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.GUI.Forms;
@@ -311,49 +312,30 @@ public partial class MainForm
 		var ps = this.comboBoxCharacter.SelectedItem as PlayerSave;
 		if (ps is not null)
 		{
+			var existingNames = this.comboBoxCharacter.Items.OfType<PlayerSave>().Select(save => save.Name).ToList();
 
-		askAgain:
-			// Ask for new name
-			var newname = InputDialog.Show(Resources.DuplicateCharacter_NewNameRequired, Resources.DuplicateCharacter_ModalTitle, "NewName").Trim();
-			if (newname == string.Empty) return;// Cancel button
-
-			// validate new name
-			char[] invalidChars = this.PathIO.GetInvalidPathChars().Concat(this.PathIO.GetInvalidFileNameChars()).ToArray();
-			if (string.IsNullOrWhiteSpace(newname) || newname.IndexOfAny(invalidChars) > -1)
+			// Ask for a new name until it is valid or the dialog is cancelled.
+			string newname;
+			while (true)
 			{
-				this.Services.MessageBoxes.Inform(Resources.DuplicateCharacter_NewNameMustBeValid, Resources.DuplicateCharacter_ModalTitle, MessageBoxIcon.Error);
-				goto askAgain;
+				newname = InputDialog.Show(Resources.DuplicateCharacter_NewNameRequired, Resources.DuplicateCharacter_ModalTitle, "NewName").Trim();
+				if (newname == string.Empty) return;// Cancel button
+
+				var nameError = this.playerService.ValidateNewCharacterName(ps, newname, existingNames);
+				if (nameError == CharacterNameError.None)
+					break;
+
+				var message = nameError == CharacterNameError.AlreadyUsed
+					? Resources.DuplicateCharacter_NewNameAlreadyUsed
+					: Resources.DuplicateCharacter_NewNameMustBeValid;
+				this.Services.MessageBoxes.Inform(message, Resources.DuplicateCharacter_ModalTitle, MessageBoxIcon.Error);
 			}
 
-			var alreadyUsed = this.comboBoxCharacter.Items.OfType<PlayerSave>().Any(ps => newname.Equals(ps.Name, StringComparison.OrdinalIgnoreCase));
-			if (alreadyUsed)
+			var result = this.playerService.DuplicateCharacter(ps, newname);
+			if (!result.IsSuccess)
 			{
-				this.Services.MessageBoxes.Inform(Resources.DuplicateCharacter_NewNameAlreadyUsed, Resources.DuplicateCharacter_ModalTitle, MessageBoxIcon.Error);
-				goto askAgain;
-			}
-
-			string? newFolder = null;
-			try
-			{
-				// Duplicate File
-				newFolder = this.GameFileService.DuplicateCharacterFiles(ps.Folder, newname);
-				this.playerService.AlterNameInPlayerFileSave(newname, newFolder);
-			}
-			catch (Exception ex)
-			{
-				// Display Error
-				Log.LogError(ex, "{Message}", Resources.DuplicateCharacter_Error);
-				this.Services.MessageBoxes.ShowException(ex, Resources.DuplicateCharacter_Error, MessageBoxIcon.Error);
-				// Rollback IO
-				try
-				{
-					if (newFolder is not null) DirectoryIO.Delete(newFolder, true);
-				}
-				catch (Exception exx)
-				{
-					// log & mute
-					Log.LogError(exx, "{Message}", Resources.DuplicateCharacter_Error);
-				}
+				// Display Error; the partial copy is already removed.
+				this.Services.MessageBoxes.ShowException(result.Error, Resources.DuplicateCharacter_Error, MessageBoxIcon.Error);
 				return;
 			}
 

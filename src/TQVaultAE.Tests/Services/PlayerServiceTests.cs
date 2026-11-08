@@ -9,6 +9,7 @@ using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Services;
+using TQVaultAE.Application.DTOs;
 
 namespace TQVaultAE.Tests.Services;
 
@@ -30,6 +31,7 @@ public class PlayerServiceTests
 	private readonly Mock<PathIO> _mockPathIO;
 	private readonly SessionContext _sessionContext;
 	private readonly UserSettings _userSettings;
+	private readonly Mock<IDirectoryIO> _mockDirectoryIO;
 	private readonly PlayerService _playerService;
 
 	/// <summary>
@@ -65,6 +67,7 @@ public class PlayerServiceTests
 		_mockFileIO = new Mock<FileIO>();
 		_mockPathIO = new Mock<PathIO>();
 		_userSettings = new UserSettings();
+		_mockDirectoryIO = new Mock<IDirectoryIO>();
 
 		// Create SessionContext - parameterless data holder
 		_sessionContext = new SessionContext();
@@ -82,7 +85,8 @@ public class PlayerServiceTests
 			_mockTagService.Object,
 			_mockFileIO.Object,
 			_mockPathIO.Object,
-			_userSettings
+			_userSettings,
+			_mockDirectoryIO.Object
 		);
 	}
 
@@ -646,5 +650,120 @@ public class PlayerServiceTests
 
 		// Assert
 		act.Should().NotThrow();
+	}
+
+	private const string SourceFolder = """C:\Saves\Main\_Hero""";
+	private const string NewFolder = """C:\Saves\Main\_Copy""";
+
+	private PlayerSave SetupDuplication()
+	{
+		var source = CreatePlayerSave(SourceFolder);
+		_mockPathIO.Setup(x => x.GetInvalidPathChars()).Returns(['|']);
+		_mockPathIO.Setup(x => x.GetInvalidFileNameChars()).Returns(['/', '\\', ':', '*', '?', '"', '<', '>', '|']);
+		_mockGameFileService.Setup(x => x.GetDuplicateCharacterFolder(SourceFolder, It.IsAny<string>()))
+			.Returns<string, string>((_, name) => $"""C:\Saves\Main\_{name}""");
+		return source;
+	}
+
+	[Theory]
+	[InlineData("", CharacterNameError.Empty)]
+	[InlineData("   ", CharacterNameError.Empty)]
+	[InlineData("Bad:Name", CharacterNameError.InvalidCharacters)]
+	[InlineData("Pipe|Name", CharacterNameError.InvalidCharacters)]
+	[InlineData("HERO", CharacterNameError.AlreadyUsed)]
+	[InlineData("Copy", CharacterNameError.None)]
+	public void ValidateNewCharacterName_ReturnsFirstProblem(string newName, CharacterNameError expected)
+	{
+		var source = SetupDuplication();
+
+		var error = _playerService.ValidateNewCharacterName(source, newName, ["Hero", "Mage"]);
+
+		error.Should().Be(expected);
+	}
+
+	[Fact]
+	public void ValidateNewCharacterName_WhenTheTargetFolderExists_ReportsAlreadyUsed()
+	{
+		var source = SetupDuplication();
+		_mockDirectoryIO.Setup(x => x.Exists(NewFolder)).Returns(true);
+
+		var error = _playerService.ValidateNewCharacterName(source, "Copy", ["Hero"]);
+
+		error.Should().Be(CharacterNameError.AlreadyUsed);
+	}
+
+	[Fact]
+	public void DuplicateCharacter_CopiesFilesAndRenamesThePlayerFile()
+	{
+		var source = SetupDuplication();
+		var newPlayerFile = """C:\Saves\Main\_Copy\Player.chr""";
+		_mockGameFileService.Setup(x => x.DuplicateCharacterFiles(SourceFolder, "Copy")).Returns(NewFolder);
+		_mockGamePathService.Setup(x => x.PlayerSaveFileName).Returns("Player.chr");
+		_mockPathIO.Setup(x => x.Combine(NewFolder, "Player.chr")).Returns(newPlayerFile);
+		_mockFileIO.Setup(x => x.ReadAllBytes(newPlayerFile)).Returns([1, 2, 3]);
+
+		var result = _playerService.DuplicateCharacter(source, "Copy");
+
+		result.IsSuccess.Should().BeTrue();
+		result.NewFolder.Should().Be(NewFolder);
+		_mockFileIO.Verify(x => x.WriteAllBytes(newPlayerFile, It.IsAny<byte[]>()), Times.Once);
+		_mockDirectoryIO.Verify(x => x.Delete(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+	}
+
+	[Fact]
+	public void DuplicateCharacter_WhenRenamingFails_RemovesTheNewFolder()
+	{
+		var source = SetupDuplication();
+		var failure = new IOException("disk full");
+		_mockDirectoryIO.SetupSequence(x => x.Exists(NewFolder)).Returns(false).Returns(true);
+		_mockGameFileService.Setup(x => x.DuplicateCharacterFiles(SourceFolder, "Copy")).Returns(NewFolder);
+		_mockFileIO.Setup(x => x.ReadAllBytes(It.IsAny<string>())).Throws(failure);
+
+		var result = _playerService.DuplicateCharacter(source, "Copy");
+
+		result.IsSuccess.Should().BeFalse();
+		result.Error.Should().BeSameAs(failure);
+		_mockDirectoryIO.Verify(x => x.Delete(NewFolder, true), Times.Once);
+	}
+
+	[Fact]
+	public void DuplicateCharacter_WhenCopyFailsHalfway_RemovesThePartialFolder()
+	{
+		var source = SetupDuplication();
+		_mockDirectoryIO.SetupSequence(x => x.Exists(NewFolder)).Returns(false).Returns(true);
+		_mockGameFileService.Setup(x => x.DuplicateCharacterFiles(SourceFolder, "Copy")).Throws(new IOException("copy failed"));
+
+		var result = _playerService.DuplicateCharacter(source, "Copy");
+
+		result.IsSuccess.Should().BeFalse();
+		_mockDirectoryIO.Verify(x => x.Delete(NewFolder, true), Times.Once);
+	}
+
+	[Fact]
+	public void DuplicateCharacter_WhenTheTargetFolderExists_LeavesItUntouched()
+	{
+		var source = SetupDuplication();
+		_mockDirectoryIO.Setup(x => x.Exists(NewFolder)).Returns(true);
+
+		var result = _playerService.DuplicateCharacter(source, "Copy");
+
+		result.IsSuccess.Should().BeFalse();
+		result.Error.Should().BeOfType<IOException>();
+		_mockGameFileService.Verify(x => x.DuplicateCharacterFiles(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+		_mockDirectoryIO.Verify(x => x.Delete(It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+	}
+
+	[Fact]
+	public void DuplicateCharacter_WhenRollbackFails_StillReturnsTheOriginalError()
+	{
+		var source = SetupDuplication();
+		var failure = new IOException("copy failed");
+		_mockDirectoryIO.SetupSequence(x => x.Exists(NewFolder)).Returns(false).Returns(true);
+		_mockGameFileService.Setup(x => x.DuplicateCharacterFiles(SourceFolder, "Copy")).Throws(failure);
+		_mockDirectoryIO.Setup(x => x.Delete(NewFolder, true)).Throws(new UnauthorizedAccessException());
+
+		var result = _playerService.DuplicateCharacter(source, "Copy");
+
+		result.Error.Should().BeSameAs(failure);
 	}
 }

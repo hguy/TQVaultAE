@@ -35,6 +35,14 @@ public interface IGameFileService
 	string DuplicateCharacterFiles(string playerSaveDirectory, string newname);
 
 	/// <summary>
+	/// Gets the save folder <see cref="DuplicateCharacterFiles"/> creates for <paramref name="newname"/>.
+	/// </summary>
+	/// <param name="playerSaveDirectory">Save folder of the character to duplicate.</param>
+	/// <param name="newname">Name of the new character.</param>
+	/// <returns>The new save folder path, beside the source one.</returns>
+	string GetDuplicateCharacterFolder(string playerSaveDirectory, string newname);
+
+	/// <summary>
 	/// Archive a character
 	/// </summary>
 	/// <param name="ps"></param>
