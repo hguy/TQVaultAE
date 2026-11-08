@@ -6,6 +6,7 @@
 
 using TQVaultAE.GUI.Components.Scaling;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Tooltips;
 using Microsoft.Extensions.Logging;

@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using TQVaultAE.GUI.Components;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Tooltips;
 

@@ -23,74 +23,32 @@ public partial class SackPanel
 
 	private void AddAutoMoveMenuItems(Item? focusedItem)
 	{
-		List<(string label, int? bagIndex)> choices = new();
-
-		if (this.MaxSacks > 1)
-		{
-			for (int i = 0; i < this.MaxSacks; ++i)
-			{
-				// The sacks do not need to list sack#0 since it is the Main player panel
-				var bagOffest = focusedItem?.Place.SackType switch
-				{
-					SackType.Player => 0,
-					SackType.Vault => 1,
-					_ => 0,
-				};
-
-				string label;
-				if (this.SackType == SackType.Player && i == 0)
-					label = Resources.SackPanelMenuPlayer;
-				else if (this.SackType == SackType.Player && i >= (this.PlayerCollection?.NumberOfSacks ?? 0))
-					continue;
-				else
-					label = string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, i + bagOffest);
-
-				if (i != focusedItem?.Place.SackNumber)
-				{
-					choices.Add((label, i));
-				}
-			}
-		}
-
-		var autoMoveChoices = (
-			from location in this.DragInfo.AllAutoMoveLocations
-			where location != this.AutoMoveLocation
-			select location
-		).Distinct();
-
-		// TQ original save
-		if (this.userContext.CurrentPlayer is not null && !this.userContext.CurrentPlayer.IsImmortalThrone)
-		{
-			autoMoveChoices = autoMoveChoices.Where(loc =>
-					loc != Models.AutoMoveLocation.Stash // There is no Stash on TQ original save
-					&& loc != Models.AutoMoveLocation.Trash // TODO What is that ?
-			);
-
-			// You can't move TQIT+ items in Equipement, Sack and inventory (a multiple selection may hold some)
-			if (focusedItem is null || focusedItem.GameDlc != GameDlc.TitanQuest)
-			{
-				autoMoveChoices = autoMoveChoices.Where(loc =>
-					loc != Models.AutoMoveLocation.Player
-				);
-			}
-		}
-
-		foreach (var choice in autoMoveChoices)
-		{
-			string location = this.GetStringFromAutoMove(choice);
-			if (!string.IsNullOrEmpty(location))
-				choices.Add((location, null));
-		}
+		var destinations = ItemActionRules.MoveDestinations(new MoveContext(
+			this.AutoMoveLocation
+			, this.SackType
+			, this.MaxSacks
+			, this.PlayerCollection?.NumberOfSacks ?? 0
+			, this.DragInfo.AllAutoMoveLocations
+			, this.SecondaryVaultShown
+			, this.userContext.CurrentPlayer?.IsImmortalThrone
+			, focusedItem));
 
 		var moveChoices = new List<ToolStripItem>();
-		foreach (var choice in choices)
+		foreach (var destination in destinations)
 		{
-			var moveChoice = new ToolStripMenuItem(choice.label, null, MoveItemClicked, choice.label)
+			string label = destination switch
+			{
+				{ IsMainPlayerSack: true } => Resources.SackPanelMenuPlayer,
+				{ BagIndex: not null } => string.Format(CultureInfo.CurrentCulture, Resources.GlobalMenuBag, destination.BagNumber),
+				_ => GetStringFromAutoMove(destination.Location),
+			};
+
+			var moveChoice = new ToolStripMenuItem(label, null, MoveItemClicked, label)
 			{
 				BackColor = this.CustomContextMenu.BackColor,
 				Font = this.CustomContextMenu.Font,
 				ForeColor = this.CustomContextMenu.ForeColor,
-				Tag = choice.bagIndex.HasValue ? new MenuItemTagBagIndex(choice.bagIndex.Value) : null,
+				Tag = destination.BagIndex is int bagIndex ? new MenuItemTagBagIndex(bagIndex) : (object)destination.Location,
 			};
 			moveChoices.Add(moveChoice);
 		}

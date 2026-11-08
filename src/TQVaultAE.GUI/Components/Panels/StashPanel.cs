@@ -20,6 +20,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Presentation;
 

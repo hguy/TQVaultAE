@@ -112,25 +112,16 @@ public partial class SackPanel
 	/// </summary>
 	/// <param name="autoMoveLocation">AutoMoveLocation that is to be translated</param>
 	/// <returns>Localized String name of the AutoMoveLocation</returns>
-	private string GetStringFromAutoMove(AutoMoveLocation autoMoveLocation)
-	{
-		if (autoMoveLocation == AutoMoveLocation.SecondaryVault && this.SecondaryVaultShown)
-			return Resources.SackPanelMenuVault2;
-
-		if (autoMoveLocation == AutoMoveLocation.Player && !this.SecondaryVaultShown)
-			return Resources.SackPanelMenuPlayer;
-
-		if (autoMoveLocation == AutoMoveLocation.Stash && !this.SecondaryVaultShown)
-			return Resources.SackPanelMenuStash;
-
-		if (autoMoveLocation == AutoMoveLocation.Vault)
-			return Resources.SackPanelMenuVault;
-
-		if (autoMoveLocation == AutoMoveLocation.Trash)
-			return Resources.SackPanelMenuTrash;
-
-		return string.Empty;
-	}
+	private static string GetStringFromAutoMove(AutoMoveLocation autoMoveLocation)
+		=> autoMoveLocation switch
+		{
+			AutoMoveLocation.SecondaryVault => Resources.SackPanelMenuVault2,
+			AutoMoveLocation.Player => Resources.SackPanelMenuPlayer,
+			AutoMoveLocation.Stash => Resources.SackPanelMenuStash,
+			AutoMoveLocation.Vault => Resources.SackPanelMenuVault,
+			AutoMoveLocation.Trash => Resources.SackPanelMenuTrash,
+			_ => string.Empty,
+		};
 
 	/// <summary>
 	/// Handler for selecting Move Item from the context menu
@@ -142,68 +133,51 @@ public partial class SackPanel
 	{
 		if (!this.DragInfo.IsActive)
 		{
-			Item? focusedItem;
+			// Find out what was selected: a bag of this panel or another panel.
 			AutoMoveLocation automoveDestination = AutoMoveLocation.NotSet;
 			int destIndex = -1;
-
-			// Find out what was selected
-			ToolStripMenuItem? toolStripItem = (ToolStripMenuItem)sender!;
-			if (toolStripItem != null)
+			switch ((sender as ToolStripItem)?.Tag)
 			{
-				if (toolStripItem.Tag is MenuItemTagBagIndex mit)
-				{
+				case MenuItemTagBagIndex mit:
 					automoveDestination = this.AutoMoveLocation;
 					destIndex = mit.Index;
-				}
-				else if (toolStripItem.Name == Resources.SackPanelMenuVault)
-					automoveDestination = AutoMoveLocation.Vault;
-				else if (toolStripItem.Name == Resources.SackPanelMenuPlayer)
-					automoveDestination = AutoMoveLocation.Player;
-				else if (toolStripItem.Name == Resources.SackPanelMenuTrash)
-					automoveDestination = AutoMoveLocation.Trash;
-				else if (toolStripItem.Name == Resources.SackPanelMenuVault2)
-					automoveDestination = AutoMoveLocation.SecondaryVault;
-				else if (toolStripItem.Name == Resources.SackPanelMenuStash)
-					automoveDestination = AutoMoveLocation.Stash;
+					break;
+				case AutoMoveLocation location:
+					automoveDestination = location;
+					break;
 			}
+
+			// The selection, or the item under the cursor when nothing is selected.
+			var plan = AutoMovePlanner.Plan(
+				this.selectedItems
+				, this.selectedItems is null ? this.FindItem(this.contextMenuCellWithFocus) : null
+				, automoveDestination
+				, destIndex);
+			this.RaiseAutoMove(this.ShownSack, plan);
 
 			if (this.selectedItems != null)
-			{
-				// Moving selected items.
-				var autoMoveQuery = from Item item in this.selectedItems
-									where item != null
-									orderby (((item.Height * 3) + item.Width) * 100) + item.ItemGroup descending
-									select item;
-
-				foreach (Item item in autoMoveQuery)
-				{
-					if (!this.DragInfo.IsActive)
-					{
-						// Check to make sure the last item got placed.
-						this.DragInfo.Set(this, this.ShownSack, item, new Point(1, 1));
-						this.DragInfo.AutoMoveDestination = automoveDestination;
-						this.DragInfo.DestIndex = destIndex;
-						this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
-					}
-				}
-
 				this.ClearSelectedItems();
-			}
-			else
-			{
-				// Single item highlighted
-				focusedItem = this.FindItem(this.contextMenuCellWithFocus);
-				if (focusedItem != null)
-				{
-					this.DragInfo.Set(this, this.ShownSack, focusedItem, new Point(1, 1));
-					this.DragInfo.AutoMoveDestination = automoveDestination;
-					this.DragInfo.DestIndex = destIndex;
-					this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
-				}
-			}
 
 			ItemTooltip.HideTooltip();
 			BagButtonTooltip.InvalidateCache(this.ShownSack);
+		}
+	}
+
+	/// <summary>
+	/// Moves the planned items one by one: each is set as the drag item and <see cref="OnAutoMoveItem"/> places it.
+	/// An item left in the drag (no room) stops the moves after it.
+	/// </summary>
+	private void RaiseAutoMove(SackCollection sack, AutoMovePlan plan)
+	{
+		foreach (Item item in plan.Items)
+		{
+			if (this.DragInfo.IsActive)
+				continue;
+
+			this.DragInfo.Set(this, sack, item, new Point(1, 1));
+			this.DragInfo.AutoMoveDestination = plan.Destination;
+			this.DragInfo.DestIndex = plan.DestIndex;
+			this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
 		}
 	}
 

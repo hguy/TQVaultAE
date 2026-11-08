@@ -4,6 +4,7 @@ using TQVaultAE.GUI.Components.Panels;
 using TQVaultAE.GUI.Components;
 using TQVaultAE.GUI.Dialogs;
 using TQVaultAE.GUI.Infrastructure;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Presentation;
 using TQVaultAE.Services;
