@@ -24,6 +24,17 @@ public static partial class TextDatabaseFactory
 		}
 		return new TextDatabase(language, entries);
 	}
+
+	/// <summary>
+	/// Reads the entries of one text file (UTF-16LE/BE or UTF-8 with a BOM, cp1252 without): key=value lines split on
+	/// the first '=', '//' comments skipped, the last of a duplicated key wins.
+	/// </summary>
+	public static Dictionary<string, string> ReadEntries(ReadOnlySpan<byte> bytes)
+	{
+		var entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		TextDatabase.Parse(TextDatabase.DecodeText(bytes), entries);
+		return entries;
+	}
 }
 
 /// <summary>In-memory tag table.</summary>
