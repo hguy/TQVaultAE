@@ -360,6 +360,35 @@ public class ItemDatabaseService(
         return results;
     }
 
+    /// <inheritdoc/>
+    public IReadOnlyList<SearchResult> CombineFilterResults(IEnumerable<IEnumerable<SearchResult>> filterResults, SearchOperator logic)
+    {
+        if (logic == SearchOperator.Or)
+            return filterResults.SelectMany(f => f).Distinct().ToList();
+
+        // And: the item must be in every filter
+        HashSet<SearchResult>? resultSet = null;
+        foreach (var filter in filterResults)
+        {
+            if (resultSet is null)
+                resultSet = new HashSet<SearchResult>(filter);
+            else
+                resultSet.IntersectWith(filter);
+        }
+
+        return resultSet is null ? Array.Empty<SearchResult>() : resultSet.ToList();
+    }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<T> KeepEntriesMatching<T>(IEnumerable<T> entries, Func<T, IEnumerable<SearchResult>> resultsOf, IEnumerable<SearchResult> results)
+    {
+        var resultSet = results as IReadOnlySet<SearchResult> ?? new HashSet<SearchResult>(results);
+        if (resultSet.Count == 0)
+            return Array.Empty<T>();
+
+        return entries.Where(e => resultsOf(e).Any(resultSet.Contains)).ToList();
+    }
+
     #endregion
 
     #region Private Helper Methods

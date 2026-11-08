@@ -56,6 +56,23 @@ public interface IItemDatabaseService
     IReadOnlyList<SearchResult> ExecuteAdvancedSearch(AdvancedSearchRequest request);
 
     /// <summary>
+    /// Combines the result sets of the selected search filters: with <see cref="SearchOperator.And"/> an item must be
+    /// in every set, with <see cref="SearchOperator.Or"/> in at least one. Each item is returned once.
+    /// </summary>
+    /// <param name="filterResults">The results of each selected filter. No filter gives no result.</param>
+    /// <param name="logic">How the sets are combined.</param>
+    IReadOnlyList<SearchResult> CombineFilterResults(IEnumerable<IEnumerable<SearchResult>> filterResults, SearchOperator logic);
+
+    /// <summary>
+    /// Keeps the search category entries that match at least one of <paramref name="results"/>, in their order.
+    /// Used to reduce the categories to what the current results still offer.
+    /// </summary>
+    /// <param name="entries">The category entries.</param>
+    /// <param name="resultsOf">The items each entry matches.</param>
+    /// <param name="results">The current search results.</param>
+    IReadOnlyList<T> KeepEntriesMatching<T>(IEnumerable<T> entries, Func<T, IEnumerable<SearchResult>> resultsOf, IEnumerable<SearchResult> results);
+
+    /// <summary>
     /// Performs a full-text search on items.
     /// </summary>
     /// <param name="searchText">The search text.</param>

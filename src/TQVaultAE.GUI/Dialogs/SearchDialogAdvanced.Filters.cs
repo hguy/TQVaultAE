@@ -193,33 +193,9 @@ public partial class SearchDialogAdvanced
 		this.scalingLabelFiltersSelected.Text = string.Format(this.scalingLabelFiltersSelected.Tag?.ToString() ?? "{0}", SelectedFilters.Count);
 
 		// Combine selected filter results based on operator
-		IReadOnlyList<SearchResult> initialResults;
-		if (this.scalingComboBoxOperator.SelectedIndex == (int)SearchOperator.And)
-		{
-			// AND operator => item must exist in every filter
-			var firstFilter = SelectedFilters.FirstOrDefault();
-			if (firstFilter == null)
-			{
-				initialResults = [];
-			}
-			else
-			{
-				var resultSet = new HashSet<SearchResult>(firstFilter.MatchingResults);
-				foreach (var filter in SelectedFilters.Skip(1))
-				{
-					resultSet.IntersectWith(filter.MatchingResults);
-				}
-				initialResults = resultSet.ToList();
-			}
-		}
-		else
-		{
-			// OR Operator => Accumulate & Distinct
-			initialResults = SelectedFilters
-				.SelectMany(f => f.MatchingResults)
-				.Distinct()
-				.ToList();
-		}
+		var initialResults = this.ItemDatabaseService.CombineFilterResults(
+			this.SelectedFilters.Select(f => f.MatchingResults)
+			, this.scalingComboBoxOperator.SelectedIndex == (int)SearchOperator.And ? SearchOperator.And : SearchOperator.Or);
 
 		// Apply quick filters and requirements via service
 		this.QueryResults = this.ItemDatabaseService.ExecuteAdvancedSearch(
@@ -321,31 +297,26 @@ public partial class SearchDialogAdvanced
 			try
 			{
 				// Reset to QueryResult.
+				var queryResults = new HashSet<SearchResult>(this.QueryResults);
 				foreach (var lb in this.CachedCheckedListBoxes)
 				{
 					var (_, tag) = lb.GetBoxTag();
 
-					var DSvsQR =
-						// Does boxitems match queryresult ?
-						from boxitem in tag.DataSource
-						from boxitemresult in boxitem.MatchingResults
-						join QR in this.QueryResults on boxitemresult equals QR
-						// distinct boxitems
-						group boxitem by boxitem into grp
-						select grp;
+					// Entries matching the query results
+					var matching = this.ItemDatabaseService.KeepEntriesMatching(tag.DataSource, b => b.MatchingResults, queryResults);
 
 					lb.BeginUpdate();
-					foreach (var item in DSvsQR)
+					foreach (var item in matching)
 					{
 						// Use HashSet for O(1) lookup instead of O(n) List.Contains
-						var isChecked = this.SelectedFiltersSet.Contains(item.Key);
+						var isChecked = this.SelectedFiltersSet.Contains(item);
 
 						if (!isChecked // Do not hide already checked
 							/// Should i filter out this check box based on <see cref="FilterCategories"/> ?
-							&& this.FilterCategories.AvoidDisplayAttribute(item.Key.DisplayValue)
+							&& this.FilterCategories.AvoidDisplayAttribute(item.DisplayValue)
 						) continue;
 
-						lb.Items.Add(item.Key, isChecked);
+						lb.Items.Add(item, isChecked);
 					}
 					lb.EndUpdate();
 				}
@@ -488,30 +459,24 @@ public partial class SearchDialogAdvanced
 	{
 		var num = (NumericUpDown)sender!;
 
-		// Avoid absurd range
-		if (num == numericUpDownMinLvl && numericUpDownMaxLvl.Value < num.Value)
-			numericUpDownMaxLvl.Value = num.Value;
+		// Avoid absurd range: the other bound follows the one changed
+		foreach (var (min, max) in new[] {
+			(this.numericUpDownMinLvl, this.numericUpDownMaxLvl),
+			(this.numericUpDownMinStr, this.numericUpDownMaxStr),
+			(this.numericUpDownMinDex, this.numericUpDownMaxDex),
+			(this.numericUpDownMinInt, this.numericUpDownMaxInt),
+		})
+		{
+			if (num != min && num != max)
+				continue;
 
-		else if (num == numericUpDownMaxLvl && numericUpDownMinLvl.Value > num.Value)
-			numericUpDownMinLvl.Value = num.Value;
-
-		else if (num == numericUpDownMinStr && numericUpDownMaxStr.Value < num.Value)
-			numericUpDownMaxStr.Value = num.Value;
-
-		else if (num == numericUpDownMaxStr && numericUpDownMinStr.Value > num.Value)
-			numericUpDownMinStr.Value = num.Value;
-
-		else if (num == numericUpDownMinDex && numericUpDownMaxDex.Value < num.Value)
-			numericUpDownMaxDex.Value = num.Value;
-
-		else if (num == numericUpDownMaxDex && numericUpDownMinDex.Value > num.Value)
-			numericUpDownMinDex.Value = num.Value;
-
-		else if (num == numericUpDownMinInt && numericUpDownMaxInt.Value < num.Value)
-			numericUpDownMaxInt.Value = num.Value;
-
-		else if (num == numericUpDownMaxInt && numericUpDownMinInt.Value > num.Value)
-			numericUpDownMinInt.Value = num.Value;
+			var (low, high) = AdvancedSearchRequest.OrderRange((int)min.Value, (int)max.Value, num == min);
+			if (min.Value != low)
+				min.Value = low;
+			if (max.Value != high)
+				max.Value = high;
+			break;
+		}
 
 		if (// No need to filter if corresponding checkbox is uncheck
 			(num.Name.Contains("Min") && !this.scalingCheckBoxMinReq.Checked)
