@@ -37,6 +37,18 @@ public enum ItemActions
 
 	/// <summary>Clear the selection.</summary>
 	ClearSelection = 1 << 9,
+
+	/// <summary>Choose the item seed in a dialog. Part of <see cref="Edit"/>.</summary>
+	Seed = 1 << 10,
+
+	/// <summary>Give the item a new random seed. Part of <see cref="Edit"/>.</summary>
+	ForceSeed = 1 << 11,
+
+	/// <summary>Complete a relic or charm and roll its bonus. Part of <see cref="Edit"/>.</summary>
+	CompleteRelic = 1 << 12,
+
+	/// <summary>Craft the artifact of a formula. Part of <see cref="Edit"/>.</summary>
+	CraftArtifact = 1 << 13,
 }
 
 /// <summary>
@@ -119,4 +131,22 @@ public static class ItemActionRules
 	/// <returns><see langword="true"/> when the item suits the player.</returns>
 	public static bool IsSuitableFor(Item item, bool immortalThronePlayer)
 		=> immortalThronePlayer || item.GameDlc == GameDlc.TitanQuest;
+
+	/// <summary>
+	/// The entries of <see cref="ItemActions.Edit"/> that do not need a catalog: the seed for any item, the completion of
+	/// an incomplete relic or charm, the artifact of a formula.
+	/// </summary>
+	/// <param name="item">The item being edited.</param>
+	public static ItemActions EditActions(Item item)
+	{
+		var actions = ItemActions.Seed | ItemActions.ForceSeed;
+
+		if (item.IsRelicOrCharm && !item.IsRelicComplete)
+			actions |= ItemActions.CompleteRelic;
+
+		if (item.IsFormulae)
+			actions |= ItemActions.CraftArtifact;
+
+		return actions;
+	}
 }

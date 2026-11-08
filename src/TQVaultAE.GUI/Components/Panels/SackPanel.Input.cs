@@ -97,24 +97,24 @@ public partial class SackPanel
 
 				if (actions.HasFlag(ItemActions.Delete))
 				{
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuDelete);
+					this.AddActionMenuItem(Resources.SackPanelMenuDelete, ItemActions.Delete);
 					this.CustomContextMenu.Items.Add("-");
 				}
 
 				if (actions.HasFlag(ItemActions.RemoveRelic))
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic);
+					this.AddActionMenuItem(Resources.SackPanelMenuRemoveRelic, ItemActions.RemoveRelic);
 
 				if (actions.HasFlag(ItemActions.RemoveRelic2))
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRemoveRelic2);
+					this.AddActionMenuItem(Resources.SackPanelMenuRemoveRelic2, ItemActions.RemoveRelic2);
 
 				if (actions.HasFlag(ItemActions.Split))
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSplit);
+					this.AddActionMenuItem(Resources.SackPanelMenuSplit, ItemActions.Split);
 
 				if (actions.HasFlag(ItemActions.Copy))
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuCopy);
+					this.AddActionMenuItem(Resources.SackPanelMenuCopy, ItemActions.Copy);
 
 				if (actions.HasFlag(ItemActions.Duplicate))
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuDuplicate);
+					this.AddActionMenuItem(Resources.SackPanelMenuDuplicate, ItemActions.Duplicate);
 
 				AddExportMenuItems(focusedItem, singleSelectionFocused);
 
@@ -134,11 +134,11 @@ public partial class SackPanel
 				if (actions.HasFlag(ItemActions.Properties))
 				{
 					this.CustomContextMenu.Items.Add("-");
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuProperties);
+					this.AddActionMenuItem(Resources.SackPanelMenuProperties, ItemActions.Properties);
 				}
 
 				if (actions.HasFlag(ItemActions.ClearSelection))
-					this.CustomContextMenu.Items.Add(Resources.SackPanelMenuClear);
+					this.AddActionMenuItem(Resources.SackPanelMenuClear, ItemActions.ClearSelection);
 
 				if ((focusedItem != null || selectionCount > 0) && this.CustomContextMenu.Items.Count > 0)
 					this.CustomContextMenu.Show(this, new Point(e.X, e.Y));

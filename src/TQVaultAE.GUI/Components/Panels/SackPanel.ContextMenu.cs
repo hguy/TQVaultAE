@@ -7,6 +7,7 @@
 using System.Collections.ObjectModel;
 using System.Globalization;
 using TQVaultAE.Application.DTOs;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Forms;
@@ -186,24 +187,33 @@ public partial class SackPanel
 		}
 	}
 	
+	/// <summary>
+	/// Adds a top level entry whose click <see cref="ContextMenuItemClicked"/> dispatches on <paramref name="action"/>.
+	/// </summary>
+	private void AddActionMenuItem(string text, ItemActions action)
+		=> this.CustomContextMenu.Items.Add(text).Tag = action;
+
 	private void AddRegularItemEditMenuItems(Item focusedItem)
 	{
-		this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSeed);
-		this.CustomContextMenu.Items.Add(Resources.SackPanelMenuSeedForce);
+		var actions = ItemActionRules.EditActions(focusedItem);
 
-		// Add option to complete a charm or relic if
-		// not already completed.
-		if (focusedItem.IsRelicOrCharm && !focusedItem.IsRelicComplete)
+		if (actions.HasFlag(ItemActions.Seed))
+			this.AddActionMenuItem(Resources.SackPanelMenuSeed, ItemActions.Seed);
+
+		if (actions.HasFlag(ItemActions.ForceSeed))
+			this.AddActionMenuItem(Resources.SackPanelMenuSeedForce, ItemActions.ForceSeed);
+
+		// Complete a charm or relic not already completed.
+		if (actions.HasFlag(ItemActions.CompleteRelic))
 		{
-			if (focusedItem.IsCharmOnly)
-				this.CustomContextMenu.Items.Add(Resources.SackPanelMenuCharm);
-			else
-				this.CustomContextMenu.Items.Add(Resources.SackPanelMenuRelic);
+			this.AddActionMenuItem(
+				focusedItem.IsCharmOnly ? Resources.SackPanelMenuCharm : Resources.SackPanelMenuRelic
+				, ItemActions.CompleteRelic);
 		}
 
-		// Add option to craft an artifact from formulae.
-		if (focusedItem.IsFormulae)
-			this.CustomContextMenu.Items.Add(Resources.SackPanelMenuFormulae);
+		// Craft an artifact from formulae.
+		if (actions.HasFlag(ItemActions.CraftArtifact))
+			this.AddActionMenuItem(Resources.SackPanelMenuFormulae, ItemActions.CraftArtifact);
 	}
 	
 	private void AddItemSetMenuItems(Item focusedItem)

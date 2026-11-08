@@ -85,4 +85,36 @@ public class ItemActionRulesTests
 	[InlineData(1, false)]
 	public void Available_Stack_SplitsOnlyAStackOfSeveral(int count, bool canSplit)
 		=> For(Potions(count)).HasFlag(ItemActions.Split).Should().Be(canSplit);
+
+	private static Item WithClass(string itemClass, int shards = 0, int completedLevel = 0)
+	{
+		var id = RecordId.Create("records/item.dbr");
+		var record = new DBRecordCollection(id, itemClass);
+		var cls = new Variable("Class", VariableDataType.StringVar, 1);
+		cls[0] = itemClass;
+		record.Set(cls);
+		var level = new Variable("completedRelicLevel", VariableDataType.Integer, 1);
+		level[0] = completedLevel;
+		record.Set(level);
+		return new Item { BaseItemId = id, baseItemInfo = new Info(record), Var1 = shards };
+	}
+
+	private const ItemActions SeedActions = ItemActions.Seed | ItemActions.ForceSeed;
+
+	[Fact]
+	public void EditActions_AnyItem_OffersTheSeedOnly()
+		=> ItemActionRules.EditActions(Sword()).Should().Be(SeedActions);
+
+	[Theory]
+	[InlineData(Item.ICLASS_RELIC, 2, true)]
+	[InlineData(Item.ICLASS_CHARM, 2, true)]
+	[InlineData(Item.ICLASS_RELIC, 5, false)]
+	public void EditActions_RelicOrCharm_CompletesOnlyAnIncompleteOne(string itemClass, int shards, bool canComplete)
+		=> ItemActionRules.EditActions(WithClass(itemClass, shards, completedLevel: 5))
+			.Should().Be(canComplete ? SeedActions | ItemActions.CompleteRelic : SeedActions);
+
+	[Fact]
+	public void EditActions_Formula_CraftsTheArtifact()
+		=> ItemActionRules.EditActions(WithClass(Item.ICLASS_FORMULA))
+			.Should().Be(SeedActions | ItemActions.CraftArtifact);
 }
