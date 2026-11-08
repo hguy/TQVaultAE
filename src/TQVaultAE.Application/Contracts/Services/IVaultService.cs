@@ -28,10 +28,16 @@ public interface IVaultService
 	VaultLoadResult LoadVault(string vaultName);
 
 	/// <summary>
-	/// Gets the list of available vault names.
+	/// Orders the vault names for a vault drop down list: the leading entry, then the Main Vault, then the others in
+	/// their given order.
 	/// </summary>
-	/// <returns>List of vault names.</returns>
-	IReadOnlyList<string> GetVaultList();
+	/// <param name="vaultNames">The vault names, for example from <see cref="IGamePathService.GetVaultList"/>.</param>
+	/// <param name="leadingEntry">An entry put first, such as the maintenance or "select a vault" entry; none when null.</param>
+	/// <param name="excludedVault">A vault left out, such as the one open in the other vault panel; none when null.</param>
+	/// <param name="alwaysIncludeMainVault">True to list the Main Vault even when <paramref name="vaultNames"/> lacks it
+	/// (its file is created on first load).</param>
+	/// <returns>The ordered names.</returns>
+	IReadOnlyList<string> BuildVaultChoices(IEnumerable<string> vaultNames, string? leadingEntry = null, string? excludedVault = null, bool alwaysIncludeMainVault = true);
 
 	/// <summary>
 	/// Checks a vault maintenance request before it runs.
@@ -88,9 +94,4 @@ public interface IVaultService
 	/// <param name="vault">The vault to save.</param>
 	/// <param name="vaultName">Name of the vault.</param>
 	void SaveVault(PlayerCollection vault, string vaultName);
-
-	/// <summary>
-	/// Shows the vault maintenance dialog.
-	/// </summary>
-	void ShowVaultMaintenance();
 }

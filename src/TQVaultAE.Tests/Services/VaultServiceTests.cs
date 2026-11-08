@@ -525,4 +525,44 @@ public class VaultServiceTests
 		_mockFileIO.Verify(x => x.Move(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 		_sessionContext.Vaults.ContainsKey(oldFile).Should().BeTrue();
 	}
+
+	[Fact]
+	public void BuildVaultChoices_PutsLeadingEntryThenMainVaultThenOthersInOrder()
+	{
+		var choices = _vaultService.BuildVaultChoices(["Arms", "Main Vault", "Zeal"], "<Maintain>");
+
+		choices.Should().Equal("<Maintain>", "Main Vault", "Arms", "Zeal");
+	}
+
+	[Fact]
+	public void BuildVaultChoices_ListsMainVaultWithoutItsFile_WhenAlwaysIncluded()
+	{
+		var choices = _vaultService.BuildVaultChoices(["Arms"], "<Maintain>");
+
+		choices.Should().Equal("<Maintain>", "Main Vault", "Arms");
+	}
+
+	[Fact]
+	public void BuildVaultChoices_LeavesOutMissingMainVault_WhenNotAlwaysIncluded()
+	{
+		var choices = _vaultService.BuildVaultChoices(["Arms", "Zeal"], alwaysIncludeMainVault: false);
+
+		choices.Should().Equal("Arms", "Zeal");
+	}
+
+	[Fact]
+	public void BuildVaultChoices_SkipsOnlyTheExcludedVault_AndKeepsTheOnesAfterIt()
+	{
+		var choices = _vaultService.BuildVaultChoices(["Arms", "Rings", "Zeal"], "<Maintain>", "Rings");
+
+		choices.Should().Equal("<Maintain>", "Main Vault", "Arms", "Zeal");
+	}
+
+	[Fact]
+	public void BuildVaultChoices_ExcludedMainVault_IsNotAddedBack()
+	{
+		var choices = _vaultService.BuildVaultChoices(["Arms", "Main Vault"], "<Select>", VaultService.MAINVAULT);
+
+		choices.Should().Equal("<Select>", "Arms");
+	}
 }
