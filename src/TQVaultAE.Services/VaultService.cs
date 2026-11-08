@@ -178,26 +178,28 @@ public class VaultService : IVaultService
 		return result;
 	}
 
-	/// <summary>
-	/// Gets the list of available vault names.
-	/// </summary>
-	/// <returns>List of vault names.</returns>
-	public IReadOnlyList<string> GetVaultList()
+	/// <inheritdoc />
+	public IReadOnlyList<string> BuildVaultChoices(IEnumerable<string> vaultNames, string? leadingEntry = null, string? excludedVault = null, bool alwaysIncludeMainVault = true)
 	{
-		try
-		{
-			var fileNames = Directory.EnumerateFiles(this.GamePathResolver.TQVaultSaveFolder, "*.json").ToList();
+		var names = vaultNames as ICollection<string> ?? vaultNames.ToList();
+		var choices = new List<string>(names.Count + 2);
 
-			return fileNames
-				.Select(f => this.PathIO.GetFileNameWithoutExtension(f))
-				.ToList()
-				.AsReadOnly();
-		}
-		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		if (leadingEntry is not null)
+			choices.Add(leadingEntry);
+
+		bool isMainVaultExcluded = MAINVAULT.Equals(excludedVault, StringComparison.Ordinal);
+		if (!isMainVaultExcluded && (alwaysIncludeMainVault || names.Contains(MAINVAULT)))
+			choices.Add(MAINVAULT);
+
+		foreach (string name in names)
 		{
-			Log.LogWarning(ex, "Unable to list the vaults in {Folder}", this.GamePathResolver.TQVaultSaveFolder);
-			return Array.Empty<string>();
+			if (name.Equals(MAINVAULT, StringComparison.Ordinal) || name.Equals(excludedVault, StringComparison.Ordinal))
+				continue;
+
+			choices.Add(name);
 		}
+
+		return choices;
 	}
 
 	/// <inheritdoc />
@@ -298,15 +300,6 @@ public class VaultService : IVaultService
 		vault.Saved();
 
 		userContext.Vaults.GetOrAddAtomic(fileName, _ => vault);
-	}
-
-	/// <summary>
-	/// Shows the vault maintenance dialog.
-	/// </summary>
-	public void ShowVaultMaintenance()
-	{
-		// Placeholder for vault maintenance dialog
-		// Implementation depends on GUI framework
 	}
 
 	/// <summary>

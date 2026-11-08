@@ -81,27 +81,12 @@ public partial class MainForm
 		// Clear the list before creating since this function can be called multiple times.
 		this.vaultListComboBox.Items.Clear();
 
-		this.vaultListComboBox.Items.Add(Resources.MainFormMaintainVault);
-
-		// Add Main Vault first
-		if (this.secondaryVaultListComboBox.SelectedItem == null || this.secondaryVaultListComboBox.SelectedItemText() != VaultService.MAINVAULT)
-			this.vaultListComboBox.Items.Add(VaultService.MAINVAULT);
-
-		if (vaults.Length > 0)
-		{
-			// now add everything EXCEPT for main vault
-			foreach (string vault in vaults)
-			{
-				if (!vault.Equals(VaultService.MAINVAULT, StringComparison.Ordinal))
-				{
-					// Skip the vault open in the secondary panel; the ones after it stay in the list.
-					if (this.secondaryVaultListComboBox.SelectedItem != null && vault.Equals(this.secondaryVaultListComboBox.SelectedItemText(), StringComparison.Ordinal) && this.showSecondaryVault)
-						continue;
-
-					this.vaultListComboBox.Items.Add(vault);
-				}
-			}
-		}
+		// Maintenance entry first, then Main Vault, without the vault open in the secondary panel.
+		string? secondaryVault = this.showSecondaryVault && this.secondaryVaultListComboBox.SelectedItem != null
+			? this.secondaryVaultListComboBox.SelectedItemText()
+			: null;
+		var choices = this.vaultService.BuildVaultChoices(vaults, Resources.MainFormMaintainVault, secondaryVault);
+		this.vaultListComboBox.Items.AddRange(choices.ToArray<object>());
 
 		// See if we should load the last loaded vault
 		if (base.USettings.LoadLastVault)
@@ -139,18 +124,12 @@ public partial class MainForm
 
 		// Clear the list before creating since this function can be called multiple times.
 		this.secondaryVaultListComboBox.Items.Clear();
-		this.secondaryVaultListComboBox.Items.Add(Resources.MainFormSelectVault);
 
-		if (this.vaultListComboBox.Items.Count > 1)
-		{
-			// Now add everything EXCEPT for the selected vault in the other panel.
-			for (int i = 1; i < this.vaultListComboBox.Items.Count; ++i)
-			{ // Skip over the maintenance selection.
-				if (i != this.vaultListComboBox.SelectedIndex)
-					// Skip over the selected item.
-					this.secondaryVaultListComboBox.Items.Add(this.vaultListComboBox.Items[i] ?? string.Empty);
-			}
-		}
+		// The main list without its maintenance entry and without the vault open in the main panel.
+		var mainVaults = this.vaultListComboBox.Items.Cast<object>().Skip(1).Select(item => item.ToString() ?? string.Empty);
+		string? mainVault = this.vaultListComboBox.SelectedIndex > 0 ? this.vaultListComboBox.SelectedItemText() : null;
+		var choices = this.vaultService.BuildVaultChoices(mainVaults, Resources.MainFormSelectVault, mainVault, alwaysIncludeMainVault: false);
+		this.secondaryVaultListComboBox.Items.AddRange(choices.ToArray<object>());
 
 		this.secondaryVaultListComboBox.SelectedItem = currentVault;
 

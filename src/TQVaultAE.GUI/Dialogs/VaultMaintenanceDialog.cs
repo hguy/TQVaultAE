@@ -16,7 +16,6 @@ using System.Windows.Forms;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Application.DTOs;
 using TQVaultAE.Presentation;
-using TQVaultAE.Services;
 using TQVaultAE.GUI.Components.Scaling;
 
 /// <summary>
@@ -193,26 +192,9 @@ internal sealed partial class VaultMaintenanceDialog : VaultForm
 	/// </summary>
 	private void GetVaultList()
 	{
-		string[] vaults = GamePathResolver.GetVaultList();
-
-		// Make sure we have something to add.
-		if (vaults.Length > 0)
-		{
-			// Put Main Vault at the top of the list only if it exists.
-			if (Array.IndexOf(vaults, VaultService.MAINVAULT) != -1)
-			{
-				this.vaultListComboBox.Items.Add(VaultService.MAINVAULT);
-			}
-
-			foreach (string vault in vaults)
-			{
-				if (!vault.Equals(VaultService.MAINVAULT, StringComparison.Ordinal))
-				{
-					// now add everything EXCEPT for main vault
-					this.vaultListComboBox.Items.Add(vault);
-				}
-			}
-		}
+		// Main Vault at the top of the list only if it exists.
+		var choices = this.vaultService.BuildVaultChoices(GamePathResolver.GetVaultList(), alwaysIncludeMainVault: false);
+		this.vaultListComboBox.Items.AddRange(choices.ToArray<object>());
 	}
 
 	/// <summary>
