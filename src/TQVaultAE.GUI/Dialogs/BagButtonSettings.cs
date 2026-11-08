@@ -207,6 +207,23 @@ public partial class BagButtonSettings : VaultForm
 
 	private async void BagButtonSettings_Load(object? sender, EventArgs e)
 	{
+		// async void event handler: nothing may escape it, or the application goes down.
+		try
+		{
+			await this.LoadSettingsAsync();
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Failed to show the bag button settings of button {Button}", this._CurrentBagButton?.ButtonNumber);
+			this.Services.MessageBoxes.ShowException(ex);
+		}
+	}
+
+	/// <summary>
+	/// Fills the icon grids on the first showing, then shows the icon of the current bag button.
+	/// </summary>
+	private async Task LoadSettingsAsync()
+	{
 		if (!IsLoaded)
 		{
 			TogglePicturePickup();
