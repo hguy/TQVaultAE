@@ -1,5 +1,3 @@
-#nullable disable
-
 namespace UIToolbox;
 
 partial class CheckGroupBox

@@ -1,8 +1,8 @@
 // Copied from the CheckGroupBox 1.0.2 package (.NET Framework only) to build it for .NET 10.
-#nullable disable
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
@@ -59,6 +59,7 @@ public partial class CheckGroupBox : GroupBox
     /// <summary>
     /// The text associated with the control.
     /// </summary>
+    [AllowNull]
     public override string Text
     {
         get
@@ -149,18 +150,18 @@ public partial class CheckGroupBox : GroupBox
     /// Occurs whenever the Checked property of the CheckBox is changed.
     /// </summary>
     [Description("Occurs whenever the Checked property of the CheckBox is changed.")]
-    public event EventHandler CheckedChanged;
+    public event EventHandler? CheckedChanged;
 
     /// <summary>
     /// Occurs whenever the CheckState property of the CheckBox is changed.
     /// </summary>
     [Description("Occurs whenever the CheckState property of the CheckBox is changed.")]
-    public event EventHandler CheckStateChanged;
+    public event EventHandler? CheckStateChanged;
 
     #endregion Event Handlers
 
     #region Events
-    private void checkBox_CheckedChanged(object sender, EventArgs e)
+    private void checkBox_CheckedChanged(object? sender, EventArgs e)
     {
         if (this.m_bBehavior != CheckGroupBoxCheckedBehavior.DoNothing)
         {
@@ -213,7 +214,7 @@ public partial class CheckGroupBox : GroupBox
 
     }
 
-    private void checkBox_CheckStateChanged(object sender, EventArgs e)
+    private void checkBox_CheckStateChanged(object? sender, EventArgs e)
     {
         if (CheckStateChanged != null)
         {
@@ -221,21 +222,21 @@ public partial class CheckGroupBox : GroupBox
         }
     }
 
-    private void CheckGroupBox_ControlAdded(object sender, ControlEventArgs e)
+    private void CheckGroupBox_ControlAdded(object? sender, ControlEventArgs e)
     {
-        if (this.m_bBehavior != CheckGroupBoxCheckedBehavior.DoNothing)
+        if (this.m_bBehavior != CheckGroupBoxCheckedBehavior.DoNothing && e.Control is not null)
         {
             ApplyBehavior(e.Control);
         }
     }
     #endregion Events
 
-    private void CheckGroupBox_ForeColorChanged(object sender, EventArgs e)
+    private void CheckGroupBox_ForeColorChanged(object? sender, EventArgs e)
     {
         this.m_checkBox.ForeColor = this.ForeColor;
     }
 
-    private void CheckGroupBox_FontChanged(object sender, EventArgs e)
+    private void CheckGroupBox_FontChanged(object? sender, EventArgs e)
     {
         // The title inherits the group font rather than holding a copy: when the DPI changes, Windows Forms scales the
         // group font, and would scale a copy a second time.
