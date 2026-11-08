@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.Results;
 using TQVaultAE.Config;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Components.Rendering;
@@ -116,25 +117,19 @@ public partial class SackPanel
 						) return;
 			 */
 
-			if (!this.IsItemValidForPlacement(dragItem))
-				return;
-
-			if ((
-				this.SackType == SackType.Player
-				|| this.SackType == SackType.Equipment
-				|| this.SackType == SackType.Player
-				) && !IsSuitableForCurrentPlayer(dragItem)
-			) return;
-
-			// Yes we can drop it here!
-			// First take the item that is under us
+			// The only item under us, if any
 			Item? itemUnderUs = null;
 			if (this.ItemsUnderDragItem.Count == 1)
 				itemUnderUs = this.ItemsUnderDragItem[0];
 
-			// Maybe we are putting the item back.
-			// Then we just cancel.
-			if (itemUnderUs == this.DragInfo.Item && this.DragInfo.IsActive && this.DragInfo.CanBeCanceled)
+			var decision = this.Services.ItemDropService.Decide(
+				dragItem, itemUnderUs, this.SackType, this.sack?.StashType, this.DragInfo.IsActive && this.DragInfo.CanBeCanceled);
+
+			if (decision == DropDecision.Refused)
+				return;
+
+			// We are putting the item back: we just cancel.
+			if (decision == DropDecision.PutBack)
 			{
 				this.DragInfo.Cancel();
 
@@ -147,24 +142,15 @@ public partial class SackPanel
 			// Notify that the item has been placed.  This will remove it from the old sack
 			this.DragInfo.MarkPlaced();
 
-			// If we are a stackable and we have a stackable under us and we are the same type of stackable
-			// then just add to the stack instead of picking up the other stack
+			// Stack on the item under us when both are the same stackable, otherwise place the item here.
+			var drop = this.Services.ItemDropService.Drop(
+				dragItem, itemUnderUs, this.ShownSack, this.CellsUnderDragItem.Location, this.PlaceHere(), USettings.DisableAutoStacking);
 
-			if (!this.TryStackOnDrop(ref dragItem, ref itemUnderUs))
-			{
-				// If not stackable
-				// Drop the dragItem here
-				dragItem.Location = this.CellsUnderDragItem.Location;
+			if (drop.Stacked)
+				this.InvalidateItemCacheAll(itemUnderUs, dragItem);
 
-				// Now add the item to our sack
-				this.ShownSack.AddItem(dragItem);
-
-				// Update item location properties to reflect new position
-				this.UpdateItemLocation(dragItem);
-
-				// Register new items in the database (existing items are already tracked)
-				this.ItemDatabaseService.TryAddItemToDatabase(dragItem);
-			}
+			dragItem = drop.DroppedItem;
+			itemUnderUs = drop.ItemUnderUs;
 
 			// clear the "last drag" variables
 			this.LastDragLocation = InvalidDragLocation;
@@ -321,15 +307,23 @@ public partial class SackPanel
 		if (item == null)
 			return;
 
-		item.Place.SackType = this.SackType;
-		item.Place.Path = this.PlayerCollection?.PlayerFile ?? string.Empty;
-		item.Place.Name = this.PlayerCollection?.PlayerName ?? string.Empty;
-		item.Place.StashType = this.ShownSack.StashType;
-		item.Place.SackNumber = (this.ShownSack.SackType, this.ShownSack.StashType) switch
+		item.Place.CopyFrom(this.PlaceHere());
+	}
+
+	/// <summary>
+	/// Gets the place of the shown sack: container, sack number and type.
+	/// </summary>
+	protected ContainerPlace PlaceHere() => new()
+	{
+		SackType = this.SackType,
+		Path = this.PlayerCollection?.PlayerFile ?? string.Empty,
+		Name = this.PlayerCollection?.PlayerName ?? string.Empty,
+		StashType = this.ShownSack.StashType,
+		SackNumber = (this.ShownSack.SackType, this.ShownSack.StashType) switch
 		{
 			(SackType.Stash, _) => (int)this.ShownSack.StashType!,
 			(SackType.Equipment, _) => BagIdConstants.BAGID_EQUIPMENTPANEL,
 			_ => this.CurrentSack,
-		};
-	}
+		},
+	};
 }
