@@ -21,6 +21,7 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 using TQVaultAE.Domain.Entities;
+using TQVaultAE.Services;
 using TQVaultAE.Presentation;
 
 public partial class StashPanel
@@ -112,61 +113,16 @@ public partial class StashPanel
 	/// <returns>string to be displayed in the tooltip</returns>
 	private void GetSackToolTip(BagButtonBase button)
 	{
-		// Get the list of items and return them as a string
-		int bagID = button.ButtonNumber;
-		SackCollection? sack;
-
-		if (bagID == BagIdConstants.BAGID_EQUIPMENTPANEL)
-			sack = this.Player?.EquipmentSack;
-		else if (bagID == BagIdConstants.BAGID_TRANSFERSTASH)
-			sack = this.transferStash?.Sack;
-		else if (bagID == BagIdConstants.BAGID_PLAYERSTASH)
-			sack = this.stash?.Sack;
-		else
-			sack = this.relicVaultStash?.Sack;
-
-		button.Sack = sack;
+		button.Sack = this.GetBagSack(button.ButtonNumber);
 	}
 
 	private void contextMenuStrip_ItemClicked(object? sender, ToolStripItemClickedEventArgs e)
 	{
 		if (e.ClickedItem == this.toolStripMenuItemDisableTooltip)
-		{
-			switch (this.CurrentBag)
-			{
-				case BagIdConstants.BAGID_EQUIPMENTPANEL:
-					this.USettings.DisableTooltipEquipment = true;
-					break;
-				case BagIdConstants.BAGID_PLAYERSTASH:
-					this.USettings.DisableTooltipStash = true;
-					break;
-				case BagIdConstants.BAGID_RELICVAULTSTASH:
-					this.USettings.DisableTooltipRelic = true;
-					break;
-				case BagIdConstants.BAGID_TRANSFERSTASH:
-					this.USettings.DisableTooltipTransfer = true;
-					break;
-			}
-		}
+			this.USettings.SetStashTooltipDisabled(this.CurrentBag, true);
 
 		if (e.ClickedItem == this.toolStripMenuItemEnableTooltip)
-		{
-			switch (this.CurrentBag)
-			{
-				case BagIdConstants.BAGID_EQUIPMENTPANEL:
-					this.USettings.DisableTooltipEquipment = false;
-					break;
-				case BagIdConstants.BAGID_PLAYERSTASH:
-					this.USettings.DisableTooltipStash = false;
-					break;
-				case BagIdConstants.BAGID_RELICVAULTSTASH:
-					this.USettings.DisableTooltipRelic = false;
-					break;
-				case BagIdConstants.BAGID_TRANSFERSTASH:
-					this.USettings.DisableTooltipTransfer = false;
-					break;
-			}
-		}
+			this.USettings.SetStashTooltipDisabled(this.CurrentBag, false);
 
 		this.USettings.Save();
 	}
@@ -189,20 +145,6 @@ public partial class StashPanel
 			return;
 
 		// Adjust menu items display
-		switch (sourceButton.ButtonNumber)
-		{
-			case BagIdConstants.BAGID_EQUIPMENTPANEL:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipEquipment);
-				break;
-			case BagIdConstants.BAGID_PLAYERSTASH:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipStash);
-				break;
-			case BagIdConstants.BAGID_RELICVAULTSTASH:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipRelic);
-				break;
-			case BagIdConstants.BAGID_TRANSFERSTASH:
-				SetMenuItemDisableTooltip(this.USettings.DisableTooltipTransfer);
-				break;
-		}
+		SetMenuItemDisableTooltip(this.USettings.IsStashTooltipDisabled(sourceButton.ButtonNumber));
 	}
 }

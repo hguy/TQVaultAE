@@ -298,4 +298,23 @@ public class StashService : IStashService
 
 		return watcher;
 	}
+
+	/// <inheritdoc />
+	public int ClampBagId(int bagId)
+		=> Math.Clamp(bagId, BagIdConstants.BAGID_EQUIPMENTPANEL, BagIdConstants.BAGID_RELICVAULTSTASH);
+
+	/// <inheritdoc />
+	public SackCollection? GetBagSack(int bagId, PlayerCollection? player, Stash? transferStash, Stash? playerStash, Stash? relicVaultStash)
+	{
+		static SackCollection? SackOf(Stash? stash)
+			=> stash is { NumberOfSacks: > 0 } ? stash.Sack : null;
+
+		return this.ClampBagId(bagId) switch
+		{
+			BagIdConstants.BAGID_EQUIPMENTPANEL => player?.EquipmentSack,
+			BagIdConstants.BAGID_TRANSFERSTASH => SackOf(transferStash),
+			BagIdConstants.BAGID_PLAYERSTASH => SackOf(playerStash),
+			_ => SackOf(relicVaultStash),
+		};
+	}
 }

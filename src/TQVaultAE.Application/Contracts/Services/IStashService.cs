@@ -48,4 +48,23 @@ public interface IStashService
 	/// <param name="onChanged">Action to call when the file changes.</param>
 	/// <returns>A FileSystemWatcher instance or null if the file path is invalid.</returns>
 	FileSystemWatcher? CreateTransferStashFileWatcher(Action onChanged);
+
+	/// <summary>
+	/// Brings a stash panel bag id within the bags it has: below the equipment panel gives the equipment panel,
+	/// beyond the relic vault stash gives the relic vault stash.
+	/// </summary>
+	/// <param name="bagId">The requested bag id (see <see cref="BagIdConstants"/>).</param>
+	/// <returns>A bag id from <see cref="BagIdConstants.BAGID_EQUIPMENTPANEL"/> to <see cref="BagIdConstants.BAGID_RELICVAULTSTASH"/>.</returns>
+	int ClampBagId(int bagId);
+
+	/// <summary>
+	/// Gets the sack a stash panel bag shows.
+	/// </summary>
+	/// <param name="bagId">The bag id (see <see cref="BagIdConstants"/>).</param>
+	/// <param name="player">The character, for the equipment panel.</param>
+	/// <param name="transferStash">The transfer stash (caravan).</param>
+	/// <param name="playerStash">The character's stash.</param>
+	/// <param name="relicVaultStash">The relic vault stash.</param>
+	/// <returns>The sack; null when the bag has nothing to show (no character, or a stash without sacks).</returns>
+	SackCollection? GetBagSack(int bagId, PlayerCollection? player, Stash? transferStash, Stash? playerStash, Stash? relicVaultStash);
 }

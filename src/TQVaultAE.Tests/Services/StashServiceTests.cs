@@ -637,4 +637,56 @@ public class StashServiceTests
 		result.Should().NotBeNull();
 		_mockGamePathService.Verify(x => x.GetPlayerStashFile(playerName, true), Times.Once);
 	}
+
+	[Theory]
+	[InlineData(-5, BagIdConstants.BAGID_EQUIPMENTPANEL)]
+	[InlineData(-1, BagIdConstants.BAGID_EQUIPMENTPANEL)]
+	[InlineData(BagIdConstants.BAGID_TRANSFERSTASH, BagIdConstants.BAGID_TRANSFERSTASH)]
+	[InlineData(BagIdConstants.BAGID_RELICVAULTSTASH, BagIdConstants.BAGID_RELICVAULTSTASH)]
+	[InlineData(4, BagIdConstants.BAGID_RELICVAULTSTASH)]
+	[InlineData(12, BagIdConstants.BAGID_RELICVAULTSTASH)]
+	public void ClampBagId_KeepsTheIdWithinTheStashPanelBags(int bagId, int expected)
+	{
+		_stashService.ClampBagId(bagId).Should().Be(expected);
+	}
+
+	private static Stash CreateStashWithSack(string name)
+	{
+		var stash = new Stash(name, $"""C:\Saves\{name}.dxb""");
+		stash.CreateEmptySack();
+		return stash;
+	}
+
+	[Fact]
+	public void GetBagSack_ReturnsTheSackOfEachBag()
+	{
+		var player = new PlayerCollection("Hero", """C:\Saves\_Hero\Player.chr""") { EquipmentSack = new SackCollection() };
+		var transfer = CreateStashWithSack("transfer");
+		var stash = CreateStashWithSack("stash");
+		var relic = CreateStashWithSack("relic");
+
+		_stashService.GetBagSack(BagIdConstants.BAGID_EQUIPMENTPANEL, player, transfer, stash, relic).Should().BeSameAs(player.EquipmentSack);
+		_stashService.GetBagSack(BagIdConstants.BAGID_TRANSFERSTASH, player, transfer, stash, relic).Should().BeSameAs(transfer.Sack);
+		_stashService.GetBagSack(BagIdConstants.BAGID_PLAYERSTASH, player, transfer, stash, relic).Should().BeSameAs(stash.Sack);
+		_stashService.GetBagSack(BagIdConstants.BAGID_RELICVAULTSTASH, player, transfer, stash, relic).Should().BeSameAs(relic.Sack);
+	}
+
+	[Fact]
+	public void GetBagSack_OutOfRangeId_GivesTheClampedBag()
+	{
+		var relic = CreateStashWithSack("relic");
+
+		_stashService.GetBagSack(7, null, null, null, relic).Should().BeSameAs(relic.Sack);
+	}
+
+	[Fact]
+	public void GetBagSack_StashWithoutSacksOrMissing_GivesNull()
+	{
+		var emptyStash = CreateStashWithSack("stash");
+		emptyStash.numberOfSacks = 0;
+
+		_stashService.GetBagSack(BagIdConstants.BAGID_PLAYERSTASH, null, null, emptyStash, null).Should().BeNull();
+		_stashService.GetBagSack(BagIdConstants.BAGID_TRANSFERSTASH, null, null, emptyStash, null).Should().BeNull();
+		_stashService.GetBagSack(BagIdConstants.BAGID_EQUIPMENTPANEL, null, null, emptyStash, null).Should().BeNull();
+	}
 }
