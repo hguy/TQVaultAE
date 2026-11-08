@@ -944,9 +944,9 @@ public partial class MainForm : Form
 		this.treeViewTOC.BeginUpdate();
 		foreach (var node in this.dicoNodes)
 		{
-			if (node.Key != string.Empty)
+			// The root node (empty key) has no tag, every other node holds its NodeTag
+			if (node.Key != string.Empty && node.Value.Tag is NodeTag tag)
 			{
-				var tag = (NodeTag)node.Value.Tag!;
 				tag.thisNode.Text = toolStripButtonCaps.Checked
 					? tag.TextU
 					: tag.Text;
@@ -1121,7 +1121,9 @@ public partial class MainForm : Form
 
 	private void NavHistoryGoto()
 	{
-		var tag = (NodeTag)NavHistory[NavHistoryIndex].Tag!;
+		// Only tagged nodes are shown in the tree, so only they get into the history
+		if (NavHistory[NavHistoryIndex].Tag is not NodeTag tag) return;
+
 		this.SelectedFile = tag.File;
 		this.treeViewTOC.SelectedNode = NavHistory[NavHistoryIndex];
 		this.treeViewTOC.Focus();

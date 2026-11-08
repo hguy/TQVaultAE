@@ -8,7 +8,7 @@ public static class TQPath
 
 	#region various path
 
-	public static string SaveDirectoryTQITModded
+	public static string? SaveDirectoryTQITModded
 	{
 		get
 		{
@@ -35,7 +35,7 @@ public static class TQPath
 		}
 	}
 
-	public static string SaveDirectoryTQITTransferStash
+	public static string? SaveDirectoryTQITTransferStash
 	{
 		get
 		{
@@ -44,18 +44,18 @@ public static class TQPath
 		}
 	}
 
-	public static string DefaultSaveDirectory
+	public static string? DefaultSaveDirectory
 	{
 		get
 		{
-			string path = SaveDirectoryTQIT;
+			string? path = SaveDirectoryTQIT;
 			if (path is not null)
 				return path;
 			return SaveDirectoryTQ;
 		}
 	}
 
-	public static string SaveDirectoryTQ
+	public static string? SaveDirectoryTQ
 	{
 		get
 		{
@@ -64,7 +64,7 @@ public static class TQPath
 		}
 	}
 
-	public static string SaveDirectoryTQIT
+	public static string? SaveDirectoryTQIT
 	{
 		get
 		{

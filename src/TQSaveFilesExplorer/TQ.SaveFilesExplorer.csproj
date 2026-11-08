@@ -6,7 +6,7 @@
 		<RootNamespace>TQ.SaveFilesExplorer</RootNamespace>
 		<AssemblyName>TQ.SaveFilesExplorer</AssemblyName>
 		<!-- Legacy code, not annotated for nullable reference types. -->
-		<Nullable>disable</Nullable>
+		<Nullable>enable</Nullable>
 		<GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 		<Platforms>AnyCPU;x64;x86</Platforms>
 		<UseWindowsForms>true</UseWindowsForms>

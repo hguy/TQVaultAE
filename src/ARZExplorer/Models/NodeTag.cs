@@ -12,8 +12,8 @@ internal sealed class NodeTag
 	internal int TokIdx;
 	internal RecordId Key = RecordId.Empty;
 	internal string DictionaryKey = string.Empty;
-	internal TreeNode thisNode = null!; // Set with the node that holds the tag.
-	internal TQFileInfo File = null!; // Set with the node that holds the tag.
+	internal required TreeNode thisNode; // The node that holds the tag.
+	internal required TQFileInfo File;
 	internal byte[]? RawData;
 	internal List<string> RecordText = [];
 	internal Bitmap? Bitmap;
