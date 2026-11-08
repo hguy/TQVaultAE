@@ -134,12 +134,4 @@ public partial class MainForm
 				this.stashPanel.TransferStash = stashResult.Stash;
 		});
 	}
-	/// <summary>
-	/// Attempts to save all modified stash files.
-	/// </summary>
-	private bool SaveAllModifiedStashes()
-	{
-		Stash? stashOnError = null;
-		return this.SaveWithRetry(() => this.stashService.SaveAllModifiedStashes(ref stashOnError) > 0, () => stashOnError?.PlayerName);
-	}
 }
