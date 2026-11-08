@@ -74,8 +74,11 @@ public class ItemStackingService(IItemProvider itemProvider) : IItemStackingServ
 		dragItem.Number -= addedNumber;
 		dragItem.IsModified = true;
 
+		// The relic under the drop is still in the sack: adding it again would save it twice.
 		itemUnderUs.Location = dropLocation;
-		sack.AddItem(itemUnderUs);
+		if (sack.IndexOfItem(itemUnderUs) < 0)
+			sack.AddItem(itemUnderUs);
+		sack.IsModified = true;
 
 		return new ItemStackResult(true, itemUnderUs, dragItem);
 	}
