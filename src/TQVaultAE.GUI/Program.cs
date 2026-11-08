@@ -279,10 +279,6 @@ public static class Program
 		{
 			settingsCulture = userSettings.TQLanguage;
 		}
-		else if (!userSettings.AutoDetectLanguage)
-		{
-			settingsCulture = userSettings.TQLanguage;
-		}
 
 		if (!string.IsNullOrEmpty(settingsCulture))
 		{
