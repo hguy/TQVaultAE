@@ -396,7 +396,8 @@ public partial class VaultPanel
 
 			if (!(this.ShownPlayer.GetSack(destinationIndex + this.BagPanelOffset)?.IsEmpty ?? true))
 			{
-				if (this.USettings.SuppressWarnings || !this.Services.MessageBoxes.Confirm(Resources.PlayerOverwriteSackMsg, Resources.PlayerOverwriteSack))
+				// Suppressed warnings mean overwrite without asking, as for the other confirmations.
+				if (!this.USettings.SuppressWarnings && !this.Services.MessageBoxes.Confirm(Resources.PlayerOverwriteSackMsg, Resources.PlayerOverwriteSack))
 				{
 					return;
 				}
