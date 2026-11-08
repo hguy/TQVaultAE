@@ -136,14 +136,11 @@ public class VaultServiceTests
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 
-		PlayerCollection? vaultOnError = null;
-
 		// Act
-		var result = _vaultService.SaveAllModifiedVaults(ref vaultOnError);
+		var result = this.SaveAllModifiedVaults();
 
 		// Assert
 		result.Should().Be(0);
-		vaultOnError.Should().BeNull();
 		_mockPlayerCollectionProvider.Verify(x => x.Save(It.IsAny<PlayerCollection>(), It.IsAny<string>()), Times.Never);
 	}
 
@@ -164,17 +161,15 @@ public class VaultServiceTests
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 
-		PlayerCollection? vaultOnError = null;
 		_userSettings.DisableLegacyBackup = true;
 
 		try
 		{
 			// Act
-			var result = _vaultService.SaveAllModifiedVaults(ref vaultOnError);
+			var result = this.SaveAllModifiedVaults();
 
 		// Assert
 		result.Should().Be(1);
-		// vaultOnError.Should().Be(vault);
 		_mockGameFileService.Verify(x => x.BackupFile(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
 		_mockPlayerCollectionProvider.Verify(x => x.Save(vault, "TestVault.vault"), Times.Once);
 		vault.IsModified.Should().BeFalse();
@@ -204,15 +199,13 @@ public class VaultServiceTests
 
 		_sessionContext.Vaults.GetOrAddAtomic("TestVault.vault", _ => vault);
 
-		PlayerCollection? vaultOnError = null;
 		_userSettings.DisableLegacyBackup = false;
 
 		// Act
-		var result = _vaultService.SaveAllModifiedVaults(ref vaultOnError);
+		var result = this.SaveAllModifiedVaults();
 
 		// Assert
 		result.Should().Be(1);
-		// vaultOnError.Should().Be(vault);
 		_mockGameFileService.Verify(x => x.BackupFile("TestVault", "TestVault.vault"), Times.Once);
 		_mockPlayerCollectionProvider.Verify(x => x.Save(vault, "TestVault.vault"), Times.Once);
 		vault.IsModified.Should().BeFalse();
@@ -624,5 +617,17 @@ public class VaultServiceTests
 
 		lines.Should().HaveCount(2);
 		lines[1].Should().StartWith("0,Gear,3,");
+	}
+
+	/// <summary>
+	/// Saves every modified file the way the save orchestrator does, one by one.
+	/// </summary>
+	private int SaveAllModifiedVaults()
+	{
+		var modified = this._vaultService.GetModifiedVaults();
+		foreach (var (file, vault) in modified)
+			this._vaultService.SaveModifiedVault(file, vault);
+
+		return modified.Count;
 	}
 }

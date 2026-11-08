@@ -23,12 +23,16 @@ public interface IPlayerService
 	StashLoadResult LoadPlayerStash(PlayerSave playerSave, bool fromFileWatcher = false);
 
 	/// <summary>
-	/// Attempts to save all modified player files.
+	/// Gets the loaded players that have unsaved changes, with their file.
 	/// </summary>
-	/// <param name="playerOnError">If save fails, this will contain the player that failed.</param>
-	/// <returns>True if there were any modified player files.</returns>
-	/// <exception cref="IOException">can happen during file save</exception>
-	bool SaveAllModifiedPlayers(ref PlayerCollection? playerOnError);
+	IReadOnlyList<(string File, PlayerCollection Player)> GetModifiedPlayers();
+
+	/// <summary>
+	/// Backs up (unless legacy backups are disabled) and saves one player file, then marks the player saved.
+	/// </summary>
+	/// <exception cref="IOException">The file could not be written.</exception>
+	/// <exception cref="UnauthorizedAccessException">The file or folder cannot be written to.</exception>
+	void SaveModifiedPlayer(string file, PlayerCollection player);
 
 	/// <summary>
 	/// Gets a list of all of the character files in the save folder.

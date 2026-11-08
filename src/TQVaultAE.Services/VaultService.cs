@@ -74,37 +74,20 @@ public class VaultService(
 		return CreateVault(name, fileName);
 	}
 
-	/// <summary>
-	/// Attempts to save all modified vault files.
-	/// </summary>
-	/// <param name="vaultOnError">If save fails, this will contain the vault that failed.</param>
-	/// <returns>Number of vaults saved.</returns>
-	/// <exception cref="IOException">can happen during file save</exception>
-	public int SaveAllModifiedVaults(ref PlayerCollection? vaultOnError)
+	/// <inheritdoc/>
+	public IReadOnlyList<(string File, PlayerCollection Vault)> GetModifiedVaults()
+		=> [.. this.userContext.Vaults
+			.Select(kvp => (File: kvp.Key, Vault: kvp.Value.Value))
+			.Where(v => v.Vault is not null && v.Vault.IsModified)];
+
+	/// <inheritdoc/>
+	public void SaveModifiedVault(string file, PlayerCollection vault)
 	{
-		int saved = 0;
+		if (!this.UserSettings.DisableLegacyBackup)
+			this.GameFileService.BackupFile(vault.PlayerName, file);
 
-		foreach (KeyValuePair<string, Lazy<PlayerCollection>> kvp in this.userContext.Vaults)
-		{
-			string vaultFile = kvp.Key;
-			PlayerCollection vault = kvp.Value.Value;
-
-			if (vault is null) continue;
-
-			if (vault.IsModified)
-			{
-				// backup the file
-				vaultOnError = vault;
-
-				if (!this.UserSettings.DisableLegacyBackup)
-					GameFileService.BackupFile(vault.PlayerName, vaultFile);
-
-				PlayerCollectionProvider.Save(vault, vaultFile);
-				vault.Saved();
-				saved++;
-			}
-		}
-		return saved;
+		this.PlayerCollectionProvider.Save(vault, file);
+		vault.Saved();
 	}
 
 	/// <summary>

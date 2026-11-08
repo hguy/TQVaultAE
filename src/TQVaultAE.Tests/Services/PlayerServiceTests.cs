@@ -402,14 +402,11 @@ public class PlayerServiceTests
 	public void SaveAllModifiedPlayers_WithNoModifiedPlayers_ReturnsFalse()
 	{
 		// Arrange
-		PlayerCollection? playerOnError = null;
-
 		// Act
-		var result = _playerService.SaveAllModifiedPlayers(ref playerOnError);
+		var result = this.SaveAllModifiedPlayers();
 
 		// Assert
 		result.Should().BeFalse();
-		playerOnError.Should().BeNull();
 	}
 
 	/// <summary>
@@ -604,10 +601,8 @@ public class PlayerServiceTests
 
 		_userSettings.DisableLegacyBackup = false;
 
-		PlayerCollection? playerOnError = null;
-
 		// Act
-		var result = _playerService.SaveAllModifiedPlayers(ref playerOnError);
+		var result = this.SaveAllModifiedPlayers();
 
 		// Assert
 		result.Should().BeTrue();
@@ -889,4 +884,16 @@ public class PlayerServiceTests
 	}
 
 	#endregion
+
+	/// <summary>
+	/// Saves every modified file the way the save orchestrator does, one by one.
+	/// </summary>
+	private bool SaveAllModifiedPlayers()
+	{
+		var modified = this._playerService.GetModifiedPlayers();
+		foreach (var (file, player) in modified)
+			this._playerService.SaveModifiedPlayer(file, player);
+
+		return modified.Count > 0;
+	}
 }
