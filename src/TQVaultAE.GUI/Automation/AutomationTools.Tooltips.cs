@@ -7,6 +7,7 @@ using ModelContextProtocol.Server;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.GUI.Tooltips;
+using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Automation;
 

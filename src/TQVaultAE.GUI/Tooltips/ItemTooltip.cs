@@ -14,24 +14,6 @@ using TQVaultAE.Config;
 
 namespace TQVaultAE.GUI.Tooltips;
 
-/// <summary>What an item tooltip shows beyond the classic display ("Tooltip Enhanced" settings).</summary>
-[Flags]
-internal enum ItemTooltipView
-{
-	/// <summary>Classic display.</summary>
-	Classic = 0,
-	/// <summary>Attributes split into prefix, base and suffix.</summary>
-	Detailed = 1,
-	/// <summary>Each value rolled by the in-game jitter (database -> in-game).</summary>
-	InGameRolls = 2,
-	/// <summary>The possible min/max of each rolled attribute, on its right.</summary>
-	ValueRanges = 4,
-	/// <summary>The skills granted by the item in a panel on the right.</summary>
-	GrantedSkills = 8,
-	/// <summary>How many of each piece of the item's set are loaded, on its right.</summary>
-	SetPieceCounts = 16,
-}
-
 public partial class ItemTooltip : BaseTooltip
 {
 	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();
@@ -227,21 +209,7 @@ public partial class ItemTooltip : BaseTooltip
 	/// </summary>
 	/// <param name="enableDetailedTooltipView">Forces the detailed display on or off, whatever the settings.</param>
 	internal static ItemTooltipView ViewOf(UserSettings settings, bool? enableDetailedTooltipView = null)
-	{
-		if (!(enableDetailedTooltipView ?? settings.EnableDetailedTooltipView))
-			return ItemTooltipView.Classic;
-
-		var view = ItemTooltipView.Detailed;
-		if (settings.TooltipShowInGameRolls)
-			view |= ItemTooltipView.InGameRolls;
-		if (settings.TooltipShowValueRanges)
-			view |= ItemTooltipView.ValueRanges;
-		if (settings.TooltipShowGrantedSkills)
-			view |= ItemTooltipView.GrantedSkills;
-		if (settings.TooltipShowSetPieceCounts)
-			view |= ItemTooltipView.SetPieceCounts;
-		return view;
-	}
+		=> ItemTooltipContentBuilder.ViewOf(settings, enableDetailedTooltipView);
 
 	/// <summary>
 	/// Init the tooltip content.
@@ -256,7 +224,6 @@ public partial class ItemTooltip : BaseTooltip
 
 		var key = new TooltipKey(this.FocusedItem, UIService.Scale, this.View, this.ShowInGameValues
 			, setCounts is null ? string.Empty : string.Join(",", setCounts.Values));
-		bool detailed = this.View.HasFlag(ItemTooltipView.Detailed);
 
 		// Redraw
 		if (ToImage.TryGetCopy(key, out var cached, out var data))
@@ -270,185 +237,19 @@ public partial class ItemTooltip : BaseTooltip
 		this.flowLayoutPanelFriendlyNames.SuspendLayout();
 		this.rangeRows.Clear();
 
-		// Without the skills panel, the granted skills are described inline as before.
-		var scopes = FriendlyNamesExtraScopes.ItemFullDisplay;
-		if (this.View.HasFlag(ItemTooltipView.GrantedSkills))
-			scopes |= FriendlyNamesExtraScopes.GrantedSkills;
-		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, scopes);
+		this.Data = this.ItemProvider.GetFriendlyNames(FocusedItem, ItemTooltipContentBuilder.ScopesFor(this.View));
+		var content = new ItemTooltipContentBuilder(this.TranslationService).Build(this.Data, this.View, setCounts);
 
-		// Fullname
-		AddRow(Data.FullName, FocusedItem.ExtractTextColorOrItemColor(Data.BaseItemInfoDescription), style: FontStyle.Bold);
-
-		// Thrown
-		if (Data.Item.IsThrownWeapon)
-			AddRow(Data.BaseItemInfoStyle, style: FontStyle.Regular);
-
-		// Artifact Level
-		if (Data.Item.IsArtifact)
-			AddRow(Data.ArtifactClass);
-
-		// Relic Completion
-		if (Data.Item.IsRelicOrCharm)
-			AddRow(Data.RelicCompletionFormat, FocusedItem.ExtractTextColorOrItemColor(Data.BaseItemInfoDescription));
-
-		// Recipe Label
-		if (Data.Item.IsFormulae)
-			AddRow(Data.ArtifactRecipe);
-
-		// Flavor text
-		if (Data.FlavorText.Length != 0)
+		// The relic lines may move to a column: note where their rows start and end.
+		int relicRowsStart = 0;
+		int relicRowsEnd = 0;
+		for (int i = 0; i < content.Lines.Count; i++)
 		{
-			foreach (var str in Data.FlavorText) AddRow(str);
-			AddRow(TOOLTIPSPACER);
-		}
-
-		// Required Reagents
-		if (Data.Item.IsFormulae)
-		{
-			AddRow(TOOLTIPSPACER);
-			AddRow(Data.FormulaeFormat);
-		}
-
-		// Attributes
-		if (detailed)
-		{
-			string AdjustColor(string? TQText, string label)
-			{
-				TQText = (TQText ?? string.Empty).InsertAfterColorPrefix($"{label} : ");
-				return TQText.HasColorPrefix() ? TQText : $"{ItemStyle.Relic.TQColor().ColorTag()}{TQText}";
-			}
-
-			// Detailed display
-			if (Data.PrefixAttributes.Length != 0)
-			{
-				AddRow(TOOLTIPSPACER);
-				AddRow(AdjustColor(this.Data.PrefixInfoDescription, Resources.ItemPropertiesLabelPrefixProperties), style: FontStyle.Bold);
-				AddAttributeRows(Data.PrefixAttributes, Data.PrefixAttributeRanges);
-			}
-			if (Data.BaseAttributes.Length != 0)
-			{
-				AddRow(TOOLTIPSPACER);
-				AddRow(AdjustColor(this.Data.BaseItemInfoDescription, Resources.ItemPropertiesLabelBaseItemProperties), style: FontStyle.Bold);
-				AddAttributeRows(Data.BaseAttributes, Data.BaseAttributeRanges);
-			}
-			if (Data.SuffixAttributes.Length != 0)
-			{
-				AddRow(TOOLTIPSPACER);
-				AddRow(AdjustColor(this.Data.SuffixInfoDescription, Resources.ItemPropertiesLabelSuffixProperties), style: FontStyle.Bold);
-				AddAttributeRows(Data.SuffixAttributes, Data.SuffixAttributeRanges);
-			}
-		}
-		else
-		{
-			// Classic display
-			foreach (var str in Data.BaseAttributes) AddRow(str);
-			foreach (var str in Data.PrefixAttributes) AddRow(str);
-			foreach (var str in Data.SuffixAttributes) AddRow(str);
-		}
-
-		// In-game jitter comparison (database -> in-game), detailed view only
-		if (this.View.HasFlag(ItemTooltipView.InGameRolls) && Data.InGameRolls.Length != 0)
-		{
-			AddRow(TOOLTIPSPACER);
-			AddRow(Resources.ItemPropertiesLabelInGameRolls, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);
-			foreach (var str in Data.InGameRolls) AddRow(str, ItemStyle.Broken.TQColor().Color());
-		}
-
-		// formula Artifact Details goes after formula attributes
-		if (Data.FormulaeArtifactAttributes.Length != 0)
-		{
-			AddRow(TOOLTIPSPACER);
-			AddRow(Data.FormulaeArtifactName, FocusedItem.ExtractTextColorOrItemColor(Data.BaseItemInfoDescription), style: FontStyle.Bold);
-			AddRow(Data.FormulaeArtifactClass, ItemStyle.Broken.TQColor().Color());
-			foreach (var str in Data.FormulaeArtifactAttributes) AddRow(str);
-		}
-
-		// Relic attributes after items attributes with delimiter.
-		// Besides real relics and charms, a relic slot may hold any record: God mode in the Forge ignores the rules
-		// (e.g. a weapon used as a relic), and what was socketed must still show.
-		bool hasSocketedRecord = !Data.Item.IsRelicOrCharm && !Data.Item.IsArtifact
-			&& (Data.Item.RelicInfo is not null || Data.Item.Relic2Info is not null);
-		int relicRowsStart = this.flowLayoutPanelFriendlyNames.Controls.Count;
-		if (Data.Item.HasRelicOrCharm || hasSocketedRecord)
-		{
-			if (Data.Relic1Attributes.Length != 0)
-			{
-				AddRow(TOOLTIPDELIM);
-				AddRow(Data.RelicInfo1Description, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);// Name
-				AddRow(Data.RelicInfo1CompletionResolved, ItemStyle.Relic.TQColor().Color());// Completion label
-				foreach (var str in Data.Relic1Attributes) AddRow(str);
-				AddRow(Data.RelicInfo1CompletionBonusResolved, ItemStyle.Relic.TQColor().Color());// Bonus Completion label
-				foreach (var str in Data.RelicBonus1Attributes) AddRow(str);
-			}
-			if (Data.Relic2Attributes.Length != 0)
-			{
-				AddRow(TOOLTIPDELIM);
-				AddRow(Data.RelicInfo2Description, ItemStyle.Relic.TQColor().Color(), style: FontStyle.Bold);// Name
-				AddRow(Data.RelicInfo2CompletionResolved, ItemStyle.Relic.TQColor().Color());// Completion label
-				foreach (var str in Data.Relic2Attributes) AddRow(str);
-				AddRow(Data.RelicInfo2CompletionBonusResolved, ItemStyle.Relic.TQColor().Color());// Bonus Completion label
-				foreach (var str in Data.RelicBonus2Attributes) AddRow(str);
-			}
-		}
-		else if (Data.Item.IsArtifact)
-		{
-			if (Data.RelicBonus1Attributes.Length != 0)
-			{
-				AddRow(TOOLTIPSPACER);
-				AddRow(Data.ArtifactBonus, ItemStyle.Relic.TQColor().Color());// Completion label
-				foreach (var str in Data.RelicBonus1Attributes) AddRow(str);
-			}
-		}
-		else if (Data.Item.IsRelicOrCharm)
-		{
-			if (Data.RelicBonus1Attributes.Length != 0)
-			{
-				AddRow(TOOLTIPSPACER);
-				AddRow(Data.RelicBonusTitle, ItemStyle.Relic.TQColor().Color());// Completion label
-				foreach (var str in Data.RelicBonus1Attributes) AddRow(str);
-			}
-		}
-
-		int relicRowsEnd = this.flowLayoutPanelFriendlyNames.Controls.Count;
-
-		AddRow(TOOLTIPDELIM);
-
-		// Add the item seed
-		AddRow(Data.ItemSeed, ItemStyle.Broken.TQColor().Color());
-
-		// Add the Atlantis clause
-		if (Data.Item.IsAtlantis)
-			AddRow(this.TranslationService.ItemAtlantis, TQColor.Green.Color());
-		// Add the Eternal Embers clause
-		else if (Data.Item.IsEmbers)
-			AddRow(this.TranslationService.ItemEmbers, TQColor.Green.Color());
-		// Add the Ragnarok clause
-		else if (Data.Item.IsRagnarok)
-			AddRow(this.TranslationService.ItemRagnarok, TQColor.Green.Color());
-		// Add the Immortal Throne clause
-		else if (Data.Item.IsImmortalThrone)
-			AddRow(this.TranslationService.ItemIT, TQColor.Green.Color());
-
-		// ItemSet
-		if (Data.ItemSet is { setMembers.Count: > 0 })
-		{
-			AddRow(TOOLTIPDELIM);
-			foreach (var str in Data.ItemSet.Translations)
-			{
-				// The set name comes first, then one line per piece with its count on the right.
-				if (setCounts is not null && str.Key != Data.ItemSet.setName
-					&& setCounts.TryGetValue(RecordId.Create(str.Key), out var count))
-					this.flowLayoutPanelFriendlyNames.Controls.Add(this.MakeRangeRow(str.Value, count.ToString()));
-				else
-					AddRow(str.Value);
-			}
-		}
-
-		if (Data.Requirements.Length != 0)
-		{
-			AddRow(TOOLTIPDELIM);
-			// Requierments
-			foreach (var str in Data.Requirements) AddRow(str, ItemStyle.Broken.TQColor().Color());
+			if (i == content.RelicStart)
+				relicRowsStart = this.flowLayoutPanelFriendlyNames.Controls.Count;
+			if (i == content.RelicEnd)
+				relicRowsEnd = this.flowLayoutPanelFriendlyNames.Controls.Count;
+			this.AddLine(content.Lines[i]);
 		}
 
 		this.AlignRangeRows();
@@ -496,21 +297,23 @@ public partial class ItemTooltip : BaseTooltip
 		this.flowLayoutPanelFriendlyNames.Controls.Add(row);
 	}
 
-	/// <summary>
-	/// Adds attribute lines, each with its possible in-game values right-aligned when known (detailed view only).
-	/// </summary>
-	private void AddAttributeRows(string[] lines, string?[] ranges)
+	/// <summary>Adds the row of a line built by <see cref="ItemTooltipContentBuilder"/>.</summary>
+	private void AddLine(TooltipLine line)
 	{
-		if (!this.View.HasFlag(ItemTooltipView.ValueRanges))
-			ranges = [];
-
-		for (int i = 0; i < lines.Length; i++)
+		switch (line.Kind)
 		{
-			var range = i < ranges.Length ? ranges[i] : null;
-			if (string.IsNullOrEmpty(range))
-				AddRow(lines[i]);
-			else
-				this.flowLayoutPanelFriendlyNames.Controls.Add(this.MakeRangeRow(lines[i], range));
+			case TooltipLineKind.Spacer:
+				AddRow(TOOLTIPSPACER);
+				break;
+			case TooltipLineKind.Delimiter:
+				AddRow(TOOLTIPDELIM);
+				break;
+			case TooltipLineKind.Range:
+				this.flowLayoutPanelFriendlyNames.Controls.Add(this.MakeRangeRow(line.Text, line.Range ?? string.Empty));
+				break;
+			default:
+				AddRow(line.Text, line.Color?.Color(), style: line.Bold ? FontStyle.Bold : FontStyle.Regular);
+				break;
 		}
 	}
 
@@ -523,7 +326,7 @@ public partial class ItemTooltip : BaseTooltip
 		var bg = this.flowLayoutPanelFriendlyNames.BackColor;
 		var left = MakeRow(this.UIService, this.FontService, line, BGColor: bg)
 			?? MakeSingleColorLabel(this.UIService, this.FontService, line, null, 10F, FontStyle.Regular, bg);
-		var right = MakeSingleColorLabel(this.UIService, this.FontService, range, ItemStyle.Broken.TQColor().Color(), 10F, FontStyle.Regular, bg);
+		var right = MakeSingleColorLabel(this.UIService, this.FontService, range, ItemTooltipContentBuilder.RangeColor.Color(), 10F, FontStyle.Regular, bg);
 
 		var row = new Panel()
 		{
