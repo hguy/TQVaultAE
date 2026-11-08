@@ -1,3 +1,4 @@
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.Application.Contracts.Services;
@@ -46,6 +47,24 @@ public interface IPlayerService
 	/// <param name="newname">New player name.</param>
 	/// <param name="saveFolder">Save folder path.</param>
 	void AlterNameInPlayerFileSave(string newname, string saveFolder);
+
+	/// <summary>
+	/// Checks the name of a character about to be duplicated from <paramref name="source"/>.
+	/// </summary>
+	/// <param name="source">The character to duplicate.</param>
+	/// <param name="newName">The new name, already trimmed.</param>
+	/// <param name="existingNames">The names of the known characters.</param>
+	/// <returns><see cref="CharacterNameError.None"/> when the name can be used, else the first problem found.</returns>
+	CharacterNameError ValidateNewCharacterName(PlayerSave source, string newName, IEnumerable<string> existingNames);
+
+	/// <summary>
+	/// Copies the save files of <paramref name="source"/> to a new save folder and writes <paramref name="newName"/>
+	/// into the new player file. On failure, the new folder is removed.
+	/// </summary>
+	/// <param name="source">The character to duplicate.</param>
+	/// <param name="newName">The new name, validated by <see cref="ValidateNewCharacterName"/>.</param>
+	/// <returns>The new save folder, or the failure.</returns>
+	CharacterDuplicateResult DuplicateCharacter(PlayerSave source, string newName);
 
 	/// <summary>
 	/// Creates a file watcher for the player file.

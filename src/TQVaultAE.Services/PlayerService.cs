@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.Config;
@@ -24,6 +25,7 @@ public class PlayerService : IPlayerService
 	private readonly IFileIO FileIO;
 	private readonly IPathIO PathIO;
 	private readonly UserSettings UserSettings;
+	private readonly IDirectoryIO DirectoryIO;
 
 	public PlayerService(
 		ILogger<PlayerService> log
@@ -39,6 +41,7 @@ public class PlayerService : IPlayerService
 		, IFileIO fileIO
 		, IPathIO pathIO
 		, UserSettings userSettings
+		, IDirectoryIO directoryIO
 	)
 	{
 		this.Log = log;
@@ -54,6 +57,7 @@ public class PlayerService : IPlayerService
 		this.FileIO = fileIO;
 		this.PathIO = pathIO;
 		this.UserSettings = userSettings;
+		this.DirectoryIO = directoryIO;
 	}
 
 	/// <summary>
@@ -228,6 +232,58 @@ public class PlayerService : IPlayerService
 		var fileContent = this.FileIO.ReadAllBytes(newPlayerFile);
 		this.TQDataService.ReplaceUnicodeValueAfter(ref fileContent, "myPlayerName", newname);
 		this.FileIO.WriteAllBytes(newPlayerFile, fileContent);
+	}
+
+	/// <inheritdoc />
+	public CharacterNameError ValidateNewCharacterName(PlayerSave source, string newName, IEnumerable<string> existingNames)
+	{
+		if (string.IsNullOrWhiteSpace(newName))
+			return CharacterNameError.Empty;
+
+		var invalidChars = this.PathIO.GetInvalidPathChars().Concat(this.PathIO.GetInvalidFileNameChars()).ToArray();
+		if (newName.IndexOfAny(invalidChars) != -1)
+			return CharacterNameError.InvalidCharacters;
+
+		if (existingNames.Any(name => newName.Equals(name, StringComparison.OrdinalIgnoreCase)))
+			return CharacterNameError.AlreadyUsed;
+
+		// A folder not listed as a character (another game, a leftover) must not be overwritten.
+		if (this.DirectoryIO.Exists(this.GameFileService.GetDuplicateCharacterFolder(source.Folder, newName)))
+			return CharacterNameError.AlreadyUsed;
+
+		return CharacterNameError.None;
+	}
+
+	/// <inheritdoc />
+	public CharacterDuplicateResult DuplicateCharacter(PlayerSave source, string newName)
+	{
+		var newFolder = this.GameFileService.GetDuplicateCharacterFolder(source.Folder, newName);
+		if (this.DirectoryIO.Exists(newFolder))
+			return CharacterDuplicateResult.Failed(new IOException($"The save folder {newFolder} exists already."));
+
+		try
+		{
+			newFolder = this.GameFileService.DuplicateCharacterFiles(source.Folder, newName);
+			this.AlterNameInPlayerFileSave(newName, newFolder);
+			return CharacterDuplicateResult.Succeeded(newFolder);
+		}
+		catch (Exception ex)
+		{
+			this.Log.LogError(ex, "Failed to duplicate the character {Name} as {NewName}", source.Name, newName);
+
+			// Rollback: the folder did not exist before, so all of it is the partial copy.
+			try
+			{
+				if (this.DirectoryIO.Exists(newFolder))
+					this.DirectoryIO.Delete(newFolder, true);
+			}
+			catch (Exception rollbackError)
+			{
+				this.Log.LogError(rollbackError, "Failed to remove the partial copy {Folder}", newFolder);
+			}
+
+			return CharacterDuplicateResult.Failed(ex);
+		}
 	}
 
 	/// <summary>
