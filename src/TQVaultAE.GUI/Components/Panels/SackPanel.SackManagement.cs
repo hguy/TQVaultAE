@@ -39,101 +39,18 @@ public partial class SackPanel : Panel, IScalingControl
 			return;
 		}
 
-		// Sort the items and put them in a temporary sack.
-		SackCollection tempSack = new SackCollection();
-		var autoSortQuery = from Item item in this.ShownSack
-							orderby (((item.Height * 3) + item.Width) * 100) descending, item.ItemGroup descending, item.BaseItemId, item.IsRelicComplete descending
-							select item;
-
-		foreach (Item item in autoSortQuery)
-			tempSack.AddItem(item);
-
-		if (tempSack == null || tempSack.IsEmpty)
+		if (this.ShownSack.IsEmpty)
 			return;
 
-		SackCollection backUpSack = this.ShownSack.Duplicate();
-
-		this.ShownSack.EmptySack();
 		// Toggle sorting direction.
 		this.sortVertical = !this.sortVertical;
 
-		int param1 = this.SackSize.Height;
-		int param2 = this.SackSize.Width;
-		if (this.sortVertical)
+		if (!this.Services.ItemMovementService.Autosort(this.ShownSack, this.SackSize, this.sortVertical))
 		{
-			param1 = this.SackSize.Width;
-			param2 = this.SackSize.Height;
-		}
-
-		foreach (Item tempItem in tempSack)
-		{
-			bool itemPlaced = false;
-			int offset;
-
-			if (this.sortVertical)
-				offset = tempItem.Width - 1;
-			else
-				offset = tempItem.Height - 1;
-
-			for (int j = 0; j < param1 - offset; ++j)
-			{
-				for (int k = 0; k < param2; ++k)
-				{
-					Collection<Item> foundItems;
-					if (this.sortVertical)
-					{
-						foundItems = this.FindAllItems(new Rectangle(j, k, tempItem.Width, tempItem.Height));
-						if (foundItems.Count == 0 && tempItem.Width + j <= this.SackSize.Width)
-						{
-							if (k + tempItem.Height <= this.SackSize.Height)
-							{
-								tempItem.PositionX = j;
-								tempItem.PositionY = k;
-								this.ShownSack.AddItem(tempItem);
-								itemPlaced = true;
-							}
-
-							break;
-						}
-						else
-							k += foundItems[0].Height - 1;
-					}
-					else
-					{
-						foundItems = this.FindAllItems(new Rectangle(k, j, tempItem.Width, tempItem.Height));
-						if (foundItems.Count == 0 && tempItem.Height + j <= this.SackSize.Height)
-						{
-							if (k + tempItem.Width <= this.SackSize.Width)
-							{
-								tempItem.PositionX = k;
-								tempItem.PositionY = j;
-								this.ShownSack.AddItem(tempItem);
-								itemPlaced = true;
-							}
-
-							break;
-						}
-						else
-							k += foundItems[0].Width - 1;
-					}
-				}
-
-				if (itemPlaced)
-					break;
-			}
-
-			if (!itemPlaced)
-			{
-				this.sortVertical = !this.sortVertical;
-				this.ShownSack.EmptySack();
-
-				foreach (Item item in backUpSack)
-					this.ShownSack.AddItem(item.Clone());
-
-				this.ShownSack.IsModified = false;
-				BagButtonTooltip.InvalidateCache(this.Sack);
-				return;
-			}
+			// An item did not fit: the sack is back as it was.
+			this.sortVertical = !this.sortVertical;
+			BagButtonTooltip.InvalidateCache(this.Sack);
+			return;
 		}
 
 		this.Invalidate();

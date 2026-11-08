@@ -164,6 +164,112 @@ public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMoveme
             item.Place.Path, destinationSackType, item.Place.SackNumber, destinationStashType);
     }
 
+    /// <inheritdoc/>
+    public bool Autosort(SackCollection sack, Size sackSize, bool vertical)
+    {
+        var sortedItems = sack
+            .OrderByDescending(item => ((item.Height * 3) + item.Width) * 100)
+            .ThenByDescending(item => item.ItemGroup)
+            .ThenBy(item => item.BaseItemId)
+            .ThenByDescending(item => item.IsRelicComplete)
+            .ToList();
+
+        if (sortedItems.Count == 0)
+            return true;
+
+        SackCollection backUpSack = sack.Duplicate();
+        sack.EmptySack();
+
+        // Rows then columns, or columns then rows.
+        int outer = vertical ? sackSize.Width : sackSize.Height;
+        int inner = vertical ? sackSize.Height : sackSize.Width;
+
+        foreach (Item item in sortedItems)
+        {
+            if (!PlaceSorted(sack, item, sackSize, vertical, outer, inner))
+            {
+                // Put the sack back as it was.
+                sack.EmptySack();
+                foreach (Item backUp in backUpSack)
+                    sack.AddItem(backUp.Clone());
+
+                sack.IsModified = false;
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Places an item in the first free cell of a sort, scanning <paramref name="outer"/> lines of <paramref name="inner"/> cells.</summary>
+    private bool PlaceSorted(SackCollection sack, Item item, Size sackSize, bool vertical, int outer, int inner)
+    {
+        int offset = vertical ? item.Width - 1 : item.Height - 1;
+
+        for (int j = 0; j < outer - offset; ++j)
+        {
+            for (int k = 0; k < inner; ++k)
+            {
+                var cells = vertical
+                    ? new Rectangle(j, k, item.Width, item.Height)
+                    : new Rectangle(k, j, item.Width, item.Height);
+                var foundItems = FindAllItems(sack, cells)!;
+
+                bool lineFits = vertical ? item.Width + j <= sackSize.Width : item.Height + j <= sackSize.Height;
+                if (foundItems.Count == 0 && lineFits)
+                {
+                    bool cellFits = vertical ? k + item.Height <= sackSize.Height : k + item.Width <= sackSize.Width;
+                    if (cellFits)
+                    {
+                        item.PositionX = cells.X;
+                        item.PositionY = cells.Y;
+                        sack.AddItem(item);
+                        return true;
+                    }
+
+                    // No room left on this line.
+                    break;
+                }
+
+                // Skip over the item in the way.
+                k += (vertical ? foundItems[0].Height : foundItems[0].Width) - 1;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public bool MoveItems(SackCollection sack, IReadOnlyCollection<Item> items, Size sackSize, Point offset)
+    {
+        foreach (Item item in items)
+        {
+            var movedItemArea = new Rectangle(new Point(item.PositionX + offset.X, item.PositionY + offset.Y), item.Size);
+
+            // Another item in the way
+            foreach (Item blockingItem in FindAllItems(sack, movedItemArea)!)
+            {
+                if (!items.Contains(blockingItem))
+                    return false;
+            }
+
+            // Outside of the sack
+            if (movedItemArea.Top < 0 || movedItemArea.Left < 0
+                || movedItemArea.Bottom - 1 >= sackSize.Height || movedItemArea.Right - 1 >= sackSize.Width)
+            {
+                return false;
+            }
+        }
+
+        foreach (Item item in items)
+        {
+            item.PositionX += offset.X;
+            item.PositionY += offset.Y;
+        }
+
+        return true;
+    }
+
     #region Private Helper Methods
 
     /// <summary>

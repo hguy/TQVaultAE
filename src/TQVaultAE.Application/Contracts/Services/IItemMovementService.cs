@@ -68,4 +68,26 @@ public interface IItemMovementService
     /// <param name="destinationStashType">The destination stash type (if applicable).</param>
     /// <param name="containerName">The display name of the container.</param>
     void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, int destinationSackNumber, StashType? destinationStashType = null, string? containerName = null);
+
+    /// <summary>
+    /// Sorts the items of a sack by size, the largest first, packing them row by row or column by column.
+    /// </summary>
+    /// <remarks>
+    /// When an item does not fit, the sack gets back copies of its original items and is marked as not modified.
+    /// </remarks>
+    /// <param name="sack">The sack to sort.</param>
+    /// <param name="sackSize">Size of the sack in cells.</param>
+    /// <param name="vertical"><see langword="true"/> to fill column by column, otherwise row by row.</param>
+    /// <returns><see langword="false"/> when an item did not fit and the sack was restored.</returns>
+    bool Autosort(SackCollection sack, Size sackSize, bool vertical);
+
+    /// <summary>
+    /// Moves items of a sack by an offset, all of them or none.
+    /// </summary>
+    /// <param name="sack">The sack holding the items.</param>
+    /// <param name="items">The items to move; they may block each other's way.</param>
+    /// <param name="sackSize">Size of the sack in cells.</param>
+    /// <param name="offset">The move in cells.</param>
+    /// <returns><see langword="false"/> when another item is in the way or an item would leave the sack.</returns>
+    bool MoveItems(SackCollection sack, IReadOnlyCollection<Item> items, Size sackSize, Point offset);
 }
