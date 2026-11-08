@@ -188,6 +188,12 @@ public partial class ItemProvider
 			attributes.Add($"{name}{castName}");
 
 		attributes.Add($"{ItemStyle.Broken.TQColor().ColorTag()}{Format(levelFormat, castLevel)}");
+
+		// On a kill, the cast skill can appear at the slain enemy instead of the player: an area effect lands there.
+		if (skillRecord.GetString("Class", 0).Equals("Skill_PassiveOnTargetKilled", noCase)
+			&& ValueAtLevel(skillRecord["skillCastOnTargetLocation"], level) > 0
+			&& TranslationService.TryTranslateXTag("tqvSkillCastOnTargetLocation", out var onTarget))
+			attributes.Add($"{text}{onTarget}");
 		this.GetAttributesFromRecord(itm, castRecord, true, castId, attributes, skillLevelIndex: castLevel - 1);
 		return this.GetSkillDescription(castRecord);
 	}

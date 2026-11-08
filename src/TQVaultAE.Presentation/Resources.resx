@@ -2135,4 +2135,20 @@ You still have to close TQVaultAE to apply your changes.
 	<data name="SearchItemSkills" xml:space="preserve">
     <value>Item Skills</value>
   </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% Resistance to Energy Drain Damage</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_exclusiveSkill" xml:space="preserve">
+    <value>@xtagExclusiveSkill</value>
+    <comment>Substitute for missing tag "exclusiveSkill": the game text of a trance (only one active at a time)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>Cast where the enemy was slain</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
+  </data>
 </root>
