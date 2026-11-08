@@ -431,30 +431,11 @@ public partial class MainForm
 		if (item == null || destinationPlayer == null)
 			return;
 
-		// Update the item's location properties to reflect its new home
-		item.Place.Path = destinationPlayer.PlayerFile;
-		item.Place.Name = this.GamePathResolver.GetNameFromFile(destinationPlayer.PlayerFile)
+		// The container name comes from the file name (character or vault), not from PlayerName
+		string containerName = this.GamePathResolver.GetNameFromFile(destinationPlayer.PlayerFile)
 			?? GamePathResolver.GetVaultNameFromPath(destinationPlayer.PlayerFile)
 			?? string.Empty;
 
-		// Calculate sack number based on sack type
-		switch (destinationSackType)
-		{
-			case SackType.Equipment:
-				item.Place.SackNumber = BagIdConstants.BAGID_EQUIPMENTPANEL;
-				break;
-			case SackType.Stash:
-				item.Place.SackNumber = destinationStashType is not null ? (int)destinationStashType : destinationSackNumber;
-				break;
-			case SackType.Vault:
-			case SackType.Player:
-			default:
-				// For vaults and player sacks, use the current sack index
-				item.Place.SackNumber = destinationSackNumber;
-				break;
-		}
-
-		item.Place.SackType = destinationSackType;
-		item.Place.StashType = destinationStashType;
+		this.Services.ItemMovementService.UpdateItemLocation(item, destinationPlayer, destinationSackType, destinationSackNumber, destinationStashType, containerName);
 	}
 }

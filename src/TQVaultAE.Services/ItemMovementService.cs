@@ -207,9 +207,12 @@ public class ItemMovementService : IItemMovementService
 
     /// <summary>
     /// Gets an item at a cell location.
-    /// Extracted from SackPanel.FindItem().
     /// </summary>
-    private Item? FindItem(SackCollection sack, Point cellLocation)
+    /// <param name="sack">The sack to look into.</param>
+    /// <param name="cellLocation">The cell coordinates.</param>
+    /// <param name="ignoredItem">An item to skip, such as the item being dragged.</param>
+    /// <returns>The item covering the cell, or null.</returns>
+    public Item? FindItem(SackCollection sack, Point cellLocation, Item? ignoredItem = null)
     {
         if (sack == null)
             return null;
@@ -217,6 +220,9 @@ public class ItemMovementService : IItemMovementService
         // Find the item for this point
         foreach (var item in sack)
         {
+            if (ignoredItem is not null && item == ignoredItem)
+                continue;
+
             if (RecordId.IsNullOrEmpty(item.BaseItemId))
                 continue;
 

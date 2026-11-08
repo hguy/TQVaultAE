@@ -37,7 +37,17 @@ public interface IItemMovementService
     /// <param name="stashType">The stash type to check against.</param>
     /// <returns>True if the item is valid for the stash type.</returns>
     bool IsItemValidForStashType(Item item, StashType? stashType);
-    
+
+    /// <summary>
+    /// Gets the item covering a cell of a sack.
+    /// Items without a base item id are skipped.
+    /// </summary>
+    /// <param name="sack">The sack to look into.</param>
+    /// <param name="cellLocation">The cell coordinates.</param>
+    /// <param name="ignoredItem">An item to skip, such as the item being dragged.</param>
+    /// <returns>The item covering the cell, or null.</returns>
+    Item? FindItem(SackCollection sack, Point cellLocation, Item? ignoredItem = null);
+
     /// <summary>
     /// Moves an item from source to destination sack.
     /// </summary>
