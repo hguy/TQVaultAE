@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 
 using TQVaultAE.GUI.Forms;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Tooltips;
 using TQVaultAE.GUI.Models;
 using TQVaultAE.Domain.Entities;
@@ -152,11 +153,16 @@ public partial class ResultsDialog : VaultForm
 		totalHeight += this.Padding.Vertical;
 
 		if (totalHeight > this.Height)
-			totalWidth += SystemInformation.VerticalScrollBarWidth;
+			totalWidth += this.VerticalScrollBarWidth();
 
-		this.Width = Math.Min((Screen.PrimaryScreen ?? Screen.FromControl(this)).WorkingArea.Width, totalWidth + this.Padding.Horizontal);
-		this.Height = Math.Max(this.Height, Math.Min((Screen.PrimaryScreen ?? Screen.FromControl(this)).WorkingArea.Height - SystemInformation.HorizontalScrollBarHeight, totalHeight - SystemInformation.HorizontalScrollBarHeight));
-		this.Location = new Point(this.Location.X, ((Screen.PrimaryScreen ?? Screen.FromControl(this)).WorkingArea.Height - this.Height) / 2);
+		// The monitor the dialog opened on, which is not always the primary one.
+		var area = Screen.FromControl(this).WorkingArea;
+		int scrollBarHeight = this.HorizontalScrollBarHeight();
+		this.Width = Math.Min(area.Width, totalWidth + this.Padding.Horizontal);
+		this.Height = Math.Max(this.Height, Math.Min(area.Height - scrollBarHeight, totalHeight - scrollBarHeight));
+		this.Location = new Point(
+			Math.Clamp(this.Location.X, area.Left, Math.Max(area.Left, area.Right - this.Width)),
+			area.Top + (area.Height - this.Height) / 2);
 
 		this.selectedResult = null;
 
@@ -328,18 +334,5 @@ public partial class ResultsDialog : VaultForm
 	{
 		this.selectedResult = null;
 		ItemTooltip.HideTooltip();
-	}
-
-	/// <summary>
-	/// Handler for Resizing the Results Dialog Form.  Resizes the DataGridView based on the Results Dialog size.
-	/// </summary>
-	/// <param name="sender">sender object</param>
-	/// <param name="e">EventArgs data</param>
-	private void ResultsDialog_Resize(object? sender, EventArgs e)
-	{
-		this.resultsDataGridView.Size = new Size(
-			Math.Max(this.Padding.Horizontal + 1, this.Width - this.Padding.Horizontal),
-			Math.Max(this.Padding.Vertical + 1, this.Height - this.Padding.Vertical)
-		);
 	}
 }

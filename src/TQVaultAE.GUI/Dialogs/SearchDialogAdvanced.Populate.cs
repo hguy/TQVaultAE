@@ -34,7 +34,7 @@ public partial class SearchDialogAdvanced
 				height += lb.GetItemHeight(currrow);
 				currrow++;
 			}
-			height += SystemInformation.HorizontalScrollBarHeight;
+			height += lb.HorizontalScrollBarHeight();
 			lb.Height = height;
 		}
 	}

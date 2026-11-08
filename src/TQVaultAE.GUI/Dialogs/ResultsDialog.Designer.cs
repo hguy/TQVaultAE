@@ -83,6 +83,7 @@ namespace TQVaultAE.GUI.Dialogs
             this.columnContainerType,
             this.columnLevel});
             this.resultsDataGridView.GridColor = System.Drawing.Color.Khaki;
+            this.resultsDataGridView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.resultsDataGridView.Location = new System.Drawing.Point(10, 35);
             this.resultsDataGridView.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.resultsDataGridView.MultiSelect = false;
@@ -201,7 +202,6 @@ namespace TQVaultAE.GUI.Dialogs
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Results";
             this.Shown += new System.EventHandler(this.ResultsDialogShown);
-            this.Resize += new System.EventHandler(this.ResultsDialog_Resize);
             this.Controls.SetChildIndex(this.resultsDataGridView, 0);
             ((System.ComponentModel.ISupportInitialize)(this.resultsDataGridView)).EndInit();
             this.ResumeLayout(false);

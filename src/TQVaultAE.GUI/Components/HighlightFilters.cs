@@ -106,7 +106,7 @@ public partial class HighlightFilters : UserControl
 				, TextFormatFlags.SingleLine
 			).Width
 		).Max();
-		maxWidth += SystemInformation.VerticalScrollBarWidth;// Add this for the size of the checkbox in front of the text
+		maxWidth += scalingCheckedListBoxOrigin.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxOrigin.ColumnWidth = maxWidth;
 
 		scalingCheckedListBoxOrigin.Items.AddRange(list);
@@ -219,7 +219,7 @@ public partial class HighlightFilters : UserControl
 				, TextFormatFlags.SingleLine
 			).Width
 		).Max();
-		maxWidth += SystemInformation.VerticalScrollBarWidth;// Add this for the size of the checkbox in front of the text
+		maxWidth += scalingCheckedListBoxTypes.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxTypes.ColumnWidth = maxWidth;
 
 		scalingCheckedListBoxTypes.Items.AddRange(list);
@@ -263,7 +263,7 @@ public partial class HighlightFilters : UserControl
 				, TextFormatFlags.SingleLine
 			).Width
 		).Max();
-		maxWidth += SystemInformation.VerticalScrollBarWidth;// Add this for the size of the checkbox in front of the text
+		maxWidth += scalingCheckedListBoxRarity.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxRarity.ColumnWidth = maxWidth;
 
 		scalingCheckedListBoxRarity.Items.AddRange(listRarity);
