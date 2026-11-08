@@ -65,7 +65,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Holds the currently disabled tooltip bagId.
 	/// </summary>
-	public List<int> DisabledTooltipBagId = new();
+	public List<int> DisabledTooltipBagId = [];
 
 	/// <summary>
 	/// Initializes a new instance of the PlayerCollection class.

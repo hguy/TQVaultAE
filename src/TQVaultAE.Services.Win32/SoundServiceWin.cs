@@ -66,8 +66,8 @@ public class SoundServiceWin : ISoundService, IDisposable
 	#endregion
 
 	// Cache
-	private static Dictionary<RecordId, byte[]> SoundData = new();
-	private static Dictionary<RecordId, (SoundPlayer Player, MemoryStream MS)> LoadedPlayers = new();
+	private static Dictionary<RecordId, byte[]> SoundData = [];
+	private static Dictionary<RecordId, (SoundPlayer Player, MemoryStream MS)> LoadedPlayers = [];
 
 	public SoundServiceWin(ILogger<SoundServiceWin> log, IDatabase? database, UserSettings uSettings)
 	{

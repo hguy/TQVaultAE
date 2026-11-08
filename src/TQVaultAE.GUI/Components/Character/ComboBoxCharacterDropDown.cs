@@ -29,7 +29,7 @@ public partial class ComboBoxCharacterDropDown : UserControl
 			ctr.Width = this.Width - this.VerticalScrollBarWidth();
 	}
 
-	internal readonly BindingList<ComboBoxCharacterItem> Items = new();
+	internal readonly BindingList<ComboBoxCharacterItem> Items = [];
 
 	public ComboBoxCharacterDropDown()
 	{

@@ -349,7 +349,7 @@ public static class ItemRollSimulator
 			: variable.GetSingle(0);
 
 	/// <summary>Names of the variables a roll can change (<see cref="RollField.Variable"/>), by table.</summary>
-	private static readonly ConditionalWeakTable<IReadOnlyList<RollAttribute>, HashSet<string>> RolledVariablesByTable = new();
+	private static readonly ConditionalWeakTable<IReadOnlyList<RollAttribute>, HashSet<string>> RolledVariablesByTable = [];
 
 	private static HashSet<string> RolledVariables(IReadOnlyList<RollAttribute> table)
 		=> RolledVariablesByTable.GetValue(table, static t => t

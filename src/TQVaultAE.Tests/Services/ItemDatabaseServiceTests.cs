@@ -52,7 +52,7 @@ public class ItemDatabaseServiceTests
 			.Throws(new InvalidOperationException("broken record"));
 		foreach (var item in good)
 			_mockItemProvider.Setup(x => x.GetFriendlyNames(item, It.IsAny<FriendlyNamesExtraScopes?>(), It.IsAny<bool>()))
-				.Returns(new ToFriendlyNameResult(item) { RequirementVariables = new SortedList<string, Variable>() });
+				.Returns(new ToFriendlyNameResult(item) { RequirementVariables = [] });
 		_service.TryAddItemToDatabase(broken);
 		foreach (var item in good)
 			_service.TryAddItemToDatabase(item);

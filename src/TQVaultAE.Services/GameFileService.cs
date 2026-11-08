@@ -320,8 +320,8 @@ public partial class GameFileService(ILogger<GameFileService> log, IGamePathServ
 	protected sealed class ShellCommand : IDisposable
 	{
 		private readonly Process _process;
-		private readonly List<string> _outputLines = new();
-		private readonly List<string> _errorLines = new();
+		private readonly List<string> _outputLines = [];
+		private readonly List<string> _errorLines = [];
 
 		private ShellCommand(Process process)
 		{
@@ -405,8 +405,8 @@ public partial class GameFileService(ILogger<GameFileService> log, IGamePathServ
 
 	protected bool HandleExecuteOut(ShellCommand cmd, string errMess, out BindingList<string> outputLines, out BindingList<string> errorLines, bool pipeOutputStandard = true)
 	{
-		outputLines = new BindingList<string>();
-		errorLines = new BindingList<string>();
+		outputLines = [];
+		errorLines = [];
 
 		return HandleExecuteRef(cmd, errMess, ref outputLines, ref errorLines, pipeOutputStandard);
 	}

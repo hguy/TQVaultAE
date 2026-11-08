@@ -91,7 +91,7 @@ public class SearchQueryServiceTests
 		]
 		""";
 
-	private readonly Dictionary<string, string> _files = new();
+	private readonly Dictionary<string, string> _files = [];
 	private readonly Mock<IFileIO> _fileIO = new();
 	private readonly Mock<ILogger<SearchQueryService>> _log = new();
 	private readonly SearchQueryService _service;

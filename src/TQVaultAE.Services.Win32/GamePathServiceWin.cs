@@ -245,7 +245,7 @@ public partial class GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQData
 	/// <returns>List of character files in a string array</returns>
 	public string[] GetCharacterList()
 	{
-		List<string> dirs = new();
+		List<string> dirs = [];
 
 		// Get all folders that start with a '_'.
 		var TQDir = GetBaseCharacterFolder(false, false);// From TQ 
@@ -465,7 +465,7 @@ public partial class GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQData
 	/// <returns>The list of all of the vault files in the save folder.</returns>
 	public string[] GetVaultList()
 	{
-		string[] empty = Array.Empty<string>();
+		string[] empty = [];
 		try
 		{
 			// Get all files that have a .vault extension.
@@ -475,7 +475,7 @@ public partial class GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQData
 			if (filesOld.Length == 0 && filesJson.Length == 0)
 				return empty;
 
-			List<string> vaultList = new List<string>();
+			List<string> vaultList = [];
 
 			// Strip out the path information and extension.
 			foreach (string file in filesOld)
@@ -594,7 +594,7 @@ public partial class GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQData
 		// Disc version detection logic -old
 		if (string.IsNullOrEmpty(titanQuestGamePath))
 		{
-			string[] path = { "SOFTWARE", "Iron Lore", "Titan Quest", "Install Location" };
+			string[] path = ["SOFTWARE", "Iron Lore", "Titan Quest", "Install Location"];
 			titanQuestGamePath = ReadRegistryKey(Microsoft.Win32.Registry.LocalMachine, path);
 		}
 

@@ -24,15 +24,15 @@ public partial class SearchDialogAdvanced : VaultForm
 	private readonly Bitmap ButtonImageUp;
 	private readonly Bitmap ButtonImageDown;
 	private readonly (ScalingButton Button, FlowLayoutPanel Panel)[] NavMap;
-	private readonly List<BoxItem> SelectedFilters = new();
-	private readonly HashSet<BoxItem> SelectedFiltersSet = new();
-	private readonly List<VirtualCheckedListBox> CachedCheckedListBoxes = new();
+	private readonly List<BoxItem> SelectedFilters = [];
+	private readonly HashSet<BoxItem> SelectedFiltersSet = [];
+	private readonly List<VirtualCheckedListBox> CachedCheckedListBoxes = [];
 	private readonly ISearchQueryService SearchQueryService;
 
 	/// <summary>Live filters of each saved query (<see cref="LoadPersonnalQueries"/>).</summary>
 	private readonly Dictionary<SearchQuery, IReadOnlyList<BoxItem>> QueryFilters = new(ReferenceEqualityComparer.Instance);
 
-	public SearchResult[] QueryResults { get; private set; } = Array.Empty<SearchResult>();
+	public SearchResult[] QueryResults { get; private set; } = [];
 	private bool scalingCheckBoxReduceDuringSelection_LastChecked;
 
 	/// <summary>
@@ -164,7 +164,7 @@ public partial class SearchDialogAdvanced : VaultForm
 		// Mapping between nav button & content component
 		if (NavMap is null)
 		{
-			NavMap = new (ScalingButton Button, FlowLayoutPanel Panel)[] {
+			NavMap = [
 				(this.scalingButtonMenuAttribute, this.flowLayoutPanelItemAttributes),
 				(this.scalingButtonMenuBaseAttribute, this.flowLayoutPanelBaseAttributes),
 				(this.scalingButtonMenuCharacters, this.flowLayoutPanelCharacters),
@@ -182,7 +182,7 @@ public partial class SearchDialogAdvanced : VaultForm
 				(this.scalingButtonMenuOrigin, this.flowLayoutPanelOrigin),
 				(this.scalingButtonMenuSetItems, this.flowLayoutPanelSetItems),
 				(this.scalingButtonMenuSkills, this.flowLayoutPanelSkills),
-			};
+			];
 		}
 
 		// Keep reference of base Up & Down button image

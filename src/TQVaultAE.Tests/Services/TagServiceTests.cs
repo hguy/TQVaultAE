@@ -70,11 +70,11 @@ public class TagServiceTests
 		// Arrange
 		var config = new TagConfig
 		{
-			tags = new List<TagInfo>
-			{
+			tags =
+			[
 			new TagInfo { name = "ZTag", color = new TagInfoColor { R = 255, G = 0, B = 0 } },
 				new TagInfo { name = "ATag", color = new TagInfoColor { R = 0, G = 255, B = 0 } }
-			}
+			]
 		};
 		var configJson = JsonSerializer.Serialize(config, _jsonOptions);
 		_mockFileIO.Setup(x => x.Exists(_testConfigPath)).Returns(true);
@@ -310,10 +310,10 @@ public class TagServiceTests
 		// Arrange
 		var config = new TagConfig
 		{
-			tags = new List<TagInfo>
-		{
+			tags =
+		[
 			new TagInfo { name = "TestTag", color = new TagInfoColor { R = 255, G = 0, B = 0 } }
-			}
+			]
 		};
 		var configJson = JsonSerializer.Serialize(config);
 		_mockFileIO.Setup(x => x.Exists(_testConfigPath)).Returns(true);

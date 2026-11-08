@@ -38,7 +38,7 @@ public partial class ItemProvider
 		}
 
 		// First get a list of attributes, grouped by effect.
-		Dictionary<string, List<Variable?>> attrByEffect = new();
+		Dictionary<string, List<Variable?>> attrByEffect = [];
 		if (record is null)
 		{
 			if (USettings.ItemDebugLevel > 0)
@@ -53,7 +53,7 @@ public partial class ItemProvider
 
 		// Added by Village Idiot
 		// To keep track of groups so they are not counted twice
-		List<string> countedGroups = new();
+		List<string> countedGroups = [];
 
 		foreach (Variable variable in record)
 		{
@@ -92,7 +92,7 @@ public partial class ItemProvider
 			List<Variable?>? attrList;
 			if (!attrByEffect.TryGetValue(effectGroup, out attrList))
 			{
-				attrList = new List<Variable?>();
+				attrList = [];
 				attrByEffect[effectGroup] = attrList;
 			}
 

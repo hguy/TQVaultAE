@@ -8,7 +8,7 @@ public sealed class PlayerSave : IDisposable
 	public FileSystemWatcher? PlayerSaveWatcher { get; set; }
 	public FileSystemWatcher? PlayerStashWatcher { get; set; }
 
-	public readonly Dictionary<string, Color> Tags = new();
+	public readonly Dictionary<string, Color> Tags = [];
 
 	public string Folder;
 	public readonly string Name;

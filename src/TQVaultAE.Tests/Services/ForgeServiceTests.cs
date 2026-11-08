@@ -20,12 +20,12 @@ public class ForgeServiceTests
 
 	private readonly SackCollection _baseSack = new();
 	private readonly SackCollection _materialSack = new();
-	private readonly Dictionary<ForgeSlot, SackCollection?> _sacks = new();
+	private readonly Dictionary<ForgeSlot, SackCollection?> _sacks = [];
 
 	public ForgeServiceTests()
 	{
 		this._service = new ForgeService(this._itemProvider.Object, this._itemDatabase.Object);
-		this._itemProvider.Setup(x => x.GetRequirementVariables(It.IsAny<Item>())).Returns(new SortedList<string, Variable>());
+		this._itemProvider.Setup(x => x.GetRequirementVariables(It.IsAny<Item>())).Returns([]);
 	}
 
 	private static Item Sword(string? prefix = null, string? suffix = null) => new()

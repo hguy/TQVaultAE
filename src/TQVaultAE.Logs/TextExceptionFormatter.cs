@@ -17,7 +17,7 @@ public class TextExceptionFormatter
 	private readonly Exception exception;
 	private NameValueCollection? additionalInfo;
 	private StringBuilder stringBuilder = new StringBuilder(1024);
-	private static readonly List<string> IgnoredProperties = new List<string>() { "Source", "Message", "HelpLink", "InnerException", "StackTrace" };
+	private static readonly List<string> IgnoredProperties = ["Source", "Message", "HelpLink", "InnerException", "StackTrace"];
 
 	/// <summary>
 	/// Ctrs

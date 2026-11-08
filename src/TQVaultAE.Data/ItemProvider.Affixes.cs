@@ -24,7 +24,7 @@ public partial class ItemProvider
 
 		Dictionary<GameDlc, ReadOnlyCollection<LootTableCollection>> Broken, Prefix, Suffix;
 
-		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = new(), LPrefix = new(), LSuffix = new();
+		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = [], LPrefix = [], LSuffix = [];
 
 		LootTableCollection? table;
 		GameDlc dlc;
@@ -74,7 +74,7 @@ public partial class ItemProvider
 
 		Dictionary<GameDlc, ReadOnlyCollection<LootTableCollection>> Broken, Prefix, Suffix;
 
-		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = new(), LPrefix = new(), LSuffix = new();
+		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = [], LPrefix = [], LSuffix = [];
 
 		LootTableCollection? table;
 		GameDlc dlc;

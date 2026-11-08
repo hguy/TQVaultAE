@@ -27,7 +27,7 @@ public class ArzFile
 	/// <summary>
 	/// RecordInfo keyed by their ID
 	/// </summary>
-	public Dictionary<RecordId, RecordInfo> RecordInfo = new();
+	public Dictionary<RecordId, RecordInfo> RecordInfo = [];
 
 	/// <summary>
 	/// Ordered keys for the recordInfo Dictionary

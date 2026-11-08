@@ -17,7 +17,7 @@ public class LootTableCollectionProvider(ILogger<LootTableCollectionProvider> lo
 	private readonly ITranslationService TranslationService = translationService;
 	private readonly UserSettings USettings = uSettings;
 
-	private Dictionary<RecordId, LootTableCollection> LootTableCache = new();
+	private Dictionary<RecordId, LootTableCollection> LootTableCache = [];
 
 	ReadOnlyDictionary<RecordId, LootTableCollection>? _AllLootRandomizerTable;
 	public ReadOnlyDictionary<RecordId, LootTableCollection> AllLootRandomizerTable
@@ -83,7 +83,7 @@ public class LootTableCollectionProvider(ILogger<LootTableCollectionProvider> lo
 
 		#region Build Table
 
-		Dictionary<string, (RecordId AffixId, float Weight)> dico = new();
+		Dictionary<string, (RecordId AffixId, float Weight)> dico = [];
 		string number, randomizerName = "randomizerName", randomizerWeight = "randomizerWeight", affixId;
 		foreach (var variable in records)
 		{

@@ -10,7 +10,7 @@ public class RecordInfoProviderTests
 	{
 		// Arrange: Create binary data with float values
 		// Format: dataType(int16) + valCount(int16) + variableID(int32) + float values
-		float[] testFloats = { 0.0f, 1.5f, -3.14f, float.MaxValue, float.MinValue, float.Epsilon };
+		float[] testFloats = [0.0f, 1.5f, -3.14f, float.MaxValue, float.MinValue, float.Epsilon];
 
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
@@ -67,7 +67,7 @@ public class RecordInfoProviderTests
 	public void IntegerParsing_OldAndNewAlgorithm_ProduceSameResult()
 	{
 		// Arrange: Create binary data with integer values
-		int[] testInts = { 0, 1, -100, int.MaxValue, int.MinValue };
+		int[] testInts = [0, 1, -100, int.MaxValue, int.MinValue];
 
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);
@@ -93,7 +93,7 @@ public class RecordInfoProviderTests
 	public void StringParsing_OldAndNewAlgorithm_ProduceSameResult()
 	{
 		// Arrange: Create binary data with string reference (int32 string ID)
-		int[] testStringIds = { 100, 200, 300 };
+		int[] testStringIds = [100, 200, 300];
 
 		using var ms = new MemoryStream();
 		using var writer = new BinaryWriter(ms);

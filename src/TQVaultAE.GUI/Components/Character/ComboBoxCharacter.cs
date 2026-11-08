@@ -49,7 +49,7 @@ public partial class ComboBoxCharacter : UserControl
 	/// <summary>
 	/// a collection of <see cref="PlayerSave"/> or <see cref="string"/>
 	/// </summary>
-	public readonly BindingList<object> Items = new();
+	public readonly BindingList<object> Items = [];
 
 	private object? _SelectedItem = null;
 	private int _SelectedIndex = -1;

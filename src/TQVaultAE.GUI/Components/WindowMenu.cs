@@ -84,7 +84,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 		this.menuClose.ShortcutKeyDisplayString = "Alt+F4";
 
 		// Add items to menu
-		this.Items.AddRange(new ToolStripItem[] {
+		this.Items.AddRange([
 			this.menuRestore,
 			this.menuMove,
 			this.menuSize,
@@ -93,7 +93,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 			this.menuMax,
 			this.menuSep,
 			this.menuClose
-		});
+		]);
 
 		this.menuClose.BackColor = SystemColors.MenuHighlight;
 	}

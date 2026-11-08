@@ -250,7 +250,7 @@ public sealed class PooledCharArray : IDisposable
 	/// <summary>
 	/// Gets the span of the pooled array.
 	/// </summary>
-	public Span<char> Span => _array is null ? Span<char>.Empty : _array.AsSpan(0, _length);
+	public Span<char> Span => _array is null ? [] : _array.AsSpan(0, _length);
 
 	/// <summary>
 	/// Gets the length of the data in the pooled array.
@@ -260,7 +260,7 @@ public sealed class PooledCharArray : IDisposable
 	/// <summary>
 	/// An empty pooled array instance.
 	/// </summary>
-	public static PooledCharArray Empty { get; } = new(Array.Empty<char>(), 0);
+	public static PooledCharArray Empty { get; } = new([], 0);
 
 	private PooledCharArray(char[] array, int length)
 	{
@@ -317,7 +317,7 @@ public sealed class PooledByteArray : IDisposable
 	/// <summary>
 	/// Gets the span of the pooled array.
 	/// </summary>
-	public Span<byte> Span => _array is null ? Span<byte>.Empty : _array.AsSpan(0, _length);
+	public Span<byte> Span => _array is null ? [] : _array.AsSpan(0, _length);
 
 	/// <summary>
 	/// Gets the read-only span of the pooled array.
@@ -332,7 +332,7 @@ public sealed class PooledByteArray : IDisposable
 	/// <summary>
 	/// An empty pooled array instance.
 	/// </summary>
-	public static PooledByteArray Empty { get; } = new(Array.Empty<byte>(), 0);
+	public static PooledByteArray Empty { get; } = new([], 0);
 
 	private PooledByteArray(byte[] array, int length)
 	{

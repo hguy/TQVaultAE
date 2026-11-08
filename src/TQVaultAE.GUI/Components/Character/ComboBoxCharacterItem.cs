@@ -107,7 +107,7 @@ public partial class ComboBoxCharacterItem : UserControl
 
 			// Masteries
 			this.scalingLabelMasteries.Text = string.Empty;
-			List<string> masteryNames = new();
+			List<string> masteryNames = [];
 			var dbr = ps.Info?.ActiveMasteriesRecordNames;
 			if (dbr is { Length: > 0 })
 			{

@@ -495,7 +495,7 @@ public class SpanHelperTests
 
 		// Assert
 		result.Should().HaveCount(4);
-		result.Should().Equal(new[] { 1, 2, 3, 4 });
+		result.Should().Equal([1, 2, 3, 4]);
 	}
 
 	[Fact]
@@ -517,7 +517,7 @@ public class SpanHelperTests
 
 		// Assert
 		result.Should().HaveCount(2);
-		result.Should().Equal(new[] { 10, 20 });
+		result.Should().Equal([10, 20]);
 	}
 
 	[Fact]

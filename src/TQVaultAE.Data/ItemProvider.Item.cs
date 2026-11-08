@@ -326,7 +326,7 @@ public partial class ItemProvider
 			requirementFormat = ItemAttributeProvider.ConvertFormat(requirementFormat);
 
 		// Now combine it all with spaces between
-		List<string> requirements = new List<string>();
+		List<string> requirements = [];
 		foreach (KeyValuePair<string, Variable> kvp in requirementVariables)
 		{
 			if (USettings.ItemDebugLevel > 1)

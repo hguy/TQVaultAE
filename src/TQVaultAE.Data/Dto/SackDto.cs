@@ -15,5 +15,5 @@ public class SackDto
 	/// <summary>
 	/// List of items
 	/// </summary>
-	public List<ItemDto> items { get; set; } = new();
+	public List<ItemDto> items { get; set; } = [];
 }

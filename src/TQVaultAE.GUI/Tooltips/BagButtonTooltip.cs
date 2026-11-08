@@ -13,7 +13,7 @@ namespace TQVaultAE.GUI.Tooltips;
 
 public partial class BagButtonTooltip : BaseTooltip
 {
-	private static Dictionary<BagButtonBase, BagButtonTooltip> ItemTooltipOpened = new Dictionary<BagButtonBase, BagButtonTooltip>();
+	private static Dictionary<BagButtonBase, BagButtonTooltip> ItemTooltipOpened = [];
 	/// <summary>Rendered sack summaries, up to 16 MB.</summary>
 	private static readonly TooltipImageCache<(SackCollection Sack, float Scale), object?> ToImage = new(16L << 20);
 

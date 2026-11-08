@@ -16,7 +16,7 @@ namespace TQVaultAE.GUI.Tooltips;
 
 public partial class ItemTooltip : BaseTooltip
 {
-	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = new Dictionary<Item, ItemTooltip>();
+	private static Dictionary<Item, ItemTooltip> ItemTooltipOpened = [];
 	/// <summary>Rendered item tooltips and their text, up to 48 MB.</summary>
 	private static readonly TooltipImageCache<TooltipKey, ToFriendlyNameResult> ToImage = new(48L << 20);
 
@@ -37,7 +37,7 @@ public partial class ItemTooltip : BaseTooltip
 	internal ToFriendlyNameResult? Data { get; private set; }
 
 	/// <summary>Attribute rows with a right-aligned range, sized to the tooltip width once all rows exist.</summary>
-	private readonly List<(Panel Row, Control Left, Control Right)> rangeRows = new();
+	private readonly List<(Panel Row, Control Left, Control Right)> rangeRows = [];
 
 #if DEBUG
 	// For Design Mode

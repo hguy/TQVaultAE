@@ -30,12 +30,12 @@ public class PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IIt
 	/// <summary>
 	/// array holding the byte pattern for the beginning of a block in the player file.
 	/// </summary>
-	public byte[] beginBlockPattern = { 0x0B, 0x00, 0x00, 0x00, 0x62, 0x65, 0x67, 0x69, 0x6E, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
+	public byte[] beginBlockPattern = [0x0B, 0x00, 0x00, 0x00, 0x62, 0x65, 0x67, 0x69, 0x6E, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B];
 
 	/// <summary>
 	/// array holding the byte pattern for the end of a block in the player file.
 	/// </summary>
-	public byte[] endBlockPattern = { 0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
+	public byte[] endBlockPattern = [0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B];
 
 	public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
 	{
@@ -299,7 +299,7 @@ public class PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IIt
 		var vaultDto = JsonSerializer.Deserialize(this.FileIO.ReadAllText(path, Encoding.UTF8), VaultJsonContext.Default.VaultDto)
 			?? throw new InvalidDataException($"Empty vault file: {path}");
 
-		pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? new();
+		pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? [];
 		pc.numberOfSacks = vaultDto.sacks.Count;
 		pc.currentlyFocusedSackNumber = vaultDto.currentlyFocusedSackNumber;
 		pc.currentlySelectedSackNumber = vaultDto.currentlySelectedSackNumber;

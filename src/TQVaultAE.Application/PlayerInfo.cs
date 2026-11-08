@@ -21,12 +21,12 @@ public class PlayerInfo
 	/// <summary>
 	/// Skills removed during <see cref="ResetMasteries"/>
 	/// </summary>
-	List<SkillRecord> _SkillRecordListRemoved = new List<SkillRecord>();
+	List<SkillRecord> _SkillRecordListRemoved = [];
 
 	/// <summary>
 	/// List of Skills embded in the save file
 	/// </summary>
-	public readonly List<SkillRecord> SkillRecordList = new List<SkillRecord>();
+	public readonly List<SkillRecord> SkillRecordList = [];
 
 	public bool MasteryDefensiveEnabled => this.SkillRecordList.Any(s => s.skillName.Equals(Masteries.Defensive.AsString(EnumFormat.Description), noCase));
 	public bool MasteryStormEnabled => this.SkillRecordList.Any(s => s.skillName.Equals(Masteries.Storm.AsString(EnumFormat.Description), noCase));
@@ -44,7 +44,7 @@ public class PlayerInfo
 	{
 		get
 		{
-			string[] ret = Array.Empty<string>();
+			string[] ret = [];
 			if (ActiveMasteries.HasValue)
 			{
 				var actives = ActiveMasteries.Value;

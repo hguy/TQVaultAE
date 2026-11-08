@@ -20,7 +20,7 @@ public partial class SearchFiltersTooltip : BaseTooltip
 	private readonly Rectangle CurrentWorkingArea;
 
 	internal Control AnchorControl { get; private set; }
-	internal List<BoxItem> Filters { get; private set; } = new();
+	internal List<BoxItem> Filters { get; private set; } = [];
 	internal SearchOperator Operator { get; private set; }
 
 

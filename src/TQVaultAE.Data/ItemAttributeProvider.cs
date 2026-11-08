@@ -33,7 +33,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Other Effects Tags
 	/// </summary>
 	private string[] otherEffects =
-	{
+	[
 		"characterBaseAttackSpeedTag",  // string text = TextTag(value)
 		"levelRequirement",             // integer level requirement text = Format(TextTag(MeetsRequirement), TextTag(LevelRequirement), (float) value)
 		"offensiveGlobalChance",        // float
@@ -42,7 +42,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"racialBonusAbsoluteDefense",   // Added by VillageIdiot : int
 		"itemSkillName",                // Added by VillageIdiot : string text (dbr)
 		"skillName"						// Added by hgu : string text (dbr) for OneShot_Scroll_Eternal
-	};
+	];
 
 	/// <summary>
 	/// Character Effects Tags
@@ -50,7 +50,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Effect name is also the text tag
 	/// </summary>
 	private string[] characterEffects =
-	{
+	[
 		"characterStrength",
 		"characterDexterity",
 		"characterIntelligence",
@@ -117,7 +117,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"projectilePiercingChance", // Added by VillageIdiot
 		"projectileLaunchRotation", // Added by VillageIdiot
 		"skillLifeBonus" // Added by VillageIdiot
-	};
+	];
 
 	/// <summary>
 	/// Defensive Effect Tags
@@ -125,7 +125,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Look for "Chance" variable to get the chance of this effect.
 	/// </summary>
 	private string[] defenseEffects =
-	{
+	[
 		"defensiveProtection",
 		"defensiveProtectionModifier",
 		"defensiveAbsorption",
@@ -194,14 +194,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"damageAbsorption", // Added by VillageIdiot
 		"damageAbsorptionPercent",  // Added by VillageIdiot
 		"defensiveTotalSpeedChance"
-	};
+	];
 
 	/// <summary>
 	/// Offensive Effects Tags
 	/// Change "offensive" to "Damage" to get the text tag.
 	/// </summary>
 	private string[] offensiveEffects =
-	{
+	[
 		"offensiveBasePhysical",
 		"offensiveBaseCold",
 		"offensiveBaseFire",
@@ -237,13 +237,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveStun",
 		"offensiveSleep", // Added by VillageIdiot
 		"offensiveBonusPhysical"
-	};
+	];
 
 	/// <summary>
 	/// Offensive Effects Variables Tags
 	/// </summary>
 	private string[] offensiveEffectVariables =
-	{
+	[
 		"Min",
 		"Max",
 		"Chance",
@@ -254,7 +254,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"DrainMin",    // Added by VillageIdiot
 		"DrainMax",    // Added by VillageIdiot
 		"DamageRatio"  // Added by VillageIdiot
-	};
+	];
 
 	/// <summary>
 	/// Offensive Modifier Effect Tags
@@ -262,7 +262,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Look for "Chance" variable to get the chance of this effect.
 	/// </summary>
 	private string[] offensiveModifierEffects =
-	{
+	[
 		"offensivePhysicalModifier",
 		"offensivePierceRatioModifier",
 		"offensivePierceModifier",
@@ -278,14 +278,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveSleepModifier",        // Added by VillageIdiot
 		"skillProjectileSpeedModifier",  // Added by VillageIdiot
 		"sparkMaxNumber"                 // Added by VillageIdiot
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Effects Tags
 	/// Change "offensiveSlow" to "DamageDuration" to get the text tag.
 	/// </summary>
 	private string[] offensiveSlowEffects =
-	{
+	[
 		"offensiveSlowPhysical",
 		"offensiveSlowBleeding",
 		"offensiveSlowCold",
@@ -302,13 +302,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveSlowDefensiveAbility",
 		"offensiveSlowOffensiveReduction",
 		"offensiveSlowDefensiveReduction"
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Effect Variables Tags
 	/// </summary>
 	private string[] offensiveSlowEffectVariables =
-	{
+	[
 		"Min",
 		"Max",
 		"DurationMin",
@@ -316,14 +316,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"Chance",
 		"XOR",         // boolean
 		"Global"       // boolean
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Modifier Effects Tags
 	/// Replace offensiveSlow with DamageDurationModifier to get the text tag
 	/// </summary>
 	private string[] offensiveSlowModifierEffects =
-	{
+	[
 		"offensiveSlowPhysical",
 		"offensiveSlowBleeding",
 		"offensiveSlowCold",
@@ -340,24 +340,24 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveSlowDefensiveAbility",   // messes things up
 		"offensiveSlowOffensiveReduction", // messes things up
 		"offensiveSlowDefensiveReduction"  // messes things up
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Modifer Effect Variables Tags
 	/// </summary>
 	private string[] offensiveSlowModifierEffectVariables =
-	{
+	[
 		"DurationModifier",
 		"Modifier",
 		"ModifierChance"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Effects Tags
 	/// Replace "retaliation" with "Retaliation" to get text tag
 	/// </summary>
 	private string[] retaliationEffects =
-	{
+	[
 		"retaliationPhysical",
 		"retaliationPierceRatio",
 		"retaliationPierce",
@@ -369,19 +369,19 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationStun",
 		"retaliationPercentCurrentLife",
 		"retaliationElemental"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Effect Variables Tags
 	/// </summary>
 	private string[] retaliationEffectVariables =
-	{
+	[
 		"Chance",
 		"Max",
 		"Min",
 		"Global",   // boolean
 		"XOR"       // boolean
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Modifier Effects Tags
@@ -389,7 +389,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Look for "Chance" variable to get the chance of this effect.
 	/// </summary>
 	private string[] retaliationModifierEffects =
-	{
+	[
 		"retaliationPhysicalModifier",
 		"retaliationPierceRatioModifier",
 		"retaliationPierceModifier",
@@ -400,14 +400,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationLifeModifier",
 		"retaliationStunModifier",
 		"retaliationElementalModifier"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Effects Tags
 	/// Replace "retaliationSlow" with "RetaliationDuration" to get text tag
 	/// </summary>
 	private string[] retaliationSlowEffects =
-	{
+	[
 		"retaliationSlowPhysical",
 		"retaliationSlowBleeding",
 		"retaliationSlowCold",
@@ -423,13 +423,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationSlowOffensiveAbility",
 		"retaliationSlowDefensiveAbility",
 		"retaliationSlowOffensiveReduction"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Effect Variables Tags
 	/// </summary>
 	private string[] retaliationSlowEffectVariables =
-	{
+	[
 		"Chance",
 		"Max",
 		"Min",
@@ -437,14 +437,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"DurationMin",
 		"Global",      // boolean
 		"XOR"          // boolean
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Modifier Effects Tags
 	/// Replace "retaliationSlow" with "RetaliationDurationModifier" to get text tag
 	/// </summary>
 	private string[] retaliationSlowModifierEffects =
-	{
+	[
 		"retaliationSlowPhysical",
 		"retaliationSlowBleeding",
 		"retaliationSlowCold",
@@ -460,33 +460,33 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationSlowOffensiveAbility",
 		"retaliationSlowDefensiveAbility",
 		"retaliationSlowOffensiveReduction"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Modifier Effect Variables Tags
 	/// </summary>
 	private string[] retaliationSlowModifierEffectVariables =
-	{
+	[
 		"Modifier",
 		"ModifierChance",
 		"DurationModifier",
-	};
+	];
 
 	/// <summary>
 	/// Reagents for formulae
 	/// </summary>
 	private string[] reagents =
-	{
+	[
 		"reagent1BaseName",
 		"reagent2BaseName",
 		"reagent3BaseName"
-	};
+	];
 
 	/// <summary>
 	/// For skill parameters (duration, radius, angle, etc.)
 	/// </summary>
 	private string[] skillEffects =
-	{
+	[
 		"skillManaCost",
 		"skillActiveManaCost",
 		"skillActiveLifeCost",
@@ -504,13 +504,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"tailVelocity",
 		"refreshTime",
 		"skillCooldownTime"
-	};
+	];
 
 	/// <summary>
 	/// For grouping the "Protects Against:" damage qualifiers.
 	/// </summary>
 	private string[] damageQualifierEffects =
-	{
+	[
 		"physicalDamageQualifier",
 		"pierceDamageQualifier",
 		"lightningDamageQualifier",
@@ -520,17 +520,17 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"lifeDamageQualifier",
 		"bleedingDamageQualifier",
 		"elementalDamageQualifier"
-	};
+	];
 
 	/// <summary>
 	/// For shield parameters (defensiveBlock and blockRecoveryTime)
 	/// </summary>
 	private string[] shieldEffects =
-	{
+	[
 		"defensiveBlock",
 		////"blockAbsorption",  // This one is suppressed
 		"blockRecoveryTime"
-	};
+	];
 
 	/// <summary>
 	/// Dictionary holding all of the attributes
@@ -1024,12 +1024,12 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		=> SpanHelper.ConcatWithSlice("RetaliationDurationModifier", effect.AsSpan(), 15);
 
 
-	string[] _GetSkillEffectTextTagUnchanged = new[] {
+	string[] _GetSkillEffectTextTagUnchanged = [
 		"SkillChanceWeight",
 		"headVelocity",
 		"maxDistance",
 		"tailVelocity",
-	};
+	];
 	/// <summary>
 	/// Gets modifier skill effect text tag.  Normalized to UpperInvariant.
 	/// </summary>
@@ -1069,7 +1069,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>hash table of attributes</returns>
 	private Dictionary<string, ItemAttributesData> InitializeAttributeDictionary()
 	{
-		attributeDictionary = new Dictionary<string, ItemAttributesData>();
+		attributeDictionary = [];
 
 		// Add all the attributes to the dictionary
 		int subOrder = 0;

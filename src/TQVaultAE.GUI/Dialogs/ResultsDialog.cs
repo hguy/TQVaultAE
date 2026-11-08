@@ -55,7 +55,7 @@ public partial class ResultsDialog : VaultForm
 
 		#endregion
 
-		this.resultsList = new List<SearchResult>();
+		this.resultsList = [];
 
 		this.columnItem.HeaderText = Resources.ResultsItem;
 		this.columnContainerName.HeaderText = Resources.ResultsContainer;

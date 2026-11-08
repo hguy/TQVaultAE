@@ -213,7 +213,7 @@ public class ArcFileProvider(ILogger<ArcFileProvider> log, IPathIO pathIO, IDire
 			if (USettings.ARCFileDebugLevel > 0)
 				Log.LogDebug(exception, "ARCFile.ReadARCToC({File}) - not a readable archive", file.FileName);
 
-			file.DirectoryEntries = new();
+			file.DirectoryEntries = [];
 			return;
 		}
 

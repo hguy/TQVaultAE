@@ -63,7 +63,7 @@ public class ItemDragInfo
 	{
 		this.AutoMoveDestination = AutoMoveLocation.NotSet;
 		this.DestIndex = -1;
-		this.autoMoveLocationsList = new List<AutoMoveLocation>();
+		this.autoMoveLocationsList = [];
 		this.UIService = uiService;
 	}
 
