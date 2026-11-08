@@ -9,43 +9,29 @@ using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.Services;
 
-public class VaultService : IVaultService
+public class VaultService(
+	ILogger<VaultService> log,
+	SessionContext userContext,
+	IItemDatabaseService itemDatabaseService,
+	IPlayerCollectionProvider playerCollectionProvider,
+	IGamePathService gamePathResolver,
+	IGameFileService iGameFileService,
+	IFileIO fileIO,
+	IPathIO pathIO,
+	UserSettings userSettings,
+	IItemProvider itemProvider) : IVaultService
 {
-	private readonly ILogger Log;
-	private readonly SessionContext userContext;
-	private readonly IItemDatabaseService ItemDatabaseService;
-	private readonly IGamePathService GamePathResolver;
-	private readonly IGameFileService GameFileService;
-	private readonly IPlayerCollectionProvider PlayerCollectionProvider;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
-	private readonly UserSettings UserSettings;
-	private readonly IItemProvider ItemProvider;
+	private readonly ILogger Log = log;
+	private readonly SessionContext userContext = userContext;
+	private readonly IItemDatabaseService ItemDatabaseService = itemDatabaseService;
+	private readonly IGamePathService GamePathResolver = gamePathResolver;
+	private readonly IGameFileService GameFileService = iGameFileService;
+	private readonly IPlayerCollectionProvider PlayerCollectionProvider = playerCollectionProvider;
+	private readonly IFileIO FileIO = fileIO;
+	private readonly IPathIO PathIO = pathIO;
+	private readonly UserSettings UserSettings = userSettings;
+	private readonly IItemProvider ItemProvider = itemProvider;
 	public const string MAINVAULT = "Main Vault";
-
-	public VaultService(
-		ILogger<VaultService> log,
-		SessionContext userContext,
-		IItemDatabaseService itemDatabaseService,
-		IPlayerCollectionProvider playerCollectionProvider,
-		IGamePathService gamePathResolver,
-		IGameFileService iGameFileService,
-		IFileIO fileIO,
-		IPathIO pathIO,
-		UserSettings userSettings,
-		IItemProvider itemProvider)
-	{
-		this.Log = log;
-		this.userContext = userContext;
-		this.ItemDatabaseService = itemDatabaseService;
-		this.GamePathResolver = gamePathResolver;
-		this.GameFileService = iGameFileService;
-		this.PlayerCollectionProvider = playerCollectionProvider;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-		this.UserSettings = userSettings;
-		this.ItemProvider = itemProvider;
-	}
 
 	/// <summary>
 	/// Creates a new empty vault file.

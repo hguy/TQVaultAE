@@ -9,33 +9,22 @@ using TQVaultAE.Application.Results;
 
 namespace TQVaultAE.Services;
 
-public class StashService : IStashService
+public class StashService(
+	ILogger<StashService> log,
+	SessionContext userContext,
+	IItemDatabaseService itemDatabaseService,
+	IStashProvider stashProvider,
+	IGamePathService gamePathResolver,
+	IGameFileService iGameFileService,
+	UserSettings userSettings) : IStashService
 {
-	private readonly ILogger Log;
-	private readonly SessionContext userContext;
-	private readonly IItemDatabaseService ItemDatabaseService;
-	private readonly IStashProvider StashProvider;
-	private readonly IGamePathService GamePathResolver;
-	private readonly IGameFileService GameFileService;
-	private readonly UserSettings UserSettings;
-
-	public StashService(
-		ILogger<StashService> log,
-		SessionContext userContext,
-		IItemDatabaseService itemDatabaseService,
-		IStashProvider stashProvider,
-		IGamePathService gamePathResolver,
-		IGameFileService iGameFileService,
-		UserSettings userSettings)
-	{
-		Log = log;
-		this.userContext = userContext;
-		this.ItemDatabaseService = itemDatabaseService;
-		StashProvider = stashProvider;
-		GamePathResolver = gamePathResolver;
-		GameFileService = iGameFileService;
-		UserSettings = userSettings;
-	}
+	private readonly ILogger Log = log;
+	private readonly SessionContext userContext = userContext;
+	private readonly IItemDatabaseService ItemDatabaseService = itemDatabaseService;
+	private readonly IStashProvider StashProvider = stashProvider;
+	private readonly IGamePathService GamePathResolver = gamePathResolver;
+	private readonly IGameFileService GameFileService = iGameFileService;
+	private readonly UserSettings UserSettings = userSettings;
 
 	/// <summary>
 	/// Loads a player stash.

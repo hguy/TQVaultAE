@@ -15,7 +15,7 @@ namespace TQVaultAE.Services.Win32;
 /// <summary>
 /// Win32 IGamePathResolver implementation
 /// </summary>
-public partial class GamePathServiceWin : IGamePathService
+public partial class GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQDataService tQDataService, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings) : IGamePathService
 {
 	[GeneratedRegex(@"^(?<SteamappsRoot>.+steamapps).*", RegexOptions.IgnoreCase)]
 	private static partial Regex SteamappsRootRegex();
@@ -52,22 +52,12 @@ public partial class GamePathServiceWin : IGamePathService
 	public string VaultFileNameExtensionJson => VAULTFILENAME_EXTENSION_JSON;
 	public string VaultFileNameExtensionOld => VAULTFILENAME_EXTENSION_OLD;
 
-	private readonly ILogger Log;
-	private readonly ITQDataService TQData;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
-	private readonly IDirectoryIO DirectoryIO;
-	private readonly UserSettings USettings;
-
-	public GamePathServiceWin(ILogger<GamePathServiceWin> log, ITQDataService tQDataService, IFileIO fileIO, IPathIO pathIO, IDirectoryIO directoryIO, UserSettings uSettings)
-	{
-		this.Log = log;
-		this.TQData = tQDataService;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-		this.DirectoryIO = directoryIO;
-		this.USettings = uSettings;
-	}
+	private readonly ILogger Log = log;
+	private readonly ITQDataService TQData = tQDataService;
+	private readonly IFileIO FileIO = fileIO;
+	private readonly IPathIO PathIO = pathIO;
+	private readonly IDirectoryIO DirectoryIO = directoryIO;
+	private readonly UserSettings USettings = uSettings;
 
 	string? _ResolveTQVaultPath;
 	private string ResolveTQVaultPath

@@ -15,11 +15,14 @@ namespace TQVaultAE.Services;
 /// <summary>
 /// Service for managing the global searchable item database.
 /// </summary>
-public class ItemDatabaseService : IItemDatabaseService
+public class ItemDatabaseService(
+    ILogger<ItemDatabaseService> log,
+    IItemProvider itemProvider,
+    SessionContext sessionContext) : IItemDatabaseService
 {
-    private readonly ILogger<ItemDatabaseService> _log;
-    private readonly IItemProvider _itemProvider;
-    private readonly SessionContext _sessionContext;
+    private readonly ILogger<ItemDatabaseService> _log = log;
+    private readonly IItemProvider _itemProvider = itemProvider;
+    private readonly SessionContext _sessionContext = sessionContext;
 
     /// <summary>
     /// The searchable items and, by reference, the items already in it. Replaced as a whole, so both always match.
@@ -43,16 +46,6 @@ public class ItemDatabaseService : IItemDatabaseService
     private Database _database = Database.Of([]);
 
     public ConcurrentBag<SearchResult> ItemDatabase => this._database.Items;
-
-    public ItemDatabaseService(
-        ILogger<ItemDatabaseService> log,
-        IItemProvider itemProvider,
-        SessionContext sessionContext)
-    {
-        this._log = log;
-        this._itemProvider = itemProvider;
-        this._sessionContext = sessionContext;
-    }
 
     /// <inheritdoc/>
     public bool TryAddItemToDatabase(Item item)

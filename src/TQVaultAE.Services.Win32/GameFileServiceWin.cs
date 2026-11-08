@@ -9,20 +9,16 @@ namespace TQVaultAE.Services.Win32;
 /// <summary>
 /// Win32 implementation of <see cref="GameFileService"/>
 /// </summary>
-public class GameFileServiceWin : GameFileService
+public class GameFileServiceWin(
+	ILogger<GameFileServiceWin> log
+	, IGamePathService iGamePathService
+	, IUserNotifier userNotifier
+	, IFileIO fileIO
+	, IPathIO pathIO
+	, IDirectoryIO directoryIO
+	, UserSettings userSettings
+) : GameFileService(log, iGamePathService, userNotifier, fileIO, pathIO, directoryIO, userSettings)
 {
-	public GameFileServiceWin(
-		ILogger<GameFileServiceWin> log
-		, IGamePathService iGamePathService
-		, IUserNotifier userNotifier
-		, IFileIO fileIO
-		, IPathIO pathIO
-		, IDirectoryIO directoryIO
-		, UserSettings userSettings
-	) : base(log, iGamePathService, userNotifier, fileIO, pathIO, directoryIO, userSettings)
-	{
-	}
-
 	/// <summary>
 	/// Recursively copies a directory and its contents
 	/// </summary>
