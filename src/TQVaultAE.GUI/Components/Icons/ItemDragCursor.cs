@@ -6,7 +6,7 @@ namespace TQVaultAE.GUI.Components.Icons;
 /// Mouse cursor showing an item bitmap, with its hot spot at the centre: Windows draws and moves it, so dragging over
 /// a control costs no repaint, and the bitmap keeps its transparency.
 /// </summary>
-internal sealed class ItemDragCursor : IDisposable
+internal sealed partial class ItemDragCursor : IDisposable
 {
 	private IntPtr _handle;
 
@@ -38,7 +38,7 @@ internal sealed class ItemDragCursor : IDisposable
 				return null;
 			try
 			{
-				info.fIcon = false;
+				info.fIcon = 0; // FALSE: a cursor
 				info.xHotspot = width / 2;
 				info.yHotspot = height / 2;
 				IntPtr cursor = CreateIconIndirect(ref info);
@@ -65,32 +65,36 @@ internal sealed class ItemDragCursor : IDisposable
 		this._handle = IntPtr.Zero;
 	}
 
+	/// <summary>
+	/// ICONINFO. <c>fIcon</c> is a Win32 BOOL kept as an <see cref="int"/> so the struct stays blittable
+	/// for the source-generated P/Invokes.
+	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
 	private struct IconInfo
 	{
-		[MarshalAs(UnmanagedType.Bool)] public bool fIcon;
+		public int fIcon;
 		public int xHotspot;
 		public int yHotspot;
 		public IntPtr hbmMask;
 		public IntPtr hbmColor;
 	}
 
-	[DllImport("user32.dll", SetLastError = true)]
+	[LibraryImport("user32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	private static extern bool GetIconInfo(IntPtr hIcon, out IconInfo pIconInfo);
+	private static partial bool GetIconInfo(IntPtr hIcon, out IconInfo pIconInfo);
 
-	[DllImport("user32.dll", SetLastError = true)]
-	private static extern IntPtr CreateIconIndirect(ref IconInfo icon);
+	[LibraryImport("user32.dll", SetLastError = true)]
+	private static partial IntPtr CreateIconIndirect(ref IconInfo icon);
 
-	[DllImport("user32.dll", SetLastError = true)]
+	[LibraryImport("user32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	private static extern bool DestroyIcon(IntPtr hIcon);
+	private static partial bool DestroyIcon(IntPtr hIcon);
 
-	[DllImport("user32.dll", SetLastError = true)]
+	[LibraryImport("user32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	private static extern bool DestroyCursor(IntPtr hCursor);
+	private static partial bool DestroyCursor(IntPtr hCursor);
 
-	[DllImport("gdi32.dll")]
+	[LibraryImport("gdi32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	private static extern bool DeleteObject(IntPtr hObject);
+	private static partial bool DeleteObject(IntPtr hObject);
 }
