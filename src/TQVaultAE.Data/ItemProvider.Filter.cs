@@ -60,6 +60,13 @@ public partial class ItemProvider
 			"TARGETCASTER",
 			// Said by the skill descriptions ("Allows and requires dual wielding.", "A Dual Wield technique...").
 			"DUALWIELDONLY",
+			// Skill mechanics without game text: projectile drift, spawned wall angle, projectile lifetime.
+			"DRIFTMIN",
+			"DRIFTMAX",
+			"SPAWNOBJECTSANGLETOCASTER",
+			"SPAWNOBJECTSUSEANGLETOCASTER",
+			"SKILLPROJECTILEHITTIMETOLIVE",
+			"SKILLPROJECTILEMISSTIMETOLIVE",
 			"EXPANSIONTIME",
 			"SKILLTIER",
 			"CAMERASHAKEDURATIONSECS",
