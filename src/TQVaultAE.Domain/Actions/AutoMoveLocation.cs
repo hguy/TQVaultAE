@@ -3,7 +3,7 @@
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace TQVaultAE.GUI.Models;
+namespace TQVaultAE.Domain.Actions;
 
 /// <summary>
 /// Enumeration of the available panel automovelocations.

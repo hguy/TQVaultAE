@@ -70,6 +70,42 @@ public readonly record struct ItemActionContext(
 );
 
 /// <summary>
+/// Where the "Move to" entries of a sack may send its items.
+/// </summary>
+/// <param name="Here">The panel of the sack.</param>
+/// <param name="SackType">The type of the sack.</param>
+/// <param name="MaxSacks">Number of bags of the panel.</param>
+/// <param name="PlayerSackCount">Number of sacks of the current player, the main sack included.</param>
+/// <param name="Panels">The panels that take moved items, in menu order; duplicates are ignored.</param>
+/// <param name="SecondaryVaultShown">The secondary vault replaces the player and stash panels.</param>
+/// <param name="PlayerIsImmortalThrone">Whether the current player is an Immortal Throne save; <see langword="null"/> without a player.</param>
+/// <param name="Item">Item under the cursor, or <see langword="null"/> for a selection alone.</param>
+public readonly record struct MoveContext(
+	AutoMoveLocation Here
+	, SackType SackType
+	, int MaxSacks
+	, int PlayerSackCount
+	, IEnumerable<AutoMoveLocation> Panels
+	, bool SecondaryVaultShown
+	, bool? PlayerIsImmortalThrone
+	, Item? Item
+);
+
+/// <summary>
+/// A "Move to" entry: another bag of the same panel, or another panel.
+/// </summary>
+/// <param name="Location">The destination panel: the sack's own panel for a bag.</param>
+/// <param name="BagIndex">The destination bag, or <see langword="null"/> for a whole panel.</param>
+/// <param name="BagNumber">The number shown for the bag.</param>
+/// <param name="IsMainPlayerSack">The bag is the main sack of the player, shown by its own name.</param>
+public readonly record struct MoveDestination(
+	AutoMoveLocation Location
+	, int? BagIndex = null
+	, int BagNumber = 0
+	, bool IsMainPlayerSack = false
+);
+
+/// <summary>
 /// Which <see cref="ItemActions"/> apply: the decisions of the sack context menu, apart from its drawing.
 /// </summary>
 public static class ItemActionRules
@@ -148,5 +184,62 @@ public static class ItemActionRules
 			actions |= ItemActions.CraftArtifact;
 
 		return actions;
+	}
+
+	/// <summary>
+	/// The destinations of <see cref="ItemActions.MoveTo"/>: the other bags of the panel first, then the other panels.
+	/// </summary>
+	public static IReadOnlyList<MoveDestination> MoveDestinations(in MoveContext context)
+	{
+		var destinations = new List<MoveDestination>();
+		var item = context.Item;
+
+		if (context.MaxSacks > 1)
+		{
+			// Vault bags are shown from 1, the player sacks from 0 since sack #0 is the main player sack.
+			int bagOffset = item?.Place.SackType == SackType.Vault ? 1 : 0;
+
+			for (int i = 0; i < context.MaxSacks; ++i)
+			{
+				bool mainPlayerSack = context.SackType == SackType.Player && i == 0;
+
+				if (context.SackType == SackType.Player && !mainPlayerSack && i >= context.PlayerSackCount)
+					continue;
+
+				if (i != item?.Place.SackNumber)
+					destinations.Add(new MoveDestination(context.Here, i, i + bagOffset, mainPlayerSack));
+			}
+		}
+
+		var here = context.Here;
+		var panels = context.Panels.Where(location => location != here).Distinct();
+
+		// TQ original save
+		if (context.PlayerIsImmortalThrone == false)
+		{
+			// There is no Stash on a TQ original save
+			panels = panels.Where(location => location is not (AutoMoveLocation.Stash or AutoMoveLocation.Trash));
+
+			// TQIT+ items cannot go to the equipment, sacks and inventory (a multiple selection may hold some)
+			if (item is null || item.GameDlc != GameDlc.TitanQuest)
+				panels = panels.Where(location => location != AutoMoveLocation.Player);
+		}
+
+		bool secondaryVault = context.SecondaryVaultShown;
+		foreach (var location in panels)
+		{
+			bool shown = location switch
+			{
+				AutoMoveLocation.SecondaryVault => secondaryVault,
+				AutoMoveLocation.Player or AutoMoveLocation.Stash => !secondaryVault,
+				AutoMoveLocation.Vault or AutoMoveLocation.Trash => true,
+				_ => false,
+			};
+
+			if (shown)
+				destinations.Add(new MoveDestination(location));
+		}
+
+		return destinations;
 	}
 }

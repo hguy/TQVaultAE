@@ -11,6 +11,7 @@ using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Providers;
 using TQVaultAE.Application.Contracts.Services;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Actions;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
 using TQVaultAE.GUI.Components.Scaling;
@@ -153,21 +154,8 @@ public partial class SackPanel : Panel, IScalingControl
 		{
 			if (this.Sack != null && !this.Sack.IsEmpty)
 			{
-				var mergeQuery = from Item item in this.Sack
-								 where item != null
-								 orderby (((item.Height * 3) + item.Width) * 100) + item.ItemGroup descending
-								 select item;
-
-				foreach (Item item in mergeQuery)
-				{
-					if (!this.DragInfo.IsActive)
-					{
-						this.DragInfo.Set(this, this.Sack, item, new Point(1, 1));
-						this.DragInfo.AutoMoveDestination = this.AutoMoveLocation;
-						this.DragInfo.DestIndex = destination;
-						this.OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
-					}
-				}
+				var plan = new AutoMovePlan(AutoMovePlanner.Order(this.Sack), this.AutoMoveLocation, destination);
+				this.RaiseAutoMove(this.Sack, plan);
 
 				this.ClearSelectedItems();
 
@@ -225,49 +213,18 @@ public partial class SackPanel : Panel, IScalingControl
 
 		var isEquipmentReadOnly = (USettings.PlayerReadonly == true && SackType == SackType.Equipment);
 		Item? focusedItem = FindItem(LastCellWithFocus);
-		AutoMoveLocation destination = AutoMoveLocation.NotSet;
 
 		if ((focusedItem == null && selectedItems == null) || isEquipmentReadOnly)
 			return;
 
-		if (location != AutoMoveLocation)
-		{
-			destination = location;
-
-			if (SecondaryVaultShown && location == AutoMoveLocation.Player)
-				destination = AutoMoveLocation.SecondaryVault;
-		}
-
-		if ((SecondaryVaultShown && (destination == AutoMoveLocation.Stash || destination == AutoMoveLocation.Player)) || destination == AutoMoveLocation.NotSet)
+		var destination = AutoMovePlanner.QuickMoveDestination(location, this.AutoMoveLocation, this.SecondaryVaultShown);
+		if (destination == AutoMoveLocation.NotSet)
 			return;
 
+		this.RaiseAutoMove(this.Sack, AutoMovePlanner.Plan(this.selectedItems, focusedItem, destination, destIndex));
+
 		if (this.selectedItems != null)
-		{
-			var autoMoveQuery = from Item item in selectedItems
-								where item != null
-								orderby (((item.Height * 3) + item.Width) * 100) + item.ItemGroup descending
-								select item;
-
-			foreach (Item item in autoMoveQuery)
-			{
-				if (!DragInfo.IsActive)
-				{
-					DragInfo.Set(this, Sack, item, new Point(1, 1));
-					DragInfo.AutoMoveDestination = destination;
-					DragInfo.DestIndex = destIndex;
-					OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
-				}
-			}
-
-			ClearSelectedItems();
-		}
-		else if (focusedItem != null)
-		{
-			DragInfo.Set(this, Sack, focusedItem, new Point(1, 1));
-			DragInfo.AutoMoveDestination = destination;
-			DragInfo.DestIndex = destIndex;
-			OnAutoMoveItem?.Invoke(this, new SackPanelEventArgs(null, null));
-		}
+			this.ClearSelectedItems();
 
 		ItemTooltip.HideTooltip();
 		BagButtonTooltip.InvalidateCache(Sack);
