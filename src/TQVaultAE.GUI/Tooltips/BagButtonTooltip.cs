@@ -128,19 +128,11 @@ public partial class BagButtonTooltip : BaseTooltip
 			var itemlist = ButtonSack.Sack
 				.Where(i => !RecordId.IsNullOrEmpty(i.BaseItemId))// skip empty items
 				.ToArray();
-			var friendlylist = itemlist
-				.Select(i => ItemProvider.GetFriendlyNames(i))
-				.OrderBy(d => d.FullNameBagTooltipClean)
-				.GroupBy(d => d.FullNameBagTooltip)
-				.Select(g => new
-				{
-					FullName = g.Key.InsertAfterColorPrefix($"{g.Count()} x "),
-					Data = g.First()
-				})
-				.ToArray();
+			var friendlylist = ItemSummaryText.SummarizeByName(itemlist
+				.Select(i => ItemProvider.GetFriendlyNames(i)));
 
-			foreach (var item in friendlylist)
-				AddRow(item.FullName, item.Data.Item.ExtractTextColorOrItemColor(item.Data.BaseItemInfoDescription));
+			foreach (var line in friendlylist)
+				AddRow(line.Text, line.First.Item.ExtractTextColorOrItemColor(line.First.BaseItemInfoDescription));
 
 		}
 

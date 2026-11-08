@@ -100,37 +100,6 @@ public partial class ResultsDialog : VaultForm
 	}
 
 	/// <summary>
-	/// Gets the string name for the corresponding SackType
-	/// </summary>
-	/// <param name="containterType">SackType which we are looking up</param>
-	/// <returns>string containing the sack type</returns>
-	private static string GetContainerTypeString(SackType containterType, StashType? stashType)
-	{
-		switch (containterType)
-		{
-			case SackType.Vault:
-				return Resources.ResultsContainerVault;
-
-			case SackType.Player:
-				return Resources.ResultsContainerPlayer;
-
-			case SackType.Equipment:
-				return Resources.ResultsContainerEquip;
-
-			case SackType.Stash:
-				return stashType switch
-				{
-					StashType.TransferStash => Resources.GlobalTransferStash,
-					StashType.RelicVaultStash => Resources.GlobalRelicVaultStash,
-					_ => Resources.ResultsContainerStash
-				};
-
-			default:
-				return "Unknown";
-		}
-	}
-
-	/// <summary>
 	/// Handler for showing the results dialog.
 	/// Populates the data grid view.
 	/// </summary>
@@ -202,7 +171,7 @@ public partial class ResultsDialog : VaultForm
 				result.ItemName
 				, result.ItemStyle
 				, result.ContainerName
-				, GetContainerTypeString(result.SackType, result.StashType)
+				, ItemSummaryText.ContainerTypeLabel(result.SackType, result.StashType)
 				, result.SackNumber
 				, result.RequiredLevel
 			);

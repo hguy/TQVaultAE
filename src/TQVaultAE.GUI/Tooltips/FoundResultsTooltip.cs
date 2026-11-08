@@ -132,20 +132,12 @@ public partial class FoundResultsTooltip : BaseTooltip
 			else
 			{
 
-				var friendlylist = ResultsToDisplay
+				var friendlylist = ItemSummaryText.SummarizeByName(ResultsToDisplay
 					.Select(i => i.FriendlyNames)
-					.OfType<ToFriendlyNameResult>()
-					.OrderBy(d => d.FullNameBagTooltipClean)
-					.GroupBy(d => d.FullNameBagTooltip)
-					.Select(g => new
-					{
-						FullName = g.Key.InsertAfterColorPrefix($"{g.Count()} x "),
-						Data = g.First()
-					})
-					.ToArray();
+					.OfType<ToFriendlyNameResult>());
 
-				foreach (var item in friendlylist)
-					AddRow(item.FullName, item.Data.Item.ExtractTextColorOrItemColor(item.Data.BaseItemInfoDescription));
+				foreach (var line in friendlylist)
+					AddRow(line.Text, line.First.Item.ExtractTextColorOrItemColor(line.First.BaseItemInfoDescription));
 
 			}
 
