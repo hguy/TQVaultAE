@@ -8,6 +8,7 @@ namespace TQVaultAE.GUI.Dialogs;
 
 using System;
 using System.Windows.Forms;
+using TQVaultAE.Presentation;
 
 /// <summary>
 /// A simple input dialog that replaces Microsoft.VisualBasic.Interaction.InputBox
@@ -32,63 +33,54 @@ public class InputDialog : Form
 	/// <param name="defaultValue">The default value for the text box</param>
 	public InputDialog(string prompt, string title, string defaultValue = "")
 	{
-		this.textBox = new TextBox();
-		this.okButton = new Button();
-		this.cancelButton = new Button();
-		this.promptLabel = new Label();
-
-		this.SuspendLayout();
-
-		// promptLabel
-		this.promptLabel.AutoSize = true;
-		this.promptLabel.Location = new System.Drawing.Point(12, 9);
-		this.promptLabel.Name = "promptLabel";
-		this.promptLabel.Size = new System.Drawing.Size(100, 13);
-		this.promptLabel.TabIndex = 0;
-		this.promptLabel.Text = prompt;
-
-		// textBox
-		this.textBox.Location = new System.Drawing.Point(12, 32);
-		this.textBox.Name = "textBox";
-		this.textBox.Size = new System.Drawing.Size(260, 20);
-		this.textBox.TabIndex = 1;
-		this.textBox.Text = defaultValue;
-
-		// okButton
-		this.okButton.Location = new System.Drawing.Point(98, 65);
-		this.okButton.Name = "okButton";
-		this.okButton.Size = new System.Drawing.Size(75, 23);
-		this.okButton.TabIndex = 2;
-		this.okButton.Text = "OK";
-		this.okButton.UseVisualStyleBackColor = true;
+		// Laid out by a table and sized to its content: a long prompt or a translation widens the dialog instead of
+		// being cut, and the layout follows the DPI.
+		this.promptLabel = new Label() { AutoSize = true, Text = prompt, Margin = new Padding(0, 0, 0, 6), Anchor = AnchorStyles.Left };
+		this.textBox = new TextBox() { Text = defaultValue, Dock = DockStyle.Fill, MinimumSize = new System.Drawing.Size(260, 0), Margin = new Padding(0, 0, 0, 10) };
+		this.okButton = new Button() { Text = Resources.GlobalOK, AutoSize = true, MinimumSize = new System.Drawing.Size(75, 23), UseVisualStyleBackColor = true };
+		this.cancelButton = new Button() { Text = Resources.GlobalCancel, AutoSize = true, MinimumSize = new System.Drawing.Size(75, 23), UseVisualStyleBackColor = true, DialogResult = DialogResult.Cancel };
 		this.okButton.Click += this.OkButton_Click;
 
-		// cancelButton
-		this.cancelButton.DialogResult = DialogResult.Cancel;
-		this.cancelButton.Location = new System.Drawing.Point(179, 65);
-		this.cancelButton.Name = "cancelButton";
-		this.cancelButton.Size = new System.Drawing.Size(75, 23);
-		this.cancelButton.TabIndex = 3;
-		this.cancelButton.Text = "Cancel";
-		this.cancelButton.UseVisualStyleBackColor = true;
+		var buttons = new FlowLayoutPanel()
+		{
+			AutoSize = true,
+			AutoSizeMode = AutoSizeMode.GrowAndShrink,
+			FlowDirection = FlowDirection.RightToLeft,
+			Anchor = AnchorStyles.Right,
+			Margin = new Padding(0),
+			WrapContents = false,
+		};
+		buttons.Controls.Add(this.cancelButton);
+		buttons.Controls.Add(this.okButton);
 
-		// InputDialog
+		var layout = new TableLayoutPanel()
+		{
+			AutoSize = true,
+			AutoSizeMode = AutoSizeMode.GrowAndShrink,
+			ColumnCount = 1,
+			RowCount = 3,
+			Dock = DockStyle.Fill,
+			Padding = new Padding(12),
+		};
+		layout.Controls.Add(this.promptLabel, 0, 0);
+		layout.Controls.Add(this.textBox, 0, 1);
+		layout.Controls.Add(buttons, 0, 2);
+
+		this.SuspendLayout();
+		this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+		this.AutoScaleMode = AutoScaleMode.Dpi;
+		this.AutoSize = true;
+		this.AutoSizeMode = AutoSizeMode.GrowAndShrink;
 		this.AcceptButton = this.okButton;
-		this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-		this.AutoScaleMode = AutoScaleMode.Font;
 		this.CancelButton = this.cancelButton;
-		this.ClientSize = new System.Drawing.Size(284, 101);
-		this.Controls.Add(this.cancelButton);
-		this.Controls.Add(this.okButton);
-		this.Controls.Add(this.textBox);
-		this.Controls.Add(this.promptLabel);
+		this.Controls.Add(layout);
 		this.FormBorderStyle = FormBorderStyle.FixedDialog;
 		this.MaximizeBox = false;
 		this.MinimizeBox = false;
 		this.Name = "InputDialog";
+		this.ShowInTaskbar = false;
 		this.StartPosition = FormStartPosition.CenterParent;
 		this.Text = title;
-
 		this.ResumeLayout(false);
 		this.PerformLayout();
 	}
