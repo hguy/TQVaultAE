@@ -199,16 +199,22 @@ internal static partial class AutomationTools
 		});
 
 	[McpServerTool(Name = "move_window", Destructive = true)]
-	[Description("Moves the main window to a screen position (virtual screen pixels, so negative on a monitor left of the primary one), like dragging it there (the size is left to Windows): on a monitor of another DPI, Windows sends the DPI change. Returns the monitors (bounds and DPI) and the window's DPI and scales after the move. Move it back to its monitor when done.")]
+	[Description("Moves the main window, or another open form, to a screen position (virtual screen pixels, so negative on a monitor left of the primary one), like dragging it there (the size is left to Windows): on a monitor of another DPI, Windows sends the DPI change. Returns the monitors (bounds and DPI) and the window's DPI and scales after the move. Move it back to its monitor when done.")]
 	public static async Task<string> MoveWindow(
 		[Description("Left of the window in virtual screen pixels.")] int x,
-		[Description("Top of the window in virtual screen pixels.")] int y)
+		[Description("Top of the window in virtual screen pixels.")] int y,
+		[Description("Part of the form title (case-insensitive); empty for the main window.")] string form = "")
 	{
+		Form Target(Form main) => string.IsNullOrEmpty(form)
+			? main
+			: System.Windows.Forms.Application.OpenForms.Cast<Form>().FirstOrDefault(f => f.Text.Contains(form, StringComparison.OrdinalIgnoreCase))
+				?? throw new McpException($"No open form has '{form}' in its title.");
+
 		AutomationHost.OnUi(main =>
 		{
 			AutomationHost.MarkDriving();
 			// Without the size: Location would send the old size too, over the one the DPI change gives.
-			NativeWindows.MoveTo(main.Handle, x, y);
+			NativeWindows.MoveTo(Target(main).Handle, x, y);
 			return 0;
 		});
 
@@ -218,12 +224,13 @@ internal static partial class AutomationTools
 		return AutomationHost.OnUi(main =>
 		{
 			var ui = main.Services.UIService;
+			var target = Target(main);
 			return Serialize(new
 			{
-				location = new { main.Location.X, main.Location.Y },
-				size = new { main.Width, main.Height },
-				clientSize = new { main.ClientSize.Width, main.ClientSize.Height },
-				deviceDpi = main.DeviceDpi,
+				location = new { target.Location.X, target.Location.Y },
+				size = new { target.Width, target.Height },
+				clientSize = new { target.ClientSize.Width, target.ClientSize.Height },
+				deviceDpi = target.DeviceDpi,
 				zoom = ui.Zoom,
 				dpiScale = ui.DpiScale,
 				systemDpiScale = ui.SystemDpiScale,
