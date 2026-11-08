@@ -148,7 +148,7 @@ public partial class EquipmentPanel
 
 			// If we are a stackable and we have a stackable under us and we are the same type of stackable
 			// then just add to the stack instead of picking up the other stack
-			if (!(doStackPotions(dragItem, ref itemUnderUs) || doStackRelics(ref dragItem, ref itemUnderUs)))
+			if (!this.TryStackOnDrop(ref dragItem, ref itemUnderUs))
 			{
 				// If not stackable
 				if (slot != -1)

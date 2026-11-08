@@ -150,7 +150,7 @@ public partial class SackPanel
 			// If we are a stackable and we have a stackable under us and we are the same type of stackable
 			// then just add to the stack instead of picking up the other stack
 
-			if (!(doStackPotions(dragItem, ref itemUnderUs) || doStackRelics(ref dragItem, ref itemUnderUs)))
+			if (!this.TryStackOnDrop(ref dragItem, ref itemUnderUs))
 			{
 				// If not stackable
 				// Drop the dragItem here
@@ -209,100 +209,24 @@ public partial class SackPanel
 		}
 	}
 
-	protected bool doStackRelics(ref Item dragItem, ref Item? itemUnderUs)
+	/// <summary>
+	/// Stacks the dropped item on the item under it when both are the same potion, scroll, or incomplete relic or charm.
+	/// </summary>
+	/// <param name="dragItem">The dropped item; becomes the completed relic left in the sack when shards are to spare.</param>
+	/// <param name="itemUnderUs">The item under the drop; becomes the item to pick up next, or <see langword="null"/>.</param>
+	/// <returns><see langword="true"/> when stacked: the caller does not place <paramref name="dragItem"/>.</returns>
+	protected bool TryStackOnDrop(ref Item dragItem, ref Item? itemUnderUs)
 	{
-		if (itemUnderUs is null)
+		var stack = this.Services.ItemStackingService.TryStack(
+			dragItem, itemUnderUs, this.ShownSack, this.CellsUnderDragItem.Location, USettings.DisableAutoStacking);
+		if (!stack.Stacked)
 			return false;
 
-		bool doStackRelics = dragItem.IsRelicOrCharm
-			&& itemUnderUs.IsRelicOrCharm
-			&& !itemUnderUs.IsRelicComplete && !dragItem.IsRelicComplete
-			&& dragItem.BaseItemId.Equals(itemUnderUs.BaseItemId)
-			&& !USettings.DisableAutoStacking;
-		if (doStackRelics)
-		{
-			// Stack relics
-			// Save the original Relic number
-			int originalNumber = itemUnderUs.Number;
+		this.InvalidateItemCacheAll(itemUnderUs, dragItem);
 
-			// Adjust the item in the sack
-			// This is limited to the completion level of the Relic
-			itemUnderUs.Number += dragItem.Number;
-
-			// Check if we completed the item
-			if (itemUnderUs.IsRelicComplete)
-			{
-				float randPercent = (float)Item.GenerateSeed() / 0x7fff;
-				LootTableCollection? table = ItemProvider.BonusTableRelicOrArtifact(itemUnderUs);
-
-				RecordId? bonusId = table?.PickWeighted(randPercent);
-				if (bonusId is not null)
-					itemUnderUs.RelicBonusId = bonusId;
-
-				ItemProvider.GetDBData(itemUnderUs);
-			}
-
-			itemUnderUs.IsModified = true;
-
-			this.InvalidateItemCacheAll(itemUnderUs, dragItem);
-
-			// Just in case we have more relics than what we need to complete
-			// We then adjust the one we are holding
-			int adjustedNumber = itemUnderUs.Number - originalNumber;
-			if (adjustedNumber != dragItem.Number)
-			{
-				dragItem.Number -= adjustedNumber;
-				dragItem.IsModified = true;
-
-				// Swap the items so the completed item stays in the
-				// sack and the remaining items are still being dragged
-				Item temp = itemUnderUs;
-				itemUnderUs = dragItem;
-				dragItem = temp;
-
-				// Drop the dragItem here
-				dragItem.Location = this.CellsUnderDragItem.Location;
-
-				// Now add the item to our sack
-				this.ShownSack.AddItem(dragItem);
-			}
-			else
-			{
-				this.ShownSack.IsModified = true;
-
-				// Get rid of ref to itemUnderUs so code below wont do anything with it.
-				itemUnderUs = null;
-				// we will just throw away the dragItem now.
-			}
-		}
-		return doStackRelics;
-	}
-
-	protected bool doStackPotions(Item dragItem, ref Item? itemUnderUs)
-	{
-		if (itemUnderUs is null)
-			return false;
-
-		bool doStackpotions = dragItem.DoesStack
-			&& itemUnderUs.DoesStack
-			&& dragItem.BaseItemId.Equals(itemUnderUs.BaseItemId)
-			&& !USettings.DisableAutoStacking;
-		if (doStackpotions)
-		{
-			itemUnderUs.StackSize += dragItem.StackSize;
-
-			this.InvalidateItemCacheAll(itemUnderUs, dragItem);
-
-			// Added this so the tooltip would update with the correct number
-			itemUnderUs.IsModified = true;
-			this.ShownSack.IsModified = true;
-
-			// Get rid of ref to itemUnderUs so code below wont do anything with it.
-			itemUnderUs = null;
-
-			// we will just throw away the dragItem now.
-		}
-		return doStackpotions;
+		dragItem = stack.DroppedItem;
+		itemUnderUs = stack.PickedUpItem;
+		return true;
 	}
 
 	/// <summary>

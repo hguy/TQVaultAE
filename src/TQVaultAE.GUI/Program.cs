@@ -148,6 +148,7 @@ public static class Program
 		.AddSingleton(new CommandLineArgs(Environment.GetCommandLineArgs()))
 		.AddTransient<ILoadAllService, LoadAllService>()
 		.AddSingleton<IItemEditService, ItemEditService>()
+		.AddSingleton<IItemStackingService, ItemStackingService>()
 
 				// GUI: services passed to forms and controls, and the only way to create forms
 				.AddSingleton<GuiServices>()
