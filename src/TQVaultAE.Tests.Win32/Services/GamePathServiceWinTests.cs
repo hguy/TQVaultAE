@@ -164,16 +164,35 @@ public class GamePathServiceWinTests
 			Path.Combine(tqitArchive, "_DefNei"));
 	}
 
-	[Fact]
-	public void GetCharacterList_CustomMap_ListsTheUserFolderCharacters()
+	[Theory]
+	[InlineData(false)]
+	[InlineData(true)]
+	public void GetCharacterList_WhateverTheMap_ListsMainCampaignAndCustomMapCharacters(bool customMap)
 	{
-		this._service.MapName = Path.Combine(Workshop, "1949340853", "shadowchampions");
-		this.AddCharacterFolders("Main");
-		var (_, _, tqit, tqitArchive) = this.AddCharacterFolders("User");
+		// One session holds both: each character is loaded with its own map's data.
+		this._service.MapName = customMap ? Path.Combine(Workshop, "1949340853", "shadowchampions") : "main";
+		var (_, _, main, mainArchive) = this.AddCharacterFolders("Main");
+		var (_, _, user, userArchive) = this.AddCharacterFolders("User");
 
 		this._service.GetCharacterList().Should().Equal(
-			Path.Combine(tqit, "_Alice"),
-			Path.Combine(tqitArchive, "_DefNei"));
+			Path.Combine(main, "_Alice"),
+			Path.Combine(user, "_Alice"),
+			Path.Combine(mainArchive, "_DefNei"),
+			Path.Combine(userArchive, "_DefNei"));
+	}
+
+	[Theory]
+	[InlineData("Main", false, false)]
+	[InlineData("Main", true, false)]
+	[InlineData("User", false, true)]
+	[InlineData("User", true, true)]
+	public void IsCustomCharacterFolder_IsTrueForTheUserFolderOnly(string mapFolder, bool archived, bool expected)
+	{
+		var parent = Path.Combine(this._service.SaveFolderTQIT, "SaveData", mapFolder);
+		if (archived)
+			parent = Path.Combine(parent, "ArchivedCharacters");
+
+		this._service.IsCustomCharacterFolder(Path.Combine(parent, "_Alice")).Should().Be(expected);
 	}
 
 	[Fact]
