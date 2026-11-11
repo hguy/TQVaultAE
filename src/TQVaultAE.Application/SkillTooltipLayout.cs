@@ -1,8 +1,8 @@
 namespace TQVaultAE.Application;
 
 /// <summary>
-/// Which effect lines the game's skill tool tip shows, and in which order (<c>Skill::CreateUIParameterText</c> for the
-/// current level, <c>Skill::CreateUINextParameterText</c> for the next one, in Game.dll).
+/// Which effect lines the game's skill tool tip shows, and in which order, for the current level and for the next
+/// one.
 /// </summary>
 public static class SkillTooltipLayout
 {
@@ -74,7 +74,7 @@ public static class SkillTooltipLayout
 	}
 
 	/// <summary>
-	/// The recharge the skill window shows (<c>Skill::GetCooldownTime</c>): the skill's cooldown plus the seconds its
+	/// The recharge the skill window shows: the skill's cooldown plus the seconds its
 	/// modifiers add (Rapid Construction -3 s), times one minus the recharge reduction (the character's, plus the
 	/// modifiers' such as Resilience), capped at <c>playerCooldownReductionCap</c>; never below 0.
 	/// </summary>

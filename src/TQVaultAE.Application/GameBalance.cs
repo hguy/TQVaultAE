@@ -72,7 +72,7 @@ public sealed record GameBalance
 
 	/// <summary>
 	/// A gameengine value for a difficulty (0 Normal, 1 Epic, 2 Legendary): the last one past the end of the array,
-	/// <paramref name="fallback"/> when missing (Game.dll reads the caps with a default of 80).
+	/// <paramref name="fallback"/> when missing (the game reads the caps with a default of 80).
 	/// </summary>
 	public double EngineValue(string name, int difficulty, double fallback = 80)
 		=> this.Engine.TryGetValue(name, out var values) && values.Count > 0
@@ -81,8 +81,8 @@ public sealed record GameBalance
 
 	/// <summary>
 	/// The difficulty penalty of a defensive field (<c>defensiveFire</c>: 0, -40, -100). The pak is indexed by the game
-	/// balance level; Game.dll takes it from <c>GameEngine::SetGameBalanceLevel</c>, assumed to be the first level of the
-	/// difficulty's block of <see cref="BalanceLevelsPerDifficulty"/> (not verified in game).
+	/// balance level, assumed to be the first level of the difficulty's block of
+	/// <see cref="BalanceLevelsPerDifficulty"/> (not verified in game).
 	/// </summary>
 	public double Penalty(string field, int difficulty)
 	{
