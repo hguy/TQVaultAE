@@ -1,12 +1,14 @@
 ﻿using System.Drawing.Text;
+using System.Runtime.InteropServices;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Presentation.Win32.Contracts;
 
 namespace TQVaultAE.Services.Win32;
 
 /// <summary>
 /// Windows specific for loading a Font from resource file (hot load from memory)
 /// </summary>
-public class AddFontToOSWin : IAddFontToOS
+public partial class AddFontToOSWin : IAddFontToOS
 {
 	private static PrivateFontCollection privateFontCollection = new PrivateFontCollection();
 
@@ -18,8 +20,8 @@ public class AddFontToOSWin : IAddFontToOS
 	/// <param name="pdv"></param>
 	/// <param name="pcFonts"></param>
 	/// <returns></returns>
-	[System.Runtime.InteropServices.DllImport("gdi32.dll")]
-	private static extern IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, [System.Runtime.InteropServices.In] ref uint pcFonts);
+	[LibraryImport("gdi32.dll")]
+	private static partial IntPtr AddFontMemResourceEx(IntPtr pbFont, uint cbFont, IntPtr pdv, ref uint pcFonts);
 
 	public FontFamily AddFontToOS(string fontName, byte[] fontData)
 	{
@@ -35,4 +37,8 @@ public class AddFontToOSWin : IAddFontToOS
 		}
 		return privateFontCollection.Families.First(f => f.Name == fontName);
 	}
+
+	/// <inheritdoc/>
+	public bool HasEveryGlyph(Font font, string text)
+		=> NativeGlyphs.HasEveryGlyph(font, text);
 }

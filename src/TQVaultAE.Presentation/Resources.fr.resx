@@ -281,6 +281,30 @@ Voulez-vous redémarrer TQVault ?</value>
 	<data name="ItemPropertiesLabelSuffixProperties" xml:space="preserve">
     <value>Propriétés du suffixe</value>
   </data>
+	<data name="ItemComparisonAlignRows" xml:space="preserve">
+    <value>Aligner les lignes</value>
+  </data>
+	<data name="ItemComparisonHideUnchanged" xml:space="preserve">
+    <value>Masquer les lignes identiques</value>
+  </data>
+	<data name="ItemComparisonNoDifference" xml:space="preserve">
+    <value>Aucune différence</value>
+  </data>
+	<data name="ItemComparisonShowSources" xml:space="preserve">
+    <value>Afficher les sources</value>
+  </data>
+	<data name="ItemComparisonSourceBonus" xml:space="preserve">
+    <value>Bonus d'achèvement {0}</value>
+  </data>
+	<data name="ItemComparisonSourceRelic" xml:space="preserve">
+    <value>Relique ou charme {0}</value>
+  </data>
+	<data name="ItemComparisonSourceLine" xml:space="preserve">
+    <value>{0} : {1}</value>
+  </data>
+	<data name="ItemComparisonText" xml:space="preserve">
+    <value>Comparaison d'objets</value>
+  </data>
 	<data name="ItemPropertiesText" xml:space="preserve">
     <value>Propriétés de l'objet</value>
   </data>
@@ -314,9 +338,6 @@ Voulez-vous redémarrer TQVault ?</value>
 	<data name="MainFormBtnShowPlayer" xml:space="preserve">
     <value>Voir personnage</value>
   </data>
-	<data name="MainFormCustomMapLabel" xml:space="preserve">
-    <value>Quête personnalisée {0}</value>
-  </data>
 	<data name="MainFormDatabaseError" xml:space="preserve">
     <value>Erreur en extrayant la base de données</value>
   </data>
@@ -343,14 +364,6 @@ Voulez-vous redémarrer TQVault maintenant ?</value>
   </data>
 	<data name="MainFormMaintainVault" xml:space="preserve">
     <value>Gérer les fichiers de coffres ...</value>
-  </data>
-	<data name="MainFormMapsChanged" xml:space="preserve">
-    <value>Configuration des quêtes personnalisées modifiée</value>
-  </data>
-	<data name="MainFormMapsChangedMsg" xml:space="preserve">
-    <value>La configuration des quêtes personnalisées a été changée.
-Vous devez redémarrer TQVault pour que cela fasse effet.
-Voulez-vous redémarrer TQVault maintenant ?</value>
   </data>
 	<data name="MainFormNoCharacters" xml:space="preserve">
     <value>Aucun personnage TQ détecté</value>
@@ -576,6 +589,9 @@ Etes-vous sûr de vouloir écraser son contenu ?</value>
 	<data name="ResultsSack" xml:space="preserve">
     <value>Sac</value>
   </data>
+	<data name="ResultsBag" xml:space="preserve">
+    <value>Sac {0}</value>
+  </data>
 	<data name="ResultsLevel" xml:space="preserve">
     <value>Level</value>
   </data>
@@ -620,6 +636,12 @@ Voulez-vous vraiment supprimer cet objet ?</value>
   </data>
 	<data name="SackPanelMenuClear" xml:space="preserve">
     <value>Annuler la sélection</value>
+  </data>
+	<data name="SackPanelCompareSelectionStarted" xml:space="preserve">
+    <value>Comparer : cliquez sur le second objet, dans n'importe quel panneau. Échap ou clic droit pour annuler.</value>
+  </data>
+	<data name="SackPanelMenuCompare" xml:space="preserve">
+    <value>Comparer</value>
   </data>
 	<data name="SackPanelMenuCopy" xml:space="preserve">
     <value>Copier l'objet (Seed aléatoire)</value>
@@ -671,6 +693,9 @@ Voulez-vous vraiment supprimer cet objet ?</value>
   </data>
 	<data name="SackPanelRemoveRelicMsg" xml:space="preserve">
     <value>Voulez-vous vraiment retirer la relique de cet objet ?</value>
+  </data>
+	<data name="SackPanelSocketedNotAnItem" xml:space="preserve">
+    <value>Ce qui était serti n'est ni une relique ni un charme : il a été retiré.</value>
   </data>
 	<data name="SeedBtnRandom" xml:space="preserve">
     <value>Au hasard</value>
@@ -727,14 +752,6 @@ le démarrage si la connection internet est lente.</value>
 	<data name="SettingsDetectLanguage" xml:space="preserve">
     <value>Détection automatique de la langue</value>
   </data>
-	<data name="SettingsEnableMod" xml:space="preserve">
-    <value>Autoriser les quêtes personnalisées</value>
-  </data>
-	<data name="SettingsEnableModTT" xml:space="preserve">
-    <value>En cochant cette fonction, vous
-pourrez sélectionner des quêtes
-personnalisées avec le menu déroulant.</value>
-  </data>
 	<data name="SettingsForceCheck" xml:space="preserve">
     <value>Vérifier maintenant</value>
   </data>
@@ -753,9 +770,6 @@ disponibles.</value>
   </data>
 	<data name="SettingsLabel4" xml:space="preserve">
     <value>Chemin d'accès du jeu IT</value>
-  </data>
-	<data name="SettingsLabel5" xml:space="preserve">
-    <value>Quête personnalisée</value>
   </data>
 	<data name="SettingsLoadChar" xml:space="preserve">
     <value>Charger automatiquement le dernier personnage ouvert</value>
@@ -807,6 +821,11 @@ automatiquement activé sur l'écran d'accueil.</value>
   </data>
 	<data name="SettingsTitle" xml:space="preserve">
     <value>Configuration</value>
+  </data>
+	<data name="SettingsDiscardChanges" xml:space="preserve">
+    <value>La configuration a été modifiée.
+
+La quitter sans enregistrer les changements ?</value>
   </data>
 	<data name="StashNotFound" xml:space="preserve">
     <value>Impossible de trouver le fichier caravane.</value>
@@ -924,16 +943,19 @@ Vous pouvez utiliser | dans un terme comme condition OU. '$épique | rare' renvo
 Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
   </data>
 	<data name="GlobalClose" xml:space="preserve">
-    <value>Sortir</value>
+    <value>Fermer</value>
   </data>
 	<data name="GlobalMaximize" xml:space="preserve">
-    <value>Maximiser les</value>
+    <value>Agrandir</value>
   </data>
 	<data name="GlobalMinimize" xml:space="preserve">
-    <value>Minimiser les</value>
+    <value>Réduire</value>
   </data>
 	<data name="GlobalMove" xml:space="preserve">
-    <value>Déplacez</value>
+    <value>Déplacer</value>
+  </data>
+	<data name="GlobalNormalize" xml:space="preserve">
+    <value>Revenir à la taille normale</value>
   </data>
 	<data name="GlobalRestore" xml:space="preserve">
     <value>Restaurer</value>
@@ -952,9 +974,6 @@ Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
   </data>
 	<data name="SettingsAllowEditCE" xml:space="preserve">
     <value>Autorise l'édition des personnages</value>
-  </data>
-	<data name="CEAttributePoints" xml:space="preserve">
-    <value>Points d'attributs</value>
   </data>
 	<data name="CEAttributes" xml:space="preserve">
     <value>Attributs de base</value>
@@ -986,6 +1005,69 @@ Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
 	<data name="CESkillPoints" xml:space="preserve">
     <value>Points de compétences</value>
   </data>
+	<data name="CEMasteryNone" xml:space="preserve">
+    <value>(Aucune)</value>
+  </data>
+	<data name="CEMasteryLevel" xml:space="preserve">
+    <value>Niveau de maîtrise</value>
+  </data>
+	<data name="CEMasterySlot" xml:space="preserve">
+    <value>Maîtrise {0}</value>
+  </data>
+	<data name="CECharacter" xml:space="preserve">
+    <value>Personnage</value>
+  </data>
+	<data name="CESkillPaneHint" xml:space="preserve">
+    <value>Clic gauche : +1 point, clic droit : -1. Avec Maj : au niveau le plus haut ou le plus bas.</value>
+  </data>
+	<data name="CESkillRequiresMastery" xml:space="preserve">
+    <value>Requiert le niveau de maîtrise {0}</value>
+  </data>
+	<data name="CEAttributeToolTip" xml:space="preserve">
+    <value>Base {0}, {1:+0;-0;+0} des équipements et compétences. Clic gauche sur + : dépense un point, clic droit : le reprend ; avec Maj : tous les points, ou retour au départ.</value>
+  </data>
+	<data name="CEAttributeBaseToolTip" xml:space="preserve">
+    <value>Base {0}, {1:+0;-0;+0} des équipements et compétences.</value>
+  </data>
+	<data name="CEMasterySummary" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+	<data name="CEMasterySkill" xml:space="preserve">
+    <value>{0} compétence</value>
+  </data>
+	<data name="CEMasterySkills" xml:space="preserve">
+    <value>{0} compétences</value>
+  </data>
+	<data name="CEMasteryPoint" xml:space="preserve">
+    <value>{0} point</value>
+  </data>
+	<data name="CEMasteryPoints" xml:space="preserve">
+    <value>{0} points</value>
+  </data>
+	<data name="CEStatistics" xml:space="preserve">
+    <value>Statistiques</value>
+  </data>
+	<data name="CEIncludeBuffs" xml:space="preserve">
+    <value>Avec les buffs</value>
+  </data>
+	<data name="CEStatisticsDifficultyToolTip" xml:space="preserve">
+    <value>La difficulté jouée : Épique et Légendaire baissent les résistances (-40 / -100, d’après les données du jeu).</value>
+  </data>
+	<data name="CEIncludeBuffsToolTip" xml:space="preserve">
+    <value>Compte les auras et les buffs des compétences comme s’ils étaient actifs ; sinon seules les compétences passives comptent.</value>
+  </data>
+	<data name="CEOffenseDamageToolTip" xml:space="preserve">
+    <value>Arme {0}, ajouté par l’équipement et les compétences {1}.</value>
+  </data>
+	<data name="CEGearBonusSkill" xml:space="preserve">
+    <value>+{0} à {1} (équipement)</value>
+  </data>
+	<data name="CEGearBonusMastery" xml:space="preserve">
+    <value>+{0} à toutes les compétences de {1} (équipement)</value>
+  </data>
+	<data name="CEGearBonusAll" xml:space="preserve">
+    <value>+{0} à toutes les compétences (équipement)</value>
+  </data>
 	<data name="CEStrength" xml:space="preserve">
     <value>Force</value>
   </data>
@@ -1012,6 +1094,9 @@ Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
   </data>
 	<data name="Money" xml:space="preserve">
     <value>Argent</value>
+  </data>
+	<data name="Electrum" xml:space="preserve">
+    <value>Électrum</value>
   </data>
 	<data name="SkillPoints" xml:space="preserve">
     <value>Compétences</value>
@@ -1084,12 +1169,6 @@ Voici un exemple complexe: 'arctique &amp; gel @sabre $épique | rare'</value>
   </data>
 	<data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>Activer toutes les infobulles</value>
-  </data>
-	<data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>Activer la vue détaillée de l'infobulle</value>
-  </data>
-	<data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>Divise l'affichage des attributs dans les catégories Prefix/Base/Suffix</value>
   </data>
 	<data name="SettingsPlayerReadonly" xml:space="preserve">
     <value>Equipement du personnage en lecture seule</value>
@@ -1394,6 +1473,9 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
 	<data name="ForgeMustSelectItemToMerge" xml:space="preserve">
     <value>Vous devez sélectionner un objet à fusionner!</value>
   </data>
+	<data name="ForgePartOfAnotherMod" xml:space="preserve">
+    <value>Une partie vient d'un autre mod que l'objet de base : l'objet forgé ne pourrait pas la lire.</value>
+  </data>
 	<data name="ForgeMustHavePrefixOutsideOfGodMode" xml:space="preserve">
     <value>Vous devez sélectionner un objet avec préfix!</value>
   </data>
@@ -1656,6 +1738,21 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
   <data name="ImportVaultSuccessCreate" xml:space="preserve">
     <value>Nouveau coffre &quot;{0}&quot; créé avec les données importées.</value>
   </data>
+  <data name="ModMapKeptNoRoom" xml:space="preserve">
+    <value>Lu avec sa nouvelle carte, un objet n'avait pas la place dans son conteneur : il garde sa carte précédente, comme lien propre. {0}</value>
+  </data>
+  <data name="ModDropNoRoomInTab" xml:space="preserve">
+    <value>Lu avec les données de sa carte ici, {0} n'a pas la place dans cet onglet : déposez-le dans un autre onglet.</value>
+  </data>
+  <data name="SearchSharedStashNoCharacter" xml:space="preserve">
+    <value>{0} s'affiche avec les personnages qui jouent avec sa carte, et aucun personnage de la liste n'en fait partie.</value>
+  </data>
+  <data name="ModChoiceNoRoomInTab" xml:space="preserve">
+    <value>Lu avec les données de cette carte, {0} n'aurait pas la place dans cet onglet : déplacez-le d'abord dans un autre onglet.</value>
+  </data>
+  <data name="ImportDroppedMods" xml:space="preserve">
+    <value>Ces mods ne sont pas installés : leurs liens sont abandonnés et les objets prennent la carte de leur coffre. Installez le mod, puis liez le coffre ou les objets (Modded). {0}</value>
+  </data>
   <data name="ImportSuccessCount" xml:space="preserve">
     <value>{0} objets importés sur {1}.</value>
   </data>
@@ -1664,5 +1761,651 @@ Vous devez toujours fermer TQVaultAE pour sauvegarder vos modifications dans les
   </data>
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 Partager le coffre</value>
+  </data>
+  <data name="ExportItemSuccessPasteBin" xml:space="preserve">
+    <value>Objet exporté vers PasteBin : {0}</value>
+  </data>
+  <data name="ExportItemsSuccessPasteBin" xml:space="preserve">
+    <value>Objets exportés vers PasteBin : {0}</value>
+  </data>
+  <data name="ExportTabSuccessPasteBin" xml:space="preserve">
+    <value>Onglet exporté vers PasteBin : {0}</value>
+  </data>
+  <data name="ExportFailPasteBin" xml:space="preserve">
+    <value>Échec de l'exportation vers PasteBin : {0}</value>
+  </data>
+	<data name="ItemPropertiesLabelInGameRolls" xml:space="preserve">
+    <value>Valeurs en jeu (base de données -&gt; jeu)</value>
+  </data>
+	<data name="SettingShowInGameValues" xml:space="preserve">
+    <value>Afficher les valeurs en jeu</value>
+  </data>
+	<data name="SettingShowInGameValuesTT" xml:space="preserve">
+    <value>Applique la variation aléatoire du jeu (graine de l'objet) aux infobulles d'équipement. Avec la vue détaillée, liste aussi chaque valeur tirée.</value>
+  </data>
+	<data name="ForgeCapSectionBase" xml:space="preserve">
+    <value>Objet de base</value>
+  </data>
+	<data name="ForgeCapSectionAffixes" xml:space="preserve">
+    <value>Préfixe et suffixe</value>
+  </data>
+	<data name="ForgeCapSectionRelics" xml:space="preserve">
+    <value>Reliques</value>
+  </data>
+	<data name="ForgeCapBaseGear" xml:space="preserve">
+    <value>Arme, bouclier, armure ou bijou uniquement</value>
+  </data>
+	<data name="ForgeCapAnyItem" xml:space="preserve">
+    <value>N'importe quel objet, y compris reliques, charmes et artefacts</value>
+  </data>
+	<data name="ForgeCapNoEpicLegendary" xml:space="preserve">
+    <value>Aucun objet Épique ou Légendaire</value>
+  </data>
+	<data name="ForgeCapEpicLegendary" xml:space="preserve">
+    <value>Objets Épiques et Légendaires autorisés</value>
+  </data>
+	<data name="ForgeCapSameBaseItem" xml:space="preserve">
+    <value>Pris uniquement sur le même objet de base</value>
+  </data>
+	<data name="ForgeCapLevelRequirement" xml:space="preserve">
+    <value>Niveau requis pas plus élevé que l'objet de base</value>
+  </data>
+	<data name="ForgeCapSameGearType" xml:space="preserve">
+    <value>Pris uniquement sur le même type d'équipement</value>
+  </data>
+	<data name="ForgeCapAnyGearType" xml:space="preserve">
+    <value>Pris sur n'importe quel type d'équipement</value>
+  </data>
+	<data name="ForgeCapNotRarerThanBase" xml:space="preserve">
+    <value>Pas plus rare que l'objet de base</value>
+  </data>
+	<data name="ForgeCapNeedsAffix" xml:space="preserve">
+    <value>L'objet matériau doit avoir ce préfixe ou ce suffixe</value>
+  </data>
+	<data name="ForgeCapAnyPart" xml:space="preserve">
+    <value>Utilise n'importe quelle partie d'un objet matériau : base, préfixe, suffixe ou reliques</value>
+  </data>
+	<data name="ForgeCapRelicOnly" xml:space="preserve">
+    <value>Reliques et charmes uniquement</value>
+  </data>
+	<data name="ForgeCapRelicOrSocketed" xml:space="preserve">
+    <value>Reliques, charmes, ou une arme, un bouclier, une armure ou un bijou portant une relique sertie</value>
+  </data>
+	<data name="ForgeCapRelicGear" xml:space="preserve">
+    <value>Doit être autorisée sur le type de l'objet de base</value>
+  </data>
+	<data name="ForgeCapAnyRelicSlot" xml:space="preserve">
+    <value>N'importe quel objet ou partie dans les emplacements de relique</value>
+  </data>
+	<data name="ForgeCapSecondRelicTinkerer" xml:space="preserve">
+    <value>Seconde relique uniquement avec le suffixe "{0}"</value>
+  </data>
+	<data name="ForgeCapSecondRelicFree" xml:space="preserve">
+    <value>Seconde relique sur n'importe quel objet</value>
+  </data>
+	<data name="ForgeCapResetOnStricter" xml:space="preserve">
+    <value>Passer à un mode plus strict vide les emplacements</value>
+  </data>
+	<data name="SettingTooltipEnhanced" xml:space="preserve">
+    <value>Infobulle enrichie</value>
+  </data>
+	<data name="SettingsStackable" xml:space="preserve">
+    <value>Objets empilables</value>
+  </data>
+	<data name="SettingTooltipDetailedView" xml:space="preserve">
+    <value>Activer la vue détaillée</value>
+  </data>
+	<data name="SettingTooltipDetailedViewTT" xml:space="preserve">
+    <value>Divise les attributs de l'infobulle d'objet en catégories Préfixe/Base/Suffixe. Les options ci-dessous valent pour les deux vues.</value>
+  </data>
+	<data name="SettingTooltipShowInGameRolls" xml:space="preserve">
+    <value>Afficher les tirages en jeu</value>
+  </data>
+	<data name="SettingTooltipShowInGameRollsTT" xml:space="preserve">
+    <value>Liste chaque valeur tirée par le jeu (base de données -&gt; en jeu). Nécessite « Afficher les valeurs en jeu ».</value>
+  </data>
+	<data name="SettingTooltipShowValueRanges" xml:space="preserve">
+    <value>Afficher les valeurs min/max</value>
+  </data>
+	<data name="SettingTooltipShowValueRangesTT" xml:space="preserve">
+    <value>Affiche à droite de chaque attribut tiré son minimum et son maximum possibles. Nécessite « Afficher les valeurs en jeu ».</value>
+  </data>
+	<data name="SettingTooltipShowGrantedSkills" xml:space="preserve">
+    <value>Afficher les compétences de l'objet</value>
+  </data>
+	<data name="SettingTooltipShowGrantedSkillsTT" xml:space="preserve">
+    <value>Affiche dans un panneau à côté de l'infobulle les compétences accordées par l'objet, ses affixes et ses reliques</value>
+  </data>
+	<data name="SettingTooltipShowSetPieceCounts" xml:space="preserve">
+    <value>Afficher le nombre de pièces de set</value>
+  </data>
+	<data name="SettingTooltipShowSetPieceCountsTT" xml:space="preserve">
+    <value>Affiche, en face de chaque pièce du set, combien en contiennent les coffres, personnages et réserves chargés</value>
+  </data>
+	<data name="SearchHavingSkill" xml:space="preserve">
+    <value>Avec Compétence</value>
+  </data>
+	<data name="SearchItemSkills" xml:space="preserve">
+    <value>Compétences d'objet</value>
+  </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% de résistance aux dégâts du drain d'énergie</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>Lancé à l'emplacement de l'ennemi tué</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
+  </data>
+	<data name="VaultDelete" xml:space="preserve">
+    <value>Supprimer le coffre</value>
+  </data>
+	<data name="VaultDeleteMsg" xml:space="preserve">
+    <value>Supprimer le coffre « {0} » ?</value>
+  </data>
+	<data name="VaultDeleteContents" xml:space="preserve">
+    <value>Il contient {0} dans {1}.</value>
+  </data>
+	<data name="VaultDeleteItem" xml:space="preserve">
+    <value>{0} objet</value>
+  </data>
+	<data name="VaultDeleteItems" xml:space="preserve">
+    <value>{0} objets</value>
+  </data>
+	<data name="VaultDeleteBag" xml:space="preserve">
+    <value>{0} sac</value>
+  </data>
+	<data name="VaultDeleteBags" xml:space="preserve">
+    <value>{0} sacs</value>
+  </data>
+	<data name="VaultDeleteEmpty" xml:space="preserve">
+    <value>Il est vide.</value>
+  </data>
+	<data name="VaultDeleteRecycleBin" xml:space="preserve">
+    <value>Le fichier sera placé dans la Corbeille, d’où vous pourrez le restaurer.</value>
+  </data>
+	<data name="VaultDeletePermanent" xml:space="preserve">
+    <value>Cette action est irréversible.</value>
+  </data>
+	<data name="ModLinkMenu" xml:space="preserve">
+    <value>Lien avec un mod...</value>
+  </data>
+	<data name="ModLinkDialogTitle" xml:space="preserve">
+    <value>Lien avec un mod</value>
+  </data>
+	<data name="ModLinkCharacter" xml:space="preserve">
+    <value>Personnage : {0}</value>
+  </data>
+	<data name="ModLinkInstalledMods" xml:space="preserve">
+    <value>Mods installés :</value>
+  </data>
+	<data name="ModLinkNoMods" xml:space="preserve">
+    <value>Aucun mod n'est installé.</value>
+  </data>
+	<data name="ModLinkLink" xml:space="preserve">
+    <value>Lier</value>
+  </data>
+	<data name="ModLinkUnlink" xml:space="preserve">
+    <value>Délier</value>
+  </data>
+	<data name="ModLinkSuggest" xml:space="preserve">
+    <value>Suggérer</value>
+  </data>
+	<data name="ModLinkUnlinkedLabel" xml:space="preserve">
+    <value>sans mod</value>
+  </data>
+	<data name="ModLinkMissingLabel" xml:space="preserve">
+    <value>{0}, non installé</value>
+  </data>
+	<data name="CharacterModded" xml:space="preserve">
+    <value>Moddé</value>
+  </data>
+	<data name="CharacterModLinked" xml:space="preserve">
+    <value>Lié</value>
+  </data>
+	<data name="CharacterModNotLinked" xml:space="preserve">
+    <value>Non lié</value>
+  </data>
+	<data name="CharacterModNotInstalled" xml:space="preserve">
+    <value>Non installé</value>
+  </data>
+	<data name="CharacterReadOnly" xml:space="preserve">
+    <value>Lecture seule</value>
+  </data>
+	<data name="CharacterReadOnlyRefused" xml:space="preserve">
+    <value>{0} est en lecture seule : ses sacs, son équipement et sa zone de stockage ne peuvent pas changer.</value>
+  </data>
+	<data name="CharacterReadOnlyUnsaved" xml:space="preserve">
+    <value>{0} a des modifications non enregistrées : enregistrez-les avant de le passer en lecture seule.</value>
+  </data>
+	<data name="CharacterReadOnlyFailed" xml:space="preserve">
+    <value>L'état lecture seule de {0} n'a pas pu être changé : {1}</value>
+  </data>
+	<data name="ItemModLine" xml:space="preserve">
+    <value>Mod : {0}</value>
+  </data>
+	<data name="ItemModNone" xml:space="preserve">
+    <value>Aucun (jeu de base)</value>
+  </data>
+	<data name="VaultModded" xml:space="preserve">
+    <value>Coffre moddé</value>
+  </data>
+	<data name="ModSuggestedHint" xml:space="preserve">
+    <value>(suggéré)</value>
+  </data>
+	<data name="ModSuggestedPartialHint" xml:space="preserve">
+    <value>(suggéré {0}/{1})</value>
+  </data>
+	<data name="ModSuggestedDetail" xml:space="preserve">
+    <value>A {0} des {1} enregistrements absents du jeu de base.</value>
+  </data>
+	<data name="ModLinkBaseGameData" xml:space="preserve">
+    <value>les données du jeu de base</value>
+  </data>
+	<data name="ModLinkStateBaseGame" xml:space="preserve">
+    <value>Personnage de la campagne principale : il utilise toujours les données du jeu de base.</value>
+  </data>
+	<data name="ModLinkStateLinked" xml:space="preserve">
+    <value>Lié à {0}.</value>
+  </data>
+	<data name="ModLinkStateMissing" xml:space="preserve">
+    <value>Lié à {0}, qui n'est pas installé : il est chargé avec {1}.</value>
+  </data>
+	<data name="ModLinkStateUnlinked" xml:space="preserve">
+    <value>Non lié : il est chargé avec {0}.</value>
+  </data>
+	<data name="ModLinkSuggestion" xml:space="preserve">
+    <value>Suggestion : {0} ({1} des {2} enregistrements de ce personnage absents du jeu de base).</value>
+  </data>
+	<data name="ModLinkSuggestionTie" xml:space="preserve">
+    <value>Plusieurs mods correspondent autant : {0}.</value>
+  </data>
+	<data name="ModLinkSuggestionNone" xml:space="preserve">
+    <value>Aucun mod installé n'a les {0} enregistrements de ce personnage absents du jeu de base.</value>
+  </data>
+	<data name="ModLinkSuggestionBaseOnly" xml:space="preserve">
+    <value>Ce personnage n'utilise que des enregistrements du jeu de base : son mod ne peut pas être déduit de ses données.</value>
+  </data>
+	<data name="ModLinkSaveError" xml:space="preserve">
+    <value>Le lien avec le mod n'a pas pu être enregistré.</value>
+  </data>
+	<data name="ModLinkActiveMap" xml:space="preserve">
+    <value>Données du mod : {0}</value>
+  </data>
+	<data name="ItemIncomplete" xml:space="preserve">
+    <value>Objet incomplet : mod non lié ou non installé.</value>
+  </data>
+	<data name="ItemIncompleteBaseItem" xml:space="preserve">
+    <value>Objet de base</value>
+  </data>
+	<data name="ItemIncompletePrefix" xml:space="preserve">
+    <value>Préfixe</value>
+  </data>
+	<data name="ItemIncompleteSuffix" xml:space="preserve">
+    <value>Suffixe</value>
+  </data>
+	<data name="ItemIncompleteRelic" xml:space="preserve">
+    <value>Relique ou charme</value>
+  </data>
+	<data name="ItemIncompleteRelicBonus" xml:space="preserve">
+    <value>Bonus de relique</value>
+  </data>
+	<data name="SortMenuNormal" xml:space="preserve">
+    <value>Trier par taille (normal)</value>
+  </data>
+	<data name="SortMenuLevel" xml:space="preserve">
+    <value>Trier par niveau requis</value>
+  </data>
+	<data name="SortMenuType" xml:space="preserve">
+    <value>Trier par type</value>
+  </data>
+	<data name="SortMenuRarity" xml:space="preserve">
+    <value>Trier par rareté</value>
+  </data>
+	<data name="SackPanelSortNoRoom" xml:space="preserve">
+    <value>Les objets ne tiennent pas dans le sac dans cet ordre.
+Le sac est resté tel quel.</value>
+  </data>
+	<data name="SettingsMergeRelicsOnSort" xml:space="preserve">
+    <value>Fusionner les fragments de reliques au tri</value>
+  </data>
+	<data name="SettingsMergeRelicsOnSortTT" xml:space="preserve">
+    <value>Trier un sac empile aussi les fragments d'une même relique ou d'un même charme jusqu'à complétion.
+Une relique complétée reçoit son bonus, comme quand vous l'empilez à la main.</value>
+  </data>
+	<data name="SettingsKeyBinds" xml:space="preserve">
+    <value>Raccourcis...</value>
+  </data>
+	<data name="SettingsKeyBindsTT" xml:space="preserve">
+    <value>Liste les touches et les clics de TQVault et permet de les changer.</value>
+  </data>
+	<data name="KeyBindsTitle" xml:space="preserve">
+    <value>Raccourcis</value>
+  </data>
+	<data name="KeyBindsColumnAction" xml:space="preserve">
+    <value>Action</value>
+  </data>
+	<data name="KeyBindsColumnShortcut" xml:space="preserve">
+    <value>Raccourci</value>
+  </data>
+	<data name="KeyBindsColumnAlternate" xml:space="preserve">
+    <value>Autre</value>
+  </data>
+	<data name="KeyBindsHint" xml:space="preserve">
+    <value>Cliquez sur un raccourci puis appuyez sur la nouvelle touche. Pour une action de clic, recliquez sur le raccourci en maintenant les modificateurs. Clic droit ou Effacer pour arrêter.</value>
+  </data>
+	<data name="KeyBindsPressKey" xml:space="preserve">
+    <value>Appuyez sur une touche...</value>
+  </data>
+	<data name="KeyBindsClickWithModifiers" xml:space="preserve">
+    <value>Cliquez avec les modificateurs...</value>
+  </data>
+	<data name="KeyBindsClear" xml:space="preserve">
+    <value>Effacer</value>
+  </data>
+	<data name="KeyBindsDefaults" xml:space="preserve">
+    <value>Par défaut</value>
+  </data>
+	<data name="KeyBindsConflict" xml:space="preserve">
+    <value>{0} est utilisé par : {1}</value>
+  </data>
+	<data name="KeyBindsFixed" xml:space="preserve">
+    <value>Fixe : ne peut pas être changé.</value>
+  </data>
+	<data name="KeyBindsTurnedOff" xml:space="preserve">
+    <value>Désactivé : cochez « {0} » dans les paramètres pour l'utiliser.</value>
+  </data>
+	<data name="KeyBindsTurnedOffNote" xml:space="preserve">
+    <value>Les actions grisées ne font rien tant que ces paramètres ne sont pas cochés : {0}.</value>
+  </data>
+	<data name="KeyBindsNone" xml:space="preserve">
+    <value>(aucun)</value>
+  </data>
+	<data name="KeyBindCategoryItems" xml:space="preserve">
+    <value>Objets</value>
+  </data>
+	<data name="KeyBindCategorySelection" xml:space="preserve">
+    <value>Sélection</value>
+  </data>
+	<data name="KeyBindCategoryMoving" xml:space="preserve">
+    <value>Déplacement entre panneaux</value>
+  </data>
+	<data name="KeyBindCategoryWindow" xml:space="preserve">
+    <value>Fenêtre</value>
+  </data>
+	<data name="KeyBindCategoryForge" xml:space="preserve">
+    <value>Forge</value>
+  </data>
+	<data name="KeyBindCategoryCharacterEditor" xml:space="preserve">
+    <value>Éditeur de personnage</value>
+  </data>
+	<data name="KeyBindActionPickUpItem" xml:space="preserve">
+    <value>Prendre ou poser un objet</value>
+  </data>
+	<data name="KeyBindActionItemMenu" xml:space="preserve">
+    <value>Menu de l'objet, annuler un déplacement</value>
+  </data>
+	<data name="KeyBindActionItemCopy" xml:space="preserve">
+    <value>Copier l'objet sous le curseur</value>
+  </data>
+	<data name="KeyBindActionItemDuplicate" xml:space="preserve">
+    <value>Reproduire l'objet sous le curseur</value>
+  </data>
+	<data name="KeyBindActionItemCopyClick" xml:space="preserve">
+    <value>Copier l'objet cliqué</value>
+  </data>
+	<data name="KeyBindActionItemDuplicateClick" xml:space="preserve">
+    <value>Reproduire l'objet cliqué</value>
+  </data>
+	<data name="KeyBindActionItemDelete" xml:space="preserve">
+    <value>Supprimer l'objet sous le curseur</value>
+  </data>
+	<data name="KeyBindActionCancelDrag" xml:space="preserve">
+    <value>Annuler un déplacement ou une comparaison</value>
+  </data>
+	<data name="KeyBindActionSelectItemClick" xml:space="preserve">
+    <value>Ajouter ou retirer un objet de la sélection</value>
+  </data>
+	<data name="KeyBindActionSelectRectangle" xml:space="preserve">
+    <value>Sélectionner un rectangle (glisser)</value>
+  </data>
+	<data name="KeyBindActionSelectAll" xml:space="preserve">
+    <value>Sélectionner tous les objets</value>
+  </data>
+	<data name="KeyBindActionSelectHighlighted" xml:space="preserve">
+    <value>Sélectionner les objets surlignés</value>
+  </data>
+	<data name="KeyBindActionClearSelection" xml:space="preserve">
+    <value>Annuler la sélection</value>
+  </data>
+	<data name="KeyBindActionMoveSelectionUp" xml:space="preserve">
+    <value>Déplacer la sélection vers le haut</value>
+  </data>
+	<data name="KeyBindActionMoveSelectionLeft" xml:space="preserve">
+    <value>Déplacer la sélection vers la gauche</value>
+  </data>
+	<data name="KeyBindActionMoveSelectionDown" xml:space="preserve">
+    <value>Déplacer la sélection vers le bas</value>
+  </data>
+	<data name="KeyBindActionMoveSelectionRight" xml:space="preserve">
+    <value>Déplacer la sélection vers la droite</value>
+  </data>
+	<data name="KeyBindActionMoveToPlayer" xml:space="preserve">
+    <value>Déplacer vers le personnage</value>
+  </data>
+	<data name="KeyBindActionMoveToVault" xml:space="preserve">
+    <value>Déplacer vers le coffre</value>
+  </data>
+	<data name="KeyBindActionMoveToStash" xml:space="preserve">
+    <value>Déplacer vers la caravane</value>
+  </data>
+	<data name="KeyBindActionSearch" xml:space="preserve">
+    <value>Rechercher</value>
+  </data>
+	<data name="KeyBindActionCopyToClipboard" xml:space="preserve">
+    <value>Copier la sélection dans le presse-papiers</value>
+  </data>
+	<data name="KeyBindActionPasteFromClipboard" xml:space="preserve">
+    <value>Coller des objets du presse-papiers</value>
+  </data>
+	<data name="KeyBindActionZoomIn" xml:space="preserve">
+    <value>Agrandir</value>
+  </data>
+	<data name="KeyBindActionZoomOut" xml:space="preserve">
+    <value>Réduire</value>
+  </data>
+	<data name="KeyBindActionZoomReset" xml:space="preserve">
+    <value>Rétablir le zoom</value>
+  </data>
+	<data name="KeyBindActionRefreshPanel" xml:space="preserve">
+    <value>Redessiner le panneau</value>
+  </data>
+	<data name="KeyBindActionScrollVaultList" xml:space="preserve">
+    <value>Coffre suivant ou précédent</value>
+  </data>
+	<data name="KeyBindActionResetZoomOnRestore" xml:space="preserve">
+    <value>Maintenu en restaurant la fenêtre : rétablir le zoom</value>
+  </data>
+	<data name="KeyBindActionCloseWindow" xml:space="preserve">
+    <value>Fermer TQVault</value>
+  </data>
+	<data name="KeyBindActionForge" xml:space="preserve">
+    <value>Forger (le bouton Forger)</value>
+  </data>
+	<data name="KeyBindActionCharacterAddPoint" xml:space="preserve">
+    <value>Ajouter un point</value>
+  </data>
+	<data name="KeyBindActionCharacterRemovePoint" xml:space="preserve">
+    <value>Retirer un point</value>
+  </data>
+	<data name="KeyBindActionCharacterSpendAll" xml:space="preserve">
+    <value>Ajouter ou retirer tous les points d'un coup</value>
+  </data>
+	<data name="KeyNameClick" xml:space="preserve">
+    <value>Clic</value>
+  </data>
+	<data name="KeyNameRightClick" xml:space="preserve">
+    <value>Clic droit</value>
+  </data>
+	<data name="KeyNameWheel" xml:space="preserve">
+    <value>Molette</value>
+  </data>
+	<data name="KeyNameShift" xml:space="preserve">
+    <value>Maj</value>
+  </data>
+	<data name="KeyNameBack" xml:space="preserve">
+    <value>Retour arrière</value>
+  </data>
+	<data name="KeyNameEscape" xml:space="preserve">
+    <value>Échap</value>
+  </data>
+	<data name="KeyNameEnter" xml:space="preserve">
+    <value>Entrée</value>
+  </data>
+	<data name="KeyNameSpace" xml:space="preserve">
+    <value>Espace</value>
+  </data>
+	<data name="KeyNameDelete" xml:space="preserve">
+    <value>Suppr</value>
+  </data>
+	<data name="KeyNameInsert" xml:space="preserve">
+    <value>Inser</value>
+  </data>
+	<data name="KeyNameHome" xml:space="preserve">
+    <value>Origine</value>
+  </data>
+	<data name="KeyNameEnd" xml:space="preserve">
+    <value>Fin</value>
+  </data>
+	<data name="KeyNamePageUp" xml:space="preserve">
+    <value>Page préc.</value>
+  </data>
+	<data name="KeyNamePageDown" xml:space="preserve">
+    <value>Page suiv.</value>
+  </data>
+	<data name="KeyNameLeft" xml:space="preserve">
+    <value>Flèche gauche</value>
+  </data>
+	<data name="KeyNameRight" xml:space="preserve">
+    <value>Flèche droite</value>
+  </data>
+	<data name="KeyNameUp" xml:space="preserve">
+    <value>Flèche haut</value>
+  </data>
+	<data name="KeyNameDown" xml:space="preserve">
+    <value>Flèche bas</value>
+  </data>
+	<data name="KeyNameNumPad" xml:space="preserve">
+    <value>Pavé num. {0}</value>
+  </data>
+	<data name="KeyBindActionSortBag" xml:space="preserve">
+    <value>Bouton de tri : trier le sac</value>
+  </data>
+	<data name="KeyBindActionSortMenu" xml:space="preserve">
+    <value>Bouton de tri : choisir l'ordre</value>
+  </data>
+	<data name="CharacterViewTitle" xml:space="preserve">
+    <value>Éditeur de personnage</value>
+  </data>
+	<data name="CharacterViewDiscardChanges" xml:space="preserve">
+    <value>Le personnage a été modifié dans l'éditeur.
+
+Quitter l'éditeur sans appliquer les changements ?</value>
+  </data>
+	<data name="LoadoutNone" xml:space="preserve">
+    <value>Aucune tenue</value>
+  </data>
+	<data name="LoadoutAdd" xml:space="preserve">
+    <value>Ajouter une tenue de l'équipement porté</value>
+  </data>
+	<data name="LoadoutAddMenu" xml:space="preserve">
+    <value>Ajouter...</value>
+  </data>
+	<data name="LoadoutLoad" xml:space="preserve">
+    <value>Charger</value>
+  </data>
+	<data name="LoadoutLoadTip" xml:space="preserve">
+    <value>Porter la tenue choisie ; les pièces retirées vont dans le sac du coffre affiché</value>
+  </data>
+	<data name="LoadoutUpdate" xml:space="preserve">
+    <value>Mettre à jour avec l'équipement porté</value>
+  </data>
+	<data name="LoadoutRename" xml:space="preserve">
+    <value>Renommer...</value>
+  </data>
+	<data name="LoadoutCopy" xml:space="preserve">
+    <value>Copier...</value>
+  </data>
+	<data name="LoadoutDelete" xml:space="preserve">
+    <value>Supprimer</value>
+  </data>
+	<data name="LoadoutReadOnly" xml:space="preserve">
+    <value>Personnage en lecture seule : ses tenues sont seulement listées</value>
+  </data>
+	<data name="LoadoutTitle" xml:space="preserve">
+    <value>Tenues</value>
+  </data>
+	<data name="LoadoutNamePrompt" xml:space="preserve">
+    <value>Nom de la tenue :</value>
+  </data>
+	<data name="LoadoutNameEmpty" xml:space="preserve">
+    <value>Saisissez un nom pour la tenue.</value>
+  </data>
+	<data name="LoadoutNameUsed" xml:space="preserve">
+    <value>{0} a déjà une tenue nommée « {1} ».</value>
+  </data>
+	<data name="LoadoutUpdateConfirm" xml:space="preserve">
+    <value>Remplacer les pièces de la tenue « {0} » par l'équipement porté ?</value>
+  </data>
+	<data name="LoadoutDeleteConfirm" xml:space="preserve">
+    <value>Supprimer la tenue « {0} » ?</value>
+  </data>
+	<data name="LoadoutWriteFailed" xml:space="preserve">
+    <value>Les tenues de {0} n'ont pas pu être enregistrées : {1}</value>
+  </data>
+	<data name="LoadoutReadFailed" xml:space="preserve">
+    <value>Le fichier des tenues de {0} n'a pas pu être lu : il est laissé tel quel.</value>
+  </data>
+	<data name="LoadoutGameRunning" xml:space="preserve">
+    <value>Le jeu est lancé. S'il joue ce personnage, il le garde en mémoire et sa prochaine sauvegarde remplace les changements faits ici. Continuer ?</value>
+  </data>
+	<data name="LoadoutNoVault" xml:space="preserve">
+    <value>Affichez un coffre pour recevoir les pièces retirées.</value>
+  </data>
+	<data name="LoadoutNoRoom" xml:space="preserve">
+    <value>Pas assez de place dans le sac {0} de {1} pour les {2} pièce(s) retirée(s) : rien n'a été changé.</value>
+  </data>
+	<data name="LoadoutLoaded" xml:space="preserve">
+    <value>Tenue « {0} » portée : {1} pièce(s) rangée(s) dans le sac {2} de {3}, {4} copiée(s).</value>
+  </data>
+	<data name="LoadoutAlreadyWorn" xml:space="preserve">
+    <value>La tenue « {0} » est déjà portée.</value>
+  </data>
+	<data name="LoadoutResultsContainer" xml:space="preserve">
+    <value>Tenue</value>
+  </data>
+	<data name="LoadoutEquipmentLocked" xml:space="preserve">
+    <value>Le réglage « {0} » est activé : l'équipement ne peut pas changer.</value>
+  </data>
+	<data name="SettingsLoadoutReplaceWorn" xml:space="preserve">
+    <value>Remplacer les pièces portées au lieu de les ranger dans le coffre</value>
+  </data>
+	<data name="SettingsLoadoutReplaceWornTT" xml:space="preserve">
+    <value>Porter une tenue retire les pièces portées qu'elle n'utilise pas et les supprime, au lieu de les ranger dans le sac du coffre affiché.
+Une tenue garde des copies de ses pièces : cela évite d'accumuler des doublons.
+TQVault liste les pièces et demande d'abord, sauf si « Ignorer les messages de confirmation » est coché.</value>
+  </data>
+	<data name="LoadoutReplaceConfirm" xml:space="preserve">
+    <value>Porter « {0} » supprime ces pièces portées :
+
+{1}
+
+Continuer ?</value>
+  </data>
+	<data name="LoadoutLoadedReplaced" xml:space="preserve">
+    <value>Tenue « {0} » portée : {1} pièce(s) remplacée(s), {2} copiée(s).</value>
   </data>
 </root>

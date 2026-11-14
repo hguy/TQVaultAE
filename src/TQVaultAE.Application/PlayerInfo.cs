@@ -19,14 +19,24 @@ public class PlayerInfo
 	public bool MasteriesResetRequiered { get; set; }
 
 	/// <summary>
+	/// True when the skill list was edited: <see cref="SkillRecordList"/> is written back to the save.
+	/// </summary>
+	public bool SkillsChanged { get; set; }
+
+	/// <summary>
+	/// True when the masteries were changed: the class tag is cleared and the game sets it again.
+	/// </summary>
+	public bool MasteriesChanged { get; set; }
+
+	/// <summary>
 	/// Skills removed during <see cref="ResetMasteries"/>
 	/// </summary>
-	List<SkillRecord> _SkillRecordListRemoved = new List<SkillRecord>();
+	List<SkillRecord> _SkillRecordListRemoved = [];
 
 	/// <summary>
 	/// List of Skills embded in the save file
 	/// </summary>
-	public readonly List<SkillRecord> SkillRecordList = new List<SkillRecord>();
+	public readonly List<SkillRecord> SkillRecordList = [];
 
 	public bool MasteryDefensiveEnabled => this.SkillRecordList.Any(s => s.skillName.Equals(Masteries.Defensive.AsString(EnumFormat.Description), noCase));
 	public bool MasteryStormEnabled => this.SkillRecordList.Any(s => s.skillName.Equals(Masteries.Storm.AsString(EnumFormat.Description), noCase));
@@ -44,11 +54,11 @@ public class PlayerInfo
 	{
 		get
 		{
-			string[] ret = new string[] { };
+			string[] ret = [];
 			if (ActiveMasteries.HasValue)
 			{
 				var actives = ActiveMasteries.Value;
-				ret = Enums.GetValues<Masteries>().Where(v => actives.HasFlag(v)).Select(s => s.AsString(EnumFormat.Description)).ToArray();
+				ret = Enums.GetValues<Masteries>().Where(v => actives.HasFlag(v)).Select(s => s.AsString(EnumFormat.Description)!).ToArray();
 			}
 			return ret;
 		}
@@ -77,14 +87,26 @@ public class PlayerInfo
 	}
 
 	/// <summary>
-	/// Gets or sets the PlayerStatBonus which contains the cululative stat bonus for the character's skills.
+	/// The bonuses of the skills that count in the character window (learned and granted by the equipped items, no buff),
+	/// summed by variable as the statistics panel sums them; <see langword="null"/> until computed.
 	/// </summary>
-	public PlayerStatBonus SkillBonus { get; set; }
+	public AttributeSum? SkillBonus { get; set; }
 
 	/// <summary>
-	/// Gets or sets the PlayerStatBonus which contains the cululative stat bonus for the character's equipped gear.
+	/// The bonuses of the equipped items and their item sets (not the weapon set not in hand), summed by variable as the
+	/// statistics panel sums them; <see langword="null"/> until computed.
 	/// </summary>
-	public PlayerStatBonus GearBonus { get; set; }
+	public AttributeSum? GearBonus { get; set; }
+
+	/// <summary>
+	/// An attribute with the bonuses of the gear and the skills, as the game's character window shows it:
+	/// <see cref="CharacterPanelLayout.AttributeTotal"/> of the unrounded sums of <paramref name="field"/> and its
+	/// <c>Modifier</c> (%).
+	/// </summary>
+	private int Calculated(int baseValue, string field)
+		=> CharacterPanelLayout.AttributeTotal(baseValue,
+			(this.GearBonus?[field] ?? 0) + (this.SkillBonus?[field] ?? 0),
+			(this.GearBonus?[field + "Modifier"] ?? 0) + (this.SkillBonus?[field + "Modifier"] ?? 0));
 
 	/// <summary>
 	/// Released skill points from masteries reset
@@ -142,10 +164,9 @@ public class PlayerInfo
 	public int BaseStrength { get; set; }
 
 	/// <summary>
-	/// Character Strength with included bonuses and modifiers from gear and skills.
+	/// Character Strength with the bonuses of the gear and the skills, as the game shows it.
 	/// </summary>
-	public int CalculatedStrength => Convert.ToInt32(((float)((this.BaseStrength + (SkillBonus?.StrengthBonus ?? 0) + (GearBonus?.StrengthBonus ?? 0))) *
-	                                                  (100.0f + ((SkillBonus?.StrengthModifier ?? 0) + (GearBonus?.StrengthModifier ?? 0)))) / 100.0f);
+	public int CalculatedStrength => this.Calculated(this.BaseStrength, "characterStrength");
 
 	/// <summary>
 	/// Base Dexterity
@@ -153,10 +174,9 @@ public class PlayerInfo
 	public int BaseDexterity { get; set; }
 
 	/// <summary>
-	/// Character Dexterity with included bonuses and modifiers from gear and skills.
+	/// Character Dexterity with the bonuses of the gear and the skills, as the game shows it.
 	/// </summary>
-	public int CalculatedDexterity => Convert.ToInt32(((float)((this.BaseDexterity + (SkillBonus?.DexterityBonus ?? 0) + (GearBonus?.DexterityBonus ?? 0))) *
-	                                                   (100.0f + ((SkillBonus?.DexterityModifier ?? 0) + (GearBonus?.DexterityModifier ?? 0)))) / 100.0f);
+	public int CalculatedDexterity => this.Calculated(this.BaseDexterity, "characterDexterity");
 
 	/// <summary>
 	/// Base Intelligence
@@ -164,10 +184,9 @@ public class PlayerInfo
 	public int BaseIntelligence { get; set; }
 
 	/// <summary>
-	/// Character Intelligence with included bonuses and modifiers from gear and skills.
+	/// Character Intelligence with the bonuses of the gear and the skills, as the game shows it.
 	/// </summary>
-	public int CalculatedIntelligence => Convert.ToInt32(((float)((this.BaseIntelligence + (SkillBonus?.IntelligenceBonus ?? 0) + (GearBonus?.IntelligenceBonus ?? 0))) *
-	                                                      (100.0f + ((SkillBonus?.IntelligenceModifier ?? 0) + (GearBonus?.IntelligenceModifier ?? 0)))) / 100.0f);
+	public int CalculatedIntelligence => this.Calculated(this.BaseIntelligence, "characterIntelligence");
 
 	/// <summary>
 	/// Base Health
@@ -175,10 +194,9 @@ public class PlayerInfo
 	public int BaseHealth { get; set; }
 
 	/// <summary>
-	/// Character Health with included bonuses and modifiers from gear and skills.
+	/// Character Health with the bonuses of the gear and the skills, as the game shows it.
 	/// </summary>
-	public int CalculatedHealth => Convert.ToInt32(((float)((this.BaseHealth + (SkillBonus?.HealthBonus ?? 0) + (GearBonus?.HealthBonus ?? 0))) *
-	                                                (100.0f + ((SkillBonus?.HealthModifier ?? 0) + (GearBonus?.HealthModifier ?? 0)))) / 100.0f);
+	public int CalculatedHealth => this.Calculated(this.BaseHealth, "characterLife");
 
 	/// <summary>
 	/// Base Mana
@@ -186,10 +204,9 @@ public class PlayerInfo
 	public int BaseMana { get; set; }
 
 	/// <summary>
-	/// Character Mana with included bonuses and modifiers from gear and skills.
+	/// Character Mana with the bonuses of the gear and the skills, as the game shows it.
 	/// </summary>
-	public int CalculatedMana => Convert.ToInt32(((float)((this.BaseMana + (SkillBonus?.ManaBonus ?? 0) + (GearBonus?.ManaBonus ?? 0))) *
-	                                              (100.0f + ((SkillBonus?.ManaModifier ?? 0) + (GearBonus?.ManaModifier ?? 0)))) / 100.0f);
+	public int CalculatedMana => this.Calculated(this.BaseMana, "characterMana");
 
 	/// <summary>
 	/// Return skills having the same skill line base.
@@ -259,7 +276,7 @@ public class PlayerInfo
 	/// <summary>
 	/// Greatest Monster killed
 	/// </summary>
-	public string GreatestMonster { get; set; }
+	public string GreatestMonster { get; set; } = string.Empty;
 
 	/// <summary>
 	/// Critical Hits Inflicted
@@ -274,7 +291,7 @@ public class PlayerInfo
 	/// <summary>
 	/// Character Class
 	/// </summary>
-	public string Class { get; set; }
+	public string? Class { get; set; }
 
 	/// <summary>
 	/// Character difficulty unlocked
@@ -295,6 +312,13 @@ public class PlayerInfo
 	/// Players Money
 	/// </summary>
 	public int Money { get; set; }
+
+	/// <summary>
+	/// Electrum, the second currency of the Eternal Embers expansion (save key <c>altMoney</c>, right after <c>money</c>);
+	/// <see langword="null"/> when the save has no such key (a character never saved by a game with Eternal Embers).
+	/// Read only: never written back to the save.
+	/// </summary>
+	public int? Electrum { get; set; }
 
 	int _MasteriesAllowed = 0;
 	/// <summary>
@@ -323,7 +347,17 @@ public class PlayerInfo
 	/// <summary>
 	/// Class name
 	/// </summary>
-	public string PlayerCharacterClass { get; set; }
+	public string PlayerCharacterClass { get; set; } = string.Empty;
+
+	/// <summary>
+	/// The texture of the character's body (<c>playerTexture</c>, e.g. <c>Creatures\pc\male\malepc01_white.tex</c>):
+	/// it tells the player template, male or female.
+	/// </summary>
+	public string PlayerTexture { get; set; } = string.Empty;
+
+	/// <summary>True when the character uses the female template (its texture is under <c>pc\female</c>).</summary>
+	public bool IsFemale => this.PlayerTexture.Contains("""\female\""", StringComparison.OrdinalIgnoreCase)
+		|| this.PlayerTexture.Contains("/female/", StringComparison.OrdinalIgnoreCase);
 
 	public int GreatestMonsterKilledLevel { get; set; }
 

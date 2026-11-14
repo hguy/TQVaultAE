@@ -11,7 +11,7 @@ namespace TQVaultAE.Data;
 
 public partial class ItemProvider
 {
-	public ItemAffixes GetAllAvailableAffixes(GearType type)
+	public ItemAffixes? GetAllAvailableAffixes(GearType type)
 	{
 		if ((type & GearType.AllWearable) == GearType.Undefined) return null;
 
@@ -24,9 +24,9 @@ public partial class ItemProvider
 
 		Dictionary<GameDlc, ReadOnlyCollection<LootTableCollection>> Broken, Prefix, Suffix;
 
-		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = new(), LPrefix = new(), LSuffix = new();
+		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = [], LPrefix = [], LSuffix = [];
 
-		LootTableCollection table;
+		LootTableCollection? table;
 		GameDlc dlc;
 		foreach (var map in affixmap)
 		{
@@ -65,18 +65,20 @@ public partial class ItemProvider
 		);
 	}
 
-	public ItemAffixes GetItemAffixes(RecordId itemId)
+	public ItemAffixes? GetItemAffixes(RecordId itemId)
 	{
-		return ItemAffixesCache.GetOrAddAtomic(itemId, k =>
+		// Per data scope: a mod may give the item other affix tables than the base game.
+		return ItemAffixesCache.GetOrAddAtomic((this.Database.DataScope ?? string.Empty, itemId), key =>
 	{
+		var k = key.Item;
 		var affixmap = this.Database.GetItemAffixTableMap(k);
 		if (affixmap is null || affixmap.All(a => a.IsEmpty)) return null;
 
 		Dictionary<GameDlc, ReadOnlyCollection<LootTableCollection>> Broken, Prefix, Suffix;
 
-		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = new(), LPrefix = new(), LSuffix = new();
+		List<(GameDlc Dlc, LootTableCollection Table)> LBroken = [], LPrefix = [], LSuffix = [];
 
-		LootTableCollection table;
+		LootTableCollection? table;
 		GameDlc dlc;
 		foreach (var map in affixmap)
 		{
@@ -124,8 +126,9 @@ public partial class ItemProvider
 	/// <param name="RelicTable1"></param>
 	/// <param name="RelicTable2"></param>
 	/// <returns>Returns <c>false</c> if the item does not contain a charm/relic</returns>
-	public bool BonusTableSocketedRelic(Item Item, out LootTableCollection RelicTable1, out LootTableCollection RelicTable2)
+	public bool BonusTableSocketedRelic(Item Item, out LootTableCollection? RelicTable1, out LootTableCollection? RelicTable2)
 	{
+		using var modScope = this.ModScope(Item);
 		RelicTable1 = RelicTable2 = null;
 		var hasCompleteRelic1 = Item.HasRelicOrCharmSlot1 && Item.RelicInfo is not null && Item.IsRelicBonus1Complete;
 		var hasCompleteRelic2 = Item.HasRelicOrCharmSlot2 && Item.Relic2Info is not null && Item.IsRelicBonus2Complete;
@@ -134,19 +137,19 @@ public partial class ItemProvider
 			|| (!hasCompleteRelic1 && !hasCompleteRelic2)
 		) return false;
 
-		string tableId = null;
-		RecordId tableIdRec = null;
+		string? tableId = null;
+		RecordId? tableIdRec = null;
 
 		if (hasCompleteRelic1)
 		{
-			tableId = Item.RelicInfo.GetString("bonusTableName");
+			tableId = Item.RelicInfo!.GetString("bonusTableName");
 			tableIdRec = tableId;
 			RelicTable1 = LootTableCollectionProvider.LoadTable(tableIdRec);
 		}
 
 		if (hasCompleteRelic2)
 		{
-			tableId = Item.Relic2Info.GetString("bonusTableName");
+			tableId = Item.Relic2Info!.GetString("bonusTableName");
 			tableIdRec = tableId;
 			RelicTable2 = LootTableCollectionProvider.LoadTable(tableIdRec);
 		}
@@ -160,12 +163,13 @@ public partial class ItemProvider
 	/// </summary>
 	/// <param name="itm"></param>
 	/// <returns>returns null if the item is not an artifact/charm/relic</returns>
-	public LootTableCollection BonusTableRelicOrArtifact(Item itm)
+	public LootTableCollection? BonusTableRelicOrArtifact(Item itm)
 	{
-		if (itm.baseItemInfo == null)
+		using var modScope = this.ModScope(itm);
+		if (itm.baseItemInfo is null)
 			return null;
 
-		string lootTableID = null;
+		string? lootTableID = null;
 		if (itm.IsRelicOrCharm)
 			lootTableID = itm.baseItemInfo.GetString("bonusTableName");
 		else if (itm.IsArtifact)
@@ -186,7 +190,7 @@ public partial class ItemProvider
 			file = PathIO.ChangeExtension(file, PathIO.GetExtension(itm.BaseItemId.Raw));
 
 			// Now lookup itm record.
-			DBRecordCollection record = Database.GetRecordFromFile(file);
+			DBRecordCollection? record = Database.GetRecordFromFile(file);
 			if (record is not null)
 				lootTableID = record.GetString("artifactBonusTableName", 0);
 		}
@@ -203,9 +207,10 @@ public partial class ItemProvider
 	/// Removes the first relic from this item
 	/// </summary>
 	/// <returns>Returns the removed relic as a new Item</returns>
-	public Item RemoveRelic1(Item itm)
+	public Item? RemoveRelic1(Item itm)
 	{
-		if (!itm.HasRelicOrCharmSlot1)
+		using var modScope = this.ModScope(itm);
+		if (!itm.HasSocketedSlot1)
 			return null;
 
 		Item newRelic = itm.MakeEmptyCopy(itm.relicID);
@@ -230,9 +235,10 @@ public partial class ItemProvider
 	/// Removes the second relic from this item
 	/// </summary>
 	/// <returns>Returns the removed relic as a new Item</returns>
-	public Item RemoveRelic2(Item itm)
+	public Item? RemoveRelic2(Item itm)
 	{
-		if (!itm.HasRelicOrCharmSlot2)
+		using var modScope = this.ModScope(itm);
+		if (!itm.HasSocketedSlot2)
 			return null;
 
 		Item newRelic = itm.MakeEmptyCopy(itm.relic2ID);
@@ -256,16 +262,15 @@ public partial class ItemProvider
 	/// <summary>
 	/// Create an artifact from its formulae
 	/// </summary>
-	/// <returns>A new artifact</returns>
-	public Item CraftArtifact(Item itm)
+	/// <returns>A new artifact; the formula is not changed.</returns>
+	public Item? CraftArtifact(Item itm)
 	{
-		if (itm.IsFormulae && itm.baseItemInfo != null)
+		using var modScope = this.ModScope(itm);
+		if (itm.IsFormulae && itm.baseItemInfo is not null)
 		{
 			string artifactname = itm.baseItemInfo.GetString("artifactName");
 			Item newArtifact = itm.MakeEmptyCopy(artifactname);
 			GetDBData(newArtifact);
-
-			itm.IsModified = true;
 
 			return newArtifact;
 		}

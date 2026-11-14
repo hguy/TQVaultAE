@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using TQVaultAE.Domain.Entities;
 
 namespace TQVaultAE.Application;
@@ -22,17 +23,17 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Raised exception at loading time.
 	/// </summary>
-	public ArgumentException ArgumentException;
+	public ArgumentException? ArgumentException;
 
 	/// <summary>
 	/// String holding the player name
 	/// </summary>
-	private string playerName;
+	private string playerName = string.Empty;
 
 	/// <summary>
 	/// Byte array holding the raw data from the file.
 	/// </summary>
-	public byte[] rawData;
+	public byte[]? rawData;
 
 	/// <summary>
 	/// Number of sacks that this file holds
@@ -59,12 +60,12 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Array of the sacks
 	/// </summary>
-	public SackCollection[] Sacks;
+	public SackCollection[]? Sacks;
 
 	/// <summary>
 	/// Holds the currently disabled tooltip bagId.
 	/// </summary>
-	public List<int> DisabledTooltipBagId = new();
+	public List<int> DisabledTooltipBagId = [];
 
 	/// <summary>
 	/// Initializes a new instance of the PlayerCollection class.
@@ -78,12 +79,18 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		this.PlayerName = playerName;
 	}
 
-	public bool IsPlayer { get => this.PlayerFile.EndsWith("player.chr", System.StringComparison.InvariantCultureIgnoreCase); }
+	public bool IsPlayer { get => this.PlayerFile.EndsWith("player.chr", System.StringComparison.OrdinalIgnoreCase); }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether this file is a vault
 	/// </summary>
 	public bool IsVault { get; set; }
+
+	/// <summary>
+	/// For a vault, the mod it is linked to (the mod's folder name): its items that have no mod of their own resolve with
+	/// that mod's data first, then the base game's. Null for a vault of base game items.
+	/// </summary>
+	public string? Mod { get; set; }
 
 	/// <summary>
 	/// Gets or sets a value indicating whether this file is an immortal throne file
@@ -93,12 +100,18 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <summary>
 	/// Gets the equipment sack for this file.
 	/// </summary>
-	public SackCollection EquipmentSack { get; set; }
+	public SackCollection? EquipmentSack { get; set; }
+
+	/// <summary>
+	/// Gets or sets whether the second weapon set (rows 2 and 3 of the weapon slots) is the one in hand: the save's
+	/// <c>useAlternate</c> (<c>EquipmentCtrl</c>). Loading a loadout sets it; the save writes it only when it changed.
+	/// </summary>
+	public bool UseAlternate { get; set; }
 
 	/// <summary>
 	/// Holds playerInfo
 	/// </summary>
-	public PlayerInfo PlayerInfo { get; set; }
+	public PlayerInfo? PlayerInfo { get; set; }
 
 	/// <summary>
 	/// Gets the player file name
@@ -113,7 +126,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		get
 		{
 			// look through each sack and see if the sack has been modified
-			if (this.Sacks != null)
+			if (this.Sacks is not null)
 			{
 				foreach (SackCollection sack in this.Sacks)
 				{
@@ -122,10 +135,10 @@ public class PlayerCollection : IEnumerable<SackCollection>
 				}
 			}
 
-			if (this.EquipmentSack != null && this.EquipmentSack.IsModified)
+			if (this.EquipmentSack is not null && this.EquipmentSack.IsModified)
 				return true;
 
-			if (this.PlayerInfo != null && this.PlayerInfo.Modified)
+			if (this.PlayerInfo is not null && this.PlayerInfo.Modified)
 				return true;
 
 			return false;
@@ -133,20 +146,41 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	}
 
 	/// <summary>
+	/// Indicates whether the collection is a read-only character: nothing in its bags and equipment can change, its
+	/// character editor does not apply, and the save skips it. Setting it marks every sack
+	/// (<see cref="SackCollection.IsReadOnly"/>), so set it once the file is read.
+	/// </summary>
+	public bool IsReadOnly
+	{
+		get => this.isReadOnly;
+		set
+		{
+			this.isReadOnly = value;
+			foreach (var sack in this.Sacks ?? [])
+				sack.IsReadOnly = value;
+
+			if (this.EquipmentSack is not null)
+				this.EquipmentSack.IsReadOnly = value;
+		}
+	}
+
+	private bool isReadOnly;
+
+	/// <summary>
 	/// Adjust internal status when the collection is saved
 	/// </summary>
 	public void Saved()
 	{
-		if (this.Sacks != null)
+		if (this.Sacks is not null)
 		{
 			foreach (SackCollection sack in this.Sacks)
 				sack.IsModified = false;
 		}
 
-		if (this.EquipmentSack != null && this.EquipmentSack.IsModified)
+		if (this.EquipmentSack is not null && this.EquipmentSack.IsModified)
 			this.EquipmentSack.IsModified = false;
 
-		if (this.PlayerInfo != null && this.PlayerInfo.Modified)
+		if (this.PlayerInfo is not null && this.PlayerInfo.Modified)
 			this.PlayerInfo.Modified = false;
 	}
 
@@ -165,7 +199,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// </summary>
 	public int NumberOfSacks
 	{
-		get => (this.Sacks == null) ? 0 : this.Sacks.Length;
+		get => (this.Sacks is null) ? 0 : this.Sacks.Length;
 	}
 
 	/// <summary>
@@ -174,7 +208,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <returns>Each Sack in the sack array.</returns>
 	public IEnumerator<SackCollection> GetEnumerator()
 	{
-		if (this.Sacks == null)
+		if (this.Sacks is null)
 			yield break;
 
 		foreach (SackCollection sack in this.Sacks)
@@ -192,6 +226,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// Creates empty sacks within the file.
 	/// </summary>
 	/// <param name="numberOfSacks">Number of sacks to create</param>
+	[MemberNotNull(nameof(Sacks))]
 	public void CreateEmptySacks(int numberOfSacks)
 	{
 		this.Sacks = new SackCollection[numberOfSacks];
@@ -211,7 +246,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	/// <param name="sackNumber">Number of the sack we are retrieving</param>
 	/// <returns>Sack instace for the corresponding sack number</returns>
 	public SackCollection? GetSack(int sackNumber)
-		=> (this.Sacks == null || sackNumber < 0 || this.Sacks.Length <= sackNumber) ? null : this.Sacks[sackNumber];
+		=> (this.Sacks is null || sackNumber < 0 || this.Sacks.Length <= sackNumber) ? null : this.Sacks[sackNumber];
 
 	/// <summary>
 	/// Moves a sack within the instance.  Used for renumbering the sacks.
@@ -222,7 +257,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	public bool MoveSack(int source, int destination)
 	{
 		// Do a little bit of error handling
-		if (this.Sacks == null
+		if (this.Sacks is null
 		    || destination < 0 || destination > this.Sacks.Length
 		    || source < 0 || source > this.Sacks.Length || source == destination)
 		{
@@ -255,7 +290,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 	public bool CopySack(int source, int destination)
 	{
 		// Do a little bit of error handling
-		if (this.Sacks == null
+		if (this.Sacks is null
 		    || destination < 0 || destination > this.Sacks.Length
 		    || source < 0 || source > this.Sacks.Length || source == destination)
 		{
@@ -264,7 +299,7 @@ public class PlayerCollection : IEnumerable<SackCollection>
 
 		SackCollection newSack = this.Sacks[source].Duplicate();
 
-		if (newSack != null)
+		if (newSack is not null)
 		{
 			this.Sacks[destination] = newSack;
 			return true;
@@ -273,152 +308,21 @@ public class PlayerCollection : IEnumerable<SackCollection>
 		return false;
 	}
 
-	/// <summary>
-	/// Sets all of the bonuses from the equipped gear to 0.
-	/// </summary>
-	public void ClearPlayerGearBonuses()
-	{
-		if (PlayerInfo.GearBonus == null)
-			return;
-
-		PlayerInfo.GearBonus.StrengthBonus = 0;
-		PlayerInfo.GearBonus.StrengthModifier = 0;
-
-		PlayerInfo.GearBonus.DexterityBonus = 0;
-		PlayerInfo.GearBonus.DexterityModifier = 0;
-
-		PlayerInfo.GearBonus.IntelligenceBonus = 0;
-		PlayerInfo.GearBonus.IntelligenceModifier = 0;
-
-		PlayerInfo.GearBonus.HealthBonus = 0;
-		PlayerInfo.GearBonus.HealthModifier = 0;
-
-		PlayerInfo.GearBonus.ManaBonus = 0;
-		PlayerInfo.GearBonus.ManaModifier = 0;
-	}
-
-	/// <summary>
-	/// Sets all of the bonuses from the player sklills to 0.
-	/// </summary>
-	public void ClearPlayerSkillBonuses()
-	{
-		if (PlayerInfo.SkillBonus == null)
-			return;
-
-		PlayerInfo.SkillBonus.StrengthBonus = 0;
-		PlayerInfo.SkillBonus.StrengthModifier = 0;
-
-		PlayerInfo.SkillBonus.DexterityBonus = 0;
-		PlayerInfo.SkillBonus.DexterityModifier = 0;
-
-		PlayerInfo.SkillBonus.IntelligenceBonus = 0;
-		PlayerInfo.SkillBonus.IntelligenceModifier = 0;
-
-		PlayerInfo.SkillBonus.HealthBonus = 0;
-		PlayerInfo.SkillBonus.HealthModifier = 0;
-
-		PlayerInfo.SkillBonus.ManaBonus = 0;
-		PlayerInfo.SkillBonus.ManaModifier = 0;
-	}
-
-	/// <summary>
-	/// Updates GearBonus values based on the passed SortedList of bonus values.
-	/// </summary>
-	/// <param name="statBonusVariables">SortedList containing a list of the bonuses and values to be added.</param>
-	public void UpdatePlayerGearBonuses(SortedList<string, int> statBonusVariables)
-	{
-		if (this.IsVault || this.PlayerInfo is null) return;
-
-		if (PlayerInfo.GearBonus == null)
-			PlayerInfo.GearBonus = new PlayerStatBonus();
-
-		if (statBonusVariables.ContainsKey("CHARACTERSTRENGTH"))
-			PlayerInfo.GearBonus.StrengthBonus += statBonusVariables["CHARACTERSTRENGTH"];
-		if (statBonusVariables.ContainsKey("CHARACTERSTRENGTHMODIFIER"))
-			PlayerInfo.GearBonus.StrengthModifier += statBonusVariables["CHARACTERSTRENGTHMODIFIER"];
-
-		if (statBonusVariables.ContainsKey("CHARACTERDEXTERITY"))
-			PlayerInfo.GearBonus.DexterityBonus += statBonusVariables["CHARACTERDEXTERITY"];
-		if (statBonusVariables.ContainsKey("CHARACTERDEXTERITYMODIFIER"))
-			PlayerInfo.GearBonus.DexterityModifier += statBonusVariables["CHARACTERDEXTERITYMODIFIER"];
-
-		if (statBonusVariables.ContainsKey("CHARACTERINTELLIGENCE"))
-			PlayerInfo.GearBonus.IntelligenceBonus += statBonusVariables["CHARACTERINTELLIGENCE"];
-		if (statBonusVariables.ContainsKey("CHARACTERINTELLIGENCEMODIFIER"))
-			PlayerInfo.GearBonus.IntelligenceModifier += statBonusVariables["CHARACTERINTELLIGENCEMODIFIER"];
-
-		if (statBonusVariables.ContainsKey("CHARACTERLIFE"))
-			PlayerInfo.GearBonus.HealthBonus += statBonusVariables["CHARACTERLIFE"];
-		if (statBonusVariables.ContainsKey("CHARACTERLIFEMODIFIER"))
-			PlayerInfo.GearBonus.HealthModifier += statBonusVariables["CHARACTERLIFEMODIFIER"];
-
-		if (statBonusVariables.ContainsKey("CHARACTERMANA"))
-			PlayerInfo.GearBonus.ManaBonus += statBonusVariables["CHARACTERMANA"];
-		if (statBonusVariables.ContainsKey("CHARACTERMANAMODIFIER"))
-			PlayerInfo.GearBonus.ManaModifier += statBonusVariables["CHARACTERMANAMODIFIER"];
-	}
-
-	/// <summary>
-	/// Updates SkillBonus values based on the passed SortedList of bonus values.
-	/// </summary>
-	/// <param name="statBonusVariables">SortedList containing a list of the bonuses and values to be added.</param>
-	public void UpdatePlayerSkillBonuses(SortedList<string, int> skillStatBonusVariables)
-	{
-		if (this.IsVault || this.PlayerInfo is null) return;
-
-		if (PlayerInfo.SkillBonus == null)
-			PlayerInfo.SkillBonus = new PlayerStatBonus();
-
-		if (skillStatBonusVariables.ContainsKey("CHARACTERSTRENGTH"))
-			PlayerInfo.SkillBonus.StrengthBonus += skillStatBonusVariables["CHARACTERSTRENGTH"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERSTRENGTHMODIFIER"))
-			PlayerInfo.SkillBonus.StrengthModifier += skillStatBonusVariables["CHARACTERSTRENGTHMODIFIER"];
-
-		if (skillStatBonusVariables.ContainsKey("CHARACTERDEXTERITY"))
-			PlayerInfo.SkillBonus.DexterityBonus += skillStatBonusVariables["CHARACTERDEXTERITY"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERDEXTERITYMODIFIER"))
-			PlayerInfo.SkillBonus.DexterityModifier += skillStatBonusVariables["CHARACTERDEXTERITYMODIFIER"];
-
-		if (skillStatBonusVariables.ContainsKey("CHARACTERINTELLIGENCE"))
-			PlayerInfo.SkillBonus.IntelligenceBonus += skillStatBonusVariables["CHARACTERINTELLIGENCE"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERINTELLIGENCEMODIFIER"))
-			PlayerInfo.SkillBonus.IntelligenceModifier += skillStatBonusVariables["CHARACTERINTELLIGENCEMODIFIER"];
-
-		if (skillStatBonusVariables.ContainsKey("CHARACTERLIFE"))
-			PlayerInfo.SkillBonus.HealthBonus += skillStatBonusVariables["CHARACTERLIFE"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERLIFEMODIFIER"))
-			PlayerInfo.SkillBonus.HealthModifier += skillStatBonusVariables["CHARACTERLIFEMODIFIER"];
-
-		if (skillStatBonusVariables.ContainsKey("CHARACTERMANA"))
-			PlayerInfo.SkillBonus.ManaBonus += skillStatBonusVariables["CHARACTERMANA"];
-		if (skillStatBonusVariables.ContainsKey("CHARACTERMANAMODIFIER"))
-			PlayerInfo.SkillBonus.ManaModifier += skillStatBonusVariables["CHARACTERMANAMODIFIER"];
-	}
-
-
 	public bool IsPlayerMeetRequierements(SortedList<string, Variable> requirementVariables)
 	{
 		if (this.IsVault || this.PlayerInfo is null) return true;
 
 		// "LevelRequirement"
-		int LevelRequirement = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_LEVELREQ))
-			LevelRequirement = requirementVariables[Variable.KEY_LEVELREQ].GetInt32();
+		int LevelRequirement = requirementVariables.TryGetValue(Variable.KEY_LEVELREQ, out Variable? levelRequirementVariable) ? levelRequirementVariable.GetInt32() : 0;
 
 		// "Strength"
-		int Strength = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_STRENGTH))
-			Strength = requirementVariables[Variable.KEY_STRENGTH].GetInt32();
+		int Strength = requirementVariables.TryGetValue(Variable.KEY_STRENGTH, out Variable? strengthVariable) ? strengthVariable.GetInt32() : 0;
 
 		// Dexterity
-		int Dexterity = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_DEXTERITY))
-			Dexterity = requirementVariables[Variable.KEY_DEXTERITY].GetInt32();
+		int Dexterity = requirementVariables.TryGetValue(Variable.KEY_DEXTERITY, out Variable? dexterityVariable) ? dexterityVariable.GetInt32() : 0;
 
 		// Intelligence
-		int Intelligence = 0;
-		if (requirementVariables.ContainsKey(Variable.KEY_INTELLIGENCE))
-			Intelligence = requirementVariables[Variable.KEY_INTELLIGENCE].GetInt32();
+		int Intelligence = requirementVariables.TryGetValue(Variable.KEY_INTELLIGENCE, out Variable? intelligenceVariable) ? intelligenceVariable.GetInt32() : 0;
 
 		return
 			LevelRequirement <= this.PlayerInfo.CurrentLevel

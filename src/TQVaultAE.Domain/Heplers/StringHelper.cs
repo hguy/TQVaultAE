@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -50,7 +51,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="search"></param>
 	/// <returns></returns>
-	public static (bool IsRegex, string Pattern, Regex Regex, bool RegexIsValid) IsTQVaultSearchRegEx(string search)
+	public static (bool IsRegex, string Pattern, Regex? Regex, bool RegexIsValid) IsTQVaultSearchRegEx(string? search)
 	{
 		if (string.IsNullOrWhiteSpace(search)) return (false, string.Empty, null, false);
 
@@ -58,11 +59,10 @@ public static partial class StringHelper
 
 		if (isregex)
 		{
-			Regex rex = null;
 			var pattern = search.Substring(1);
 			try
 			{
-				rex = new Regex(pattern, RegexOptions.IgnoreCase);
+				var rex = new Regex(pattern, RegexOptions.IgnoreCase);
 				return (isregex, pattern, rex, true);
 			}
 			catch (ArgumentException)
@@ -74,12 +74,12 @@ public static partial class StringHelper
 		return (false, search, null, false);
 	}
 
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Security", "CA5351", Justification = "MD5 makes a stable identifier, not a security hash.")]
 	public static string MakeMD5(this string input)
 	{
-		using var md5Hash = MD5.Create();
 
 		// Convert the input string to a byte array and compute the hash.
-		byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+		byte[] data = MD5.HashData(Encoding.UTF8.GetBytes(input));
 
 		// Pre-allocate StringBuilder with exact capacity
 		var sBuilder = new StringBuilder(data.Length * 2, data.Length * 2);
@@ -92,7 +92,8 @@ public static partial class StringHelper
 		return sBuilder.ToString();
 	}
 
-	public static string ToFirstCharUpperCase(this string text)
+	[return: NotNullIfNotNull(nameof(text))]
+	public static string? ToFirstCharUpperCase(this string? text)
 	{
 		if (string.IsNullOrEmpty(text)) return text;
 		return string.Concat(char.ToUpperInvariant(text[0]), text.Substring(1));
@@ -169,7 +170,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQText"></param>
 	/// <returns></returns>
-	public static bool IsColorTagOnly(this string TQText) => IsColorTagOnlyExtended(TQText).Value;
+	public static bool IsColorTagOnly(this string? TQText) => IsColorTagOnlyExtended(TQText).Value;
 
 	[GeneratedRegex(@"^" + TQColorHelper.RegExTQTag + @"$")]
 	private static partial Regex IsColorTagOnlyExtendedRegEx();
@@ -178,17 +179,18 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQText"></param>
 	/// <returns></returns>
-	public static (bool Value, int Length) IsColorTagOnlyExtended(this string TQText)
+	public static (bool Value, int Length) IsColorTagOnlyExtended(this string? TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return (false, 0);
 		return (IsColorTagOnlyExtendedRegEx().IsMatch(TQText), TQText.Length);
 	}
 
 
-	public static string RemoveAllTQTags(this string TQText)
+	[return: NotNullIfNotNull(nameof(TQText))]
+	public static string? RemoveAllTQTags(this string? TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText)) return TQText;
-		return TQColorHelper.RegExTQTagInstance().Replace(TQText, string.Empty);
+		return TQVaultAE.GameFiles.TextTags.RemoveColorTags(TQText);
 	}
 
 	[GeneratedRegex(@"(?<Legit>[^/]*)(?<Comment>//.*)")]
@@ -219,14 +221,14 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQText"></param>
 	/// <returns></returns>
-	public static bool HasColorPrefix(this string TQText)
+	public static bool HasColorPrefix(this string? TQText)
 	{
 		if (TQText is null) return false;
 		var t = TQColorHelper.GetColorFromTaggedString(TQText);
 		return t.HasValue;
 	}
 
-	static char[] _Delim = new char[] { ' ' };
+	static char[] _Delim = [' '];
 	[GeneratedRegex(@"(?<number>\d+)")]
 	private static partial Regex PrettyFileNameRegExNumber();
 	[GeneratedRegex(@"(?<TitleCaseStart>BOW|DA|OA|XP|Mastery[A-Ha-h]|[A-Z][a-z]*)")]
@@ -252,7 +254,8 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="TQPath"></param>
 	/// <returns></returns>
-	public static string PrettyFileName(this string TQPath)
+	[return: NotNullIfNotNull(nameof(TQPath))]
+	public static string? PrettyFileName(this string? TQPath)
 	{
 		if (TQPath is null) return null;
 		var filename = Path.GetFileNameWithoutExtension(TQPath).Replace('_', ' ');
@@ -323,7 +326,7 @@ public static partial class StringHelper
 	/// </summary>
 	/// <param name="recordId"></param>
 	/// <returns></returns>
-	public static RecordId ToRecordId(this string recordId)
+	public static RecordId ToRecordId(this string? recordId)
 		=> RecordId.Create(recordId);
 
 	/// <summary>
@@ -365,7 +368,11 @@ public static partial class StringHelper
 	[GeneratedRegex(@"\s+")]
 	private static partial Regex AllContiguousSpaceRegEx();
 
-	static readonly Regex InsertAfterColorPrefixRegEx = new Regex(TQColorHelper.RegExStartingColorTagOrEmpty + @"(?<Content>.+)", RegexOptions.Compiled);
+	/// <summary>Each run of white space (spaces, line breaks) becomes one space: "720  Health" reads "720 Health".</summary>
+	public static string CollapseWhiteSpace(this string text) => AllContiguousSpaceRegEx().Replace(text, " ");
+
+	[GeneratedRegex(TQColorHelper.RegExStartingColorTagOrEmpty + @"(?<Content>.+)")]
+	private static partial Regex InsertAfterColorPrefixRegEx();
 	/// <summary>
 	/// Insert <paramref name="insertedText"/> between the color tag prefix and the text.
 	/// </summary>
@@ -376,13 +383,13 @@ public static partial class StringHelper
 	{
 		if (TQText is null) return insertedText;
 		if (string.IsNullOrEmpty(insertedText)) return TQText;
-		return InsertAfterColorPrefixRegEx.Replace(TQText
+		return InsertAfterColorPrefixRegEx().Replace(TQText
 				, string.Concat(@"${ColorTag}", insertedText, @"${Content}")
 			).Trim();
 	}
 
-	public static IEnumerable<string> RemoveEmptyAndSanitize(this IEnumerable<string> TQText)
-		=> TQText.Where(t => !string.IsNullOrWhiteSpace(t)).Select(t =>
+	public static IEnumerable<string> RemoveEmptyAndSanitize(this IEnumerable<string?> TQText)
+		=> TQText.OfType<string>().Where(t => !string.IsNullOrWhiteSpace(t)).Select(t =>
 		{
 			// Split ColorTag & Content
 			var tag = t.GetColorFromTaggedString();
@@ -397,7 +404,7 @@ public static partial class StringHelper
 	{
 		var tmp = TQText.ToArray();
 	repass:
-		List<string> res = new List<string>();
+		List<string> res = [];
 		for (int i = 0; i < tmp.Length; i++)
 		{
 			// Color Prefix alone
@@ -422,7 +429,7 @@ public static partial class StringHelper
 		return string.Join(delim, res.ToArray());
 	}
 
-	[GeneratedRegex(@"(?i)\{\^N}", RegexOptions.Compiled)]
+	[GeneratedRegex(@"(?i)\{\^N}")]
 	private static partial Regex SplitOnTQNewLineRegEx();
 	public static IEnumerable<string> SplitOnTQNewLine(this string TQText) => SplitOnTQNewLineRegEx().Split(TQText);
 
@@ -434,8 +441,8 @@ public static partial class StringHelper
 	/// <returns>List of wrapped text</returns>
 	public static Collection<string> WrapWords(string TQText, int Columns)
 	{
-		if (TQText is null) return new Collection<string>();
-		List<string> choppedLines = new List<string>();
+		if (TQText is null) return [];
+		List<string> choppedLines = [];
 		// First split on NL tag
 		choppedLines.AddRange(SplitOnTQNewLine(TQText));
 		// split on columns args length
@@ -449,7 +456,7 @@ public static partial class StringHelper
 				var batch = AllContiguousSpaceRegEx().Split(t);
 				string line = string.Empty;
 				string currentColor = string.Empty;
-				List<string> res = new List<string>();
+				List<string> res = [];
 				foreach (var word in batch)
 				{
 					var foundColor = TQColorHelper.GetColorFromTaggedString(word);
@@ -457,7 +464,7 @@ public static partial class StringHelper
 						// Not a ColorTag alone
 						&& !line.IsColorTagOnly()
 					) line += ' ';
-					if (foundColor.HasValue) currentColor = foundColor?.ColorTag();
+					if (foundColor.HasValue) currentColor = foundColor.Value.ColorTag();
 					if (line.Length + word.Length > Columns)
 					{
 						res.Add(line);

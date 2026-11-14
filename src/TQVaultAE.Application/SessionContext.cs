@@ -13,13 +13,25 @@ public class SessionContext
 	/// <summary>
 	/// Currently selected player
 	/// </summary>
-	public PlayerCollection CurrentPlayer { get; set; }
+	public PlayerCollection? CurrentPlayer { get; set; }
 
-	private BagButtonIconInfo iconInfoCopy;
+	/// <summary>
+	/// The item tooltips show the detailed display for now (while the forge is open), whatever the setting, which is
+	/// not changed so that a settings save cannot keep it.
+	/// </summary>
+	public bool ForceDetailedTooltipView { get; set; }
+
+	/// <summary>
+	/// The settings changed in this session (settings dialog, or a configuration save that wrote them): every later
+	/// configuration save writes them again.
+	/// </summary>
+	public bool ConfigChanged { get; set; }
+
+	private BagButtonIconInfo? iconInfoCopy;
 	/// <summary>
 	/// Last icon info copied
 	/// </summary>
-	public BagButtonIconInfo IconInfoCopy
+	public BagButtonIconInfo? IconInfoCopy
 	{
 		get => iconInfoCopy;
 		set
@@ -50,4 +62,9 @@ public class SessionContext
 	/// Dictionary of all loaded player stash files
 	/// </summary>
 	public readonly LazyConcurrentDictionary<string, Stash> Stashes = new();
+
+	/// <summary>
+	/// The loadouts read for each character, by loadouts file path (case ignored).
+	/// </summary>
+	public readonly ConcurrentDictionary<string, LoadoutSet> Loadouts = new(StringComparer.OrdinalIgnoreCase);
 }

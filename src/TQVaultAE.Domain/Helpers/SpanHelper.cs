@@ -220,63 +220,6 @@ public static class SpanHelper
 	}
 
 	/// <summary>
-	/// Reads a null-terminated ASCII string from a span, handling the 0x03 marker
-	/// used in ARC files to mark inactive/null file entries.
-	/// Matches the original algorithm behavior from ArcFileProvider.ReadARCToC.
-	/// </summary>
-	/// <param name="span">The span containing the data.</param>
-	/// <param name="offset">Starting offset for reading.</param>
-	/// <param name="maxBufferSize">Maximum buffer size (typically 2048 for ARC files).</param>
-	/// <param name="bytesConsumed">Returns the number of bytes consumed including the terminator.</param>
-	/// <returns>
-	/// The ASCII string without the terminator, "Null File {index}" format for 0x03 markers,
-	/// or null if offset is out of bounds.
-	/// </returns>
-	public static string? ReadArcNullTerminatedString(ReadOnlySpan<byte> span, int offset, int maxBufferSize, out int bytesConsumed)
-	{
-		bytesConsumed = 0;
-		if (offset >= span.Length || offset < 0)
-			return null;
-
-		int bufferSize = 0;
-
-		while (offset + bufferSize < span.Length && bufferSize < maxBufferSize)
-		{
-			byte currentByte = span[offset + bufferSize];
-			bufferSize++;
-
-			if (currentByte == 0x00)
-			{
-				// Null terminator found - string ends here
-				bytesConsumed = bufferSize;
-				if (bufferSize == 1)
-					return string.Empty;
-
-				return Encoding.ASCII.GetString(span.Slice(offset, bufferSize - 1));
-			}
-
-			if (currentByte == 0x03)
-			{
-				// 0x03 marker indicates inactive/null file
-				// Match original behavior: backup, set buffer[bufferSize-1] = 0x00, break
-				bufferSize--; // Back up to exclude 0x03
-				bytesConsumed = bufferSize + 1; // But count it as consumed
-				if (bufferSize == 0)
-					return null; // No filename available
-
-				return Encoding.ASCII.GetString(span.Slice(offset, bufferSize));
-			}
-		}
-
-		// No terminator found - return what we have
-		bytesConsumed = bufferSize;
-		if (bufferSize == 0)
-			return null;
-
-		return Encoding.ASCII.GetString(span.Slice(offset, bufferSize));
-	}
-
-	/// <summary>
 	/// Reads a sequence of Int32 values from a byte span.
 	/// </summary>
 	/// <param name="span">The span to read from.</param>
@@ -293,73 +236,7 @@ public static class SpanHelper
 		return result;
 	}
 
-	/// <summary>
-	/// Creates an ArcPartEntry struct from a 12-byte span at the given offset.
-	/// Format: fileOffset(4), compressedSize(4), realSize(4)
-	/// </summary>
-	public static ArcPartEntrySpan ReadArcPartEntry(ReadOnlySpan<byte> span, int offset)
-		=> new()
-		{
-			FileOffset = ReadInt32LittleEndian(span, offset),
-			CompressedSize = ReadInt32LittleEndian(span, offset + 4),
-			RealSize = ReadInt32LittleEndian(span, offset + 8)
-		};
-
-	/// <summary>
-	/// Creates an ArcDirEntrySpan from a 44-byte span at the given offset.
-	/// Format: storageType(4), fileOffset(4), compressedSize(4), realSize(4),
-	///         crap x3 (12), numberOfParts(4), firstPart(4), filenameLength(4), filenameOffset(4)
-	/// </summary>
-	public static ArcDirEntrySpan ReadArcDirEntry(ReadOnlySpan<byte> span, int offset)
-		=> new()
-		{
-			StorageType = ReadInt32LittleEndian(span, offset),
-			FileOffset = ReadInt32LittleEndian(span, offset + 4),
-			CompressedSize = ReadInt32LittleEndian(span, offset + 8),
-			RealSize = ReadInt32LittleEndian(span, offset + 12),
-			NumberOfParts = ReadInt32LittleEndian(span, offset + 28),
-			FirstPart = ReadInt32LittleEndian(span, offset + 32),
-			FilenameLength = ReadInt32LittleEndian(span, offset + 36),
-			FilenameOffset = ReadInt32LittleEndian(span, offset + 40)
-		};
-
-	/// <summary>
-	/// Determines if a record should be marked active based on storageType and numberOfParts.
-	/// Matches the logic in ArcDirEntry.IsActive.
-	/// </summary>
-	/// <param name="storageType">The storage type (1 = uncompressed, 3 = compressed).</param>
-	/// <param name="numberOfParts">Number of parts for this entry.</param>
-	/// <returns>True if the entry is active.</returns>
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static bool IsActiveArcEntry(int storageType, int numberOfParts)
-		=> (storageType == 1) ? true : numberOfParts > 0;
-
 	#endregion
-}
-
-/// <summary>
-/// Lightweight struct representing an ARC part entry when reading from a span.
-/// </summary>
-public readonly struct ArcPartEntrySpan
-{
-	public int FileOffset { get; init; }
-	public int CompressedSize { get; init; }
-	public int RealSize { get; init; }
-}
-
-/// <summary>
-/// Lightweight struct representing an ARC directory entry when reading from a span.
-/// </summary>
-public readonly struct ArcDirEntrySpan
-{
-	public int StorageType { get; init; }
-	public int FileOffset { get; init; }
-	public int CompressedSize { get; init; }
-	public int RealSize { get; init; }
-	public int NumberOfParts { get; init; }
-	public int FirstPart { get; init; }
-	public int FilenameLength { get; init; }
-	public int FilenameOffset { get; init; }
 }
 
 /// <summary>
@@ -373,7 +250,7 @@ public sealed class PooledCharArray : IDisposable
 	/// <summary>
 	/// Gets the span of the pooled array.
 	/// </summary>
-	public Span<char> Span => _array is null ? Span<char>.Empty : _array.AsSpan(0, _length);
+	public Span<char> Span => _array is null ? [] : _array.AsSpan(0, _length);
 
 	/// <summary>
 	/// Gets the length of the data in the pooled array.
@@ -383,7 +260,7 @@ public sealed class PooledCharArray : IDisposable
 	/// <summary>
 	/// An empty pooled array instance.
 	/// </summary>
-	public static PooledCharArray Empty { get; } = new(Array.Empty<char>(), 0);
+	public static PooledCharArray Empty { get; } = new([], 0);
 
 	private PooledCharArray(char[] array, int length)
 	{
@@ -440,7 +317,7 @@ public sealed class PooledByteArray : IDisposable
 	/// <summary>
 	/// Gets the span of the pooled array.
 	/// </summary>
-	public Span<byte> Span => _array is null ? Span<byte>.Empty : _array.AsSpan(0, _length);
+	public Span<byte> Span => _array is null ? [] : _array.AsSpan(0, _length);
 
 	/// <summary>
 	/// Gets the read-only span of the pooled array.
@@ -455,7 +332,7 @@ public sealed class PooledByteArray : IDisposable
 	/// <summary>
 	/// An empty pooled array instance.
 	/// </summary>
-	public static PooledByteArray Empty { get; } = new(Array.Empty<byte>(), 0);
+	public static PooledByteArray Empty { get; } = new([], 0);
 
 	private PooledByteArray(byte[] array, int length)
 	{

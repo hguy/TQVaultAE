@@ -54,37 +54,37 @@ public class Item
 	/// <summary>
 	/// Prefix database record ID
 	/// </summary>
-	public RecordId prefixID;
+	public RecordId prefixID = RecordId.Empty;
 
 	/// <summary>
 	/// Suffix database record ID
 	/// </summary>
-	public RecordId suffixID;
+	public RecordId suffixID = RecordId.Empty;
 
 	/// <summary>
 	/// Relic database record ID
 	/// </summary>
-	public RecordId relicID;
+	public RecordId relicID = RecordId.Empty;
 
 	/// <summary>
 	/// Relic database record ID
 	/// </summary>
-	public RecordId relic2ID;
+	public RecordId relic2ID = RecordId.Empty;
 
 	/// <summary>
 	/// Info structure for the base item
 	/// </summary>
-	public Info baseItemInfo;
+	public Info? baseItemInfo;
 
 	/// <summary>
 	/// Info structure for the item's prefix
 	/// </summary>
-	public Info prefixInfo;
+	public Info? prefixInfo;
 
 	/// <summary>
 	/// Info structure for the item's suffix
 	/// </summary>
-	public Info suffixInfo;
+	public Info? suffixInfo;
 
 	/// <summary>
 	/// Used for level calculation
@@ -127,7 +127,7 @@ public class Item
 	/// Gets the value indicating whether the item allows 2 relic socketing
 	/// </summary>
 	public bool AcceptExtraRelic
-		=> HasSuffix && suffixID.Normalized.EndsWith("RARE_EXTRARELIC_01.DBR");
+		=> HasSuffix && suffixID.Normalized.EndsWith("RARE_EXTRARELIC_01.DBR", StringComparison.Ordinal);
 
 	/// <summary>
 	/// Tell if the item is modified
@@ -143,17 +143,17 @@ public class Item
 	/// <summary>
 	/// Gets the base item id
 	/// </summary>
-	public RecordId BaseItemId { get; set; }
+	public RecordId BaseItemId { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the relic bonus id
 	/// </summary>
-	public RecordId RelicBonusId { get; set; }
+	public RecordId RelicBonusId { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the relic bonus2 id
 	/// </summary>
-	public RecordId RelicBonus2Id { get; set; }
+	public RecordId RelicBonus2Id { get; set; } = RecordId.Empty;
 
 	/// <summary>
 	/// Gets or sets the item seed
@@ -168,7 +168,7 @@ public class Item
 	/// <summary>
 	/// Last <see cref="ToFriendlyNameResult"/> queried for this item.
 	/// </summary>
-	public ToFriendlyNameResult CurrentFriendlyNameResult;
+	public ToFriendlyNameResult? CurrentFriendlyNameResult;
 
 	public int Var1
 	{
@@ -223,32 +223,91 @@ public class Item
 	/// <summary>
 	/// Gets the relic info
 	/// </summary>
-	public Info RelicInfo { get; set; }
+	public Info? RelicInfo { get; set; }
 
 	/// <summary>
 	/// Gets or sets the relic bonus info
 	/// </summary>
-	public Info RelicBonusInfo { get; set; }
+	public Info? RelicBonusInfo { get; set; }
 
 	/// <summary>
 	/// Gets the second relic info
 	/// </summary>
-	public Info Relic2Info { get; set; }
+	public Info? Relic2Info { get; set; }
 
 	/// <summary>
 	/// Gets or sets the second relic bonus info
 	/// </summary>
-	public Info RelicBonus2Info { get; set; }
+	public Info? RelicBonus2Info { get; set; }
 
 	/// <summary>
-	/// Raw image data from game resource file
+	/// The item's map: the mod whose data its records resolve in (the mod's folder name, as in a character's link file),
+	/// mod data first and then the base game's; null for the base game. A mod that is not installed is kept and the item
+	/// is read with the base game data. Where it comes from is <see cref="ModOrigin"/>. Kept by copies.
 	/// </summary>
-	public byte[] TexImage { get; set; }
+	public string? Mod { get; set; }
 
 	/// <summary>
-	/// ResourceId related to <see cref="TexImage"/>
+	/// Where <see cref="Mod"/> comes from: the item's own (saved in the vault files), or the container holding it.
+	/// <see cref="ModOrigin.None"/> only before a container gave it one: a placeholder, or an item being read.
 	/// </summary>
-	public RecordId TexImageResourceId { get; set; }
+	public ModOrigin ModOrigin { get; set; }
+
+	/// <summary>True when the item's map is its own: <c>"mod"</c> or <c>"noMod"</c> in the vault file.</summary>
+	public bool HasOwnMod => this.ModOrigin == ModOrigin.Own;
+
+	/// <summary>Gives the item the map of the container holding it, when it has none yet.</summary>
+	/// <param name="containerMod">The container's mod; null for the base game.</param>
+	public void InheritMod(string? containerMod)
+	{
+		if (this.ModOrigin != ModOrigin.None)
+			return;
+
+		this.Mod = string.IsNullOrWhiteSpace(containerMod) ? null : containerMod;
+		this.ModOrigin = ModOrigin.Inherited;
+	}
+
+	/// <summary>
+	/// True while a vault holds the item, false on a character or in a game stash: leaving a character for a vault makes
+	/// an inherited map the item's own. Kept by copies; set when the item is put in a vault or taken to a character.
+	/// </summary>
+	public bool InVault { get; set; }
+
+	/// <summary>
+	/// The records the item names that the loaded game data does not have (once read with <c>GetDBData</c>): typically
+	/// those of a mod whose data is not loaded. The item is then shown incomplete.
+	/// </summary>
+	public IReadOnlyList<(ItemRecordRole Role, RecordId Id)> MissingRecords
+	{
+		get
+		{
+			var missing = new List<(ItemRecordRole, RecordId)>();
+			Check(ItemRecordRole.BaseItem, this.BaseItemId, this.baseItemInfo);
+			Check(ItemRecordRole.Prefix, this.prefixID, this.prefixInfo);
+			Check(ItemRecordRole.Suffix, this.suffixID, this.suffixInfo);
+			Check(ItemRecordRole.Relic, this.relicID, this.RelicInfo);
+			Check(ItemRecordRole.RelicBonus, this.RelicBonusId, this.RelicBonusInfo);
+			Check(ItemRecordRole.Relic, this.relic2ID, this.Relic2Info);
+			Check(ItemRecordRole.RelicBonus, this.RelicBonus2Id, this.RelicBonus2Info);
+			return missing;
+
+			void Check(ItemRecordRole role, RecordId? id, Info? info)
+			{
+				if (!RecordId.IsNullOrEmpty(id) && info is null)
+					missing.Add((role, id));
+			}
+		}
+	}
+
+	/// <summary>
+	/// The item names records the loaded game data does not have: see <see cref="MissingRecords"/>.
+	/// </summary>
+	public bool IsIncomplete => this.MissingRecords.Count > 0;
+
+	/// <summary>
+	/// Resource id of the item's picture, read from the game files when the item is first drawn.
+	/// </summary>
+	public RecordId? TexImageResourceId { get; set; }
 
 	/// <summary>
 	/// Gets the item's width in cells
@@ -284,6 +343,13 @@ public class Item
 	/// Gets a value indicating whether the item is in an equipment weapon slot.
 	/// </summary>
 	public bool IsInWeaponSlot => this.PositionX == WeaponSlotIndicator;
+
+	/// <summary>
+	/// Tells whether the item is a weapon of the set not in hand, whose bonuses do not count: rows 2 and 3 of the weapon
+	/// slots, or rows 0 and 1 when the second set is in hand (the save's <c>useAlternate</c>).
+	/// </summary>
+	public bool IsInInactiveWeaponSlot(bool useAlternate)
+		=> this.IsInWeaponSlot && (useAlternate ? this.PositionY is 0 or 1 : this.PositionY is 2 or 3);
 
 	/// <summary>
 	/// Gets a value indicating whether or not the item comes from Immortal Throne expansion pack.
@@ -328,7 +394,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_SCROLL, noCase);
 			else if (this.BaseItemId is not null
 				&& (this.IsImmortalThrone || this.IsRagnarok || this.IsAtlantis || this.IsEmbers)
@@ -362,7 +428,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_FORMULA, noCase);
 			else if (this.BaseItemId is not null
 				&& (this.IsImmortalThrone || this.IsRagnarok || this.IsAtlantis || this.IsEmbers)
@@ -380,7 +446,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_ARTIFACT, noCase);
 			else if (this.BaseItemId is not null
 				&& (this.IsImmortalThrone || this.IsRagnarok || this.IsAtlantis || this.IsEmbers)
@@ -395,13 +461,13 @@ public class Item
 	/// Gets a value indicating whether the item is a shield.
 	/// </summary>
 	public bool IsShield
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_SHIELD, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_SHIELD, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is armor.
 	/// </summary>
 	public bool IsArmor
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.StartsWith("ARMORPROTECTIVE", noCase)
 		: false;
 
@@ -409,25 +475,25 @@ public class Item
 	/// Gets a value indicating whether the item is a helm.
 	/// </summary>
 	public bool IsHelm
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_HEAD, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_HEAD, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a bracer.
 	/// </summary>
 	public bool IsBracer
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_FOREARM, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_FOREARM, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is torso armor.
 	/// </summary>
 	public bool IsTorsoArmor
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_UPPERBODY, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_UPPERBODY, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a greave.
 	/// </summary>
 	public bool IsGreave
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_LOWERBODY, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_LOWERBODY, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is Jewellery.
@@ -439,19 +505,19 @@ public class Item
 	/// Gets a value indicating whether the item is a ring.
 	/// </summary>
 	public bool IsRing
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_RING, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_RING, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is an amulet.
 	/// </summary>
 	public bool IsAmulet
-		=> (this.baseItemInfo != null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_AMULET, noCase) : false;
+		=> (this.baseItemInfo is not null) ? this.baseItemInfo.ItemClass.Equals(ICLASS_AMULET, noCase) : false;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a weapon.
 	/// </summary>
 	public bool IsWeapon
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? !this.IsShield && this.baseItemInfo.ItemClass.StartsWith("WEAPON", noCase)
 		: false;
 
@@ -459,7 +525,7 @@ public class Item
 	/// Gets a value indicating whether the item is a thrown weapon.
 	/// </summary>
 	public bool IsThrownWeapon
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.Equals(ICLASS_RANGEDONEHAND, noCase)
 		: false;
 
@@ -467,7 +533,7 @@ public class Item
 	/// Gets a value indicating whether the item is a two handed weapon.
 	/// </summary>
 	public bool Is2HWeapon
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.Equals(ICLASS_BOW, noCase)
 			|| this.baseItemInfo.ItemClass.Equals(ICLASS_STAFF, noCase)
 		: false;
@@ -476,7 +542,7 @@ public class Item
 	/// Gets a value indicating whether the item is a weapon or shield.
 	/// </summary>
 	public bool IsWeaponShield
-		=> (this.baseItemInfo != null)
+		=> (this.baseItemInfo is not null)
 		? this.baseItemInfo.ItemClass.StartsWith("WEAPON", noCase)
 		: false;
 
@@ -487,7 +553,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 			{
 				if (this.baseItemInfo.ItemClassification.Equals("QUEST", noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_QUESTITEM, noCase))
@@ -565,7 +631,7 @@ public class Item
 			if (this.IsQuestItem)
 				return ItemStyle.Quest;
 
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 			{
 				if (this.baseItemInfo.ItemClassification.Equals("EPIC", noCase))
 					return ItemStyle.Epic;
@@ -583,7 +649,7 @@ public class Item
 			) return ItemStyle.Rare;
 
 			// Not rare.  If we have a suffix or prefix, then call it common, else mundane
-			if (this.suffixInfo != null || this.prefixInfo != null)
+			if (this.suffixInfo is not null || this.prefixInfo is not null)
 				return ItemStyle.Common;
 
 			return ItemStyle.Mundane;
@@ -594,7 +660,7 @@ public class Item
 	/// Gets the item class
 	/// </summary>
 	public string ItemClass
-		=> (this.baseItemInfo == null) ? string.Empty : this.baseItemInfo.ItemClass;
+		=> (this.baseItemInfo is null) ? string.Empty : this.baseItemInfo.ItemClass;
 
 	/// <summary>
 	/// Gets a value indicating whether or not the item will stack.
@@ -631,8 +697,8 @@ public class Item
 			else if (this.IsRelicOrCharm)
 			{
 				// Limit value to complete Relic level
-				if (value >= this.baseItemInfo.CompletedRelicLevel)
-					this.Var1 = this.baseItemInfo.CompletedRelicLevel;
+				if (this.baseItemInfo is { } info && value >= info.CompletedRelicLevel)
+					this.Var1 = info.CompletedRelicLevel;
 				else
 					this.Var1 = value;
 			}
@@ -642,22 +708,43 @@ public class Item
 	/// <summary>
 	/// Gets a value indicating whether the item has an embedded charm in first slot.
 	/// </summary>
-	public bool HasCharmSlot1 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relicID) && this.relicID.IsCharm;
+	public bool HasCharmSlot1 => this.HasSocketedSlot1 && SocketedKind(this.relicID, this.RelicInfo) == SocketedRecordKind.Charm;
 
 	/// <summary>
 	/// Gets a value indicating whether the item has an embedded charm in second slot.
 	/// </summary>
-	public bool HasCharmSlot2 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relic2ID) && this.relic2ID.IsCharm;
+	public bool HasCharmSlot2 => this.HasSocketedSlot2 && SocketedKind(this.relic2ID, this.Relic2Info) == SocketedRecordKind.Charm;
 
 	/// <summary>
 	/// Gets a value indicating whether the item has an embedded relic only in first slot.
 	/// </summary>
-	public bool HasRelicSlot1 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relicID) && this.relicID.IsRelic;
+	public bool HasRelicSlot1 => this.HasSocketedSlot1 && SocketedKind(this.relicID, this.RelicInfo) == SocketedRecordKind.Relic;
 
 	/// <summary>
 	/// Gets a value indicating whether the item has an embedded relic only in second slot.
 	/// </summary>
-	public bool HasRelicSlot2 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relic2ID) && this.relic2ID.IsRelic;
+	public bool HasRelicSlot2 => this.HasSocketedSlot2 && SocketedKind(this.relic2ID, this.Relic2Info) == SocketedRecordKind.Relic;
+
+	private enum SocketedRecordKind { Other, Relic, Charm }
+
+	/// <summary>
+	/// What a relic slot holds. The loaded record's class decides, as in the game: the golden scarabs are relics although
+	/// their file names end in "_charm". The record path is only the fallback when the record is not loaded.
+	/// </summary>
+	private static SocketedRecordKind SocketedKind(RecordId? id, Info? info)
+	{
+		if (info is not null)
+			return info.ItemClass.Equals(ICLASS_CHARM, noCase) ? SocketedRecordKind.Charm
+				: info.ItemClass.Equals(ICLASS_RELIC, noCase) ? SocketedRecordKind.Relic
+				: SocketedRecordKind.Other;
+
+		if (RecordId.IsNullOrEmpty(id))
+			return SocketedRecordKind.Other;
+
+		return id.IsCharm ? SocketedRecordKind.Charm
+			: id.IsRelic ? SocketedRecordKind.Relic
+			: SocketedRecordKind.Other;
+	}
 
 	/// <summary>
 	/// Gets a value indicating whether the item has an embedded relic or a charm.
@@ -673,6 +760,15 @@ public class Item
 	/// Indicate that the item has an embedded relic or a charm.
 	/// </summary>
 	public bool HasRelicOrCharm => HasRelicOrCharmSlot1 || HasRelicOrCharmSlot2;
+
+	/// <summary>
+	/// The first relic slot holds a record, whatever it is: a relic, a charm, or anything the Forge God mode put there
+	/// (e.g. a weapon). Unlike <see cref="HasRelicOrCharmSlot1"/>, it does not look at the record type.
+	/// </summary>
+	public bool HasSocketedSlot1 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relicID);
+
+	/// <summary>The second relic slot holds a record, whatever it is (see <see cref="HasSocketedSlot1"/>).</summary>
+	public bool HasSocketedSlot2 => !this.IsRelicOrCharm && !RecordId.IsNullOrEmpty(this.relic2ID);
 
 	/// <summary>
 	/// Indicate that the item has an embedded relic in slot 1 or 2.
@@ -691,7 +787,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_POTIONHEALTH, noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_POTIONMANA, noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_SCROLL_ETERNAL, noCase); //AMS: New EE Potions (Mystical Potions)
@@ -707,7 +803,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_CHARM, noCase);
 
 			return this.BaseItemId is not null && this.BaseItemId.IsCharm;
@@ -721,7 +817,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_RELIC, noCase);
 
 			return this.BaseItemId is not null && this.BaseItemId.IsRelic;
@@ -731,30 +827,12 @@ public class Item
 	/// <summary>
 	/// Gets a value indicating whether the item first relic is a charm and only a charm.
 	/// </summary>
-	public bool IsRelic1Charm
-	{
-		get
-		{
-			if (this.RelicInfo != null)
-				return this.RelicInfo.ItemClass.Equals(ICLASS_CHARM, noCase);
-
-			return this.RelicInfo?.ItemId.IsCharm ?? false;
-		}
-	}
+	public bool IsRelic1Charm => SocketedKind(this.relicID, this.RelicInfo) == SocketedRecordKind.Charm;
 
 	/// <summary>
 	/// Gets a value indicating whether the item second relic is a charm and only a charm.
 	/// </summary>
-	public bool IsRelic2Charm
-	{
-		get
-		{
-			if (this.Relic2Info != null)
-				return this.Relic2Info.ItemClass.Equals(ICLASS_CHARM, noCase);
-
-			return this.Relic2Info?.ItemId.IsCharm ?? false;
-		}
-	}
+	public bool IsRelic2Charm => SocketedKind(this.relic2ID, this.Relic2Info) == SocketedRecordKind.Charm;
 
 	/// <summary>
 	/// Gets a value indicating whether the item is a relic or a charm.
@@ -763,7 +841,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo != null)
+			if (this.baseItemInfo is not null)
 				return this.baseItemInfo.ItemClass.Equals(ICLASS_RELIC, noCase)
 					|| this.baseItemInfo.ItemClass.Equals(ICLASS_CHARM, noCase);
 
@@ -775,19 +853,19 @@ public class Item
 	/// Indicate if this item is a completed relic.
 	/// </summary>
 	public bool IsRelicComplete
-		=> (this.baseItemInfo != null) ? this.Var1 >= this.baseItemInfo.CompletedRelicLevel : false;
+		=> (this.baseItemInfo is not null) ? this.Var1 >= this.baseItemInfo.CompletedRelicLevel : false;
 
 	/// <summary>
 	/// Indicate if the first relic completion bonus apply.
 	/// </summary>
 	public bool IsRelicBonus1Complete
-		=> (this.RelicBonusInfo != null) ? this.Var1 >= this.RelicBonusInfo.CompletedRelicLevel : false;
+		=> (this.RelicBonusInfo is not null) ? this.Var1 >= this.RelicBonusInfo.CompletedRelicLevel : false;
 
 	/// <summary>
 	/// Indicate if the second relic completion bonus apply.
 	/// </summary>
 	public bool IsRelicBonus2Complete
-		=> (this.RelicBonus2Info != null) ? this.Var2 >= this.RelicBonus2Info.CompletedRelicLevel : false;
+		=> (this.RelicBonus2Info is not null) ? this.Var2 >= this.RelicBonus2Info.CompletedRelicLevel : false;
 
 	#region	ItemClass const
 
@@ -852,7 +930,7 @@ public class Item
 	/// Get the tagName assigned to the <see cref="ItemClass"/>
 	/// </summary>
 	public string ItemClassTagName
-		=> GetClassTagName(this.baseItemInfo.ItemClass);
+		=> GetClassTagName(this.baseItemInfo?.ItemClass ?? string.Empty);
 
 	/// <summary>
 	/// Get the tagName assigned to the <see cref="ItemClass"/>
@@ -868,7 +946,7 @@ public class Item
 	{
 		get
 		{
-			if (this.baseItemInfo == null)
+			if (this.baseItemInfo is null)
 				return 0;
 
 			var iclass = this.baseItemInfo.ItemClass;
@@ -884,13 +962,18 @@ public class Item
 	#region Item Public Static Methods
 
 
+	/// <summary>Highest item seed: the seeds in the player files are limited to 0x7FFF.</summary>
+	public const int MaxSeed = 0x7FFF;
+
+	/// <summary>Whether a seed can be given to an item: from 1 to <see cref="MaxSeed"/>.</summary>
+	public static bool IsValidSeed(int seed) => seed is >= 1 and <= MaxSeed;
+
 	/// <summary>
 	/// Generates a new seed that can be used on a new item
 	/// </summary>
-	/// <returns>New seed from 0 to 0x7FFF</returns>
+	/// <returns>New seed from 1 to <see cref="MaxSeed"/></returns>
 	public static int GenerateSeed()
-		// The seed values in the player files seem to be limitted to 0x00007fff or less.
-		=> random.Next(0x00007fff);
+		=> random.Next(1, MaxSeed + 1);
 
 	#endregion Item Public Static Methods
 
@@ -917,6 +1000,10 @@ public class Item
 			Var2 = var2Default,
 			PositionX = -1,
 			PositionY = -1,
+			// A new item made from this one (a relic taken out, an artifact, a set member) has its map.
+			Mod = this.Mod,
+			ModOrigin = this.ModOrigin,
+			InVault = this.InVault,
 		};
 
 	/// <summary>
@@ -937,6 +1024,22 @@ public class Item
 	}
 
 	/// <summary>
+	/// Shallow copy of this item that shares no mutable state with it: its own <see cref="Place"/>, and no
+	/// <see cref="CurrentFriendlyNameResult"/> (that result describes this item, not the copy).
+	/// </summary>
+	/// <remarks>
+	/// A shared <see cref="Place"/> made both items report the location of whichever was moved last, so search
+	/// results pointed the original to the copy's bag.
+	/// </remarks>
+	private Item CopyDetached()
+	{
+		Item newItem = (Item)this.MemberwiseClone();
+		newItem.Place = this.Place with { };
+		newItem.CurrentFriendlyNameResult = null;
+		return newItem;
+	}
+
+	/// <summary>
 	/// Makes a duplicate of the item
 	/// VillageIdiot - Added option to keep item seed.
 	/// </summary>
@@ -944,7 +1047,7 @@ public class Item
 	/// <returns>New Duplicated item</returns>
 	public Item Duplicate(bool keepItemSeed)
 	{
-		Item newItem = (Item)this.MemberwiseClone();
+		Item newItem = this.CopyDetached();
 		if (!keepItemSeed)
 			newItem.Seed = GenerateSeed();
 
@@ -961,7 +1064,7 @@ public class Item
 	/// <returns>A new clone of the item</returns>
 	public Item Clone()
 	{
-		Item newItem = (Item)this.MemberwiseClone();
+		Item newItem = this.CopyDetached();
 		newItem.IsModified = true;
 		return newItem;
 	}
@@ -970,13 +1073,13 @@ public class Item
 	/// Pops all but one item from the stack.
 	/// </summary>
 	/// <returns>Returns popped items as a new Item stack</returns>
-	public Item PopAllButOneItem()
+	public Item? PopAllButOneItem()
 	{
 		if (!this.DoesStack || this.StackSize < 2)
 			return null;
 
 		// make a complete copy then change a few things
-		Item newItem = (Item)this.MemberwiseClone();
+		Item newItem = this.CopyDetached();
 
 		newItem.StackSize = this.StackSize - 1;
 		newItem.Var1 = 0;
@@ -1012,8 +1115,9 @@ public class Item
 	/// </summary>
 	/// <param name="relicBaseItemId"></param>
 	/// <returns></returns>
-	public bool IsRelicAllowed(RecordId relicBaseItemId)
-		=> IsRelicAllowed(this, relicBaseItemId);
+	/// <param name="relicInfo">Record of the relic: its slot flags give the gear it allows.</param>
+	public bool IsRelicAllowed(RecordId relicBaseItemId, Info? relicInfo = null)
+		=> IsRelicAllowed(this, relicBaseItemId, relicInfo);
 
 	/// <summary>
 	/// Tells if <paramref name="relicItem"/> is allowed.
@@ -1051,14 +1155,15 @@ public class Item
 	/// <param name="item"></param>
 	/// <param name="relicBaseItemId"></param>
 	/// <returns></returns>
-	public static bool IsRelicAllowed(Item item, RecordId relicBaseItemId)
+	/// <param name="relicInfo">Record of the relic: its slot flags give the gear it allows.</param>
+	public static bool IsRelicAllowed(Item item, RecordId relicBaseItemId, Info? relicInfo = null)
 	{
 		var itemGearType = item.GearType;
 
 		if (itemGearType == GearType.Undefined) return false;
 
 		// Is it allowed ?
-		if (!TryGetAllowedGearTypes(relicBaseItemId, out var relicAllowedGearTypes))
+		if (!TryGetAllowedGearTypes(relicBaseItemId, out var relicAllowedGearTypes, relicInfo))
 			return false;
 
 		return relicAllowedGearTypes.HasFlag(itemGearType);
@@ -1081,7 +1186,7 @@ public class Item
 		// relicItem a relic ?
 		if (!relicItem.IsRelicOrCharm) return false;
 
-		return TryGetAllowedGearTypes(relicItem.BaseItemId, out types);
+		return TryGetAllowedGearTypes(relicItem.BaseItemId, out types, relicItem.baseItemInfo);
 	}
 
 	/// <summary>
@@ -1089,25 +1194,18 @@ public class Item
 	/// </summary>
 	/// <param name="relicBaseItemId"></param>
 	/// <param name="types"></param>
-	/// <returns></returns>
-	public static bool TryGetAllowedGearTypes(RecordId relicBaseItemId, out GearType types)
+	/// <param name="relicInfo">Record of the relic: its slot flags give the gear. Ignored when it is the record of another item.</param>
+	/// <returns><see langword="false"/> without the relic's record, or when its record allows no gear.</returns>
+	public static bool TryGetAllowedGearTypes(RecordId relicBaseItemId, out GearType types, Info? relicInfo = null)
 	{
 		types = GearType.Undefined;
 
 		if (RecordId.IsNullOrEmpty(relicBaseItemId)) return false;
 
-		// Find GearType
-		var map = RelicAndCharmExtension.RelicAndCharmMap
-			.Where(m => m.RecordId == relicBaseItemId)
-			.FirstOrDefault();
+		if (relicInfo is not null && relicInfo.ItemId == relicBaseItemId)
+			types = RelicAndCharmExtension.GetAllowedGearTypes(relicInfo);
 
-		// No match found or Unknown relic - return false
-		if (map is null || map.Value == RelicAndCharm.Unknown) return false;
-
-		// Found
-		types = map.Types;
-
-		return true;
+		return types != GearType.Undefined;
 	}
 
 	#endregion
@@ -1146,7 +1244,7 @@ public class Item
 	/// </summary>
 	/// <param name="TQText">text containing the color tag</param>
 	/// <returns><see cref="System.Drawing.Color"/> of the embedded color code</returns>
-	public Color ExtractTextColorOrItemColor(string TQText)
+	public Color ExtractTextColorOrItemColor(string? TQText)
 	{
 		if (string.IsNullOrWhiteSpace(TQText))
 			// Use the standard color code for the item

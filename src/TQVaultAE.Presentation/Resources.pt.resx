@@ -305,7 +305,7 @@ Deseja reiniciar o TQVault?</value>
     <value>(Completo/a)</value>
   </data>
   <data name="ItemSeed" xml:space="preserve">
-    <value>Semente: {0} (0x {0: X8}) ({1: p3})</value>
+    <value>Semente: {0} (0x{0:X8}) ({1:p3})</value>
   </data>
   <data name="ItemWith" xml:space="preserve">
     <value>Com</value>
@@ -324,9 +324,6 @@ Deseja reiniciar o TQVault?</value>
   </data>
   <data name="MainFormBtnShowPlayer" xml:space="preserve">
     <value>Mostrar Jogador</value>
-  </data>
-  <data name="MainFormCustomMapLabel" xml:space="preserve">
-    <value>{0} Mapa Personalizado</value>
   </data>
   <data name="MainFormDatabaseError" xml:space="preserve">
     <value>Erro ao extrair o banco de dados</value>
@@ -355,15 +352,6 @@ Deseja reiniciar o TQVault agora?</value>
   </data>
   <data name="MainFormMaintainVault" xml:space="preserve">
     <value>Gerenciar arquivos do cofre ...</value>
-  </data>
-  <data name="MainFormMapsChanged" xml:space="preserve">
-    <value>Configuração de mapas personalizados alterada</value>
-  </data>
-  <data name="MainFormMapsChangedMsg" xml:space="preserve">
-    <value>A configuração de mapas personalizados foi alterada.
-
-Por favor, reinicie o TQVault para que ela entre em vigor.
-Deseja reiniciar o TQVault agora?</value>
   </data>
   <data name="MainFormNoCharacters" xml:space="preserve">
     <value>Nenhum personagem de TQ encontrado</value>
@@ -745,14 +733,6 @@ a inicialização do TQVault.</value>
   <data name="SettingsDetectLanguage" xml:space="preserve">
     <value>Detectar automaticamente o idioma</value>
   </data>
-  <data name="SettingsEnableMod" xml:space="preserve">
-    <value>Habilitar mapas personalizados</value>
-  </data>
-  <data name="SettingsEnableModTT" xml:space="preserve">
-    <value>A seleção deste item permitirá
-que o menu suspenso Habilte a seleção de
-mapas personalizados.</value>
-  </data>
   <data name="SettingsForceCheck" xml:space="preserve">
     <value>Verifique agora</value>
   </data>
@@ -771,9 +751,6 @@ disponível.</value>
   </data>
   <data name="SettingsLabel4" xml:space="preserve">
     <value>Caminho do jogo de TI</value>
-  </data>
-  <data name="SettingsLabel5" xml:space="preserve">
-    <value>Mapa personalizado</value>
   </data>
   <data name="SettingsLoadChar" xml:space="preserve">
     <value>Carregar automaticamente o último personagem aberto</value>
@@ -968,21 +945,6 @@ Aqui está um exemplo complexo: 'glacial &amp; gelo @anel $raro'</value>
     <value>Tamanho</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="NewAboutGraphic" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\newaboutgraphic.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NewSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\newsplashscreen.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="SplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\splashscreen.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ProgressBar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\progressbar.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ProgressBarFill" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\progressbarfill.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="SettingsPlayerReadonly" xml:space="preserve">
     <value>Equipamento do jogador somente leitura</value>
   </data>
@@ -1005,14 +967,8 @@ Quando ativado, o equipamento do personagem será somente leitura, você não po
   <data name="GlobalRelicVaultStash" xml:space="preserve">
     <value>Câmara das Relíquias</value>
   </data>
-  <data name="equipment_bg_and_char" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\equipment_bg_and_char.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="SettingsAllowEditCE" xml:space="preserve">
     <value>Permitir recursos de edição de personagens</value>
-  </data>
-  <data name="CEAttributePoints" xml:space="preserve">
-    <value>Pontos de atributos</value>
   </data>
   <data name="CEAttributes" xml:space="preserve">
     <value>Atributos básicos</value>
@@ -1236,6 +1192,9 @@ Quando ativado, o equipamento do personagem será somente leitura, você não po
   <data name="Money" xml:space="preserve">
     <value>Dinheiro</value>
   </data>
+  <data name="Electrum" xml:space="preserve">
+    <value>Electrum</value>
+  </data>
   <data name="SkillPoints" xml:space="preserve">
     <value>Pontos de habilidade</value>
   </data>
@@ -1307,12 +1266,6 @@ Quando ativado, o equipamento do personagem será somente leitura, você não po
   </data>
   <data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>Ativar todas as dicas de ferramentas</value>
-  </data>
-  <data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>Ativar exibição de dica de ferramenta detalhada</value>
-  </data>
-  <data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>Dividir atributos da dica de ferramenta em categorias Prefixo/Base/Sufixo</value>
   </data>
   <data name="SettingsItemBGColorOpacityLabel" xml:space="preserve">
     <value> Cor do item BG Alpha :</value>
@@ -1538,9 +1491,6 @@ O personagem também não poderá equipar itens onde os requisitos não forem at
     <value>@tagRace08P</value>
     <comment>Redirecionar o bônus para raça "Titan"</comment>
   </data>
-  <data name="ItemAccent" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\Img\ItemAccent.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="ItemEmbers" xml:space="preserve">
     <value>Item de Eternal Embers</value>
   </data>
@@ -1636,5 +1586,17 @@ O personagem também não poderá equipar itens onde os requisitos não forem at
   </data>
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 Compartilhar baú</value>
+  </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% de resistência ao dano de dreno de energia</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>Lançado onde o inimigo foi morto</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
   </data>
 </root>

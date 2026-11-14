@@ -38,19 +38,19 @@ public partial class ItemProvider
 			writer.Write(itm.beginBlockCrap2);
 
 			TQData.WriteCString(writer, "baseName");
-			TQData.WriteCString(writer, itm.BaseItemId.Raw);
+			TQData.WriteCString(writer, RecordId.RawOf(itm.BaseItemId));
 
 			TQData.WriteCString(writer, "prefixName");
-			TQData.WriteCString(writer, itm.prefixID.Raw);
+			TQData.WriteCString(writer, RecordId.RawOf(itm.prefixID));
 
 			TQData.WriteCString(writer, "suffixName");
-			TQData.WriteCString(writer, itm.suffixID.Raw);
+			TQData.WriteCString(writer, RecordId.RawOf(itm.suffixID));
 
 			TQData.WriteCString(writer, "relicName");
-			TQData.WriteCString(writer, itm.relicID.Raw);
+			TQData.WriteCString(writer, RecordId.RawOf(itm.relicID));
 
 			TQData.WriteCString(writer, "relicBonus");
-			TQData.WriteCString(writer, itm.RelicBonusId.Raw);
+			TQData.WriteCString(writer, RecordId.RawOf(itm.RelicBonusId));
 
 			TQData.WriteCString(writer, "seed");
 			writer.Write(cseed);
@@ -61,10 +61,10 @@ public partial class ItemProvider
 			if (itm.atlantis)
 			{
 				TQData.WriteCString(writer, "relicName2");
-				TQData.WriteCString(writer, itm.relic2ID.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.relic2ID));
 
 				TQData.WriteCString(writer, "relicBonus2");
-				TQData.WriteCString(writer, itm.RelicBonus2Id.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.RelicBonus2Id));
 
 				TQData.WriteCString(writer, "var2");
 				writer.Write(itm.Var2);
@@ -95,19 +95,19 @@ public partial class ItemProvider
 				writer.Write(itm.beginBlockCrap2);
 
 				TQData.WriteCString(writer, "baseName");
-				TQData.WriteCString(writer, itm.BaseItemId.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.BaseItemId));
 
 				TQData.WriteCString(writer, "prefixName");
-				TQData.WriteCString(writer, itm.prefixID.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.prefixID));
 
 				TQData.WriteCString(writer, "suffixName");
-				TQData.WriteCString(writer, itm.suffixID.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.suffixID));
 
 				TQData.WriteCString(writer, "relicName");
-				TQData.WriteCString(writer, itm.relicID.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.relicID));
 
 				TQData.WriteCString(writer, "relicBonus");
-				TQData.WriteCString(writer, itm.RelicBonusId.Raw);
+				TQData.WriteCString(writer, RecordId.RawOf(itm.RelicBonusId));
 
 				TQData.WriteCString(writer, "seed");
 				writer.Write(cseed);
@@ -118,10 +118,10 @@ public partial class ItemProvider
 				if (itm.atlantis)
 				{
 					TQData.WriteCString(writer, "relicName2");
-					TQData.WriteCString(writer, itm.relic2ID.Raw);
+					TQData.WriteCString(writer, RecordId.RawOf(itm.relic2ID));
 
 					TQData.WriteCString(writer, "relicBonus2");
-					TQData.WriteCString(writer, itm.RelicBonus2Id.Raw);
+					TQData.WriteCString(writer, RecordId.RawOf(itm.RelicBonus2Id));
 
 					TQData.WriteCString(writer, "var2");
 					writer.Write(itm.Var2);

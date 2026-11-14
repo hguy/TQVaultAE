@@ -15,18 +15,11 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Encodes and decodes a Titan Quest item sack from a player file.
 /// </summary>
-public class SackCollectionProvider : ISackCollectionProvider
+public class SackCollectionProvider(ILogger<SackCollectionProvider> log, IItemProvider itemProvider, ITQDataService tQData) : ISackCollectionProvider
 {
-	private readonly ILogger Log;
-	private readonly IItemProvider ItemProvider;
-	private readonly ITQDataService TQData;
-
-	public SackCollectionProvider(ILogger<SackCollectionProvider> log, IItemProvider itemProvider, ITQDataService tQData)
-	{
-		this.Log = log;
-		this.ItemProvider = itemProvider;
-		this.TQData = tQData;
-	}
+	private readonly ILogger Log = log;
+	private readonly IItemProvider ItemProvider = itemProvider;
+	private readonly ITQDataService TQData = tQData;
 
 	/// <summary>
 	/// Encodes the sack into binary form
@@ -154,7 +147,7 @@ public class SackCollectionProvider : ISackCollectionProvider
 
 			sc.items = new List<Item>(sc.size);
 
-			Item prevItem = null;
+			Item? prevItem = null;
 			for (int i = 0; i < sc.size; ++i)
 			{
 				// Additional logic to decode the weapon slots in the equipment section
@@ -175,7 +168,7 @@ public class SackCollectionProvider : ISackCollectionProvider
 				ItemProvider.Parse(item, reader);
 
 				// Stack sc item with the previous item if necessary
-				if ((prevItem != null) && item.DoesStack && (item.PositionX == -1) && (item.PositionY == -1))
+				if ((prevItem is not null) && item.DoesStack && (item.PositionX == -1) && (item.PositionY == -1))
 					prevItem.StackSize++;
 				else
 				{

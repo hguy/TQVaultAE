@@ -12,49 +12,36 @@ using System.Text;
 using System.Text.Json;
 using TQVaultAE.Data.Dto;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.Logs;
 
 namespace TQVaultAE.Data;
 
 /// <summary>
 /// Loads, decodes, encodes and saves a Titan Quest player file.
 /// </summary>
-public class PlayerCollectionProvider : IPlayerCollectionProvider
+public class PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO) : IPlayerCollectionProvider
 {
-	private readonly ILogger Log;
-	private readonly IItemProvider ItemProvider;
-	private readonly ISackCollectionProvider SackCollectionProvider;
-	private readonly ITQDataService TQData;
-	private readonly IFileIO FileIO;
-	private readonly IPathIO PathIO;
-	private readonly JsonSerializerOptions JsonOptions;
+	private readonly ILogger Log = log;
+	private readonly IItemProvider ItemProvider = itemProvider;
+	private readonly ISackCollectionProvider SackCollectionProvider = sackCollectionProvider;
+	private readonly ITQDataService TQData = tQData;
+	private readonly IFileIO FileIO = fileIO;
+	private readonly IPathIO PathIO = pathIO;
 
 	/// <summary>
 	/// array holding the byte pattern for the beginning of a block in the player file.
 	/// </summary>
-	public byte[] beginBlockPattern = { 0x0B, 0x00, 0x00, 0x00, 0x62, 0x65, 0x67, 0x69, 0x6E, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
+	public byte[] beginBlockPattern = [0x0B, 0x00, 0x00, 0x00, 0x62, 0x65, 0x67, 0x69, 0x6E, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B];
 
 	/// <summary>
 	/// array holding the byte pattern for the end of a block in the player file.
 	/// </summary>
-	public byte[] endBlockPattern = { 0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B };
-
-	public PlayerCollectionProvider(ILogger<PlayerCollectionProvider> log, IItemProvider itemProvider, ISackCollectionProvider sackCollectionProvider, ITQDataService tQData, IFileIO fileIO, IPathIO pathIO, JsonSerializerOptions jsonOptions)
-	{
-		this.Log = log;
-		this.ItemProvider = itemProvider;
-		this.SackCollectionProvider = sackCollectionProvider;
-		this.TQData = tQData;
-		this.FileIO = fileIO;
-		this.PathIO = pathIO;
-		this.JsonOptions = jsonOptions;
-	}
+	public byte[] endBlockPattern = [0x09, 0x00, 0x00, 0x00, 0x65, 0x6E, 0x64, 0x5F, 0x62, 0x6C, 0x6F, 0x63, 0x6B];
 
 	public void CommitPlayerInfo(PlayerCollection pc, PlayerInfo playerInfo)
 	{
-		if (pc.PlayerInfo == null) return;
-		if (playerInfo == null) return;
-		if (pc.rawData == null || !pc.rawData.Any()) return;
+		if (pc.PlayerInfo is null) return;
+		if (playerInfo is null) return;
+		if (pc.rawData is null || pc.rawData.Length == 0) return;
 
 		pc.PlayerInfo.CurrentLevel = playerInfo.CurrentLevel;
 		pc.PlayerInfo.MasteriesAllowed = playerInfo.MasteriesAllowed;
@@ -70,7 +57,10 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		pc.PlayerInfo.BaseMana = playerInfo.BaseMana;
 		pc.PlayerInfo.Money = playerInfo.Money;
 
-		if (pc.PlayerInfo.MustResetMasteries)
+		pc.PlayerInfo.SkillsChanged |= playerInfo.SkillsChanged;
+		pc.PlayerInfo.MasteriesChanged |= playerInfo.MasteriesChanged;
+
+		if (pc.PlayerInfo.MustResetMasteries || playerInfo.SkillsChanged)
 		{
 			pc.PlayerInfo.Class = playerInfo.Class;
 			// Put back the new reduced skill list in place for serialization
@@ -90,6 +80,9 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// <param name="playerFileRawData"></param>
 	public void Commit(PlayerCollection pc)
 	{
+		ArgumentNullException.ThrowIfNull(pc.rawData);
+		ArgumentNullException.ThrowIfNull(pc.PlayerInfo);
+
 		TQData.WriteIntAfter(pc.rawData, "playerLevel", pc.PlayerInfo.CurrentLevel);
 
 		TQData.WriteIntAfter(pc.rawData, "money", pc.PlayerInfo.Money);
@@ -113,9 +106,9 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		var baseHealth = TQData.WriteFloatAfter(pc.rawData, "temp", pc.PlayerInfo.BaseHealth, baseIntelligence.nextOffset);
 		var baseMana = TQData.WriteFloatAfter(pc.rawData, "temp", pc.PlayerInfo.BaseMana, baseHealth.nextOffset);
 
-		if (pc.PlayerInfo.MustResetMasteries)
+		if (pc.PlayerInfo.MustResetMasteries || pc.PlayerInfo.SkillsChanged)
 		{
-			#region Override skill lines block after reset
+			#region Override skill lines block after reset or edit
 
 			// Find skill section boundaries
 			var firstblock = TQData.ReadIntAfter(pc.rawData, "begin_block");
@@ -154,7 +147,8 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 
 			#region Reset Class tag
 
-			TQData.RemoveCStringValueAfter(ref pc.rawData, "playerClassTag");
+			if (pc.PlayerInfo.MustResetMasteries || pc.PlayerInfo.MasteriesChanged)
+				TQData.RemoveCStringValueAfter(ref pc.rawData, "playerClassTag");
 
 			#endregion
 
@@ -192,6 +186,9 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 			disabledtooltip = pc.DisabledTooltipBagId,
 			currentlyFocusedSackNumber = pc.currentlyFocusedSackNumber,
 			currentlySelectedSackNumber = pc.currentlySelectedSackNumber,
+			// The mod's name, and apart where it is installed from: older versions read the name.
+			mod = ModIdentity.NameOf(pc.Mod),
+			modSource = ModIdentity.SourceOf(pc.Mod),
 			sacks = pc.Select(sack => new SackDto()
 			{
 				iconinfo = sack.BagButtonIconInfo,
@@ -199,22 +196,26 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				{
 					stackSize = i.StackSize,
 					seed = i.Seed,
-					baseName = i.BaseItemId.Raw,
-					prefixName = i.prefixID.Raw,
-					suffixName = i.suffixID.Raw,
-					relicName = i.relicID.Raw,
-					relicBonus = i.RelicBonusId.Raw,
+					baseName = RecordId.RawOf(i.BaseItemId),
+					prefixName = RecordId.RawOf(i.prefixID),
+					suffixName = RecordId.RawOf(i.suffixID),
+					relicName = RecordId.RawOf(i.relicID),
+					relicBonus = RecordId.RawOf(i.RelicBonusId),
 					var1 = i.Var1,
-					relicName2 = i.relic2ID.Raw,
-					relicBonus2 = i.RelicBonus2Id.Raw,
+					relicName2 = RecordId.RawOf(i.relic2ID),
+					relicBonus2 = RecordId.RawOf(i.RelicBonus2Id),
 					var2 = i.Var2,
 					pointX = i.PositionX,
 					pointY = i.PositionY,
+					// Only an item's own map is written: an inherited one is the vault's.
+					mod = i.HasOwnMod ? ModIdentity.NameOf(i.Mod) : null,
+					modSource = i.HasOwnMod ? ModIdentity.SourceOf(i.Mod) : null,
+					noMod = i.HasOwnMod && i.Mod is null ? true : null,
 				}).ToList()
 			}).ToList()
 		};
 
-		this.FileIO.WriteAllText(fileName, JsonSerializer.Serialize(pcjson, JsonOptions), Encoding.UTF8);
+		this.FileIO.WriteAllText(fileName, JsonSerializer.Serialize(pcjson, VaultJsonContext.Default.VaultDto), Encoding.UTF8);
 	}
 
 	/// <summary>
@@ -235,6 +236,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		byte[] rawEquipmentData = EncodeEquipmentData(pc);
 
 		// May have change with skill reset so i get the new offsets
+		ArgumentNullException.ThrowIfNull(pc.rawData);
 		var itemBlockStart = TQData.BinaryFindKey(pc.rawData, "numberOfSacks");
 		var itemBlockStartOffset = itemBlockStart.indexOf - 4;// -4 to include key name length
 		var itemBlockEnd = TQData.BinaryFindEndBlockOf(pc.rawData, "numberOfSacks");
@@ -261,6 +263,12 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		// In between segment
 		int betweenLen = equipmentBlockStartOffset - itemBlockEndOffset;
 		pc.rawData.AsSpan(itemBlockEndOffset, betweenLen).CopyTo(resultSpan);
+
+		// It ends with the useAlternate value: written only when the weapon set in hand changed (a loadout loaded), so an
+		// unchanged file keeps its bytes.
+		bool savedAlternate = BitConverter.ToInt32(pc.rawData, equipmentBlockStartOffset - sizeof(int)) != 0;
+		if (savedAlternate != pc.UseAlternate)
+			BitConverter.TryWriteBytes(resultSpan.Slice(betweenLen - sizeof(int), sizeof(int)), pc.UseAlternate ? 1 : 0);
 		resultSpan = resultSpan.Slice(betweenLen);
 
 		// New equipment segment
@@ -280,12 +288,12 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	/// </summary>
 	/// <param name="pc"></param>
 	/// <param name="filePathToUse">if not <c>null</c>, use this file instead of <see cref="PlayerCollection.PlayerFile"/> </param>
-	public void LoadFile(PlayerCollection pc, string filePathToUse = null)
+	public void LoadFile(PlayerCollection pc, string? filePathToUse = null)
 	{
 		try
 		{
 			var path = filePathToUse ?? pc.PlayerFile;
-			if (path.EndsWith(".json"))
+			if (path.EndsWith(".json", StringComparison.Ordinal))
 			{
 				ParseJsonData(pc, path);
 				return;
@@ -305,12 +313,14 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 
 	private void ParseJsonData(PlayerCollection pc, string path)
 	{
-		var vaultDto = JsonSerializer.Deserialize<VaultDto>(this.FileIO.ReadAllText(path, Encoding.UTF8), JsonOptions);
+		var vaultDto = JsonSerializer.Deserialize(this.FileIO.ReadAllText(path, Encoding.UTF8), VaultJsonContext.Default.VaultDto)
+			?? throw new InvalidDataException($"Empty vault file: {path}");
 
-		pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? new();
+		pc.DisabledTooltipBagId = vaultDto.disabledtooltip ?? [];
 		pc.numberOfSacks = vaultDto.sacks.Count;
 		pc.currentlyFocusedSackNumber = vaultDto.currentlyFocusedSackNumber;
 		pc.currentlySelectedSackNumber = vaultDto.currentlySelectedSackNumber;
+		pc.Mod = ModIdentity.Compose(vaultDto.mod, vaultDto.modSource);
 
 		pc.Sacks = vaultDto.sacks.Select(s => new SackCollection()
 		{
@@ -341,17 +351,26 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 					PositionY = s.pointY,
 					endBlockCrap1 = this.TQData.EndBlockValue,
 					StackSize = s.stackSize,
+					// Its own map ("mod", or "noMod" for the base game), else the vault's, inherited. Set before the
+					// records are read: they resolve with that map's data.
+					Mod = s.noMod == true ? null : string.IsNullOrWhiteSpace(s.mod) ? pc.Mod : ModIdentity.Compose(s.mod, s.modSource),
+					ModOrigin = s.noMod == true || !string.IsNullOrWhiteSpace(s.mod) ? ModOrigin.Own : ModOrigin.Inherited,
+					InVault = true,
 					// Atlantis
 					relic2ID = RecordId.Empty,
 					RelicBonus2Id = RecordId.Empty,
 					Var2 = Item.var2Default,
 				};
 
-				if (!string.IsNullOrWhiteSpace(s.relicName2))
+				// The json has no atlantis flag: the game also writes the second relic fields empty, with a var2 to keep,
+				// so an item has them whenever they hold anything but the defaults of an item without them.
+				if (!string.IsNullOrWhiteSpace(s.relicName2)
+					|| !string.IsNullOrWhiteSpace(s.relicBonus2)
+					|| s.var2 != Item.var2Default)
 				{
 					itm.atlantis = true;
-					itm.relic2ID = s.relicName2;
-					itm.RelicBonus2Id = s.relicBonus2;
+					itm.relic2ID = s.relicName2 ?? string.Empty;
+					itm.RelicBonus2Id = s.relicBonus2 ?? string.Empty;
 					itm.Var2 = s.var2;
 				}
 
@@ -361,59 +380,6 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 			}).ToList()
 		}).ToArray();
 	}
-
-	/*
-
-#if DEBUG
-		// Generate RelicAndCharm Enum
-		if (path.Contains("Share"))
-		{
-			var str = pc.Sacks
-				//.Skip(8)
-				.SelectMany(s => s.items)
-				.Select(s =>
-				{
-					var Id = s.BaseItemId.Normalized;
-					var filename = this.PathIO.GetFileNameWithoutExtension(Id);
-					var filesplit = filename.Split('_');
-					var enumName = filesplit.Reverse().JoinString("_");
-
-					if (s.BaseItemId.TokensNormalized.Contains("HCDUNGEON"))
-						enumName = "HCDUNGEON_" + enumName;
-
-					return new
-					{
-						Item = s,
-						Friendly = ItemProvider.GetFriendlyNames(s, FriendlyNamesExtraScopes.ItemFullDisplay),
-						Id,
-						filename,
-						enumName
-					};
-				})
-				.OrderBy(s => s.enumName)
-				.GroupBy(s => s.enumName)
-				.Select(g =>
-				{
-					var i = g.First();
-					return $@"
-/// <summary>
-/// {i.Friendly.FullNameClean}
-/// </summary>
-/// <remarks>
-/// {string.Join("\n/// ", i.Friendly.FlavorText).RemoveAllTQTags()}
-/// </remarks>
-[Description(@""{i.Id}"")]
-[GearType(GearType.Undefined)]
-{i.enumName},";
-				})
-				.JoinString("\n");
-
-			System.Diagnostics.Debug.WriteLine(str);
-		}
-
-#endif
-
-	*/
 
 	/// <summary>
 	/// Looks for the next begin_block or end_block.
@@ -480,6 +446,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 	private void ParseRawData(PlayerCollection pc)
 	{
 		// First create a memory stream so we can decode the binary data as needed.
+		ArgumentNullException.ThrowIfNull(pc.rawData);
 		using (MemoryStream stream = new MemoryStream(pc.rawData, false))
 		using (BinaryReader reader = new BinaryReader(stream))
 		{
@@ -514,24 +481,26 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 					currentOffset = (int)stream.Position;
 
 					// See if we accidentally got a begin_block or end_block
-					if (blockName.Equals("BEGIN_BLOCK"))
+					if (blockName.Equals("BEGIN_BLOCK", StringComparison.Ordinal))
 					{
 						blockName = "(NONAME)";
 						currentOffset -= beginBlockPattern.Length;
 					}
-					else if (blockName.Equals("END_BLOCK"))
+					else if (blockName.Equals("END_BLOCK", StringComparison.Ordinal))
 					{
 						blockName = "(NONAME)";
 						currentOffset -= endBlockPattern.Length;
 					}
-					else if (blockName.Equals("ITEMPOSITIONSSAVEDASGRIDCOORDS"))
+					else if (blockName.Equals("ITEMPOSITIONSSAVEDASGRIDCOORDS", StringComparison.Ordinal))
 					{
 						currentOffset += 4;
 						itemOffset = currentOffset; // skip value for itemPositionsSavedAsGridCoords
 						foundItems = true;
 					}
-					else if (blockName.Equals("USEALTERNATE"))
+					else if (blockName.Equals("USEALTERNATE", StringComparison.Ordinal))
 					{
+						// Which weapon set is in hand: 1 for the second one.
+						pc.UseAlternate = currentOffset + 4 <= pc.rawData.Length && BitConverter.ToInt32(pc.rawData, currentOffset) != 0;
 						currentOffset += 4;
 						equipmentOffset = currentOffset; // skip value for useAlternate
 						foundEquipment = true;
@@ -555,7 +524,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				catch (ArgumentException exception)
 				{
 					var ex = new ArgumentException($"Error parsing player file Item Block- '{pc.PlayerName}'", exception);
-					Log.ErrorException(ex);
+					this.Log.LogError(ex, "Failed to parse the item block of {Player} ({PlayerFile})", pc.PlayerName, pc.PlayerFile);
 					throw ex;
 				}
 			}
@@ -570,7 +539,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				catch (ArgumentException exception)
 				{
 					var ex = new ArgumentException($"Error parsing player file Equipment Block - '{pc.PlayerName}'", exception);
-					Log.ErrorException(ex);
+					this.Log.LogError(ex, "Failed to parse the equipment block of {Player} ({PlayerFile})", pc.PlayerName, pc.PlayerFile);
 					throw ex;
 				}
 			}
@@ -584,7 +553,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				catch (ArgumentException ex)
 				{
 					var exx = new ArgumentException($"Error parsing player player info Block - '{pc.PlayerName}'", ex);
-					Log.ErrorException(exx);
+					this.Log.LogError(exx, "Failed to parse the player info of {Player} ({PlayerFile})", pc.PlayerName, pc.PlayerFile);
 					throw exx;
 				}
 			}
@@ -599,6 +568,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		var pi = new PlayerInfo(this.PathIO);
 		pi.Modified = false;
 
+		ArgumentNullException.ThrowIfNull(pc.rawData);
 		var headerVersion = TQData.ReadIntAfter(pc.rawData, "headerVersion");
 		pi.HeaderVersion = (PlayerFileHeaderVersion)headerVersion.valueAsInt;
 
@@ -608,8 +578,18 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		var playerClassTag = TQData.ReadCStringAfter(pc.rawData, "playerClassTag");
 		pi.Class = playerClassTag.valueAsString;
 
+		var playerTexture = TQData.ReadCStringAfter(pc.rawData, "playerTexture");
+		pi.PlayerTexture = playerTexture.valueAsString ?? string.Empty;
+
 		var money = TQData.ReadIntAfter(pc.rawData, "money", playerClassTag.nextOffset);
 		pi.Money = money.valueAsInt;
+
+		// Eternal Embers adds "altMoney" (Electrum) right after "money"; older saves don't have it. Only accept the key at
+		// that place, so a later "altMoney" elsewhere in the file can't be taken for it.
+		var electrum = TQData.ReadIntAfter(pc.rawData, "altMoney", money.nextOffset);
+		pi.Electrum = money.indexOf != -1 && electrum.indexOf == money.nextOffset + sizeof(int)
+			? electrum.valueAsInt
+			: null;
 
 		var masteriesAllowed = TQData.ReadIntAfter(pc.rawData, "masteriesAllowed", money.nextOffset);
 		pi.MasteriesAllowed = masteriesAllowed.valueAsInt;
@@ -684,7 +664,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		pi.GreatestMonsterKilledLevel = greatestMonsterKilledLevel.valueAsInt;
 
 		var greatestMonsterKilledLifeAndMana = TQData.ReadIntAfter(pc.rawData, "(*greatestMonsterKilledLifeAndMana)[i]", greatestMonsterKilledLevel.nextOffset);
-		pi.GreatestMonsterKilledLifeAndMana = greatestMonsterKilledLevel.valueAsInt;
+		pi.GreatestMonsterKilledLifeAndMana = greatestMonsterKilledLifeAndMana.valueAsInt;
 
 		var greatestMonsterKilledName2 = TQData.ReadUnicodeStringAfter(pc.rawData, "(*greatestMonsterKilledName)[i]", greatestMonsterKilledLifeAndMana.nextOffset);
 
@@ -757,6 +737,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 				TQData.WriteCString(writer, "currentlySelectedSackNumber");
 				writer.Write(pc.currentlySelectedSackNumber);
 
+				ArgumentNullException.ThrowIfNull(pc.Sacks);
 				for (int i = 0; i < pc.numberOfSacks; ++i)
 				{
 					// SackType should already be set at pc point
@@ -844,6 +825,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 					writer.Write(pc.equipmentCtrlIOStreamVersion);
 				}
 
+				ArgumentNullException.ThrowIfNull(pc.EquipmentSack);
 				SackCollectionProvider.Encode(pc.EquipmentSack, writer);
 
 				dataLength = (int)writeStream.Length;
@@ -893,7 +875,7 @@ public class PlayerCollectionProvider : IPlayerCollectionProvider
 		}
 		catch (ArgumentException ex)
 		{
-			Log.LogError(ex, $"ParseEquipmentBlock fail ! offset={offset}");
+			Log.LogError(ex, "ParseEquipmentBlock fail ! offset={Offset}", offset);
 			throw;
 		}
 	}

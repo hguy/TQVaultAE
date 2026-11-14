@@ -8,35 +8,57 @@ using TQVaultAE.Domain.Helpers;
 
 namespace TQVaultAE.Data;
 
-public class LootTableCollectionProvider : ILootTableCollectionProvider
+public class LootTableCollectionProvider(ILogger<LootTableCollectionProvider> log, IDatabase database, ITranslationService translationService, UserSettings uSettings) : ILootTableCollectionProvider, IGameDataCache
 {
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
-	private readonly ILogger<LootTableCollectionProvider> Log;
-	private readonly IDatabase Database;
-	private readonly ITranslationService TranslationService;
-	private readonly UserSettings USettings;
+	private readonly ILogger<LootTableCollectionProvider> Log = log;
+	private readonly IDatabase Database = database;
+	private readonly ITranslationService TranslationService = translationService;
+	private readonly UserSettings USettings = uSettings;
 
-	private Dictionary<RecordId, LootTableCollection> LootTableCache = new();
+	/// <summary>The tables read so far, per data scope: a mod may override a table of the base game.</summary>
+	private Dictionary<string, Dictionary<RecordId, LootTableCollection>> _lootTableCaches = new(StringComparer.OrdinalIgnoreCase);
+	private Dictionary<string, ReadOnlyDictionary<RecordId, LootTableCollection>> _allLootRandomizerTables = new(StringComparer.OrdinalIgnoreCase);
 
-	ReadOnlyDictionary<RecordId, LootTableCollection> _AllLootRandomizerTable;
+	/// <summary>The tables read so far for the data the calling thread reads now.</summary>
+	private Dictionary<RecordId, LootTableCollection> LootTableCache
+	{
+		get
+		{
+			var scope = this.Database.DataScope ?? string.Empty;
+			if (!this._lootTableCaches.TryGetValue(scope, out var cache))
+				this._lootTableCaches[scope] = cache = [];
+			return cache;
+		}
+	}
+
+	/// <inheritdoc/>
+	public void ClearGameDataCache()
+	{
+		this._lootTableCaches = new(StringComparer.OrdinalIgnoreCase);
+		this._allLootRandomizerTables = new(StringComparer.OrdinalIgnoreCase);
+		this._AllLootRandomizerTranslated = null;
+	}
+
 	public ReadOnlyDictionary<RecordId, LootTableCollection> AllLootRandomizerTable
 	{
 		get
 		{
-			if (_AllLootRandomizerTable is null)
+			var scope = this.Database.DataScope ?? string.Empty;
+			if (!this._allLootRandomizerTables.TryGetValue(scope, out var all))
 			{
 				foreach (var tableId in Database.AllLootRandomizerTable.Keys)
 					LoadTable(tableId);
 
-				_AllLootRandomizerTable = new ReadOnlyDictionary<RecordId, LootTableCollection>(LootTableCache);
+				this._allLootRandomizerTables[scope] = all = new ReadOnlyDictionary<RecordId, LootTableCollection>(LootTableCache);
 			}
 
-			return _AllLootRandomizerTable;
+			return all;
 		}
 	}
 
-	private ReadOnlyDictionary<RecordId, LootRandomizerItem> _AllLootRandomizerTranslated;
+	private ReadOnlyDictionary<RecordId, LootRandomizerItem>? _AllLootRandomizerTranslated;
 	/// <summary>
 	/// Return all loot randomizer (Affix effect infos)
 	/// </summary>
@@ -49,7 +71,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 			{
 				var dico = Database.AllLootRandomizer.Select(r =>
 				{
-					string translation = null;
+					string? translation = null;
 
 					if (r.Value.TranslationTagIsEmpty)
 					{
@@ -77,21 +99,13 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 		}
 	}
 
-	public LootTableCollectionProvider(ILogger<LootTableCollectionProvider> log, IDatabase database, ITranslationService translationService, UserSettings uSettings)
-	{
-		this.Log = log;
-		this.Database = database;
-		this.TranslationService = translationService;
-		USettings = uSettings;
-	}
-
 	private Dictionary<RecordId, (float Weight, LootRandomizerItem LootRandomizer)> MakeTable(RecordId tableId, DBRecordCollection records)
 	{
 		var Data = new Dictionary<RecordId, (float Weight, LootRandomizerItem LootRandomizer)>();
 
 		#region Build Table
 
-		Dictionary<string, (RecordId AffixId, float Weight)> dico = new();
+		Dictionary<string, (RecordId AffixId, float Weight)> dico = [];
 		string number, randomizerName = "randomizerName", randomizerWeight = "randomizerWeight", affixId;
 		foreach (var variable in records)
 		{
@@ -169,7 +183,7 @@ public class LootTableCollectionProvider : ILootTableCollectionProvider
 	/// <summary>
 	/// Builds the table from the database using the passed table Id.
 	/// </summary>
-	public LootTableCollection LoadTable(RecordId tableId)
+	public LootTableCollection? LoadTable(RecordId tableId)
 	{
 		if (RecordId.IsNullOrEmpty(tableId))
 			return null;

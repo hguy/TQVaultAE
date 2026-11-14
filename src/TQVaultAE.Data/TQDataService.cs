@@ -9,14 +9,14 @@ using Microsoft.Extensions.Logging;
 using System.Buffers.Binary;
 using System.Globalization;
 using System.Text;
-using TQVaultAE.Logs;
+using TQVaultAE.GameFiles;
 
 namespace TQVaultAE.Data;
 
 /// <summary>
 /// TQData is used to store information about reading and writing the data files in TQ.
 /// </summary>
-public class TQDataService : ITQDataService
+public class TQDataService(ILogger<TQDataService> log) : ITQDataService
 {
 	public const int BEGIN_BLOCK_VALUE = -1340212530;
 	public const int END_BLOCK_VALUE = -559038242;
@@ -24,32 +24,17 @@ public class TQDataService : ITQDataService
 	public int BeginBlockValue => BEGIN_BLOCK_VALUE;
 	public int EndBlockValue => END_BLOCK_VALUE;
 
-	private readonly ILogger Log;
-
-	/// <summary>
-	/// Lazy-initialized CP1252 encoding for Titan Quest file parsing.
-	/// Encoding.RegisterProvider is idempotent - safe to call multiple times.
-	/// </summary>
-	private static readonly Lazy<Encoding> _encoding1252 = new(static () =>
-	{
-		Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-		return Encoding.GetEncoding(1252);
-	});
+	private readonly ILogger Log = log;
 
 	/// <summary>
 	/// Gets the CP1252 (Windows-1252) encoding used for TQ file parsing.
 	/// </summary>
-	public static Encoding Encoding1252 => _encoding1252.Value;
+	public static Encoding Encoding1252 => TextEncodings.Cp1252;
 
 	/// <summary>
 	/// Gets the Unicode UTF-16 encoding.
 	/// </summary>
 	public static Encoding EncodingUnicode => Encoding.Unicode;
-
-	public TQDataService(ILogger<TQDataService> log)
-	{
-		this.Log = log;
-	}
 
 	/// <summary>
 	/// Validates that the next string is a certain value and throws an exception if it is not.
@@ -59,15 +44,16 @@ public class TQDataService : ITQDataService
 	public void ValidateNextString(string value, BinaryReader reader)
 	{
 		string label = ReadCString(reader);
-		if (!label.ToUpperInvariant().Equals(value.ToUpperInvariant()))
+		if (!string.Equals(label, value, StringComparison.OrdinalIgnoreCase))
 		{
+			long position = reader.BaseStream.Position - label.Length - 4;
 			var ex = new ArgumentException(string.Format(
 				CultureInfo.InvariantCulture,
 				"Error reading file at position {2}.  Expecting '{0}'.  Got '{1}'",
 				value,
 				label,
-				reader.BaseStream.Position - label.Length - 4));
-			Log.ErrorException(ex);
+				position));
+			this.Log.LogError(ex, "Unexpected string at position {Position}: expected '{Expected}', got '{Actual}'", position, value, label);
 			throw ex;
 		}
 	}
@@ -79,7 +65,7 @@ public class TQDataService : ITQDataService
 		string label = ReadCString(reader);
 		reader.BaseStream.Position = readerPosition;
 
-		if (!label.ToUpperInvariant().Equals(value.ToUpperInvariant()))
+		if (!string.Equals(label, value, StringComparison.OrdinalIgnoreCase))
 			return false;
 
 		return true;
@@ -332,7 +318,7 @@ public class TQDataService : ITQDataService
 		int level = 0;
 		var keybegin_block = "begin_block";
 		var keyend_block = "end_block";
-		var noMatch = (-1, 0, 0, new byte[] { }, 0);
+		var noMatch = (-1, 0, 0, Array.Empty<byte>(), 0);
 
 		var startPoint = BinaryFindKey(playerFileContent, keyToLookFor, offset);
 		if (startPoint.indexOf == -1)

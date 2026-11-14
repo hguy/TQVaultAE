@@ -12,17 +12,9 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Used for autosorting of items within a group
 /// </summary>
-public class ItemAttributeSubListCompare : IComparer<Variable>
+public class ItemAttributeSubListCompare(IItemAttributeProvider itemAttributeProvider) : IComparer<Variable?>
 {
-	private readonly IItemAttributeProvider ItemAttributeProvider;
-
-	/// <summary>
-	/// Initializes a new instance of the ItemAttributeSubListCompare class.
-	/// </summary>
-	public ItemAttributeSubListCompare(IItemAttributeProvider itemAttributeProvider)
-	{
-		this.ItemAttributeProvider = itemAttributeProvider;
-	}
+	private readonly IItemAttributeProvider ItemAttributeProvider = itemAttributeProvider;
 
 	/// <summary>
 	/// Compares 2 values
@@ -30,8 +22,11 @@ public class ItemAttributeSubListCompare : IComparer<Variable>
 	/// <param name="value1">First object to compare</param>
 	/// <param name="value2">Second object to compare</param>
 	/// <returns>-1 if value2 is larger, 1 if value1 is larger and 0 if equal</returns>
-	int IComparer<Variable>.Compare(Variable value1, Variable value2)
+	int IComparer<Variable?>.Compare(Variable? value1, Variable? value2)
 	{
+		if (value1 is null || value2 is null)
+			return value1 is null ? (value2 is null ? 0 : -1) : 1;
+
 		// Calculate an "order" number for each
 		int ordera = CalcOrder(value1);
 		int orderb = CalcOrder(value2);
@@ -58,8 +53,8 @@ public class ItemAttributeSubListCompare : IComparer<Variable>
 	/// <returns>order number of the variable</returns>
 	private int CalcOrder(Variable variable)
 	{
-		ItemAttributesData aa = ItemAttributeProvider.GetAttributeData(variable.Name);
-		if (aa == null)
+		ItemAttributesData? aa = ItemAttributeProvider.GetAttributeData(variable.Name);
+		if (aa is null)
 			return 3000000;
 
 		return CalcBaseOrder(aa.EffectType, aa.Suborder);

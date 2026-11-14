@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+﻿﻿//-----------------------------------------------------------------------
 // <copyright file="ItemAttributeListCompare.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -14,23 +14,14 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Used to sort AttributeEffect groups so that effects that belong together stay together
 /// </summary>
-public class ItemAttributeListCompare : IComparer<List<Variable>>
+/// <param name="isArmor">flag to show that the item is a piece of armor</param>
+public class ItemAttributeListCompare(bool isArmor, IItemAttributeProvider itemAttributeProvider) : IComparer<List<Variable?>>
 {
 	/// <summary>
 	/// Flag to show whether the item is a piece of armor
 	/// </summary>
-	private bool isArmor;
-	private readonly IItemAttributeProvider ItemAttributeProvider;
-
-	/// <summary>
-	/// Initializes a new instance of the ItemAttributeListCompare class.
-	/// </summary>
-	/// <param name="isArmor">flag to show that the item is a piece of armor</param>
-	public ItemAttributeListCompare(bool isArmor, IItemAttributeProvider itemAttributeProvider)
-	{
-		this.isArmor = isArmor;
-		this.ItemAttributeProvider = itemAttributeProvider;
-	}
+	private bool isArmor = isArmor;
+	private readonly IItemAttributeProvider ItemAttributeProvider = itemAttributeProvider;
 
 	/// <summary>
 	/// Compares 2 values
@@ -38,8 +29,11 @@ public class ItemAttributeListCompare : IComparer<List<Variable>>
 	/// <param name="value1">First object to compare</param>
 	/// <param name="value2">Second object to compare</param>
 	/// <returns>-1 if value2 is larger, 1 if value1 is larger and 0 if equal</returns>
-	int IComparer<List<Variable>>.Compare(List<Variable> value1, List<Variable> value2)
+	int IComparer<List<Variable?>>.Compare(List<Variable?>? value1, List<Variable?>? value2)
 	{
+		if (value1 is null || value2 is null)
+			return value1 is null ? (value2 is null ? 0 : -1) : 1;
+
 		// Calculate an "order" number for each
 		int ordera = this.CalcOrder(value1);
 		int orderb = this.CalcOrder(value2);
@@ -83,48 +77,52 @@ public class ItemAttributeListCompare : IComparer<List<Variable>>
 	/// </summary>
 	/// <param name="attributes">List holding the attributes</param>
 	/// <returns>value of the attribute</returns>
-	private int CalcOrder(List<Variable> attributes)
+	private int CalcOrder(List<Variable?> attributes)
 	{
 		// Get the first item to use as a reference.
-		Variable v = attributes[0];
-		ItemAttributesData aa = ItemAttributeProvider.GetAttributeData(v.Name);
+		if (attributes[0] is not { } v)
+			return 3000000;
+
+		ItemAttributesData? aa = ItemAttributeProvider.GetAttributeData(v.Name);
 
 		// put granted skills at the end
-		if (v.Name.Equals("itemSkillName"))
+		if (v.Name.Equals("itemSkillName", StringComparison.Ordinal))
 			return 4000000;
 
-		if (aa == null)
+		if (aa is null)
 			return 3000000;
 
 		// This is a good first estimate.
 		int order = this.CalcBaseOrder(aa.EffectType, aa.Suborder);
 
 		// now some special cases
-		if (aa.FullAttribute.Equals("characterBaseAttackSpeedTag"))
+		if (aa.FullAttribute.Equals("characterBaseAttackSpeedTag", StringComparison.Ordinal))
 		{
 			// put it right after the base piercing stat
-			ItemAttributesData piercing = ItemAttributeProvider.GetAttributeData("offensivePierceRatioMin");
-			order = this.CalcBaseOrder(piercing.EffectType, piercing.Suborder) + 1;
+			ItemAttributesData? piercing = ItemAttributeProvider.GetAttributeData("offensivePierceRatioMin");
+			if (piercing is not null)
+				order = this.CalcBaseOrder(piercing.EffectType, piercing.Suborder) + 1;
 		}
-		else if (aa.FullAttribute.Equals("retaliationGlobalChance"))
+		else if (aa.FullAttribute.Equals("retaliationGlobalChance", StringComparison.Ordinal))
 		{
 			// Put this guy at the beginning of the retaliation global group
 			order = MakeGlobal(this.CalcBaseOrder(ItemAttributesEffectType.Retaliation, 0) - 1);
 		}
-		else if (aa.FullAttribute.Equals("offensiveGlobalChance"))
+		else if (aa.FullAttribute.Equals("offensiveGlobalChance", StringComparison.Ordinal))
 		{
 			// put this guy at the beginning of the offensive global group
 			order = MakeGlobal(this.CalcBaseOrder(ItemAttributesEffectType.Offense, 0) - 1);
 		}
-		else if (this.isArmor && aa.FullAttribute.Equals("offensivePhysicalMin"))
+		else if (this.isArmor && aa.FullAttribute.Equals("offensivePhysicalMin", StringComparison.Ordinal))
 		{
 			// put it right after the block recovery time stat
-			ItemAttributesData blockRecovery = ItemAttributeProvider.GetAttributeData("blockRecoveryTime");
-			order = this.CalcBaseOrder(blockRecovery.EffectType, blockRecovery.Suborder) + 1;
+			ItemAttributesData? blockRecovery = ItemAttributeProvider.GetAttributeData("blockRecoveryTime");
+			if (blockRecovery is not null)
+				order = this.CalcBaseOrder(blockRecovery.EffectType, blockRecovery.Suborder) + 1;
 		}
 
 		// Now see if the variable is global and move it to the global group if it is
-		if (ItemAttributeProvider.AttributeGroupHas(new Collection<Variable>(attributes), "Global"))
+		if (ItemAttributeProvider.AttributeGroupHas(new Collection<Variable?>(attributes), "Global"))
 			order = MakeGlobal(order);
 
 		return order;

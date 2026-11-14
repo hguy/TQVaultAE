@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Drawing;
 using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 
 namespace TQVaultAE.Services;
 
@@ -17,7 +18,7 @@ public class TagService : ITagService
 	protected readonly IFileIO FileIO;
 	protected readonly IPathIO PathIO;
 	protected readonly JsonSerializerOptions JsonOptions;
-	protected TagConfig TagConfig;
+	protected TagConfig TagConfig = new();
 	public Dictionary<string, Color> Tags => this.TagConfig.tags.OrderBy(t => t.name).ToDictionary(
 		t => t.name,
 		t => Color.FromArgb(t.color.R, t.color.G, t.color.B)
@@ -31,6 +32,22 @@ public class TagService : ITagService
 		this.PathIO = pathIO;
 		this.JsonOptions = jsonOptions;
 		this.ReadConfig();
+	}
+
+	/// <inheritdoc/>
+	public TagNameError ValidateTagName(string? newName, string? currentName = null)
+	{
+		if (string.IsNullOrWhiteSpace(newName))
+			return TagNameError.Empty;
+
+		// Before the existing names, which hold the current one too.
+		if (currentName is not null && currentName.Equals(newName, StringComparison.OrdinalIgnoreCase))
+			return TagNameError.SameAsCurrent;
+
+		if (this.TagConfig.tags.Any(t => t.name.Equals(newName, StringComparison.OrdinalIgnoreCase)))
+			return TagNameError.AlreadyExists;
+
+		return TagNameError.None;
 	}
 
 	public bool AddTag(string tagName)
@@ -151,7 +168,7 @@ public class TagService : ITagService
 		if (this.FileIO.Exists(configFilePath))
 		{
 			var content = this.FileIO.ReadAllText(configFilePath);
-			this.TagConfig = JsonSerializer.Deserialize<TagConfig>(content, JsonOptions);
+			this.TagConfig = JsonSerializer.Deserialize<TagConfig>(content, JsonOptions) ?? new();
 			return;
 		}
 
@@ -164,6 +181,9 @@ public class TagService : ITagService
 	{
 		if (this.TagConfig is null)
 			return;
+
+		// A character left without tags (last tag unassigned or deleted) keeps no entry.
+		this.TagConfig.mapping.RemoveAll(m => m.tags is null || m.tags.Count == 0);
 
 		string configFilePath = this.ResolveConfigFilePath();
 
@@ -188,9 +208,8 @@ public class TagService : ITagService
 			// update references inside mapping
 			foreach (var map in this.TagConfig.mapping)
 			{
-				if (map.tags.Contains(tagNameOld))
+				if (map.tags.Remove(tagNameOld))
 				{
-					map.tags.Remove(tagNameOld);
 					map.tags.Add(tagNameNew);
 				}
 			}

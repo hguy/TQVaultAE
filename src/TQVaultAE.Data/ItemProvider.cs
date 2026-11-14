@@ -11,8 +11,10 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using TQVaultAE.Config;
+using TQVaultAE.Domain.Comparison;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
+using TQVaultAE.Domain.Jitter;
 using TQVaultAE.Domain.Results;
 
 namespace TQVaultAE.Data;
@@ -20,7 +22,7 @@ namespace TQVaultAE.Data;
 /// <summary>
 /// Class for holding item information
 /// </summary>
-public partial class ItemProvider : IItemProvider
+public partial class ItemProvider : IItemProvider, IGameDataCache
 {
 	private const StringComparison noCase = StringComparison.OrdinalIgnoreCase;
 
@@ -32,8 +34,26 @@ public partial class ItemProvider : IItemProvider
 	private readonly ITranslationService TranslationService;
 	private readonly IPathIO PathIO;
 	private readonly UserSettings USettings;
+
+	/// <summary>
+	/// Gives an item linked to a mod its mod's database; null in tests that do not need it.
+	/// </summary>
+	private readonly IItemModService? ItemMods;
+
+	/// <summary>
+	/// The database of the item's mod for the current thread, until disposed.
+	/// </summary>
+	private IDisposable ModScope(Item? itm) => this.ItemMods.ScopeOrNone(itm);
 	private readonly LazyConcurrentDictionary<(Item Item, FriendlyNamesExtraScopes? Scope, bool FilterExtra), ToFriendlyNameResult> FriendlyNamesCache = new LazyConcurrentDictionary<(Item, FriendlyNamesExtraScopes?, bool), ToFriendlyNameResult>();
-	private readonly LazyConcurrentDictionary<RecordId, ItemAffixes> ItemAffixesCache = new();
+	private readonly LazyConcurrentDictionary<(string Scope, RecordId Item), ItemAffixes?> ItemAffixesCache = new();
+	private volatile bool _cachedShowInGameValues;
+
+	/// <inheritdoc/>
+	public void ClearGameDataCache()
+	{
+		this.FriendlyNamesCache.Clear();
+		this.ItemAffixesCache.Clear();
+	}
 
 
 	public ItemProvider(
@@ -44,8 +64,10 @@ public partial class ItemProvider : IItemProvider
 			, ITQDataService tQData
 			, ITranslationService translationService, IPathIO pathIO
 			, UserSettings uSettings
+			, IItemModService? itemMods = null
 		)
 	{
+		this.ItemMods = itemMods;
 		this.Log = log;
 		this.Database = database;
 		this.LootTableCollectionProvider = lootTableCollectionProvider;
@@ -54,15 +76,52 @@ public partial class ItemProvider : IItemProvider
 		this.TranslationService = translationService;
 		PathIO = pathIO;
 		USettings = uSettings;
+
+		this.SortArmorAttributeGroups = ((IComparer<List<Variable?>>)new ItemAttributeListCompare(true, itemAttributeProvider)).Compare;
+		this.SortOtherAttributeGroups = ((IComparer<List<Variable?>>)new ItemAttributeListCompare(false, itemAttributeProvider)).Compare;
+		this.SortDamageQualifiers = ((IComparer<Variable?>)new ItemAttributeSubListCompare(itemAttributeProvider)).Compare;
 	}
 
+	// Sort delegates made once: Array.Sort and List.Sort given an IComparer build a Comparison from it on every call,
+	// and building that delegate was the most contended step of the parallel search warm-up.
+	private readonly Comparison<List<Variable?>> SortArmorAttributeGroups;
+	private readonly Comparison<List<Variable?>> SortOtherAttributeGroups;
+	private readonly Comparison<Variable?> SortDamageQualifiers;
+
+
+	/// <summary>
+	/// Replays the game's stat jitter for equipment (armor, jewellery, weapons, shields).
+	/// </summary>
+	/// <returns><see langword="null"/> when the item is not equipment or has no seed.</returns>
+	private ItemRollResult? RollInGameValues(Item itm, DBRecordCollection? baseRecord)
+	{
+		var itemClass = itm.baseItemInfo?.ItemClass;
+		if (baseRecord is null || itm.Seed == 0 || itemClass is null || itm.IsRelicOrCharm
+			|| !(itemClass.StartsWith("ArmorProtective", StringComparison.OrdinalIgnoreCase)
+				|| itemClass.StartsWith("ArmorJewelry", StringComparison.OrdinalIgnoreCase)
+				|| itemClass.StartsWith("Weapon", StringComparison.OrdinalIgnoreCase)))
+			return null;
+
+		try {
+			var prefix = RecordId.IsNullOrEmpty(itm.prefixID) ? null : this.Database.GetRecordFromFile(itm.prefixID);
+			var suffix = RecordId.IsNullOrEmpty(itm.suffixID) ? null : this.Database.GetRecordFromFile(itm.suffixID);
+			return ItemRollSimulator.Roll((uint)itm.Seed, itm.IsArmor, baseRecord, prefix, suffix);
+		} catch (Exception ex) {
+			this.Log.LogError(ex, "Failed to compute in-game values for {Item}", itm.BaseItemId);
+			return null;
+		}
+	}
+
+	private static string FormatInGameRoll(RolledValue roll)
+		=> string.Format(CultureInfo.CurrentCulture, "{0} {1}: {2:0.##} -> {3:0.##}", roll.Source, roll.Variable, roll.Original, roll.Rolled);
 
 	public bool InvalidateFriendlyNamesCache(params IEnumerable<Item> items)
 	{
-		items = items.Where(i => i != null).ToList();
-		var keylist = this.FriendlyNamesCache.Where(i => items.Contains(i.Key.Item)).Select(i => i.Key).ToList();
+		// A set: a whole vault can be passed, against a cache of every item shown so far.
+		var set = items.Where(i => i is not null).ToHashSet(ReferenceEqualityComparer.Instance);
+		var keylist = this.FriendlyNamesCache.Where(i => set.Contains(i.Key.Item)).Select(i => i.Key).ToList();
 		foreach (var k in keylist) this.FriendlyNamesCache.TryRemove(k, out var outVal);
-		return keylist.Any();
+		return keylist.Count != 0;
 	}
 
 	/// <summary>
@@ -73,27 +132,40 @@ public partial class ItemProvider : IItemProvider
 	/// <param name="parameter2">second parameter</param>
 	/// <param name="parameter3">third parameter</param>
 	/// <returns>formatted string.</returns>
-	public string Format(string formatSpec, object parameter1, object parameter2 = null, object parameter3 = null)
+	public string Format(string? formatSpec, object? parameter1, object? parameter2 = null, object? parameter3 = null)
 	{
 		try
 		{
-			return string.Format(CultureInfo.CurrentCulture, formatSpec, parameter1, parameter2, parameter3);
+			// A null format throws ArgumentNullException, reported below like a bad format.
+			return string.Format(CultureInfo.CurrentCulture, formatSpec!, parameter1, parameter2, parameter3);
 		}
-		catch (ArgumentException)
+		// A malformed format (often a translation) shows this one line raw instead of failing the whole item text.
+		catch (Exception ex) when (ex is ArgumentException or FormatException)
 		{
 			string parameters = string.Format(
 				CultureInfo.InvariantCulture,
 				"\", '{0}', '{1}', '{2}'>",
-				parameter1 == null ? "NULL" : parameter1,
-				parameter2 == null ? "NULL" : parameter2,
-				parameter3 == null ? "NULL" : parameter3);
+				parameter1 is null ? "NULL" : parameter1,
+				parameter2 is null ? "NULL" : parameter2,
+				parameter3 is null ? "NULL" : parameter3);
 
 			string error = string.Concat("FormatErr(\"", formatSpec, parameters);
 
-			Log.LogDebug(error);
+			Log.LogWarning(ex, "Failed to format an item text line: {Message}", error);
 
 			return error;
 		}
+	}
+
+	/// <summary>
+	/// <see cref="ITranslationService.TryTranslateXTag"/> for a <see cref="ToFriendlyNameResult"/> property, which
+	/// cannot be an <c>out</c> argument: <paramref name="assign"/> always receives the translation, as the out value did.
+	/// </summary>
+	private bool TryTranslateXTag(string tag, Action<string> assign)
+	{
+		bool found = this.TranslationService.TryTranslateXTag(tag, out var value);
+		assign(value);
+		return found;
 	}
 
 	/// <summary>
@@ -105,11 +177,21 @@ public partial class ItemProvider : IItemProvider
 	/// <returns>An object containing the item name and attributes</returns>
 	public ToFriendlyNameResult GetFriendlyNames(Item itm, FriendlyNamesExtraScopes? scopes = null, bool filterExtra = true)
 	{
+		using var modScope = this.ModScope(itm);
+		// Cached results depend on the in-game values setting: drop them when it changes.
+		if (this.USettings.ShowInGameValues != this._cachedShowInGameValues) {
+			this.FriendlyNamesCache.Clear();
+			this._cachedShowInGameValues = this.USettings.ShowInGameValues;
+		}
+
 		var key = (itm, scopes, filterExtra);
 		return FriendlyNamesCache.GetOrAddAtomic(key, k =>
 		{
 
-			var res = new ToFriendlyNameResult(k.Item);
+			var res = new ToFriendlyNameResult(k.Item)
+			{
+				GrantedSkillsApart = k.Scope?.HasFlag(FriendlyNamesExtraScopes.GrantedSkills) ?? false,
+			};
 			k.Item.CurrentFriendlyNameResult = res;
 
 			#region Minimal Info (ButtonBag tooltip + Common item properties)
@@ -133,8 +215,9 @@ public partial class ItemProvider : IItemProvider
 
 			if (!k.Item.IsRelicOrCharm && !RecordId.IsNullOrEmpty(k.Item.prefixID))
 			{
-				res.PrefixInfoDescription = k.Item.prefixID.Raw;
-				if (k.Item.prefixInfo != null)
+				// A record the loaded data lacks (a mod not loaded): its file name, the item is shown incomplete.
+				res.PrefixInfoDescription = k.Item.prefixID.PrettyFileName;
+				if (k.Item.prefixInfo is not null)
 				{
 					if (TranslationService.TryTranslateXTag(k.Item.prefixInfo.DescriptionTag, out var desc))
 						res.PrefixInfoDescription = desc.TQCleanup(true);
@@ -146,45 +229,45 @@ public partial class ItemProvider : IItemProvider
 			#region Base Item translation
 
 			// Load common relic translations if item is relic related by any means
-			if (k.Item.IsRelicOrCharm || k.Item.HasRelicOrCharmSlot1 || k.Item.HasRelicOrCharmSlot2 || k.Item.RelicInfo != null || k.Item.Relic2Info != null)
+			if (k.Item.IsRelicOrCharm || k.Item.HasRelicOrCharmSlot1 || k.Item.HasRelicOrCharmSlot2 || k.Item.RelicInfo is not null || k.Item.Relic2Info is not null)
 			{
 				res.ItemWith = this.TranslationService.ItemWith;
 
-				if (k.Item.RelicInfo != null)
-					TranslationService.TryTranslateXTag(k.Item.RelicInfo.DescriptionTag, out res.RelicInfo1Description);
+				if (k.Item.RelicInfo is not null)
+					this.TryTranslateXTag(k.Item.RelicInfo.DescriptionTag, v => res.RelicInfo1Description = v);
 
-				if (k.Item.Relic2Info != null)
-					TranslationService.TryTranslateXTag(k.Item.Relic2Info.DescriptionTag, out res.RelicInfo2Description);
+				if (k.Item.Relic2Info is not null)
+					this.TryTranslateXTag(k.Item.Relic2Info.DescriptionTag, v => res.RelicInfo2Description = v);
 
 				var labelCompleted = "Completed";
-				if (!TranslationService.TryTranslateXTag("tagAnimalPartComplete", out res.AnimalPartComplete))
+				if (!this.TryTranslateXTag("tagAnimalPartComplete", v => res.AnimalPartComplete = v))
 					res.AnimalPartComplete = labelCompleted;
 
-				if (!TranslationService.TryTranslateXTag("tagRelicComplete", out res.RelicComplete))
+				if (!this.TryTranslateXTag("tagRelicComplete", v => res.RelicComplete = v))
 					res.RelicComplete = labelCompleted;
 
 				var labelPartcomplete = "Completion Bonus: ";
-				if (!TranslationService.TryTranslateXTag("tagAnimalPartcompleteBonus", out res.AnimalPartCompleteBonus))
+				if (!this.TryTranslateXTag("tagAnimalPartcompleteBonus", v => res.AnimalPartCompleteBonus = v))
 					res.AnimalPartCompleteBonus = labelPartcomplete;
 
-				if (!TranslationService.TryTranslateXTag("tagRelicBonus", out res.RelicBonus))
+				if (!this.TryTranslateXTag("tagRelicBonus", v => res.RelicBonus = v))
 					res.RelicBonus = labelPartcomplete;
 
 				var labelRelic = "Relic";
-				if (!TranslationService.TryTranslateXTag("tagAnimalPart", out res.AnimalPart))
+				if (!this.TryTranslateXTag("tagAnimalPart", v => res.AnimalPart = v))
 					res.AnimalPart = labelRelic;
 
-				if (!TranslationService.TryTranslateXTag("tagRelicShard", out res.RelicShard))
+				if (!this.TryTranslateXTag("tagRelicShard", v => res.RelicShard = v))
 					res.RelicShard = labelRelic;
 
 				var labelRelicPattern = "{0} - {1} / {2}";
-				if (TranslationService.TryTranslateXTag("tagAnimalPartRatio", out res.AnimalPartRatio))
-					res.AnimalPartRatio = ItemAttributeProvider.ConvertFormat(res.AnimalPartRatio);
+				if (this.TryTranslateXTag("tagAnimalPartRatio", v => res.AnimalPartRatio = v))
+					res.AnimalPartRatio = ItemAttributeProvider.ConvertFormat(res.AnimalPartRatio!);
 				else
 					res.AnimalPartRatio = labelRelicPattern;
 
-				if (TranslationService.TryTranslateXTag("tagRelicRatio", out res.RelicRatio))
-					res.RelicRatio = ItemAttributeProvider.ConvertFormat(res.RelicRatio);
+				if (this.TryTranslateXTag("tagRelicRatio", v => res.RelicRatio = v))
+					res.RelicRatio = ItemAttributeProvider.ConvertFormat(res.RelicRatio!);
 				else
 					res.RelicRatio = labelRelicPattern;
 			}
@@ -194,25 +277,25 @@ public partial class ItemProvider : IItemProvider
 			// Set Rarity translation
 			res.BaseItemRarity = TranslationService.Translate(k.Item.ItemStyle);
 
-			if (k.Item.baseItemInfo != null)
+			if (k.Item.baseItemInfo is not null)
 			{
 				// style quality description
 				if (!string.IsNullOrEmpty(k.Item.baseItemInfo.StyleTag))
 				{
 					if (!k.Item.IsPotion && !k.Item.IsRelicOrCharm && !k.Item.IsScroll && !k.Item.IsParchment && !k.Item.IsQuestItem)
 					{
-						if (!TranslationService.TryTranslateXTag(k.Item.baseItemInfo.StyleTag, out res.BaseItemInfoStyle))
+						if (!this.TryTranslateXTag(k.Item.baseItemInfo.StyleTag, v => res.BaseItemInfoStyle = v))
 							res.BaseItemInfoStyle = k.Item.baseItemInfo.StyleTag;
 					}
 				}
 
 				if (!string.IsNullOrEmpty(k.Item.baseItemInfo.QualityTag))
 				{
-					if (!TranslationService.TryTranslateXTag(k.Item.baseItemInfo.QualityTag, out res.BaseItemInfoQuality))
+					if (!this.TryTranslateXTag(k.Item.baseItemInfo.QualityTag, v => res.BaseItemInfoQuality = v))
 						res.BaseItemInfoQuality = k.Item.baseItemInfo.QualityTag;
 				}
 
-				if (!TranslationService.TryTranslateXTag(k.Item.baseItemInfo.DescriptionTag, out res.BaseItemInfoDescription))
+				if (!this.TryTranslateXTag(k.Item.baseItemInfo.DescriptionTag, v => res.BaseItemInfoDescription = v))
 					res.BaseItemInfoDescription = k.Item.BaseItemId.Raw;
 
 				res.BaseItemInfoClass = TranslationService.TranslateXTag(k.Item.ItemClassTagName, removeAllTQTags: true);
@@ -263,7 +346,7 @@ public partial class ItemProvider : IItemProvider
 							res.RelicPattern = res.RelicRatio;
 						}
 
-						res.RelicCompletionFormat = Format(res.RelicPattern, res.RelicClass, k.Item.Number, k.Item.baseItemInfo.CompletedRelicLevel);
+						res.RelicCompletionFormat = Format(res.RelicPattern, res.RelicClass, k.Item.Number, k.Item.baseItemInfo?.CompletedRelicLevel);
 						res.RelicBonusFormat = res.RelicCompletionFormat;
 					}
 
@@ -286,12 +369,12 @@ public partial class ItemProvider : IItemProvider
 				else if (k.Item.IsFormulae)
 				{
 					// Added to show recipe type for Formulae
-					if (!TranslationService.TryTranslateXTag("xtagArtifactRecipe", out res.ArtifactRecipe))
+					if (!this.TryTranslateXTag("xtagArtifactRecipe", v => res.ArtifactRecipe = v))
 						res.ArtifactRecipe = "Recipe";
 
 					// Get Reagents format
-					if (TranslationService.TryTranslateXTag("xtagArtifactReagents", out res.ArtifactReagents))
-						res.ArtifactReagents = ItemAttributeProvider.ConvertFormat(res.ArtifactReagents);
+					if (this.TryTranslateXTag("xtagArtifactReagents", v => res.ArtifactReagents = v))
+						res.ArtifactReagents = ItemAttributeProvider.ConvertFormat(res.ArtifactReagents!);
 					else
 						res.ArtifactReagents = "Required Reagents  ({0}/{1})";
 
@@ -308,6 +391,11 @@ public partial class ItemProvider : IItemProvider
 						res.NumberFormat = string.Format(CultureInfo.CurrentCulture, "({0:n0})", k.Item.Number);
 				}
 			}
+			else if (!RecordId.IsNullOrEmpty(k.Item.BaseItemId))
+			{
+				// A base record the loaded data lacks: its file name rather than no name at all.
+				res.BaseItemInfoDescription = k.Item.BaseItemId.PrettyFileName;
+			}
 
 			#endregion
 
@@ -315,15 +403,15 @@ public partial class ItemProvider : IItemProvider
 
 			if (!k.Item.IsRelicOrCharm && !RecordId.IsNullOrEmpty(k.Item.suffixID))
 			{
-				if (k.Item.suffixInfo != null)
+				if (k.Item.suffixInfo is not null)
 				{
 					res.SuffixInfoDescription =
-							TranslationService.TryTranslateXTag(k.Item.suffixInfo.DescriptionTag, out res.SuffixInfoDescription)
-								? res.SuffixInfoDescription.TQCleanup(true)
+							this.TryTranslateXTag(k.Item.suffixInfo.DescriptionTag, v => res.SuffixInfoDescription = v)
+								? res.SuffixInfoDescription!.TQCleanup(true)
 								: k.Item.suffixID.Raw;
 				}
 				else
-					res.SuffixInfoDescription = k.Item.suffixID.Raw;
+					res.SuffixInfoDescription = k.Item.suffixID.PrettyFileName;
 			}
 
 			#endregion
@@ -344,51 +432,94 @@ public partial class ItemProvider : IItemProvider
 
 			#endregion
 
-			List<string> results = new List<string>();
+			List<string> results = [];
+			List<string?> ranges = [];
+
+			// The lines of each record with where the game lists them, merged in the game's order for the classic display.
+			List<GameAttributeSlot> prefixSlots = [];
+			List<GameAttributeSlot> suffixSlots = [];
+			List<GameAttributeSlot> baseSlots = [];
+
+			// In-game values (issue #552): jittered copies used for display only.
+			// The legacy display multiplier (attributeScalePercent) may remain from a render without in-game values.
+			if (this.USettings.ShowInGameValues)
+				k.Item.itemScalePercent = 1.00F;
+
+			var inGame = this.USettings.ShowInGameValues ? this.RollInGameValues(k.Item, res.BaseItemInfoRecords) : null;
+			if (inGame is not null)
+				res.InGameRolls = inGame.Rolls.Select(FormatInGameRoll).ToArray();
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.PrefixAttributes) ?? false)
 			{
-				if (k.Item.prefixInfo != null)
+				if (k.Item.prefixInfo is not null)
 					res.PrefixInfoRecords = Database.GetRecordFromFile(k.Item.prefixID);
 
-				if (res.PrefixInfoRecords?.Any() ?? false)
-					GetAttributesFromRecord(k.Item, res.PrefixInfoRecords, k.FilterExtra, k.Item.prefixID, results);
+				if (res.PrefixInfoRecords is { Count: > 0 })
+					GetAttributesFromRecord(k.Item, inGame?.Prefix ?? res.PrefixInfoRecords, k.FilterExtra, k.Item.prefixID, results
+						, valueRanges: inGame?.RangesOf(RollSource.Prefix), lineRanges: ranges, lineSlots: prefixSlots);
 
 				res.PrefixAttributes = results.ToArray();
+				res.PrefixAttributeRanges = inGame is null ? [] : ranges.ToArray();
 			}
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.SuffixAttributes) ?? false)
 			{
 				results.Clear();
+				ranges.Clear();
 
-				if (k.Item.suffixInfo != null)
+				if (k.Item.suffixInfo is not null)
 					res.SuffixInfoRecords = Database.GetRecordFromFile(k.Item.suffixID);
 
-				if (res.SuffixInfoRecords?.Any() ?? false)
-					GetAttributesFromRecord(k.Item, res.SuffixInfoRecords, k.FilterExtra, k.Item.suffixID, results);
+				if (res.SuffixInfoRecords is { Count: > 0 })
+					GetAttributesFromRecord(k.Item, inGame?.Suffix ?? res.SuffixInfoRecords, k.FilterExtra, k.Item.suffixID, results
+						, valueRanges: inGame?.RangesOf(RollSource.Suffix), lineRanges: ranges, lineSlots: suffixSlots);
 
 				res.SuffixAttributes = results.ToArray();
+				res.SuffixAttributeRanges = inGame is null ? [] : ranges.ToArray();
 			}
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.BaseAttributes) ?? false)
 			{
 				results.Clear();
+				ranges.Clear();
 
 				// res.baseItemInfoRecords should be already loaded
-				if (res.BaseItemInfoRecords?.Any() ?? false)
-					GetAttributesFromRecord(k.Item, res.BaseItemInfoRecords, k.FilterExtra, k.Item.BaseItemId, results);
+				if (res.BaseItemInfoRecords is { Count: > 0 })
+					GetAttributesFromRecord(k.Item, inGame?.Base ?? res.BaseItemInfoRecords, k.FilterExtra, k.Item.BaseItemId, results
+						, valueRanges: inGame?.RangesOf(RollSource.Base), lineRanges: ranges, lineSlots: baseSlots);
 			}
 
 			res.BaseAttributes = results.ToArray();
+			res.BaseAttributeRanges = inGame is null ? [] : ranges.ToArray();
+
+			if (prefixSlots.Count == res.PrefixAttributes.Length && suffixSlots.Count == res.SuffixAttributes.Length
+				&& baseSlots.Count == res.BaseAttributes.Length)
+			{
+				static (string, GameAttributeSlot, string?)[] Lines(string[] texts, List<GameAttributeSlot> slots, string?[] lineRanges)
+					=> [.. texts.Select((text, i) => (text, slots[i], i < lineRanges.Length ? lineRanges[i] : null))];
+
+				var classic = GameAttributeOrder.MergeWithSources(GameAttributeOrder.ClassOf(k.Item)
+					, Lines(res.BaseAttributes, baseSlots, res.BaseAttributeRanges)
+					, Lines(res.PrefixAttributes, prefixSlots, res.PrefixAttributeRanges)
+					, Lines(res.SuffixAttributes, suffixSlots, res.SuffixAttributeRanges));
+				res.ClassicAttributes = [.. classic.Select(l => l.Text)];
+				res.ClassicAttributeRanges = inGame is null ? [] : [.. classic.Select(l => l.Range)];
+				res.ClassicAttributeSources = [.. classic.Select(l => l.Source switch
+				{
+					1 => StatSource.Prefix,
+					2 => StatSource.Suffix,
+					_ => StatSource.Base,
+				})];
+			}
 
 			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.RelicAttributes) ?? false)
 			{
 				var tmp = new List<string>();
 
-				if (k.Item.RelicInfo != null)
+				if (k.Item.RelicInfo is not null)
 					res.RelicInfoRecords = Database.GetRecordFromFile(k.Item.relicID);
 
-				if (res.RelicInfoRecords?.Any() ?? false)
+				if (res.RelicInfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.RelicInfoRecords, k.FilterExtra, k.Item.relicID, tmp);
 
 				res.Relic1Attributes = tmp.ToArray();
@@ -398,10 +529,10 @@ public partial class ItemProvider : IItemProvider
 			{
 				var tmp = new List<string>();
 
-				if (k.Item.Relic2Info != null)
+				if (k.Item.Relic2Info is not null)
 					res.Relic2InfoRecords = Database.GetRecordFromFile(k.Item.relic2ID);
 
-				if (res.Relic2InfoRecords?.Any() ?? false)
+				if (res.Relic2InfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.Relic2InfoRecords, k.FilterExtra, k.Item.relic2ID, tmp);
 
 				res.Relic2Attributes = tmp.ToArray();
@@ -421,22 +552,22 @@ public partial class ItemProvider : IItemProvider
 			#region Extra Attributes for specific types
 
 			// Shows Artifact stats for the formula
-			if (k.Item.IsFormulae && k.Item.baseItemInfo != null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.BaseAttributes) ?? false))
+			if (k.Item.IsFormulae && k.Item.baseItemInfo is not null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.BaseAttributes) ?? false))
 			{
 				string artifactName = k.Item.baseItemInfo.GetString("artifactName");
 
 				if (!string.IsNullOrWhiteSpace(artifactName))
 				{
-					List<string> tmp = new List<string>();
+					List<string> tmp = [];
 
 					res.FormulaeArtifactRecords = Database.GetRecordFromFile(artifactName);
 
 					// Display the name of the Artifact
-					if (!TranslationService.TryTranslateXTag(res.FormulaeArtifactRecords.GetString("description", 0), out res.FormulaeArtifactName))
+					if (!this.TryTranslateXTag(res.FormulaeArtifactRecords?.GetString("description", 0) ?? string.Empty, v => res.FormulaeArtifactName = v))
 						res.FormulaeArtifactName = "?Unknown Artifact Name?";
 
 					// Class
-					string artifactClassification = res.FormulaeArtifactRecords.GetString("artifactClassification", 0).ToUpperInvariant();
+					string artifactClassification = (res.FormulaeArtifactRecords?.GetString("artifactClassification", 0) ?? string.Empty).ToUpperInvariant();
 					res.FormulaeArtifactClass = TranslateArtifactClassification(artifactClassification);
 
 					// Attributes
@@ -446,7 +577,7 @@ public partial class ItemProvider : IItemProvider
 			}
 
 			// Show the completion bonus.
-			if (k.Item.RelicBonusInfo != null
+			if (k.Item.RelicBonusInfo is not null
 				&& (k.Scope?.HasFlag(FriendlyNamesExtraScopes.RelicAttributes) ?? false)
 				&& (k.Item.IsArtifact // Artifact completion bonus
 					|| k.Item.IsRelicOrCharm // Relic completion bonus
@@ -458,25 +589,28 @@ public partial class ItemProvider : IItemProvider
 
 				res.RelicBonus1InfoRecords = Database.GetRecordFromFile(k.Item.RelicBonusId);
 
-				if (res.RelicBonus1InfoRecords?.Any() ?? false)
+				if (res.RelicBonus1InfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.RelicBonus1InfoRecords, k.FilterExtra, k.Item.RelicBonusId, tmp);
 
 				res.RelicBonus1Attributes = tmp.ToArray();
 			}
 
 			// Show the Relic2 completion bonus.
-			if (k.Item.HasRelicOrCharmSlot2 && k.Item.RelicBonus2Info != null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.Relic2Attributes) ?? false))
+			if (k.Item.HasRelicOrCharmSlot2 && k.Item.RelicBonus2Info is not null && (k.Scope?.HasFlag(FriendlyNamesExtraScopes.Relic2Attributes) ?? false))
 			{
 				var tmp = new List<string>();
 				res.RelicBonus2InfoRecords = Database.GetRecordFromFile(k.Item.RelicBonus2Id);
 
-				if (res.RelicBonus2InfoRecords?.Any() ?? false)
+				if (res.RelicBonus2InfoRecords is { Count: > 0 })
 					GetAttributesFromRecord(k.Item, res.RelicBonus2InfoRecords, k.FilterExtra, k.Item.RelicBonus2Id, tmp);
 
 				res.RelicBonus2Attributes = tmp.ToArray();
 			}
 
 			#endregion
+
+			if (k.Scope?.HasFlag(FriendlyNamesExtraScopes.GrantedSkills) ?? false)
+				res.GrantedSkills = this.GetGrantedSkills(k.Item);
 
 			k.Item.CurrentFriendlyNameResult.TmpAttrib.Clear();
 			k.Item.CurrentFriendlyNameResult = null;
@@ -488,9 +622,9 @@ public partial class ItemProvider : IItemProvider
 
 		string TranslateArtifactClassification(string artifactClassificationKey)
 		{
-			string tag = string.Empty;
+			string? tag = string.Empty;
 			string resartifactClass = string.Empty;
-			if (artifactClassificationKey == null)
+			if (artifactClassificationKey is null)
 				tag = null;
 			else if (artifactClassificationKey == "LESSER")
 				tag = "xtagArtifactClass01";
@@ -501,7 +635,7 @@ public partial class ItemProvider : IItemProvider
 			else
 				tag = null;
 
-			if (tag != null)
+			if (tag is not null)
 				resartifactClass = TranslationService.TranslateXTag(tag);
 			else
 				resartifactClass = "Unknown Artifact Class";

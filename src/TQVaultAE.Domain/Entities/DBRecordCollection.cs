@@ -16,7 +16,7 @@ using System.Linq;
 public class DBRecordCollection : IEnumerable<Variable>
 {
 	/// <summary>
-	/// Dictionary which holds all of the variables.
+	/// Dictionary which holds all of the variables, by case-insensitive name (variable names are ASCII).
 	/// </summary>
 	private Dictionary<string, Variable> variables;
 
@@ -25,11 +25,12 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// </summary>
 	/// <param name="id">string: ID for this record.</param>
 	/// <param name="recordType">string: type for this record</param>
-	public DBRecordCollection(RecordId id, string recordType)
+	/// <param name="capacity">Number of variables the record will hold, to size the dictionary once.</param>
+	public DBRecordCollection(RecordId id, string recordType, int capacity = 0)
 	{
 		this.Id = id;
 		this.RecordType = recordType;
-		this.variables = new Dictionary<string, Variable>();
+		this.variables = new Dictionary<string, Variable>(capacity, StringComparer.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -52,8 +53,8 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// </summary>
 	/// <param name="variableName">Name of the variable we are looking up.</param>
 	/// <returns>Returns a Variable from the hashtable.</returns>
-	public Variable this[string variableName]
-		=> this.variables.TryGetValue(variableName.ToUpperInvariant(), out var val) ? val : null;
+	public Variable? this[string variableName]
+		=> this.variables.TryGetValue(variableName, out var val) ? val : null;
 
 	/// <summary>
 	/// Enumerates all of the variables in this DBrecord
@@ -78,7 +79,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// </summary>
 	/// <param name="variable">Variable that we are adding.</param>
 	public void Set(Variable variable) 
-		=> this.variables.Add(variable.Name.ToUpperInvariant(), variable);
+		=> this.variables.Add(variable.Name, variable);
 
 	/// <summary>
 	/// Returns a short descriptive string in the format of:
@@ -96,7 +97,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// <param name="index">Offset of the value in the array since a variable can have multiple values.</param>
 	/// <returns>Returns the integer value for the variable, or 0 if the variable does not exist.</returns>
 	public int GetInt32(string variableName, int index)
-		=> this.variables.TryGetValue(variableName.ToUpperInvariant(), out var val) ? val.GetInt32(index) : 0;
+		=> this.variables.TryGetValue(variableName, out var val) ? val.GetInt32(index) : 0;
 
 	/// <summary>
 	/// Gets the float value for the variable, or 0 if the variable does not exist.
@@ -106,7 +107,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// <param name="index">Offset of the value in the array since a variable can have multiple values.</param>
 	/// <returns>Returns the float value for the variable, or 0 if the variable does not exist.</returns>
 	public float GetSingle(string variableName, int index)
-		=> this.variables.TryGetValue(variableName.ToUpperInvariant(), out var val) ? val.GetSingle(index) : 0.0F;
+		=> this.variables.TryGetValue(variableName, out var val) ? val.GetSingle(index) : 0.0F;
 
 	/// <summary>
 	/// Gets the string value for the variable, or empty string if the variable does not exist.
@@ -115,7 +116,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// <param name="index">Offset of the value in the array since a variable can have multiple values.</param>
 	/// <returns>Returns the string value for the variable, or empty string if the variable does not exist.</returns>
 	public string GetString(string variableName, int index)
-		=> this.variables.TryGetValue(variableName.ToUpperInvariant(), out var val) ? val.GetString(index) ?? string.Empty : string.Empty;
+		=> this.variables.TryGetValue(variableName, out var val) ? val.GetString(index) ?? string.Empty : string.Empty;
 
 	/// <summary>
 	/// Gets all of the string values for a particular variable entry
@@ -123,11 +124,9 @@ public class DBRecordCollection : IEnumerable<Variable>
 	/// </summary>
 	/// <param name="variableName">Name of the variable.</param>
 	/// <returns>Returns a string array of the string values.</returns>
-	public string[] GetAllStrings(string variableName)
+	public string[]? GetAllStrings(string variableName)
 	{
-		Variable variable;
-
-		if (!this.variables.TryGetValue(variableName.ToUpperInvariant(), out variable))
+		if (!this.variables.TryGetValue(variableName, out var variable))
 			return null;
 
 		string[] ansArray = new string[variable.NumberOfValues];
@@ -138,7 +137,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	}
 
 
-	KeyValuePair<string, Variable>[] _RelevantVars = null;
+	KeyValuePair<string, Variable>[]? _RelevantVars;
 	/// <summary>
 	/// Get the relevant vars, meaning there is something to display.
 	/// </summary>
@@ -146,8 +145,7 @@ public class DBRecordCollection : IEnumerable<Variable>
 	{
 		get
 		{
-			if (this._RelevantVars is null) this._RelevantVars = this.variables?.Where(v => v.Value.IsValueRelevant).ToArray();
-			return this._RelevantVars;
+			return this._RelevantVars ??= this.variables.Where(v => v.Value.IsValueRelevant).ToArray();
 		}
 	}
 

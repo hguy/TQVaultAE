@@ -16,7 +16,7 @@ public interface IArcFileProvider
 	/// </summary>
 	/// <param name="dataId">The string ID for the data which we are retieving.</param>
 	/// <returns>Returns byte array of the data corresponding to the string ID.</returns>
-	byte[] GetData(ArcFile file, RecordId dataId);
+	byte[]? GetData(ArcFile file, RecordId dataId);
 	/// <summary>
 	/// Read the table of contents of the ARC file
 	/// </summary>

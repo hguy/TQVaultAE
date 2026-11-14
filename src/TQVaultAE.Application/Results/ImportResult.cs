@@ -7,16 +7,36 @@ public class ImportResult
 {
 	public bool Success { get; set; }
 	public ExportScope Scope { get; set; }
-	public Item Item { get; set; }
-	public IReadOnlyList<Item> Items { get; set; }
+	public Item? Item { get; set; }
+	public IReadOnlyList<Item> Items { get; set; } = [];
 	public int SackNumber { get; set; }
-	public string VaultName { get; set; }
-	public Dictionary<int, List<Item>> SackItems { get; set; }
+	public string VaultName { get; set; } = string.Empty;
+
+	/// <summary>The mod the imported vault is linked to; null for none or when not a vault.</summary>
+	public string? VaultMod { get; set; }
+	/// <summary>Items of each tab, for a vault import only.</summary>
+	public Dictionary<int, List<Item>>? SackItems { get; set; }
 	public int ImportedCount { get; set; }
 	public int TotalCount { get; set; }
-	public string ErrorMessage { get; set; }
-	public BagButtonIconInfo TabIconInfo { get; set; }
-	public Dictionary<int, BagButtonIconInfo> SackIconInfo { get; set; }
+	public string? ErrorMessage { get; set; }
+	public BagButtonIconInfo? TabIconInfo { get; set; }
+
+	/// <summary>The map of the container a tab export comes from, which its items without an own map inherited; null for
+	/// the base game. Only meaningful when <see cref="TabMapKnown"/>.</summary>
+	public string? TabMod { get; set; }
+
+	/// <summary>False when the tab's mod is not installed here: its items then take their target's map.</summary>
+	public bool TabMapKnown { get; set; }
+
+	/// <summary>The mods the export names that are not installed here: their links were dropped.</summary>
+	public IReadOnlyList<string> DroppedMods { get; set; } = [];
+	public Dictionary<int, BagButtonIconInfo>? SackIconInfo { get; set; }
+
+	/// <summary>True when a tab import gives its icon to the tab it is imported into.</summary>
+	public bool SetsTabIcon => this.Scope == ExportScope.Tab && this.TabIconInfo is not null;
+
+	/// <summary>True when a vault import gives an icon to the bag <paramref name="bag"/> (0-based).</summary>
+	public bool SetsBagIcon(int bag) => this.SackIconInfo?.ContainsKey(bag) == true;
 
 	public static ImportResult Succeeded(Item item)
 		=> new()
@@ -28,7 +48,8 @@ public class ImportResult
 			TotalCount = 1
 		};
 
-	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, BagButtonIconInfo iconInfo = null)
+	public static ImportResult SucceededTab(IReadOnlyList<Item> items, int sackNumber, BagButtonIconInfo? iconInfo = null
+		, string? tabMod = null, bool tabMapKnown = false)
 		=> new()
 		{
 			Success = true,
@@ -36,11 +57,14 @@ public class ImportResult
 			Items = items,
 			SackNumber = sackNumber,
 			TabIconInfo = iconInfo,
+			TabMod = tabMod,
+			TabMapKnown = tabMapKnown,
 			ImportedCount = items.Count,
 			TotalCount = items.Count
 		};
 
-	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems, Dictionary<int, BagButtonIconInfo> sackIconInfo = null)
+	public static ImportResult SucceededVault(string vaultName, Dictionary<int, List<Item>> sackItems, Dictionary<int, BagButtonIconInfo>? sackIconInfo = null
+		, string? vaultMod = null)
 	{
 		var total = 0;
 		foreach (var kv in sackItems)
@@ -51,6 +75,7 @@ public class ImportResult
 			Success = true,
 			Scope = ExportScope.Vault,
 			VaultName = vaultName,
+			VaultMod = vaultMod,
 			SackItems = sackItems,
 			SackIconInfo = sackIconInfo,
 			ImportedCount = total,

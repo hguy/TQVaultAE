@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+﻿using System.Xml;
 using System.Xml.Serialization;
 
 namespace TQVaultAE.Config;
@@ -56,12 +56,6 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(TQPath))]
 	public string TQPath { get; set; } = string.Empty;
 
-	[XmlElement(ElementName = nameof(ModEnabled))]
-	public bool ModEnabled { get; set; } = false;
-
-	[XmlElement(ElementName = nameof(CustomMap))]
-	public string CustomMap { get; set; } = string.Empty;
-
 	[XmlElement(ElementName = nameof(Scale))]
 	public float Scale { get; set; } = 1;
 
@@ -83,8 +77,34 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(BaseFont))]
 	public string BaseFont { get; set; } = "AlbertusMT";
 
+	/// <summary>
+	/// "Tooltip Enhanced": item tooltips split their attributes into prefix, base and suffix,
+	/// with the extras chosen by the <c>Tooltip*</c> settings below.
+	/// </summary>
 	[XmlElement(ElementName = nameof(EnableDetailedTooltipView))]
 	public bool EnableDetailedTooltipView { get; set; } = false;
+
+	/// <summary>The enhanced tooltip lists each value rolled by the in-game jitter (database -> in-game).</summary>
+	[XmlElement(ElementName = nameof(TooltipShowInGameRolls))]
+	public bool TooltipShowInGameRolls { get; set; } = false;
+
+	/// <summary>The enhanced tooltip shows the possible min/max of each rolled attribute on its right.</summary>
+	[XmlElement(ElementName = nameof(TooltipShowValueRanges))]
+	public bool TooltipShowValueRanges { get; set; } = false;
+
+	/// <summary>The enhanced tooltip shows the skills granted by the item in a panel on its right.</summary>
+	[XmlElement(ElementName = nameof(TooltipShowGrantedSkills))]
+	public bool TooltipShowGrantedSkills { get; set; } = true;
+
+	/// <summary>The enhanced tooltip shows, next to each piece of the item's set, how many of it are loaded.</summary>
+	[XmlElement(ElementName = nameof(TooltipShowSetPieceCounts))]
+	public bool TooltipShowSetPieceCounts { get; set; } = false;
+
+	/// <summary>
+	/// Show item attributes with the in-game jitter applied (issue #552) instead of the database values.
+	/// </summary>
+	[XmlElement(ElementName = nameof(ShowInGameValues))]
+	public bool ShowInGameValues { get; set; } = true;
 
 	[XmlElement(ElementName = nameof(ItemBGColorOpacity))]
 	public int ItemBGColorOpacity { get; set; } = 15;
@@ -104,8 +124,11 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(DisableTooltipTransfer))]
 	public bool DisableTooltipTransfer { get; set; } = false;
 
+	/// <summary>
+	/// Hides the bag tooltips of the relic vault ("Enable Tooltip" unchecked on the Relic tab). Hidden by default.
+	/// </summary>
 	[XmlElement(ElementName = nameof(DisableTooltipRelic))]
-	public bool DisableTooltipRelic { get; set; } = false;
+	public bool DisableTooltipRelic { get; set; } = true;
 
 	[XmlElement(ElementName = nameof(EnableTQVaultSounds))]
 	public bool EnableTQVaultSounds { get; set; } = true;
@@ -113,14 +136,23 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(CSVDelimiter))]
 	public string CSVDelimiter { get; set; } = "Comma";
 
+	/// <summary>
+	/// The character of <see cref="CSVDelimiter"/>, a comma when the saved value is unknown.
+	/// </summary>
+	[XmlIgnore]
+	public char CsvDelimiterChar => CsvDelimiters.Parse(this.CSVDelimiter).ToChar();
+
 	[XmlElement(ElementName = nameof(EnableEpicLegendaryAffixes))]
 	public bool EnableEpicLegendaryAffixes { get; set; } = false;
 
 	[XmlElement(ElementName = nameof(DisableAutoStacking))]
 	public bool DisableAutoStacking { get; set; } = false;
 
+	/// <summary>
+	/// Backs the saves up to a git repository. Opt-in: off by default, as in the shipped template.
+	/// </summary>
 	[XmlElement(ElementName = nameof(GitBackupEnabled))]
-	public bool GitBackupEnabled { get; set; } = true;
+	public bool GitBackupEnabled { get; set; } = false;
 
 	[XmlElement(ElementName = nameof(GitBackupRepository))]
 	public string GitBackupRepository { get; set; } = string.Empty;
@@ -137,8 +169,41 @@ public class UserSettings
 	[XmlElement(ElementName = nameof(PasteBinApiKey))]
 	public string PasteBinApiKey { get; set; } = string.Empty;
 
+	/// <summary>
+	/// PasteBin expiration used when none is set: one month.
+	/// </summary>
+	public const string DefaultPasteBinExpiration = "1M";
+
 	[XmlElement(ElementName = nameof(PasteBinExpiration))]
-	public string PasteBinExpiration { get; set; } = "1M";
+	public string PasteBinExpiration { get; set; } = DefaultPasteBinExpiration;
+
+	/// <summary>
+	/// The toolbar choices of the item comparison dialog: <c>&lt;ItemCompare AlignRows="1" HideUnchanged="0" ShowSources="0" /&gt;</c>.
+	/// Missing, the defaults apply (rows aligned, unchanged stats shown, sources collapsed).
+	/// </summary>
+	[XmlElement(ElementName = nameof(ItemCompare))]
+	public ItemCompareSettings ItemCompare { get; set; } = new();
+
+	/// <summary>
+	/// The choices of the bag sort button: <c>&lt;Sort Algorithm="Normal" MergeRelics="0" /&gt;</c>.
+	/// Missing, the defaults apply (the normal sort, shards left as they are).
+	/// </summary>
+	[XmlElement(ElementName = nameof(Sort))]
+	public SortSettings Sort { get; set; } = new();
+
+	/// <summary>
+	/// The choices of the loadouts: <c>&lt;Loadout ReplaceWorn="0" /&gt;</c>. Missing, the defaults apply (the worn pieces
+	/// a loadout does not use are stored in the vault).
+	/// </summary>
+	[XmlElement(ElementName = nameof(Loadout))]
+	public LoadoutSettings Loadout { get; set; } = new();
+
+	/// <summary>
+	/// The key and mouse bindings changed by the user: <c>&lt;KeyBinds ItemDuplicateClick="Ctrl+Click" /&gt;</c>.
+	/// Missing or empty, every action has its default.
+	/// </summary>
+	[XmlElement(ElementName = nameof(KeyBinds))]
+	public KeyBindSettings KeyBinds { get; set; } = new();
 
 	#endregion
 
@@ -181,7 +246,7 @@ public class UserSettings
 	public string GameLanguages { get; set; } = "de,en,es,fr,it,pl,ru,cs,zh";
 
 	[XmlElement(ElementName = nameof(UILanguage))]
-	public string UILanguage { get; set; }
+	public string? UILanguage { get; set; }
 
 	/// <summary>
 	/// https://github.com/EtienneLamoureux/TQVaultAE
@@ -208,10 +273,16 @@ public class UserSettings
 
 	#region Logic
 
-	public void Save()
-	{
-		string xmlPath = ResolveUserSettingsFilePath();
+	/// <summary>
+	/// Saves the settings to the <c>UserConfig.xml</c> next to the application.
+	/// </summary>
+	public void Save() => this.Save(ResolveUserSettingsFilePath());
 
+	/// <summary>
+	/// Saves the settings to <paramref name="xmlPath"/>, replacing the file.
+	/// </summary>
+	public void Save(string xmlPath)
+	{
 		XmlSerializer serializer = new XmlSerializer(typeof(UserSettings));
 		using var stream = new FileStream(xmlPath, FileMode.Create);
 		serializer.Serialize(stream, this);
@@ -219,27 +290,35 @@ public class UserSettings
 
 	private static string ResolveUserSettingsFilePath()
 	{
-		var currentPath = new System.Uri(Assembly.GetExecutingAssembly().EscapedCodeBase).LocalPath;
-		currentPath = Path.GetDirectoryName(currentPath);
-		var xmlPath = Path.Combine(currentPath, "UserConfig.xml");
-		return xmlPath;
+		return Path.Combine(AppContext.BaseDirectory, "UserConfig.xml");
 	}
 
-	public static UserSettings Read()
+	/// <summary>
+	/// Reads the <c>UserConfig.xml</c> next to the application, or the defaults when there is none.
+	/// </summary>
+	public static UserSettings Read() => Read(ResolveUserSettingsFilePath());
+
+	/// <summary>
+	/// Reads the settings from <paramref name="xmlPath"/>, or the defaults when the file does not exist.
+	/// Settings missing from the file keep their default. An empty file, as an interrupted save leaves it, gives the defaults too.
+	/// </summary>
+	public static UserSettings Read(string xmlPath)
 	{
-		string xmlPath = ResolveUserSettingsFilePath();
+		if (!File.Exists(xmlPath))
+			return new UserSettings();
 
-		if (File.Exists(xmlPath))
-			return ParseSettings(File.ReadAllText(xmlPath));
+		var xmlData = File.ReadAllText(xmlPath);
+		if (string.IsNullOrWhiteSpace(xmlData))
+			return new UserSettings();
 
-		return new UserSettings();// Default
+		return ParseSettings(xmlData);
 	}
 
 	public static UserSettings ParseSettings(string xmlData)
 	{
 		XmlSerializer serializer = new XmlSerializer(typeof(UserSettings));
-		using var reader = new StringReader(xmlData);
-		return (UserSettings)serializer.Deserialize(reader);
+		using var reader = XmlReader.Create(new StringReader(xmlData), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit });
+		return (UserSettings?)serializer.Deserialize(reader) ?? new UserSettings();
 	}
 
 	#endregion

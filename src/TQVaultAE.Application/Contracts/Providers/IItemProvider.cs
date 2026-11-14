@@ -17,7 +17,7 @@ public interface IItemProvider
 	/// </summary>
 	/// <param name="itemId"></param>
 	/// <returns><c>null</c> if <paramref name="type"/> is not wearable (can't have an affix)</returns>
-	ItemAffixes GetAllAvailableAffixes(GearType type);
+	ItemAffixes? GetAllAvailableAffixes(GearType type);
 	/// <summary>
 	/// Gets the socketed charm/relic bonus loot table
 	/// </summary>
@@ -25,24 +25,24 @@ public interface IItemProvider
 	/// <param name="RelicTable1"></param>
 	/// <param name="RelicTable2"></param>
 	/// <returns>Returns <c>false</c> if the item does not contain a charm/relic</returns>
-	bool BonusTableSocketedRelic(Item Item, out LootTableCollection RelicTable1, out LootTableCollection RelicTable2);
+	bool BonusTableSocketedRelic(Item Item, out LootTableCollection? RelicTable1, out LootTableCollection? RelicTable2);
 	/// <summary>
 	/// Return all affixes for <paramref name="itemId"/>
 	/// </summary>
 	/// <param name="itemId"></param>
 	/// <returns></returns>
-	ItemAffixes GetItemAffixes(RecordId itemId);
+	ItemAffixes? GetItemAffixes(RecordId itemId);
 	/// <summary>
 	/// Gets the artifact/charm/relic bonus loot table
 	/// </summary>
 	/// <param name="itm"></param>
 	/// <returns>returns null if the item is not an artifact/charm/relic</returns>
-	LootTableCollection BonusTableRelicOrArtifact(Item itm);
+	LootTableCollection? BonusTableRelicOrArtifact(Item itm);
 	/// <summary>
 	/// Create an artifact from its formulae
 	/// </summary>
 	/// <returns>A new artifact</returns>
-	Item CraftArtifact(Item itm);
+	Item? CraftArtifact(Item itm);
 	/// <summary>
 	/// Encodes an item into the save file format
 	/// </summary>
@@ -75,7 +75,7 @@ public interface IItemProvider
 	/// <param name="parameter2">second parameter</param>
 	/// <param name="parameter3">third parameter</param>
 	/// <returns>formatted string.</returns>
-	string Format(string formatSpec, object parameter1, object parameter2 = null, object parameter3 = null);
+	string Format(string? formatSpec, object? parameter1, object? parameter2 = null, object? parameter3 = null);
 	/// <summary>
 	/// Pulls data out of the TQ item database for this item.
 	/// </summary>
@@ -92,7 +92,7 @@ public interface IItemProvider
 	/// Shows the items in a set for the set items
 	/// </summary>
 	/// <returns>string containing the set items</returns>
-	SetItemInfo GetItemSetTranslations(Item itm);
+	SetItemInfo? GetItemSetTranslations(Item itm);
 	/// <summary>
 	/// Pet skills can also have multiple values so we attempt to decode it here
 	/// unfortunately the level is not in the skill record so we need to look up
@@ -125,13 +125,52 @@ public interface IItemProvider
 	/// <returns></returns>
 	RequirementInfo GetRequirementInfo(Item item, SortedList<string, Variable> requirementVariables);
 
-	SortedList<string, int> GetStatBonuses(Item item);
-	void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection record, int statLevel = 0);
+	/// <summary>
+	/// Gets the skill levels an item adds (to a skill, to the skills of a mastery, to all skills): from its base
+	/// record, its affixes, its relics at their number of pieces and their completion bonuses.
+	/// </summary>
+	IReadOnlyList<SkillAugment> GetSkillAugments(Item item);
+	/// <summary>
+	/// Sums every numeric variable of an item, as the game collects it for the character window: its base record, its
+	/// affixes (with the values the game rolls from the item seed), its relics or charms at their number of pieces and
+	/// their completion bonuses.
+	/// </summary>
+	AttributeSum GetAttributeSums(Item item);
+
+	/// <summary>
+	/// Sums the bonuses of the item sets worn: each set record read at the number of its pieces among the items.
+	/// </summary>
+	AttributeSum GetSetBonuses(IEnumerable<Item> equipped);
+
+	/// <summary>Sums the numeric variables of one record at a level (arrays read at level - 1, the last value past their end).</summary>
+	AttributeSum GetRecordAttributes(RecordId? recordId, int level);
 	/// <summary>
 	/// Gets the itemID's of all the items in the set.
 	/// </summary>
 	/// <returns>Returns <see cref="SetItemInfo"/> containing the remaining set items or null if the item is not part of a set.</returns>
-	SetItemInfo GetSetItems(Item itm);
+	SetItemInfo? GetSetItems(Item itm);
+	/// <summary>
+	/// Tells whether the item grants a skill, by its base record, its affixes, its relics or their completion bonuses.
+	/// Only skills with a name count, as in the tooltip: the game's hidden helper skills do not.
+	/// </summary>
+	bool HasGrantedSkill(Item itm);
+	/// <summary>
+	/// The translated names of the skills the item grants (see <see cref="HasGrantedSkill"/>), each once.
+	/// </summary>
+	IReadOnlyList<string> GetGrantedSkillNames(Item itm);
+	/// <summary>
+	/// The skills the item grants with their level (<c>itemSkillName</c> at <c>itemSkillLevel</c>, at least 1), from its
+	/// base record, its affixes, its relics and their completion bonuses, hidden helper skills included: what the game
+	/// gives the character who wears it.
+	/// </summary>
+	IReadOnlyList<(RecordId SkillId, int Level)> GetGrantedSkillLevels(Item itm);
+	/// <summary>
+	/// Describes a skill at a level as the item tooltips describe a granted skill: name, icon, description and its effects
+	/// at that level (a buff skill takes them from its buff record, a pet skill from its pet).
+	/// </summary>
+	/// <param name="context">What the character adds to the skill's own values (modifiers, recharge reduction...).</param>
+	/// <returns><see langword="null"/> when the record is missing or has no name.</returns>
+	GrantedSkill? GetSkillAtLevel(RecordId skillId, int level, SkillWindowContext? context = null);
 	/// <summary>
 	/// Gets the level of a triggered skill
 	/// </summary>
@@ -150,13 +189,13 @@ public interface IItemProvider
 	/// Removes the first relic from this item
 	/// </summary>
 	/// <returns>Returns the removed relic as a new Item</returns>
-	Item RemoveRelic1(Item itm);
+	Item? RemoveRelic1(Item itm);
 
 	/// <summary>
 	/// Removes the second relic from this item
 	/// </summary>
 	/// <returns>Returns the removed relic as a new Item</returns>
-	Item RemoveRelic2(Item itm);
+	Item? RemoveRelic2(Item itm);
 
 	/// <summary>
 	/// Invalidate item data cache

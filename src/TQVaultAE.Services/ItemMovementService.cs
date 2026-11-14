@@ -11,14 +11,9 @@ namespace TQVaultAE.Services;
 /// Service for handling item movement operations.
 /// Contains pure business logic extracted from GUI layer.
 /// </summary>
-public class ItemMovementService : IItemMovementService
+public class ItemMovementService(ILogger<ItemMovementService> log) : IItemMovementService
 {
-    private readonly ILogger<ItemMovementService> _log;
-
-    public ItemMovementService(ILogger<ItemMovementService> log)
-    {
-        this._log = log;
-    }
+    private readonly ILogger<ItemMovementService> _log = log;
 
     /// <summary>
     /// Finds open cells in a sack for placing an item.
@@ -31,8 +26,12 @@ public class ItemMovementService : IItemMovementService
     /// <param name="sackHeight">Height of the sack in cells.</param>
     /// <returns>Point with coordinates for the upper left cell, or (-1, -1) if no space.</returns>
     public Point FindOpenCells(SackCollection sack, int itemWidth, int itemHeight, int sackWidth, int sackHeight)
+        => this.FindOpenCells(sack, itemWidth, itemHeight, sackWidth, sackHeight, null);
+
+    /// <summary>Finds open cells, <paramref name="ignoredItem"/> not counting as taking any.</summary>
+    private Point FindOpenCells(SackCollection sack, int itemWidth, int itemHeight, int sackWidth, int sackHeight, Item? ignoredItem)
     {
-        if (sack == null || itemWidth <= 0 || itemHeight <= 0 || sackWidth <= 0 || sackHeight <= 0)
+        if (sack is null || itemWidth <= 0 || itemHeight <= 0 || sackWidth <= 0 || sackHeight <= 0)
             return new Point(-1, -1);
 
         // Search vertically for open space
@@ -40,9 +39,9 @@ public class ItemMovementService : IItemMovementService
         {
             for (int y = 0; y < sackHeight; ++y)
             {
-                var foundItems = FindAllItems(sack, new Rectangle(x, y, itemWidth, itemHeight));
+                var foundItems = FindAllItems(sack, new Rectangle(x, y, itemWidth, itemHeight), ignoredItem);
                 
-                if ((foundItems == null || foundItems.Count == 0) && itemWidth + x <= sackWidth)
+                if ((foundItems is null || foundItems.Count == 0) && itemWidth + x <= sackWidth)
                 {
                     if (y + itemHeight <= sackHeight)
                     {
@@ -50,7 +49,7 @@ public class ItemMovementService : IItemMovementService
                         return new Point(x, y);
                     }
                 }
-                else if (foundItems != null && foundItems.Count > 0)
+                else if (foundItems is not null && foundItems.Count > 0)
                 {
                     // Skip over the item
                     y += foundItems[0].Height - 1;
@@ -68,7 +67,7 @@ public class ItemMovementService : IItemMovementService
     /// </summary>
     public bool CanPlaceItem(SackCollection sack, Item item, int sackWidth, int sackHeight)
     {
-        if (sack == null || item == null)
+        if (sack is null || item is null)
             return false;
 
         // Check if item is valid for the stash type
@@ -86,7 +85,7 @@ public class ItemMovementService : IItemMovementService
     /// </summary>
     public bool IsItemValidForStashType(Item item, StashType? stashType)
     {
-        if (item == null)
+        if (item is null)
             return false;
 
         // Relic Vault Stash only accepts artifacts, relics, charms, or formulae
@@ -103,17 +102,17 @@ public class ItemMovementService : IItemMovementService
     /// </summary>
     public ItemMoveResult MoveItem(Item item, SackCollection sourceSack, SackCollection destinationSack, Point destinationPosition)
     {
-        if (item == null)
+        if (item is null)
             return ItemMoveResultFailed("Item is null");
 
-        if (destinationSack == null)
+        if (destinationSack is null)
             return ItemMoveResultFailed("Destination sack is null", item);
 
         if (destinationPosition.X < 0 || destinationPosition.Y < 0)
             return ItemMoveResultFailed("Invalid destination position", item, destinationSack);
 
         // Remove from source sack if provided
-        if (sourceSack != null)
+        if (sourceSack is not null)
         {
             sourceSack.RemoveItem(item);
         }
@@ -131,42 +130,161 @@ public class ItemMovementService : IItemMovementService
         return ItemMoveResult.Succeeded(item, destinationSack, destinationPosition);
     }
 
-    /// <summary>
-    /// Updates item location metadata after a move.
-    /// This ensures search results always reflect the current location.
-    /// </summary>
-    public void UpdateItemLocation(Item item, PlayerCollection destinationPlayer, SackType destinationSackType, 
-        int destinationSackNumber, StashType? destinationStashType = null, string containerName = null)
-    {
-        if (item == null || destinationPlayer == null)
-            return;
-
-        // Update the item's location properties to reflect its new home
-        item.Place.Path = destinationPlayer.PlayerFile;
-        item.Place.Name = containerName ?? destinationPlayer.PlayerName;
-
-        // Calculate sack number based on sack type
-        switch (destinationSackType)
+    /// <inheritdoc/>
+    public ContainerPlace PlaceIn(PlayerCollection container, SackType sackType, int sackNumber, StashType? stashType = null)
+        => new()
         {
-            case SackType.Equipment:
-                item.Place.SackNumber = BagIdConstants.BAGID_EQUIPMENTPANEL;
-                break;
-            case SackType.Stash:
-                item.Place.SackNumber = destinationStashType.HasValue ? (int)destinationStashType : destinationSackNumber;
-                break;
-            case SackType.Vault:
-            case SackType.Player:
-            default:
-                // For vaults and player sacks, use the current sack index
-                item.Place.SackNumber = destinationSackNumber;
-                break;
+            Path = container.PlayerFile,
+            Name = container.PlayerName,
+            SackType = sackType,
+            StashType = stashType,
+            SackNumber = sackType switch
+            {
+                SackType.Equipment => BagIdConstants.BAGID_EQUIPMENTPANEL,
+                SackType.Stash when stashType.HasValue => (int)stashType.Value,
+                _ => sackNumber,
+            },
+        };
+
+    /// <inheritdoc/>
+    public ContainerPlace PlaceIn(Stash stash, StashType stashType)
+        => new()
+        {
+            Path = stash.StashFile,
+            Name = stash.Name,
+            SackType = SackType.Stash,
+            StashType = stashType,
+            SackNumber = (int)stashType,
+        };
+
+    /// <inheritdoc/>
+    public bool TryPlace(Item item, SackCollection sack, Size sackSize, ContainerPlace place, Action? beforePlacing = null)
+    {
+        // A read-only character takes nothing.
+        if (sack.IsReadOnly || !this.IsItemValidForStashType(item, sack.StashType))
+            return false;
+
+        Point location = this.FindOpenCells(sack, item.Width, item.Height, sackSize.Width, sackSize.Height, item);
+        if (location.X < 0)
+            return false;
+
+        beforePlacing?.Invoke();
+
+        item.PositionX = location.X;
+        item.PositionY = location.Y;
+        sack.AddItem(item);
+        item.Place.CopyFrom(place);
+
+        this._log.LogDebug("Placed item {ItemId} in {Name} sack {SackNumber} at ({X}, {Y})",
+            item.BaseItemId, place.Name, place.SackNumber, location.X, location.Y);
+
+        return true;
+    }
+
+    /// <inheritdoc/>
+    public bool Pack(SackCollection sack, IReadOnlyList<Item> order, Size sackSize, bool vertical)
+    {
+        if (order.Count == 0)
+            return true;
+
+        // What to put back when the sort fails: the same items at their place, and the sack as modified as it was.
+        var before = sack.Select(item => (Item: item, item.PositionX, item.PositionY)).ToList();
+        bool wasModified = sack.IsModified;
+        sack.EmptySack();
+
+        // Rows then columns, or columns then rows.
+        int outer = vertical ? sackSize.Width : sackSize.Height;
+        int inner = vertical ? sackSize.Height : sackSize.Width;
+
+        foreach (Item item in order)
+        {
+            if (!PlaceSorted(sack, item, sackSize, vertical, outer, inner))
+            {
+                // Put the sack back as it was: the items themselves, not copies, since the search and the panels
+                // know them; changes made before the sort are still to be saved.
+                sack.EmptySack();
+                foreach (var (original, x, y) in before)
+                {
+                    original.PositionX = x;
+                    original.PositionY = y;
+                    sack.AddItem(original);
+                }
+
+                sack.IsModified = wasModified;
+                return false;
+            }
         }
 
-        item.Place.SackType = destinationSackType;
-        item.Place.StashType = destinationStashType;
+        return true;
+    }
 
-        this._log.LogDebug("Updated item location: Path={Path}, SackType={SackType}, SackNumber={SackNumber}, StashType={StashType}",
-            item.Place.Path, destinationSackType, item.Place.SackNumber, destinationStashType);
+    /// <summary>Places an item in the first free cell of a sort, scanning <paramref name="outer"/> lines of <paramref name="inner"/> cells.</summary>
+    private bool PlaceSorted(SackCollection sack, Item item, Size sackSize, bool vertical, int outer, int inner)
+    {
+        int offset = vertical ? item.Width - 1 : item.Height - 1;
+
+        for (int j = 0; j < outer - offset; ++j)
+        {
+            for (int k = 0; k < inner; ++k)
+            {
+                var cells = vertical
+                    ? new Rectangle(j, k, item.Width, item.Height)
+                    : new Rectangle(k, j, item.Width, item.Height);
+                var foundItems = FindAllItems(sack, cells)!;
+
+                bool lineFits = vertical ? item.Width + j <= sackSize.Width : item.Height + j <= sackSize.Height;
+                if (foundItems.Count == 0 && lineFits)
+                {
+                    bool cellFits = vertical ? k + item.Height <= sackSize.Height : k + item.Width <= sackSize.Width;
+                    if (cellFits)
+                    {
+                        item.PositionX = cells.X;
+                        item.PositionY = cells.Y;
+                        sack.AddItem(item);
+                        return true;
+                    }
+
+                    // No room left on this line.
+                    break;
+                }
+
+                // Skip over the item in the way.
+                k += (vertical ? foundItems[0].Height : foundItems[0].Width) - 1;
+            }
+        }
+
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public bool MoveItems(SackCollection sack, IReadOnlyCollection<Item> items, Size sackSize, Point offset)
+    {
+        foreach (Item item in items)
+        {
+            var movedItemArea = new Rectangle(new Point(item.PositionX + offset.X, item.PositionY + offset.Y), item.Size);
+
+            // Another item in the way
+            foreach (Item blockingItem in FindAllItems(sack, movedItemArea)!)
+            {
+                if (!items.Contains(blockingItem))
+                    return false;
+            }
+
+            // Outside of the sack
+            if (movedItemArea.Top < 0 || movedItemArea.Left < 0
+                || movedItemArea.Bottom - 1 >= sackSize.Height || movedItemArea.Right - 1 >= sackSize.Width)
+            {
+                return false;
+            }
+        }
+
+        foreach (Item item in items)
+        {
+            item.PositionX += offset.X;
+            item.PositionY += offset.Y;
+        }
+
+        return true;
     }
 
     #region Private Helper Methods
@@ -175,7 +293,7 @@ public class ItemMovementService : IItemMovementService
     /// Find all items that are at least partially within the cell rectangle.
     /// Extracted from SackPanel.FindAllItems().
     /// </summary>
-    private System.Collections.ObjectModel.Collection<Item> FindAllItems(SackCollection sack, Rectangle cellRectangle)
+    private System.Collections.ObjectModel.Collection<Item>? FindAllItems(SackCollection sack, Rectangle cellRectangle, Item? ignoredItem = null)
     {
         var items = new System.Collections.ObjectModel.Collection<Item>();
         int minX = cellRectangle.X;
@@ -187,9 +305,9 @@ public class ItemMovementService : IItemMovementService
         {
             for (int y = minY; y < maxY; ++y)
             {
-                var item = FindItem(sack, new Point(x, y));
+                var item = FindItem(sack, new Point(x, y), ignoredItem);
 
-                if (item != null)
+                if (item is not null)
                 {
                     // Add this item to the collection if it is not already in there
                     if (!items.Contains(item))
@@ -207,16 +325,22 @@ public class ItemMovementService : IItemMovementService
 
     /// <summary>
     /// Gets an item at a cell location.
-    /// Extracted from SackPanel.FindItem().
     /// </summary>
-    private Item FindItem(SackCollection sack, Point cellLocation)
+    /// <param name="sack">The sack to look into.</param>
+    /// <param name="cellLocation">The cell coordinates.</param>
+    /// <param name="ignoredItem">An item to skip, such as the item being dragged.</param>
+    /// <returns>The item covering the cell, or null.</returns>
+    public Item? FindItem(SackCollection sack, Point cellLocation, Item? ignoredItem = null)
     {
-        if (sack == null)
+        if (sack is null)
             return null;
 
         // Find the item for this point
         foreach (var item in sack)
         {
+            if (ignoredItem is not null && item == ignoredItem)
+                continue;
+
             if (RecordId.IsNullOrEmpty(item.BaseItemId))
                 continue;
 
@@ -234,7 +358,7 @@ public class ItemMovementService : IItemMovementService
         return null;
     }
 
-    private static ItemMoveResult ItemMoveResultFailed(string errorMessage, Item item = null, SackCollection destinationSack = null)
+    private static ItemMoveResult ItemMoveResultFailed(string errorMessage, Item? item = null, SackCollection? destinationSack = null)
         => ItemMoveResult.Failed(errorMessage, item, destinationSack);
 
     #endregion

@@ -1,3 +1,5 @@
+using TQVaultAE.GUI.Interop;
+
 //-----------------------------------------------------------------------
 // <copyright file="WindowMenu.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
@@ -82,7 +84,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 		this.menuClose.ShortcutKeyDisplayString = "Alt+F4";
 
 		// Add items to menu
-		this.Items.AddRange(new ToolStripItem[] {
+		this.Items.AddRange([
 			this.menuRestore,
 			this.menuMove,
 			this.menuSize,
@@ -91,7 +93,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 			this.menuMax,
 			this.menuSep,
 			this.menuClose
-		});
+		]);
 
 		this.menuClose.BackColor = SystemColors.MenuHighlight;
 	}
@@ -99,7 +101,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 	/// <summary>
 	/// Event handler for system events.
 	/// </summary>
-	public event EventHandler<WindowMenuEventArgs> SystemEvent;
+	public event EventHandler<WindowMenuEventArgs>? SystemEvent;
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the Maximize menu item is enabled.
@@ -165,9 +167,9 @@ internal sealed class WindowMenu : ContextMenuStrip
 	/// </summary>
 	/// <param name="sender">sender object</param>
 	/// <param name="e">EventArgs data</param>
-	private void OnWindowMenuClick(object sender, EventArgs e)
+	private void OnWindowMenuClick(object? sender, EventArgs e)
 	{
-		int index = this.Items.IndexOf((ToolStripItem)sender);
+		int? index = sender is ToolStripItem item ? this.Items.IndexOf(item) : null;
 		switch (index)
 		{
 			case 0:
@@ -226,7 +228,7 @@ internal sealed class WindowMenu : ContextMenuStrip
 	/// <param name="command">command to be sent.</param>
 	private void SendSysCommand(User32.SystemMenuCommand command)
 	{
-		if (this.SystemEvent != null)
+		if (this.SystemEvent is not null)
 		{
 			WindowMenuEventArgs ev = new WindowMenuEventArgs((int)command);
 			this.SystemEvent(this, ev);

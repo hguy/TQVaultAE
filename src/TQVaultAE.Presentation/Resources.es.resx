@@ -323,9 +323,6 @@ Esto podría estar causado por un idioma o ruta del juego mal configurada.
   <data name="MainFormBtnShowPlayer" xml:space="preserve">
     <value>Mostrar Jugador</value>
   </data>
-  <data name="MainFormCustomMapLabel" xml:space="preserve">
-    <value>Mundo propio {0}</value>
-  </data>
   <data name="MainFormDatabaseError" xml:space="preserve">
     <value>¡Error extrayendo base de datos!</value>
   </data>
@@ -352,14 +349,6 @@ Necesitas reiniciar TQVault para que el cambio surta efecto.
   </data>
   <data name="MainFormMaintainVault" xml:space="preserve">
     <value>Administrar archivos de Colección...</value>
-  </data>
-  <data name="MainFormMapsChanged" xml:space="preserve">
-    <value>Opción de mundo propio cambiada</value>
-  </data>
-  <data name="MainFormMapsChangedMsg" xml:space="preserve">
-    <value>La opción de mundo propio se ha cambiado.
-Necesitas reiniciar TQVault para que el cambio surta efecto.
-¿Quieres reiniciar TQVault ahora?</value>
   </data>
   <data name="MainFormNoCharacters" xml:space="preserve">
     <value>No se han encontrado personajes de TQ</value>
@@ -728,14 +717,6 @@ esta opción podría ralentizar el inicio de TQVault.</value>
   <data name="SettingsDetectLanguage" xml:space="preserve">
     <value>Detectar idioma del juego automáticamente</value>
   </data>
-  <data name="SettingsEnableMod" xml:space="preserve">
-    <value>Habilitar mundos propios</value>
-  </data>
-  <data name="SettingsEnableModTT" xml:space="preserve">
-    <value>Esto permitirá al menú
-desplegable elegir
-mundos propios.</value>
-  </data>
   <data name="SettingsForceCheck" xml:space="preserve">
     <value>Comprobar actual.</value>
   </data>
@@ -754,9 +735,6 @@ actualizaciones disponibles.</value>
   </data>
   <data name="SettingsLabel4" xml:space="preserve">
     <value>Ruta de IT</value>
-  </data>
-  <data name="SettingsLabel5" xml:space="preserve">
-    <value>Mundo propio</value>
   </data>
   <data name="SettingsLoadChar" xml:space="preserve">
     <value>Cargar automáticamente el último personaje</value>
@@ -947,9 +925,6 @@ He aquí un ejemplo complejo: 'glacial &amp; hielo @espada $raro'</value>
   <data name="SettingsAllowEditCE" xml:space="preserve">
     <value>Permitir características de edición de caracteres</value>
   </data>
-  <data name="CEAttributePoints" xml:space="preserve">
-    <value>Puntos de atributo</value>
-  </data>
   <data name="CEAttributes" xml:space="preserve">
     <value>Atributos básicos</value>
   </data>
@@ -1003,6 +978,9 @@ He aquí un ejemplo complejo: 'glacial &amp; hielo @espada $raro'</value>
   </data>
   <data name="Money" xml:space="preserve">
     <value>Dinero</value>
+  </data>
+  <data name="Electrum" xml:space="preserve">
+    <value>Electrum</value>
   </data>
   <data name="SkillPoints" xml:space="preserve">
     <value>Habilidades</value>
@@ -1167,5 +1145,17 @@ He aquí un ejemplo complejo: 'glacial &amp; hielo @espada $raro'</value>
   </data>
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 Compartir cofre</value>
+  </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% de resistencia al daño por drenaje de energía</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>Se lanza donde murió el enemigo</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
   </data>
 </root>

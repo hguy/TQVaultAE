@@ -1,0 +1,578 @@
+using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using ModelContextProtocol;
+using ModelContextProtocol.Server;
+
+namespace TQVaultAE.GUI.Automation;
+
+/// <summary>
+/// MCP tools that create the app's forms and dialogs directly, to check them without finding the click that opens them.
+/// </summary>
+internal static partial class AutomationTools
+{
+	[McpServerTool(Name = "zoom", Destructive = true)]
+	[Description("Zooms the main window like its keyboard shortcuts: 'in' (Ctrl +, +10 %), 'out' (Ctrl -, -10 %) or 'reset' (Ctrl Home, 100 %). Returns the zoom step (0 to 16, nominal zoom 0.4 to 2 by 0.1), its nominal zoom, the item cell size in pixels, the effective zoom (the cell over the design cell without the DPI), the DPI factor, the resulting scale and the client size. The zoom is saved to UserConfig.xml like a user zoom: end with 'reset'.")]
+	public static string Zoom([Description("in, out or reset.")] string step)
+		=> AutomationHost.OnUi(main =>
+		{
+			float delta = step.ToLowerInvariant() switch
+			{
+				"in" => 0.1F,
+				"out" => -0.1F,
+				"reset" => 1.0F,
+				_ => throw new McpException("step must be in, out or reset."),
+			};
+
+			main.AutomationZoom(delta);
+			var ui = main.Services.UIService;
+			return Serialize(new
+			{
+				step = main.AutomationZoomStep,
+				nominalZoom = main.NominalZoom,
+				cell = ui.ItemUnitSize,
+				zoom = ui.Zoom,
+				dpiScale = ui.DpiScale,
+				scale = ui.Scale,
+				clientSize = new { main.ClientSize.Width, main.ClientSize.Height },
+			});
+		});
+
+	[McpServerTool(Name = "control_tree", ReadOnly = true)]
+	[Description("Lists the controls of an open form, or of the settings shown in the main window ('Settings'), with their type, bounds (client coordinates of their parent, in pixels), font, visibility and enabled state, to check layout and scaling. Also reports the form's DPI and TQVault's scale, zoom and DPI factor.")]
+	public static string ControlTree(
+		[Description("Part of the form title (case-insensitive); empty for the main window.")] string form = "",
+		[Description("Maximum depth below the form (default 3).")] int depth = 3)
+		=> AutomationHost.OnUi(main =>
+		{
+			Control target = string.IsNullOrEmpty(form)
+				? main
+				: System.Windows.Forms.Application.OpenForms.Cast<Form>().FirstOrDefault(f => f.Visible && f.Text.Contains(form, StringComparison.OrdinalIgnoreCase))
+					?? main.AutomationShownView(form)
+					?? throw new McpException($"No open form has '{form}' in its title.");
+
+			object Describe(Control c, int level) => new
+			{
+				name = c.Name,
+				type = c.GetType().Name,
+				bounds = new { c.Left, c.Top, c.Width, c.Height },
+				font = $"{c.Font.Name} {c.Font.SizeInPoints:0.##}pt",
+				visible = c.Visible,
+				enabled = c.Enabled,
+				autoScale = c is ContainerControl container && container.AutoScaleMode != AutoScaleMode.Inherit
+					? $"{container.AutoScaleMode} {container.AutoScaleDimensions.Width:0.##}x{container.AutoScaleDimensions.Height:0.##} -> {container.CurrentAutoScaleDimensions.Width:0.##}x{container.CurrentAutoScaleDimensions.Height:0.##}"
+					: null,
+				controls = level < depth && c.Controls.Count > 0
+					? c.Controls.Cast<Control>().Select(child => Describe(child, level + 1)).ToList()
+					: null,
+			};
+
+			var ui = main.Services.UIService;
+			return Serialize(new
+			{
+				form = target.Text,
+				deviceDpi = target.DeviceDpi,
+				clientSize = new { target.ClientSize.Width, target.ClientSize.Height },
+				scale = ui.Scale,
+				zoom = ui.Zoom,
+				dpiScale = ui.DpiScale,
+				controls = target.Controls.Cast<Control>().Select(c => Describe(c, 1)).ToList(),
+			});
+		});
+
+	[McpServerTool(Name = "list_forms", ReadOnly = true)]
+	[Description("Lists the form and dialog types registered in the container, which open_form can create.")]
+	public static string ListForms()
+		=> Serialize(FormTypes().Select(t => new { name = t.Name, type = t.FullName }));
+
+	[McpServerTool(Name = "open_form", Destructive = true)]
+	[Description("Creates a form or dialog from the container, as the app does (FormFactory), so its InitializeComponent and resources run. With show=false (the default) it reports the created form and disposes it; with show=true it opens it modeless over the main window, to capture or close afterwards with capture and close_dialog. Singletons (MainForm, BagButtonSettings) are only reported. Dialogs that need data first (ResultsDialog, ItemProperties...) may fail when shown: see recent_log.")]
+	public static string OpenForm(
+		[Description("Type name, as listed by list_forms, e.g. AboutBox or KeyBindsDialog.")] string name,
+		[Description("true to show the form modeless instead of disposing it.")] bool show = false)
+		=> AutomationHost.OnUi(main =>
+		{
+			var type = FormTypes().FirstOrDefault(t => string.Equals(t.Name, name, StringComparison.OrdinalIgnoreCase))
+				?? throw new McpException($"Unknown form '{name}'. Forms: {string.Join(", ", FormTypes().Select(t => t.Name))}");
+
+			var form = (Form)Program.ServiceProvider.GetRequiredService(type);
+
+			// A transient registration returns a new instance on each call.
+			var other = (Form)Program.ServiceProvider.GetRequiredService(type);
+			var singleton = ReferenceEquals(form, other);
+			if (!singleton)
+				other.Dispose();
+
+			var report = new
+			{
+				type = type.FullName,
+				singleton,
+				title = form.Text,
+				size = new { width = form.Width, height = form.Height },
+				controls = CountControls(form),
+				backgroundImage = form.BackgroundImage is not null,
+				icon = form.Icon is not null,
+				shown = show && !singleton,
+			};
+
+			if (singleton)
+				return Serialize(report);
+
+			if (show)
+			{
+				// Shown after this call returns, so a Load handler opening a message box cannot block the endpoint.
+				main.BeginInvoke(() =>
+				{
+					try
+					{
+						form.Show(main);
+					}
+					catch (Exception ex)
+					{
+						AutomationHost.Log?.LogError(ex, "open_form: {Form} failed to show", type.Name);
+						form.Dispose();
+					}
+				});
+			}
+			else
+			{
+				form.Dispose();
+			}
+
+			return Serialize(report);
+		});
+
+	[McpServerTool(Name = "open_item_dialog", Destructive = true)]
+	[Description("Opens the Properties or Seed dialog of an item, like its context menu entries, but modeless over the main window, to check its layout with control_tree, text_fit and capture. Close it with close_dialog and its Cancel/OK button: the Seed dialog's OK only validates the typed seed (the context menu entry then applies it), so it leaves the item unchanged here.")]
+	public static string OpenItemDialog(
+		[Description("Panel id.")] string panel,
+		[Description("Cell column of the item.")] int x,
+		[Description("Cell row of the item.")] int y,
+		[Description("properties or seed.")] string dialog = "properties")
+		=> AutomationHost.OnUi(main =>
+		{
+			var named = ResolveShownPanel(main, panel);
+			var item = named.Panel.AutomationFindItem(new Point(x, y))
+				?? throw new McpException($"No item at {x},{y} in '{named.Id}'.");
+
+			Form form = dialog.ToLowerInvariant() switch
+			{
+				"properties" => main.Services.Forms.Create<Dialogs.ItemProperties>().With(d => d.Item = item),
+				"seed" => main.Services.Forms.Create<Dialogs.ItemSeedDialog>().With(d => d.SelectedItem = item),
+				_ => throw new McpException("dialog must be properties or seed."),
+			};
+
+			// Shown after this call returns, so a Load handler opening a message box cannot block the endpoint.
+			main.BeginInvoke(() => form.Show(main));
+			return Serialize(new { dialog = form.GetType().Name, item = item.ToString() });
+		});
+
+	private static T With<T>(this T form, Action<T> set)
+		where T : Form
+	{
+		set(form);
+		return form;
+	}
+
+	[McpServerTool(Name = "open_input_dialog", Destructive = true)]
+	[Description("Opens the text input dialog (InputDialog, used to name a duplicated character) modeless over the main window, to check its layout with capture and close it with close_dialog (button Cancel or OK).")]
+	public static string OpenInputDialog(
+		[Description("Prompt above the text box.")] string prompt = "New name of the character:",
+		[Description("Dialog title.")] string title = "Input",
+		[Description("Text box content.")] string value = "NewName")
+		=> AutomationHost.OnUi(main =>
+		{
+			var dialog = new Dialogs.InputDialog(prompt, title, value);
+			dialog.Show(main);
+			return Serialize(new { title = dialog.Text, size = new { dialog.Width, dialog.Height }, deviceDpi = dialog.DeviceDpi });
+		});
+
+	[McpServerTool(Name = "bag_menu", Destructive = true)]
+	[Description("Right-clicks a bag button of a panel like the user (it selects that bag) and returns the bag context menu (move, copy, merge, empty, tooltips, CSV and JSON export, change, copy and paste icon, import), then closes it. With path (' > ' between levels, e.g. 'Copy Bag > Bag 3' or 'Change Icon'), clicks that entry after this call returns, since it may open a dialog or a confirmation. Only vault bags have this menu. Also returns the icon settings of every bag.")]
+	public static string BagMenu(
+		[Description("Panel id with bag buttons: vault, secondaryVault, playerBag or stash.")] string panel,
+		[Description("Zero-based bag button index.")] int bag,
+		[Description("Entry to click, texts separated by ' > '; empty to only read the menu.")] string? path = null)
+		=> AutomationHost.OnUi(form =>
+		{
+			var container = AutomationPanels.Resolve(form, panel).Container
+				?? throw new McpException($"Panel '{panel}' has no bag buttons.");
+			try
+			{
+				var (entries, clicked) = container.AutomationBagMenu(bag, path?.Split('>', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+				return Serialize(new { panel, bag, currentBag = container.ShownBag(), entries, clicked, icons = container.AutomationBagIcons });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	[McpServerTool(Name = "sort_menu", Destructive = true)]
+	[Description("Right-clicks the sort button of a panel like the user and returns its menu (one entry per sort order, the order a left click on this button uses checked), then closes it. With path (e.g. 'Sort by required level'), clicks that entry after this call returns: it becomes the order of this button's left click only (saved in UserConfig.xml as the button's attribute, <Sort Vault=... />) and sorts the panel's bag at once. Also returns this button's sort choices as they were before the click.")]
+	public static string SortMenu(
+		[Description("Panel id with a sort button: vault, secondaryVault, player (main inventory), playerBag or stash (the shown transfer, storage or relic tab; refused on the equipment tab, where the button is hidden).")] string panel,
+		[Description("Entry to click; empty to only read the menu.")] string? path = null)
+		=> AutomationHost.OnUi(form =>
+		{
+			var named = AutomationPanels.Resolve(form, panel);
+			var container = named.Container ?? throw new McpException($"Panel '{panel}' has no sort button.");
+			try
+			{
+				var (entries, clicked) = container.AutomationSortMenu(named.Panel, path?.Split('>', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+				return Serialize(new { panel, entries, clicked, sort = SortChoices(form, container, named.Panel) });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	[McpServerTool(Name = "sort_click", Destructive = true)]
+	[Description("Left-clicks the sort button of a panel like the user: sorts the shown bag with the order picked in this button's sort_menu (each click alternates rows and columns), merging relic and charm shards first when the 'Merge relic shards when sorting' setting is on. The click runs after this call returns (a sort that does not fit shows a message, see dialog_answers): read the result with get_state(panel). Returns the order used.")]
+	public static string SortClick(
+		[Description("Panel id with a sort button: vault, secondaryVault, player (main inventory), playerBag or stash (the shown transfer, storage or relic tab; refused on the equipment tab, where the button is hidden).")] string panel)
+		=> AutomationHost.OnUi(form =>
+		{
+			var named = AutomationPanels.Resolve(form, panel);
+			var container = named.Container ?? throw new McpException($"Panel '{panel}' has no sort button.");
+			try
+			{
+				var sort = SortChoices(form, container, named.Panel);
+				container.AutomationSortClickLater(named.Panel);
+				return Serialize(new { panel, queued = true, sort });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	/// <summary>
+	/// The sort choices of the sort button of <paramref name="target"/>: its key, the order of its left click, whether that
+	/// order is its own (else the default <c>Algorithm</c>), the default, and the shard merge.
+	/// </summary>
+	private static object SortChoices(Forms.MainForm form, Components.Panels.VaultPanel container, Components.Panels.SackPanel target)
+	{
+		var (key, algorithm) = container.AutomationSortOrder(target);
+		var sort = form.AutomationSettings.Sort;
+		return new
+		{
+			key = key.ToString(),
+			algorithm = algorithm.ToString(),
+			own = sort?.HasOwnAlgorithm(key) ?? false,
+			defaultAlgorithm = sort?.Algorithm.ToString(),
+			mergeRelics = sort?.MergeRelics,
+		};
+	}
+
+	[McpServerTool(Name = "vault_menu", Destructive = true)]
+	[Description("Returns the menu of the vault tools button next to the vault list (maintain vault files, Modded vault, share, import) as it opens for the shown vault. With path (' > ' between levels, e.g. 'Modded vault > shadowchampions'), clicks that entry after this call returns, since it may open a dialog.")]
+	public static string VaultMenu(
+		[Description("Entry to click, texts separated by ' > '; empty to only read the menu.")] string? path = null)
+		=> AutomationHost.OnUi(form =>
+		{
+			try
+			{
+				var (entries, clicked) = form.AutomationVaultMenu(path?.Split('>', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries));
+				return Serialize(new { vault = form.AutomationSelectedVault, vaultMod = form.AutomationSelectedVaultMod, entries, clicked });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	[McpServerTool(Name = "bag_settings_pick_icon", Destructive = true)]
+	[Description("In the open bag button settings dialog, right-clicks an icon of a tab's grid like the user, which picks its pictures (predefined selection) and switches to Custom icon. Then read the dialog with control_values and apply it with click_control('Bag Button Settings', 'applyButton').")]
+	public static string BagSettingsPickIcon(
+		[Description("Tab: Skills, Relics, Artifacts, Jewellery, Scrolls, Potions, Buttons, Misc, Helmets, Shields, Armbands, Greaves.")] string tab,
+		[Description("Zero-based icon index in that grid.")] int index = 0)
+		=> AutomationHost.OnUi(_ =>
+		{
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<Dialogs.BagButtonSettings>().FirstOrDefault(f => f.Visible)
+				?? throw new McpException("The bag button settings are not open.");
+			try
+			{
+				return Serialize(new { picked = dialog.AutomationPickIcon(tab, index) });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	[McpServerTool(Name = "bag_settings_hover_icon", Destructive = true)]
+	[Description("In the open bag button settings dialog, rests the pointer on an icon of a tab's grid through the grid's hover handler: the magnifier (control iconMagnifier) shows the icon enlarged below it, with its name and size. Capture it with capture('Bag Button Settings'); omit index to hide it.")]
+	public static string BagSettingsHoverIcon(
+		[Description("Tab: Skills, Relics, Artifacts, Jewellery, Scrolls, Potions, Buttons, Misc, Helmets, Shields, Armbands, Greaves.")] string tab,
+		[Description("Zero-based icon index in that grid; omit to leave the grid.")] int? index = null)
+		=> AutomationHost.OnUi(_ =>
+		{
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<Dialogs.BagButtonSettings>().FirstOrDefault(f => f.Visible)
+				?? throw new McpException("The bag button settings are not open.");
+			try
+			{
+				return Serialize(new { hovered = dialog.AutomationHoverIcon(tab, index) });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	[McpServerTool(Name = "bag_settings_drag_icon", Destructive = true)]
+	[Description("In the open bag button settings dialog, drags an icon of a tab's grid onto a picture box like the user: left button down on the icon, the virtual cursor moved onto the target box, button up to the grid (which has the mouse capture), whose handler finds the box under the cursor. target: on, off or over (Detailed pictures) or simple (Simple picture); a box hidden in the current mode is refused. The drop switches to Custom icon. Then read the dialog with control_values and apply it with click_control('Bag Button Settings', 'applyButton').")]
+	public static string BagSettingsDragIcon(
+		[Description("Tab: Skills, Relics, Artifacts, Jewellery, Scrolls, Potions, Buttons, Misc, Helmets, Shields, Armbands, Greaves.")] string tab,
+		[Description("Zero-based icon index in that grid.")] int index,
+		[Description("on, off, over or simple.")] string target)
+		=> AutomationHost.OnUi(_ =>
+		{
+			var dialog = System.Windows.Forms.Application.OpenForms.OfType<Dialogs.BagButtonSettings>().FirstOrDefault(f => f.Visible)
+				?? throw new McpException("The bag button settings are not open.");
+			try
+			{
+				return Serialize(new { dragged = dialog.AutomationDragIcon(tab, index, target), target });
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+	[McpServerTool(Name = "open_bag_settings", Destructive = true)]
+	[Description("Opens the bag button settings (icon and label picker) of a vault bag like the user: right-clicks its bag button (which shows that bag) and clicks 'Change icon' (bag_menu(panel, bag, 'Change icon')), after this call returns; OK applies the choice and redraws the button, as for the user. Only vault bags have the entry: the character's bags and the stash tabs are refused. The dialog is modal: capture it with capture('Bag Button Settings') and close it with close_dialog('Bag Button Settings', 'Cancel'). Waits for the game icons, which load in the background after startup ('iconsLoaded').")]
+	public static async Task<string> OpenBagSettings(
+		[Description("Panel id of a vault: vault or secondaryVault.")] string panel = "vault",
+		[Description("Zero-based bag button index; omit for the bag shown.")] int? bag = null)
+	{
+		AutomationHost.OnUi(form =>
+		{
+			var container = AutomationPanels.Resolve(form, panel).Container
+				?? throw new McpException($"Panel '{panel}' has no bag buttons.");
+			try
+			{
+				return container.AutomationChangeIcon(bag ?? container.ShownBag());
+			}
+			catch (InvalidOperationException ex)
+			{
+				throw new McpException(ex.Message);
+			}
+		});
+
+		// Let the dialog load (its icons come from the icon service, already loading in the background).
+		var iconService = Program.ServiceProvider.GetRequiredService<Presentation.Win32.Contracts.IIconService>();
+		var icons = await iconService.GetIconDatabaseAsync().WaitAsync(TimeSpan.FromSeconds(30));
+		await Task.Delay(500);
+
+		return AutomationHost.OnUi(_ => Serialize(new
+		{
+			shown = System.Windows.Forms.Application.OpenForms.OfType<Dialogs.BagButtonSettings>().Any(f => f.Visible),
+			iconsLoaded = icons.Count,
+			iconsWithBitmap = icons.Count(i => !i.IsEmpty),
+		}));
+	}
+
+	[McpServerTool(Name = "highlight_filters", Destructive = true)]
+	[Description("Opens the highlight filters panel of the main window (the 'Highlight items having' link), ticks or unticks its check boxes by text or name, and applies the filters when asked. Returns the check boxes and how many items are highlighted. See it with capture('main'); 'Reset' in the panel, or highlight_filters(uncheck=...) then apply, clears the highlight.")]
+	public static string HighlightFilters(
+		[Description("Comma separated check box texts or names to tick, e.g. 'Having Skill,Set Item'.")] string? check = null,
+		[Description("Comma separated check box texts or names to untick.")] string? uncheck = null,
+		[Description("true to apply the filters like the Apply button.")] bool apply = false)
+		=> AutomationHost.OnUi(main =>
+		{
+			var panel = main.AutomationShowHighlightFilters();
+			var boxes = panel.AutomationCheckBoxes;
+
+			void Set(string? list, bool value)
+			{
+				foreach (var wanted in (list ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+				{
+					var box = boxes.FirstOrDefault(b => string.Equals(b.Text, wanted, StringComparison.OrdinalIgnoreCase) || string.Equals(b.Name, wanted, StringComparison.OrdinalIgnoreCase))
+						?? throw new McpException($"No check box '{wanted}' in the highlight filters.");
+					box.Checked = value;
+				}
+			}
+
+			Set(check, true);
+			Set(uncheck, false);
+			if (apply)
+				panel.AutomationApply();
+
+			var highlighted = Program.ServiceProvider.GetRequiredService<Application.Contracts.Services.IHighlightService>().HighlightedItems;
+			return Serialize(new
+			{
+				shown = panel.Visible,
+				checkBoxes = boxes.Select(b => new { b.Name, b.Text, b.Checked }),
+				highlighted = highlighted.Count,
+			});
+		});
+
+	[McpServerTool(Name = "window_bounds", ReadOnly = true)]
+	[Description("The main window's bounds (virtual screen pixels), its state (Normal, Maximized, Minimized), its DPI, zoom and scale, the right and bottom edges of its content (its visible child controls), and the working area of the monitor it is on: checks a maximize on each monitor, and that the content still fits the window after a maximize and a restore. layout: the panels' table against the area inside the border (overflow above 0 reaches under the border), the panels' edges (shownRight/shownBottom), the control under each resize grip ((window) when the grip works), column widths and row heights.")]
+	public static string WindowBounds()
+		=> AutomationHost.OnUi(main =>
+		{
+			var screen = Screen.FromHandle(main.Handle);
+			var children = main.Controls.Cast<Control>().Where(c => c.Visible).ToList();
+			var ui = main.Services.UIService;
+			var table = main.AutomationLayoutTable;
+			var border = main.AutomationBorder;
+			var inside = new Rectangle(border.Left, border.Top, main.ClientSize.Width - border.Horizontal, main.ClientSize.Height - border.Vertical);
+			var cells = table.Controls.Cast<Control>().Where(c => c.Visible).ToList();
+			string Under(Point point) => main.GetChildAtPoint(point, GetChildAtPointSkip.Invisible)?.Name ?? "(window)";
+			return Serialize(new
+			{
+				bounds = new { main.Bounds.X, main.Bounds.Y, main.Bounds.Width, main.Bounds.Height },
+				clientSize = new { main.ClientSize.Width, main.ClientSize.Height },
+				contentRight = children.Count == 0 ? 0 : children.Max(c => c.Right),
+				contentBottom = children.Count == 0 ? 0 : children.Max(c => c.Bottom),
+				layout = new
+				{
+					border = new { border.Left, border.Top, border.Right, border.Bottom },
+					inside = new { inside.X, inside.Y, inside.Width, inside.Height },
+					table = new { table.Bounds.X, table.Bounds.Y, table.Bounds.Width, table.Bounds.Height },
+					preferred = new { table.PreferredSize.Width, table.PreferredSize.Height },
+					overflowRight = table.Right - inside.Right,
+					overflowBottom = table.Bottom - inside.Bottom,
+					// The panels in the table (without their empty margins): past the inside edge a human sees them cut.
+					shownRight = cells.Count == 0 ? 0 : table.Left + cells.Max(c => c.Right),
+					shownBottom = cells.Count == 0 ? 0 : table.Top + cells.Max(c => c.Bottom),
+					// A control under a resize grip of the border takes the mouse: the window can't be resized from there.
+					gripRight = Under(new Point(main.ClientSize.Width - 2, main.ClientSize.Height / 2)),
+					gripBottom = Under(new Point(main.ClientSize.Width / 2, main.ClientSize.Height - 2)),
+					gripBottomRight = Under(new Point(main.ClientSize.Width - 2, main.ClientSize.Height - 2)),
+					columns = table.GetColumnWidths(),
+					rows = table.GetRowHeights(),
+				},
+				state = main.WindowState.ToString(),
+				zoom = ui.Zoom,
+				scale = ui.Scale,
+				deviceDpi = main.DeviceDpi,
+				monitor = screen.DeviceName,
+				workingArea = new { screen.WorkingArea.X, screen.WorkingArea.Y, screen.WorkingArea.Width, screen.WorkingArea.Height },
+				insideWorkingArea = screen.WorkingArea.Contains(main.Bounds),
+				// The window as Windows has it (Bounds is what Windows Forms last asked for), the largest client size
+				// Windows lets it take and the largest zoom that fits it (a zoom in stops there).
+				windowRect = NativeWindowRect(main.Handle),
+				maxClientSize = new { main.AutomationZoomLimit.MaxClientSize.Width, main.AutomationZoomLimit.MaxClientSize.Height },
+				step = main.AutomationZoomStep,
+				nominalZoom = main.NominalZoom,
+				cell = ui.ItemUnitSize,
+				largestStep = main.AutomationZoomLimit.LargestStep,
+				largestZoom = TQVaultAE.Application.ZoomSteps.Nominal(main.AutomationZoomLimit.LargestStep),
+				// The window sizes a resize by the user is kept between.
+				resizeBounds = new
+				{
+					minimum = new { main.FormMinimumSize.Width, main.FormMinimumSize.Height },
+					maximum = new { main.FormMaximumSize.Width, main.FormMaximumSize.Height },
+				},
+			});
+		});
+
+	private static object NativeWindowRect(IntPtr handle)
+		=> GetWindowRect(handle, out var r)
+			? new { X = r.Left, Y = r.Top, Width = r.Right - r.Left, Height = r.Bottom - r.Top }
+			: new { X = 0, Y = 0, Width = 0, Height = 0 };
+
+	[McpServerTool(Name = "window_state", Destructive = true)]
+	[Description("Sets the main window's state like the taskbar or the caption buttons do: 'minimize', 'restore' (back from minimized or maximized, as a click on the taskbar icon) or 'maximize'. Returns the state, bounds and client size after it, and the bounds of the custom border's caption buttons (to check they are back in place after a restore).")]
+	public static async Task<string> WindowState(
+		[Description("minimize, restore or maximize.")] string state)
+	{
+		var target = state.ToLowerInvariant() switch
+		{
+			"minimize" => FormWindowState.Minimized,
+			"restore" => FormWindowState.Normal,
+			"maximize" => FormWindowState.Maximized,
+			_ => throw new McpException($"Unknown state '{state}': minimize, restore or maximize."),
+		};
+		AutomationHost.OnUi(main =>
+		{
+			main.WindowState = target;
+			return 0;
+		});
+
+		// The resize handlers run on posted messages.
+		await Task.Delay(500);
+
+		return AutomationHost.OnUi(main =>
+		{
+			object Bounds(string name) => main.Controls.Find(name, false).FirstOrDefault() is { } c
+				? new { c.Left, c.Top, c.Width, c.Height, c.Visible }
+				: null!;
+			return Serialize(new
+			{
+				state = main.WindowState.ToString(),
+				bounds = new { main.Bounds.X, main.Bounds.Y, main.Bounds.Width, main.Bounds.Height },
+				clientSize = new { main.ClientSize.Width, main.ClientSize.Height },
+				buttons = new
+				{
+					close = Bounds("buttonClose"),
+					maximize = Bounds("buttonMaximize"),
+					normalize = Bounds("ButtonScaleTo1"),
+					minimize = Bounds("buttonMinimize"),
+				},
+			});
+		});
+	}
+
+	[McpServerTool(Name = "move_window", Destructive = true)]
+	[Description("Moves the main window, or another open form, to a screen position (virtual screen pixels, so negative on a monitor left of the primary one), like dragging it there (the size is left to Windows): on a monitor of another DPI, Windows sends the DPI change. Returns the monitors (bounds and DPI) and the window's DPI and scales after the move. Move it back to its monitor when done.")]
+	public static async Task<string> MoveWindow(
+		[Description("Left of the window in virtual screen pixels.")] int x,
+		[Description("Top of the window in virtual screen pixels.")] int y,
+		[Description("Part of the form title (case-insensitive); empty for the main window.")] string form = "")
+	{
+		Form Target(Form main) => string.IsNullOrEmpty(form)
+			? main
+			: System.Windows.Forms.Application.OpenForms.Cast<Form>().FirstOrDefault(f => f.Visible && f.Text.Contains(form, StringComparison.OrdinalIgnoreCase))
+				?? throw new McpException($"No open form has '{form}' in its title.");
+
+		AutomationHost.OnUi(main =>
+		{
+			// Without the size: Location would send the old size too, over the one the DPI change gives.
+			NativeWindows.MoveTo(Target(main).Handle, x, y);
+			return 0;
+		});
+
+		// The DPI change comes as a posted window message.
+		await Task.Delay(500);
+
+		return AutomationHost.OnUi(main =>
+		{
+			var ui = main.Services.UIService;
+			var target = Target(main);
+			return Serialize(new
+			{
+				location = new { target.Location.X, target.Location.Y },
+				size = new { target.Width, target.Height },
+				clientSize = new { target.ClientSize.Width, target.ClientSize.Height },
+				deviceDpi = target.DeviceDpi,
+				zoom = ui.Zoom,
+				dpiScale = ui.DpiScale,
+				systemDpiScale = ui.SystemDpiScale,
+				scale = ui.Scale,
+				fontZoom = ui.FontZoom,
+				monitors = Screen.AllScreens.Select(s => new
+				{
+					s.DeviceName,
+					bounds = new { s.Bounds.X, s.Bounds.Y, s.Bounds.Width, s.Bounds.Height },
+					s.Primary,
+				}),
+			});
+		});
+	}
+
+	private static IEnumerable<Type> FormTypes()
+	{
+		var check = Program.ServiceProvider.GetRequiredService<IServiceProviderIsService>();
+		return typeof(Program).Assembly.GetTypes()
+			.Where(t => typeof(Form).IsAssignableFrom(t) && !t.IsAbstract && check.IsService(t))
+			.OrderBy(t => t.Name);
+	}
+
+	private static int CountControls(Control control)
+		=> control.Controls.Cast<Control>().Sum(c => 1 + CountControls(c));
+}

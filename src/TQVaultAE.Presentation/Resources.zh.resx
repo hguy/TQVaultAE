@@ -324,9 +324,6 @@
     <data name="MainFormBtnShowPlayer" xml:space="preserve">
     <value>显示角色</value>
   </data>
-    <data name="MainFormCustomMapLabel" xml:space="preserve">
-    <value>{0} 自定义地图</value>
-  </data>
     <data name="MainFormDatabaseError" xml:space="preserve">
     <value>提取数据库错误</value>
   </data>
@@ -354,15 +351,6 @@
   </data>
     <data name="MainFormMaintainVault" xml:space="preserve">
     <value>管理仓库文件...</value>
-  </data>
-  <data name="MainFormMapsChanged" xml:space="preserve">
-    <value>自定义地图设置已更改</value>
-  </data>
-  <data name="MainFormMapsChangedMsg" xml:space="preserve">
-    <value>自定义地图设置已更改。
-
-您需要重新启动TQVault以生效。
-您是否想要现在重新启动TQVault？</value>
   </data>
     <data name="MainFormNoCharacters" xml:space="preserve">
     <value>没有检测到泰坦之旅(TQ)的角色</value>
@@ -742,12 +730,6 @@ TQVaultMon是一款在运行时会让泰坦之旅游戏认为
     <data name="SettingsDetectLanguage" xml:space="preserve">
     <value>自动检测语言</value>
   </data>
-    <data name="SettingsEnableMod" xml:space="preserve">
-    <value>启用自定义地图</value>
-  </data>
-    <data name="SettingsEnableModTT" xml:space="preserve">
-    <value>勾选此选项将启用下拉列表来选择自定义地图.</value>
-  </data>
     <data name="SettingsForceCheck" xml:space="preserve">
     <value>检查更新</value>
   </data>
@@ -765,9 +747,6 @@ TQVaultMon是一款在运行时会让泰坦之旅游戏认为
   </data>
     <data name="SettingsLabel4" xml:space="preserve">
     <value>不朽王座游戏路径</value>
-  </data>
-    <data name="SettingsLabel5" xml:space="preserve">
-    <value>自定义地图</value>
   </data>
   <data name="SettingsLoadChar" xml:space="preserve">
     <value>自动加载最后打开的角色</value>
@@ -832,9 +811,6 @@ TQVault关闭仍有物品在垃圾桶时将不会有提示信息。</value>
     <value>商队</value>
   </data>
     <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-    <data name="TQVIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Icon\app.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="UpdateCompletion" xml:space="preserve">
     <value>{0}    {1} % 完成。</value>
   </data>
@@ -907,60 +883,6 @@ Used to track changes in the translation file.</comment>
         <comment>Do not Translate.  Used for AutoUpdate.
 Change this value to match program version when new keys are added.  Will trigger an update on next restart.</comment>
   </data>
-    <data name="AboutGraphic" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\aboutgraphic.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="autosortdown01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\autosortdown01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="autosortover01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\autosortover01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="autosortup01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\autosortup01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="EquipmentPanel" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\EquipmentPanel.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="inventorybagdown01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\inventorybagdown01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="inventorybagover01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\inventorybagover01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="inventorybagup01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\inventorybagup01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="MainForm_Background" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\MainForm Background.PNG;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="rotatedautosortdown01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\rotatedautosortdown01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="rotatedautosortover01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\rotatedautosortover01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="rotatedautosortup01" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\rotatedautosortup01.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="StashPanel" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\StashPanel.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="StashTabDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\StashTabDown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="StashTabOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\StashTabOver.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="StashTabUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\StashTabUp.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="tqmedallion" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\tqmedallion.JPG;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="tqmedalliondoor" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\tqmedalliondoor.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="VaultGroupBoxEmpty" xml:space="preserve">
     <value>&lt;空&gt;</value>
   </data>
@@ -971,27 +893,6 @@ Change this value to match program version when new keys are added.  Will trigge
     <data name="MainFormDisableLoadAllFilesCaption" xml:space="preserve">
     <value>禁用加载全部文件？</value>
   </data>
-    <data name="caravan_bg" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\caravan_bg.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="MainButtonDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\mainbuttondown.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="MainButtonOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\mainbuttonover.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="MainButtonUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\mainbuttonup.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="MainForm_NewBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\mainform_newbackground.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="Majestic_Chest" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\majestic chest.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="Majestic_Chest_small" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\majestic chest_small.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="MainFormSearchButtonText" xml:space="preserve">
     <value>搜索</value>
   </data>
@@ -1010,51 +911,6 @@ Change this value to match program version when new keys are added.  Will trigge
 
 一个复杂的例子：'北极的 &amp; 霜之 @戒指 $稀有的 | 普通的'</value>
   </data>
-    <data name="BorderBottom" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\borderbottom.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="BorderBottomLeftCorner" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\borderbottomleftcorner.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="BorderBottomRightCorner" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\borderbottomrightcorner.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="BorderSide" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\borderside.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="BorderTop" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\bordertop.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonMaximizeDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonmaximizedown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonMaximizeOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonmaximizeover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonMaximizeUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonmaximizeup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonMinimizeDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonminimizedown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonMinimizeOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonminimizeover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonMinimizeUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonminimizeup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonCloseDown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttonclosedown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonCloseOver" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttoncloseover.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ButtonCloseUp" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\buttoncloseup.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="Equipment_bg_new" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\equipment_bg_new.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="GlobalClose" xml:space="preserve">
     <value>关闭</value>
   </data>
@@ -1076,21 +932,6 @@ Change this value to match program version when new keys are added.  Will trigge
     <data name="GlobalSize" xml:space="preserve">
     <value>大小</value>
   </data>
-    <data name="NewAboutGraphic" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\newaboutgraphic.jpg;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="NewSplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\newsplashscreen.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="SplashScreen" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\splashscreen.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ProgressBar" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\progressbar.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
-    <data name="ProgressBarFill" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\progressbarfill.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="SettingsPlayerReadonly" xml:space="preserve">
     <value>角色装备只读</value>
   </data>
@@ -1113,14 +954,8 @@ Change this value to match program version when new keys are added.  Will trigge
     <data name="GlobalRelicVaultStash" xml:space="preserve">
     <value>遗物仓库</value>
   </data>
-    <data name="equipment_bg_and_char" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\equipment_bg_and_char.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="SettingsAllowEditCE" xml:space="preserve">
     <value>允许角色编辑功能</value>
-  </data>
-    <data name="CEAttributePoints" xml:space="preserve">
-    <value>属性点</value>
   </data>
     <data name="CEAttributes" xml:space="preserve">
     <value>基础属性</value>
@@ -1344,6 +1179,9 @@ Change this value to match program version when new keys are added.  Will trigge
     <data name="Money" xml:space="preserve">
     <value>金钱</value>
   </data>
+    <data name="Electrum" xml:space="preserve">
+    <value>金银合金</value>
+  </data>
     <data name="SkillPoints" xml:space="preserve">
     <value>技能点</value>
   </data>
@@ -1415,12 +1253,6 @@ Change this value to match program version when new keys are added.  Will trigge
   </data>
     <data name="PlayerPanelMenuEnableAllTooltip" xml:space="preserve">
     <value>启用所有提示信息</value>
-  </data>
-    <data name="SettingEnableDetailedTooltipView" xml:space="preserve">
-    <value>启用详细提示信息面板</value>
-  </data>
-    <data name="SettingEnableDetailedTooltipViewTT" xml:space="preserve">
-    <value>将提示信息分为前缀/基础/后缀</value>
   </data>
   <data name="SettingsItemBGColorOpacityLabel" xml:space="preserve">
     <value>物品背景颜色不透明度：</value>
@@ -1663,9 +1495,6 @@ Change this value to match program version when new keys are added.  Will trigge
 如果您在TQVaultAE中有未保存的更改，则以“游戏中”保存系统为准，并覆盖您的更改。
 您要关闭TQVaultAE才能应用更改。</value>
   </data>
-    <data name="ItemAccent" type="System.Resources.ResXFileRef, System.Windows.Forms">
-        <value>Resources\Img\ItemAccent.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-    </data>
     <data name="ItemEmbers" xml:space="preserve">
     <value>永恒余烬物品</value>
   </data>
@@ -1794,5 +1623,17 @@ Change this value to match program version when new keys are added.  Will trigge
   </data>
   <data name="ShareVaultTooltip" xml:space="preserve">
     <value>🔗 分享仓库</value>
+  </data>
+	<data name="TextTag_DefenseManaBurnRatio" xml:space="preserve">
+    <value>{%.0f0}% 法力燃烧伤害抗性</value>
+    <comment>Substitute for the missing tag of defensiveManaBurnRatio: resistance to the damage of Energy Drain (DamageManaBurnRatio)</comment>
+  </data>
+	<data name="TextTag_DefensePercentCurrentLife" xml:space="preserve">
+    <value>@DefensePercentLife</value>
+    <comment>Substitute for the missing tag of defensivePercentCurrentLife: the game text of the same resistance (DefensePercentLife)</comment>
+  </data>
+	<data name="TextTag_tqvSkillCastOnTargetLocation" xml:space="preserve">
+    <value>在被击杀敌人的位置施放</value>
+    <comment>TQVault text: a skill cast on a kill (skillCastName) appears at the slain enemy (skillCastOnTargetLocation)</comment>
   </data>
 </root>

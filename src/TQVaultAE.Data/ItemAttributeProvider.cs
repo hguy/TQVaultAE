@@ -1,4 +1,4 @@
-﻿//-----------------------------------------------------------------------
+﻿﻿//-----------------------------------------------------------------------
 // <copyright file="ItemAttributes.cs" company="None">
 //     Copyright (c) Brandon Wallace and Jesse Calhoun. All rights reserved.
 // </copyright>
@@ -6,6 +6,7 @@
 
 using TQVaultAE.Application.Contracts.Providers;
 using Microsoft.Extensions.Logging;
+using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using TQVaultAE.Domain.Entities;
@@ -32,7 +33,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Other Effects Tags
 	/// </summary>
 	private string[] otherEffects =
-	{
+	[
 		"characterBaseAttackSpeedTag",  // string text = TextTag(value)
 		"levelRequirement",             // integer level requirement text = Format(TextTag(MeetsRequirement), TextTag(LevelRequirement), (float) value)
 		"offensiveGlobalChance",        // float
@@ -41,7 +42,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"racialBonusAbsoluteDefense",   // Added by VillageIdiot : int
 		"itemSkillName",                // Added by VillageIdiot : string text (dbr)
 		"skillName"						// Added by hgu : string text (dbr) for OneShot_Scroll_Eternal
-	};
+	];
 
 	/// <summary>
 	/// Character Effects Tags
@@ -49,7 +50,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Effect name is also the text tag
 	/// </summary>
 	private string[] characterEffects =
-	{
+	[
 		"characterStrength",
 		"characterDexterity",
 		"characterIntelligence",
@@ -116,7 +117,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"projectilePiercingChance", // Added by VillageIdiot
 		"projectileLaunchRotation", // Added by VillageIdiot
 		"skillLifeBonus" // Added by VillageIdiot
-	};
+	];
 
 	/// <summary>
 	/// Defensive Effect Tags
@@ -124,7 +125,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Look for "Chance" variable to get the chance of this effect.
 	/// </summary>
 	private string[] defenseEffects =
-	{
+	[
 		"defensiveProtection",
 		"defensiveProtectionModifier",
 		"defensiveAbsorption",
@@ -193,14 +194,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"damageAbsorption", // Added by VillageIdiot
 		"damageAbsorptionPercent",  // Added by VillageIdiot
 		"defensiveTotalSpeedChance"
-	};
+	];
 
 	/// <summary>
 	/// Offensive Effects Tags
 	/// Change "offensive" to "Damage" to get the text tag.
 	/// </summary>
 	private string[] offensiveEffects =
-	{
+	[
 		"offensiveBasePhysical",
 		"offensiveBaseCold",
 		"offensiveBaseFire",
@@ -236,13 +237,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveStun",
 		"offensiveSleep", // Added by VillageIdiot
 		"offensiveBonusPhysical"
-	};
+	];
 
 	/// <summary>
 	/// Offensive Effects Variables Tags
 	/// </summary>
 	private string[] offensiveEffectVariables =
-	{
+	[
 		"Min",
 		"Max",
 		"Chance",
@@ -253,7 +254,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"DrainMin",    // Added by VillageIdiot
 		"DrainMax",    // Added by VillageIdiot
 		"DamageRatio"  // Added by VillageIdiot
-	};
+	];
 
 	/// <summary>
 	/// Offensive Modifier Effect Tags
@@ -261,7 +262,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Look for "Chance" variable to get the chance of this effect.
 	/// </summary>
 	private string[] offensiveModifierEffects =
-	{
+	[
 		"offensivePhysicalModifier",
 		"offensivePierceRatioModifier",
 		"offensivePierceModifier",
@@ -277,14 +278,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveSleepModifier",        // Added by VillageIdiot
 		"skillProjectileSpeedModifier",  // Added by VillageIdiot
 		"sparkMaxNumber"                 // Added by VillageIdiot
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Effects Tags
 	/// Change "offensiveSlow" to "DamageDuration" to get the text tag.
 	/// </summary>
 	private string[] offensiveSlowEffects =
-	{
+	[
 		"offensiveSlowPhysical",
 		"offensiveSlowBleeding",
 		"offensiveSlowCold",
@@ -301,13 +302,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveSlowDefensiveAbility",
 		"offensiveSlowOffensiveReduction",
 		"offensiveSlowDefensiveReduction"
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Effect Variables Tags
 	/// </summary>
 	private string[] offensiveSlowEffectVariables =
-	{
+	[
 		"Min",
 		"Max",
 		"DurationMin",
@@ -315,14 +316,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"Chance",
 		"XOR",         // boolean
 		"Global"       // boolean
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Modifier Effects Tags
 	/// Replace offensiveSlow with DamageDurationModifier to get the text tag
 	/// </summary>
 	private string[] offensiveSlowModifierEffects =
-	{
+	[
 		"offensiveSlowPhysical",
 		"offensiveSlowBleeding",
 		"offensiveSlowCold",
@@ -339,24 +340,24 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"offensiveSlowDefensiveAbility",   // messes things up
 		"offensiveSlowOffensiveReduction", // messes things up
 		"offensiveSlowDefensiveReduction"  // messes things up
-	};
+	];
 
 	/// <summary>
 	/// Offensive Slow Modifer Effect Variables Tags
 	/// </summary>
 	private string[] offensiveSlowModifierEffectVariables =
-	{
+	[
 		"DurationModifier",
 		"Modifier",
 		"ModifierChance"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Effects Tags
 	/// Replace "retaliation" with "Retaliation" to get text tag
 	/// </summary>
 	private string[] retaliationEffects =
-	{
+	[
 		"retaliationPhysical",
 		"retaliationPierceRatio",
 		"retaliationPierce",
@@ -368,19 +369,19 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationStun",
 		"retaliationPercentCurrentLife",
 		"retaliationElemental"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Effect Variables Tags
 	/// </summary>
 	private string[] retaliationEffectVariables =
-	{
+	[
 		"Chance",
 		"Max",
 		"Min",
 		"Global",   // boolean
 		"XOR"       // boolean
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Modifier Effects Tags
@@ -388,7 +389,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// Look for "Chance" variable to get the chance of this effect.
 	/// </summary>
 	private string[] retaliationModifierEffects =
-	{
+	[
 		"retaliationPhysicalModifier",
 		"retaliationPierceRatioModifier",
 		"retaliationPierceModifier",
@@ -399,14 +400,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationLifeModifier",
 		"retaliationStunModifier",
 		"retaliationElementalModifier"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Effects Tags
 	/// Replace "retaliationSlow" with "RetaliationDuration" to get text tag
 	/// </summary>
 	private string[] retaliationSlowEffects =
-	{
+	[
 		"retaliationSlowPhysical",
 		"retaliationSlowBleeding",
 		"retaliationSlowCold",
@@ -422,13 +423,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationSlowOffensiveAbility",
 		"retaliationSlowDefensiveAbility",
 		"retaliationSlowOffensiveReduction"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Effect Variables Tags
 	/// </summary>
 	private string[] retaliationSlowEffectVariables =
-	{
+	[
 		"Chance",
 		"Max",
 		"Min",
@@ -436,14 +437,14 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"DurationMin",
 		"Global",      // boolean
 		"XOR"          // boolean
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Modifier Effects Tags
 	/// Replace "retaliationSlow" with "RetaliationDurationModifier" to get text tag
 	/// </summary>
 	private string[] retaliationSlowModifierEffects =
-	{
+	[
 		"retaliationSlowPhysical",
 		"retaliationSlowBleeding",
 		"retaliationSlowCold",
@@ -459,56 +460,59 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"retaliationSlowOffensiveAbility",
 		"retaliationSlowDefensiveAbility",
 		"retaliationSlowOffensiveReduction"
-	};
+	];
 
 	/// <summary>
 	/// Retaliation Slow Modifier Effect Variables Tags
 	/// </summary>
 	private string[] retaliationSlowModifierEffectVariables =
-	{
+	[
 		"Modifier",
 		"ModifierChance",
 		"DurationModifier",
-	};
+	];
 
 	/// <summary>
 	/// Reagents for formulae
 	/// </summary>
 	private string[] reagents =
-	{
+	[
 		"reagent1BaseName",
 		"reagent2BaseName",
 		"reagent3BaseName"
-	};
+	];
 
 	/// <summary>
 	/// For skill parameters (duration, radius, angle, etc.)
 	/// </summary>
 	private string[] skillEffects =
-	{
+	[
 		"skillManaCost",
 		"skillActiveManaCost",
+		"skillActiveLifeCost",
 		"skillChanceWeight",
 		"skillActiveDuration",
 		"skillTargetRadius",
 		"projectileExplosionRadius",
+		"explosionRadius",
 		"skillTargetAngle",
 		"skillTargetNumber",
 		"skillChargeDuration",
 		"skillChargeLevel",
 		"piercingProjectile",
+		"projectilePiercing",
 		"headVelocity",
 		"maxDistance",
 		"tailVelocity",
 		"refreshTime",
 		"skillCooldownTime"
-	};
+	];
 
 	/// <summary>
 	/// For grouping the "Protects Against:" damage qualifiers.
 	/// </summary>
 	private string[] damageQualifierEffects =
-	{
+	[
 		"physicalDamageQualifier",
 		"pierceDamageQualifier",
 		"lightningDamageQualifier",
@@ -518,17 +522,17 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		"lifeDamageQualifier",
 		"bleedingDamageQualifier",
 		"elementalDamageQualifier"
-	};
+	];
 
 	/// <summary>
 	/// For shield parameters (defensiveBlock and blockRecoveryTime)
 	/// </summary>
 	private string[] shieldEffects =
-	{
+	[
 		"defensiveBlock",
 		////"blockAbsorption",  // This one is suppressed
 		"blockRecoveryTime"
-	};
+	];
 
 	/// <summary>
 	/// Dictionary holding all of the attributes
@@ -551,7 +555,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// </summary>
 	/// <param name="attribute">attribute string.  Internally normalized to UpperInvariant.</param>
 	/// <returns>ItemAttributesData for the attribute</returns>
-	public ItemAttributesData GetAttributeData(string attribute)
+	public ItemAttributesData? GetAttributeData(string attribute)
 	{
 		if (String.IsNullOrEmpty(attribute))
 			return null;
@@ -567,6 +571,16 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="formatValue">format string to be parsed</param>
 	/// <returns>updated format string</returns>
 	public string ConvertFormat(string formatValue)
+		=> this._convertedFormats.GetOrAdd(formatValue, ConvertFormatUncached);
+
+	/// <summary>
+	/// <see cref="ConvertFormat"/> results by TQ format. The formats come from the game translations, so there are few of
+	/// them, while each displayed attribute converted its own with two regular expressions: most of the allocations of the
+	/// search warm-up.
+	/// </summary>
+	private readonly ConcurrentDictionary<string, string> _convertedFormats = new(StringComparer.Ordinal);
+
+	private static string ConvertFormatUncached(string formatValue)
 	{
 		// Local func
 		string replaceMatch(Match m)
@@ -577,16 +591,16 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 			var alpha = m.Groups["alpha"].Value;
 			var formatNumber = m.Groups["formatNumber"].Value;
 
-			if (alpha.Equals("d") || alpha.Equals("f"))
+			if (alpha.Equals("d", StringComparison.Ordinal) || alpha.Equals("f", StringComparison.Ordinal))
 			{
 				// a number
-				if (!precis.Any())
+				if (precis.Length == 0)
 					// simple
 					return $@"[{formatNumber}]";
 
 				// see if they listed a decimal precision
 				string decimalSpec = string.Empty;
-				if (numDecimal.Any())
+				if (numDecimal.Length != 0)
 				{
 					// Sometimes the parsing would cause a format exception with 0
 					// Use TryParse to handle the exception.
@@ -597,9 +611,10 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 						decimalSpec = ".".PadRight(numDecimalParsed + 1, '0');
 				}
 
-				// See if they want the +- sign.
-				return sign.Any()
-					? $"[{formatNumber}:{sign}#0{decimalSpec}]"
+				// "%+": the sign of the number, '+' included, as printf writes it. A single section "+#0" would write a
+				// negative number "-+5", so negative numbers get their own section. "%-" only aligns left: no sign added.
+				return sign == "+"
+					? $"[{formatNumber}:+#0{decimalSpec};-#0{decimalSpec}]"
 					: $"[{formatNumber}:#0{decimalSpec}]";
 			}
 			else
@@ -638,7 +653,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	{
 		string result = string.Empty;
 
-		if (data == null)
+		if (data is null)
 			return result;
 
 		if (string.IsNullOrEmpty(data.Effect))
@@ -700,8 +715,8 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>effect tag string</returns>
 	public string GetAttributeTextTag(string attribute)
 	{
-		ItemAttributesData data = GetAttributeData(attribute);
-		if (data == null)
+		ItemAttributesData? data = GetAttributeData(attribute);
+		if (data is null)
 			return attribute;
 
 		return GetAttributeTextTag(data);
@@ -713,16 +728,16 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="variable">attribute variable</param>
 	/// <param name="variableName">string for variable name</param>
 	/// <returns>true if the variable == variable name</returns>
-	public bool AttributeHas(Variable variable, string variableName)
+	public bool AttributeHas(Variable? variable, string variableName)
 	{
-		if (variable == null)
+		if (variable is null)
 			return false;
 
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
+		if (data is null)
 			return false;
 
-		return data.Variable.ToUpperInvariant().Equals(variableName.ToUpperInvariant());
+		return string.Equals(data.Variable, variableName, StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -731,14 +746,16 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="attributeList">Array of attributes</param>
 	/// <param name="effect">effect string to be tested</param>
 	/// <returns>true if attribute effect in group == effect</returns>
-	public bool AttributeGroupIs(Collection<Variable> attributeList, string effect)
+	public bool AttributeGroupIs(Collection<Variable?> attributeList, string effect)
 	{
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (attributeList[0] is not { } variable)
 			return false;
 
-		return data.Effect.ToUpperInvariant().Equals(effect.ToUpperInvariant());
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
+		if (data is null)
+			return false;
+
+		return string.Equals(data.Effect, effect, StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -747,11 +764,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="attributeList">Array of attributes</param>
 	/// <param name="type">Effect type enumeration</param>
 	/// <returns>true if attribute effect in group == type</returns>
-	public bool AttributeGroupIs(Collection<Variable> attributeList, ItemAttributesEffectType type)
+	public bool AttributeGroupIs(Collection<Variable?> attributeList, ItemAttributesEffectType type)
 	{
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (attributeList[0] is not { } variable)
+			return false;
+
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
+		if (data is null)
 			return false;
 
 		return data.EffectType == type;
@@ -762,11 +781,13 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// </summary>
 	/// <param name="attributeList">array of attributes</param>
 	/// <returns>Effect type of the attribute list</returns>
-	public ItemAttributesEffectType AttributeGroupType(Collection<Variable> attributeList) // TODO Not used ?
+	public ItemAttributesEffectType AttributeGroupType(Collection<Variable?> attributeList) // TODO Not used ?
 	{
-		Variable variable = (Variable)attributeList[0];
-		ItemAttributesData data = this.GetAttributeData(variable.Name);
-		if (data == null)
+		if (attributeList[0] is not { } variable)
+			return ItemAttributesEffectType.Other;
+
+		ItemAttributesData? data = this.GetAttributeData(variable.Name);
+		if (data is null)
 			return ItemAttributesEffectType.Other;
 
 		return data.EffectType;
@@ -778,9 +799,9 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <param name="attributeList">array of attributes</param>
 	/// <param name="variableName">name of variable</param>
 	/// <returns>true if variable is present in the list</returns>
-	public bool AttributeGroupHas(Collection<Variable> attributeList, string variableName)
+	public bool AttributeGroupHas(Collection<Variable?> attributeList, string variableName)
 	{
-		foreach (Variable variable in attributeList)
+		foreach (Variable? variable in attributeList)
 		{
 			if (AttributeHas(variable, variableName))
 				return true;
@@ -800,11 +821,11 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>modified character effect text tag</returns>
 	private string GetCharacterEffectTextTag(string effect)
 	{
-		if (effect.ToUpperInvariant() == "CHARACTERGLOBALREQREDUCTION")
+		if (effect.Equals("CHARACTERGLOBALREQREDUCTION", StringComparison.OrdinalIgnoreCase))
 			// awful mispelling by IL.
 			return "CharcterItemGlobalReduction";
 
-		else if (effect.ToUpperInvariant() == "CHARACTERDEFLECTPROJECTILE")
+		else if (effect.Equals("CHARACTERDEFLECTPROJECTILE", StringComparison.OrdinalIgnoreCase))
 			return "CharacterDeflectProjectiles";
 
 		// Just return as-is since the effect is the text tag with the first letter capitalized.
@@ -1006,12 +1027,12 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		=> SpanHelper.ConcatWithSlice("RetaliationDurationModifier", effect.AsSpan(), 15);
 
 
-	string[] _GetSkillEffectTextTagUnchanged = new[] {
+	string[] _GetSkillEffectTextTagUnchanged = [
 		"SkillChanceWeight",
 		"headVelocity",
 		"maxDistance",
 		"tailVelocity",
-	};
+	];
 	/// <summary>
 	/// Gets modifier skill effect text tag.  Normalized to UpperInvariant.
 	/// </summary>
@@ -1029,10 +1050,15 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 		// Misspelling
 		if (SpanHelper.EqualsIgnoreCase(upperSpan.Span, "SKILLCHARGEDURATION"))
 			return "SkillChargeDurationMod";
+		// The number of charge levels: "7 Charge Levels" (the game's SkillChargeMax).
 		if (SpanHelper.EqualsIgnoreCase(upperSpan.Span, "SKILLCHARGELEVEL"))
-			return "SkillChargeDuration";
-		if (SpanHelper.EqualsIgnoreCase(upperSpan.Span, "PIERCINGPROJECTILE"))
+			return "SkillChargeMax";
+		// The chance to pass through enemies, under both of its record names.
+		if (SpanHelper.EqualsIgnoreCase(upperSpan.Span, "PIERCINGPROJECTILE")
+			|| SpanHelper.EqualsIgnoreCase(upperSpan.Span, "PROJECTILEPIERCING"))
 			return "ProjectilePiercingChance";
+		if (SpanHelper.EqualsIgnoreCase(upperSpan.Span, "EXPLOSIONRADIUS"))
+			return "ExplosionRadius";
 		if (SpanHelper.EqualsIgnoreCase(upperSpan.Span, "REFRESHTIME"))
 			return "tagSkillRefreshTime";
 
@@ -1051,7 +1077,7 @@ public partial class ItemAttributeProvider : IItemAttributeProvider
 	/// <returns>hash table of attributes</returns>
 	private Dictionary<string, ItemAttributesData> InitializeAttributeDictionary()
 	{
-		attributeDictionary = new Dictionary<string, ItemAttributesData>();
+		attributeDictionary = [];
 
 		// Add all the attributes to the dictionary
 		int subOrder = 0;

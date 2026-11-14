@@ -84,7 +84,16 @@ The workflow requires a Personal Access Token to push commits and create tags on
 
 | Project | Path |
 |---------|------|
-| TQVaultAE.Tests | src/TQVaultAE.Tests/TQVaultAE.Tests.csproj |
+| TQVaultAE.Domain.Tests | src/tests/TQVaultAE.Domain.Tests/TQVaultAE.Domain.Tests.csproj |
+| TQVaultAE.Application.Tests | src/tests/TQVaultAE.Application.Tests/TQVaultAE.Application.Tests.csproj |
+| TQVaultAE.Config.Tests | src/tests/TQVaultAE.Config.Tests/TQVaultAE.Config.Tests.csproj |
+| TQVaultAE.Data.Tests | src/tests/TQVaultAE.Data.Tests/TQVaultAE.Data.Tests.csproj |
+| TQVaultAE.Services.Tests | src/tests/TQVaultAE.Services.Tests/TQVaultAE.Services.Tests.csproj |
+| TQVaultAE.Services.Git.Tests | src/tests/TQVaultAE.Services.Git.Tests/TQVaultAE.Services.Git.Tests.csproj |
+| TQVaultAE.Presentation.Tests | src/tests/TQVaultAE.Presentation.Tests/TQVaultAE.Presentation.Tests.csproj |
+| TQVaultAE.DbCli.Tests | src/tests/TQVaultAE.DbCli.Tests/TQVaultAE.DbCli.Tests.csproj |
+| TQVaultAE.Logs.Tests | src/tests/TQVaultAE.Logs.Tests/TQVaultAE.Logs.Tests.csproj |
+| TQVaultAE.Tests.Win32 | src/tests/TQVaultAE.Tests.Win32/TQVaultAE.Tests.Win32.csproj |
 
 ## Why This Build Strategy?
 
@@ -182,21 +191,26 @@ dotnet build TQVaultAE.slnx --configuration Release --no-restore
 
 #### Test Options
 
+The tests run on Microsoft.Testing.Platform (xunit v3, selected in `global.json`), so `dotnet test` takes `--solution` or `--project`, and the filters and reports are xunit options.
+
 ```yaml
 # Run all tests (Release configuration for production CI/CD)
-dotnet test TQVaultAE.slnx --configuration Release
+dotnet test --solution TQVaultAE.slnx --configuration Release
 
 # Run specific test class
-dotnet test TQVaultAE.slnx --filter "FullyQualifiedName~GameFileServiceTests"
+dotnet test --solution TQVaultAE.slnx --filter-class "*GameFileServiceTests"
 
 # Run specific test
-dotnet test TQVaultAE.slnx --filter "FullyQualifiedName~GameFileServiceTests.GetGamePath_ReturnsExpected"
+dotnet test --solution TQVaultAE.slnx --filter-method "*GameFileServiceTests.GetGamePath_ReturnsExpected"
 
-# Run tests with coverage
-dotnet test TQVaultAE.slnx --configuration Release --collect:"XPlat Code Coverage;Format=opencover"
+# Run tests with coverage (coverlet.MTP), written to TestResults/
+dotnet test --solution TQVaultAE.slnx --configuration Release --coverlet --coverlet-output-format opencover
+
+# Write a TRX report per test project, in TestResults/
+dotnet test --solution TQVaultAE.slnx --configuration Release --report-xunit-trx
 
 # Note: Use Debug configuration locally for debugging with full symbols
-dotnet test TQVaultAE.slnx --configuration Debug
+dotnet test --solution TQVaultAE.slnx --configuration Debug
 ```
 
 ## Advanced Workflow Features

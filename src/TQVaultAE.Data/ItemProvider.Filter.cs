@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 
 using Microsoft.Extensions.Logging;
+using System.Collections.Frozen;
 using System.Globalization;
 using TQVaultAE.Domain.Entities;
 using TQVaultAE.Domain.Helpers;
@@ -15,9 +16,12 @@ public partial class ItemProvider
 {
 	#region Tag Lists
 
-	internal static readonly string[] unwantedTags =
+	// Frozen sets with an ignore-case comparer: lookups need no uppercase copy of the key (the names are ASCII).
+	internal static readonly FrozenSet<string> unwantedTags = new[]
 	{
+			// The armor absorption the game does not show, nor its chance (no game text: a raw line otherwise).
 			"DEFENSIVEABSORPTION",
+			"DEFENSIVEABSORPTIONCHANCE",
 			"MAXTRANSPARENCY",
 			"SCALE",
 			"CASTSSHADOWS",
@@ -56,6 +60,17 @@ public partial class ItemProvider
 			"USEDELAYTIME",
 			"CAMERASHAKEAMPLITUDE",
 			"SKILLMAXLEVEL",
+			"FORCEHIDEICONFROMQUICKSLOT",
+			"TARGETCASTER",
+			// Said by the skill descriptions ("Allows and requires dual wielding.", "A Dual Wield technique...").
+			"DUALWIELDONLY",
+			// Skill mechanics without game text: projectile drift, spawned wall angle, projectile lifetime.
+			"DRIFTMIN",
+			"DRIFTMAX",
+			"SPAWNOBJECTSANGLETOCASTER",
+			"SPAWNOBJECTSUSEANGLETOCASTER",
+			"SKILLPROJECTILEHITTIMETOLIVE",
+			"SKILLPROJECTILEMISSTIMETOLIVE",
 			"EXPANSIONTIME",
 			"SKILLTIER",
 			"CAMERASHAKEDURATIONSECS",
@@ -73,6 +88,7 @@ public partial class ItemProvider
 			"SKILLWEAPONTINTBLUE",
 			"DEBUFSKILL",
 			"HIDEFROMUI",
+			"MELEEONLY", // skill restriction flag, shown by the granted skills panel otherwise
 			"INSTANTCAST",
 			"WAVEENDWIDTH",
 			"WAVEDISTANCE",
@@ -121,35 +137,27 @@ public partial class ItemProvider
 			"ONHITACTIVATIONCHANCE",
 			"DECREMENTSTATTYPE",
 			"ALLSKILLENHANCEMENT",
-		};
+		}.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-	internal static readonly string[] requirementTags =
+	internal static readonly FrozenSet<string> requirementTags = new[]
 	{
 			"LEVELREQUIREMENT",
 			"INTELLIGENCEREQUIREMENT",
 			"DEXTERITYREQUIREMENT",
 			"STRENGTHREQUIREMENT",
-		};
+		}.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-	internal static readonly string[] statBonusTags =
-	{
-			"CHARACTERSTRENGTH",
-			"CHARACTERSTRENGTHMODIFIER",
-			"CHARACTERDEXTERITY",
-			"CHARACTERDEXTERITYMODIFIER",
-			"CHARACTERINTELLIGENCE",
-			"CHARACTERINTELLIGENCEMODIFIER",
-			"CHARACTERLIFE",
-			"CHARACTERLIFEMODIFIER",
-			"CHARACTERMANA",
-			"CHARACTERMANAMODIFIER",
-		};
-
-	internal static readonly string[] durationIndependentEffects =
+	/// <summary>
+	/// The effects the game applies at full strength for a time (slows, reduced abilities, armor and resistances, impaired
+	/// aim): their value is not multiplied by the duration, and the duration reads "for 3.0 Seconds" (the game's
+	/// <c>DamageFixed...FormatTime</c> texts), where damage over time reads "over 3.0 Seconds".
+	/// </summary>
+	internal static readonly FrozenSet<string> durationIndependentEffects = new[]
 	{
 			"OFFENSIVESLOWTOTALSPEED",
 			"OFFENSIVESLOWATTACKSPEED",
 			"OFFENSIVESLOWRUNSPEED",
+			"OFFENSIVESLOWSPELLCASTSPEED",
 			"OFFENSIVESLOWOFFENSIVEABILITY",
 			"OFFENSIVESLOWDEFENSIVEABILITY",
 			"OFFENSIVESLOWOFFENSIVEREDUCTION",
@@ -157,8 +165,16 @@ public partial class ItemProvider
 			"OFFENSIVETOTALDAMAGEREDUCTIONPERCENT",
 			"OFFENSIVETOTALDAMAGEREDUCTIONABSOLUTE",
 			"OFFENSIVETOTALRESISTANCEREDUCTIONPERCENT",
-			"OFFENSIVETOTALRESISTANCEREDUCTIONABSOLUTE"
-		};
+			"OFFENSIVETOTALRESISTANCEREDUCTIONABSOLUTE",
+			"OFFENSIVEFUMBLE",
+			"OFFENSIVEPROJECTILEFUMBLE",
+			"RETALIATIONSLOWATTACKSPEED",
+			"RETALIATIONSLOWRUNSPEED",
+			"RETALIATIONSLOWSPELLCASTSPEED",
+			"RETALIATIONSLOWOFFENSIVEABILITY",
+			"RETALIATIONSLOWDEFENSIVEABILITY",
+			"RETALIATIONSLOWOFFENSIVEREDUCTION",
+		}.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
 	#endregion
 	/// <summary>
@@ -167,28 +183,19 @@ public partial class ItemProvider
 	/// <param name="key">key which we are checking whether or not it gets filtered.</param>
 	/// <returns>true if key is present in this list</returns>
 	public bool FilterKey(string key)
-	{
-		string keyUpper = key.ToUpperInvariant();
-		return (Array.IndexOf(unwantedTags, keyUpper) != -1
-			|| keyUpper.EndsWith("SOUND", noCase)
-			|| keyUpper.EndsWith("MESH", noCase)
-			|| keyUpper.StartsWith("BODYMASK", noCase)
-		);
-	}
+		=> unwantedTags.Contains(key)
+			|| key.EndsWith("SOUND", noCase)
+			|| key.EndsWith("MESH", noCase)
+			|| key.StartsWith("BODYMASK", noCase)
+			// How a skill casts another one (chance, level, on all damage types, at the target...): shown as one line.
+			|| key.StartsWith("SKILLCAST", noCase);
 	/// <summary>
 	/// Holds all of the requirements which we are filtering
 	/// </summary>
 	/// <param name="key">key which we are checking whether or not it gets filtered.</param>
 	/// <returns>true if key is present in this list</returns>
 	public bool FilterRequirements(string key)
-		=> Array.IndexOf(requirementTags, key.ToUpperInvariant()) != -1;
-	/// <summary>
-	/// Indicates whether the key is a character stat boosting attribute
-	/// </summary>
-	/// <param name="key">string containing the key that is being checked</param>
-	/// <returns>True if the key is a stat boosting attrbute.</returns>
-	public bool IsStatBonus(string key)
-		=> Array.IndexOf(statBonusTags, key.ToUpperInvariant()) != -1;
+		=> requirementTags.Contains(key);
 	/// <summary>
 	/// Gets s string containing the prefix of the item class for use in the requirements equation.
 	/// </summary>
@@ -247,38 +254,6 @@ public partial class ItemProvider
 		return true;
 	}
 	/// <summary>
-	/// Gets the stat bonuses for a database record.
-	/// </summary>
-	/// <param name="statBonuses">SortedList of stat bonuses</param>
-	/// <param name="record">database record</param>
-	/// <param name="statLevel">optional level if there can be multiple values</param>
-	public void GetStatBonusesFromRecord(SortedList<string, int> statBonuses, DBRecordCollection record, int statLevel = 0)
-	{
-		if (record == null || statBonuses == null)
-			return;
-
-		// Some entries can have multiple values, but the value needs to be adjusted for 0 based lookups.
-		statLevel = statLevel < 1 ? 0 : statLevel - 1;
-
-		foreach (Variable variable in record)
-		{
-			if (FilterValue(variable, false) || !IsStatBonus(variable.Name) || statLevel >= variable.NumberOfValues)
-				continue;
-
-			string key = variable.Name.ToUpperInvariant();
-			int value = variable.GetInt32(statLevel);
-
-			// Update the value if it already exists.
-			if (statBonuses.ContainsKey(key))
-			{
-				value += statBonuses[key];
-				statBonuses.Remove(key);
-			}
-
-			statBonuses.Add(key, value);
-		}
-	}
-	/// <summary>
 	/// Checks to see if the id ends with .dbr and adds it if not.
 	/// Sometimes the .dbr extension is not written into the item
 	/// </summary>
@@ -292,7 +267,7 @@ public partial class ItemProvider
 		if (itemId.Normalized.Length < 4)
 			return itemId;
 
-		if (PathIO.GetExtension(itemId.Normalized).Equals(".DBR"))
+		if (PathIO.GetExtension(itemId.Normalized).Equals(".DBR", StringComparison.Ordinal))
 			return itemId;
 		else
 			return string.Concat(itemId.Raw, ".dbr");
@@ -302,12 +277,12 @@ public partial class ItemProvider
 	/// </summary>
 	/// <param name="requirements">SortedList of requirements</param>
 	/// <param name="record">database record</param>
-	private void GetRequirementsFromRecord(SortedList<string, Variable> requirements, DBRecordCollection record)
+	private void GetRequirementsFromRecord(SortedList<string, Variable> requirements, DBRecordCollection? record)
 	{
 		if (USettings.ItemDebugLevel > 0)
-			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, record);
+			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({Requirements}, {Record})", requirements, record);
 
-		if (record == null)
+		if (record is null)
 		{
 			if (USettings.ItemDebugLevel > 0)
 				Log.LogDebug("Error - record was null.");
@@ -316,12 +291,12 @@ public partial class ItemProvider
 		}
 
 		if (USettings.ItemDebugLevel > 1)
-			Log.LogDebug(record.Id.Normalized);
+			Log.LogDebug("{RecordId}", record.Id.Normalized);
 
 		foreach (Variable variable in record)
 		{
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug(variable.Name);
+				Log.LogDebug("{VariableName}", variable.Name);
 
 			if (FilterValue(variable, false))
 				continue;
@@ -336,18 +311,18 @@ public partial class ItemProvider
 			key = key.AsSpan().ToFirstCharUpperCase();
 
 			// Level needs to be LevelRequirement bah
-			if (key.Equals("Level"))
+			if (key.Equals("Level", StringComparison.Ordinal))
 				key = Variable.KEY_LEVELREQ;
 			;
 			// Keep Max value per Requirement (LevelRequirement, Strength, Dexterity, Intelligence)
-			if (requirements.ContainsKey(key))
+			if (requirements.TryGetValue(key, out Variable? value1))
 			{
-				Variable oldVariable = (Variable)requirements[key];
+				Variable oldVariable = (Variable)value1;
 
 				// Changed by VillageIdiot
 				// Comparison was failing when level difference was too high
 				// (single digit vs multi-digit)
-				if (value.Contains(",") || oldVariable.Name.Contains(","))
+				if (value.Contains(',') || oldVariable.Name.Contains(','))
 				{
 					// Just in case there is something with multiple values
 					// Keep the original code
@@ -366,7 +341,7 @@ public partial class ItemProvider
 			}
 
 			if (USettings.ItemDebugLevel > 1)
-				Log.LogDebug("Added Requirement {0}={1}", key, value);
+				Log.LogDebug("Added Requirement {Key}={Value}", key, value);
 
 			requirements.Add(key, variable);
 		}
@@ -382,30 +357,30 @@ public partial class ItemProvider
 	private void GetDynamicRequirementsFromRecord(Item itm, SortedList<string, Variable> requirements, Info itemInfo)
 	{
 		if (USettings.ItemDebugLevel > 0)
-			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({0}, {1})", requirements, itemInfo);
+			Log.LogDebug("Item.GetDynamicRequirementsFromRecord({Requirements}, {ItemInfo})", requirements, itemInfo);
 
-		DBRecordCollection record = Database.GetRecordFromFile(itemInfo.ItemId);
-		if (record == null)
+		DBRecordCollection? record = Database.GetRecordFromFile(itemInfo.ItemId);
+		if (record is null)
 			return;
 
 		string itemLevelTag = "itemLevel";
-		Variable lvl = record[itemLevelTag];
-		if (lvl == null)
+		Variable? lvl = record[itemLevelTag];
+		if (lvl is null)
 			return;
 
 		string itemLevel = lvl.ToStringValue();
 		string itemCostName = itemInfo.GetString("itemCostName");
 
 		record = Database.GetRecordFromFile(itemCostName);
-		if (record == null)
+		if (record is null)
 		{
 			record = Database.GetRecordFromFile("records/game/itemcost.dbr");
-			if (record == null)
+			if (record is null)
 				return;
 		}
 
 		if (USettings.ItemDebugLevel > 1)
-			Log.LogDebug(record.Id.Normalized);
+			Log.LogDebug("{RecordId}", record.Id.Normalized);
 
 		string prefix = GetRequirementEquationPrefix(itemInfo.ItemClass);
 		foreach (Variable variable in record)
@@ -414,7 +389,7 @@ public partial class ItemProvider
 				continue;
 
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug(variable.Name);
+				Log.LogDebug("{VariableName}", variable.Name);
 
 			if (FilterValue(variable, true))
 				// our equation is a string, so we want also strings
@@ -427,7 +402,7 @@ public partial class ItemProvider
 
 			// We need to ignore the cost equations.
 			// Shields have costs so they will cause an overflow.
-			if (key.Equals("Cost"))
+			if (key.Equals("Cost", StringComparison.Ordinal))
 				continue;
 
 			var variableKey = key.ToLowerInvariant();
@@ -435,7 +410,7 @@ public partial class ItemProvider
 				variableKey += "Requirement";
 
 			// Level needs to be LevelRequirement bah
-			if (key.Equals("Level"))
+			if (key.Equals("Level", StringComparison.Ordinal))
 				key = Variable.KEY_LEVELREQ;
 
 			// Skip over any requirements that have been set by the database record. 
@@ -473,7 +448,7 @@ VariableValue Raw : {valueRaw}
 ";
 				if (USettings.ItemDebugLevel > 0)
 					throw new System.Data.EvaluateException(mess);
-				else Log.LogError(mess);
+				else Log.LogError("{Message}", mess);
 			}
 
 			int intVal = 0;
@@ -489,7 +464,7 @@ VariableValue Raw : {valueRaw}
 			ans[0] = intVal;
 
 			if (USettings.ItemDebugLevel > 2)
-				Log.LogDebug("Added Requirement {0}={1}", key, ans.ToStringValue());
+				Log.LogDebug("Added Requirement {Key}={Value}", key, ans.ToStringValue());
 
 			requirements.Add(key, ans);
 		}

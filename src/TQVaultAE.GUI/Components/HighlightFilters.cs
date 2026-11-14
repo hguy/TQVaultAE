@@ -1,19 +1,24 @@
-﻿using TQVaultAE.Application;
+﻿﻿using TQVaultAE.Application;
 using TQVaultAE.Application.Contracts.Services;
+using TQVaultAE.Application.DTOs;
 using TQVaultAE.Domain.Entities;
-using TQVaultAE.GUI.Helpers;
+using TQVaultAE.GUI.Components.Scaling;
+using TQVaultAE.GUI.Infrastructure;
 using TQVaultAE.GUI.Models;
+using TQVaultAE.Presentation.Win32.Contracts;
+using TQVaultAE.Presentation.Win32;
 using TQVaultAE.Presentation;
 
 namespace TQVaultAE.GUI.Components;
 
-public partial class HighlightFilters : UserControl
+public partial class HighlightFilters : UserControl, IZoomFit
 {
-	private LinkLabel _link;
-	public SessionContext UserContext { get; internal set; }
-	public ITranslationService TranslationService { get; internal set; }
-	public IFontService FontService { get; internal set; }
-	public IHighlightService HighlightService { get; internal set; }
+	// Set by MainForm once the control is created by the designer.
+	private LinkLabel _link = null!;
+	public SessionContext UserContext { get; internal set; } = null!;
+	public ITranslationService TranslationService { get; internal set; } = null!;
+	public IFontService FontService { get; internal set; } = null!;
+	public IHighlightService HighlightService { get; internal set; } = null!;
 
 	public HighlightFilters()
 	{
@@ -23,7 +28,7 @@ public partial class HighlightFilters : UserControl
 		SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
 
 		BackgroundImageLayout = ImageLayout.Stretch;
-		BackgroundImage = Resources.caravan_bg;
+		BackgroundImage = Images.caravan_bg;
 	}
 
 	internal void InitializeFilters()
@@ -61,6 +66,7 @@ public partial class HighlightFilters : UserControl
 		scalingCheckBoxHavingPrefix.Text = Resources.SearchHavingPrefix;
 		scalingCheckBoxHavingSuffix.Text = Resources.SearchHavingSuffix;
 		scalingCheckBoxSetItem.Text = Resources.SearchSetItem;
+		scalingCheckBoxHavingSkill.Text = Resources.SearchHavingSkill;
 		buttonReset.Text = TranslationService.TranslateXTag("tagSkillReset");
 		buttonApply.Text = TranslationService.TranslateXTag("tagMenuButton07");
 
@@ -101,7 +107,7 @@ public partial class HighlightFilters : UserControl
 				, TextFormatFlags.SingleLine
 			).Width
 		).Max();
-		maxWidth += SystemInformation.VerticalScrollBarWidth;// Add this for the size of the checkbox in front of the text
+		maxWidth += scalingCheckedListBoxOrigin.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxOrigin.ColumnWidth = maxWidth;
 
 		scalingCheckedListBoxOrigin.Items.AddRange(list);
@@ -110,100 +116,7 @@ public partial class HighlightFilters : UserControl
 	private void InitType()
 	{
 		scalingCheckedListBoxTypes.Items.Clear();// Remove design mode items
-		var list = new ItemType[] {
-			new ItemType{
-				Value = Item.ICLASS_HEAD,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_HEAD)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_FOREARM,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_FOREARM)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_UPPERBODY,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_UPPERBODY)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_LOWERBODY,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_LOWERBODY)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_AXE,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_AXE))
-			},
-			new ItemType{
-				Value = Item.ICLASS_MACE,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_MACE))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SWORD,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SWORD))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SHIELD,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SHIELD))
-			},
-			new ItemType{
-				Value = Item.ICLASS_RANGEDONEHAND,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RANGEDONEHAND), true)
-			},
-			new ItemType{
-				Value = Item.ICLASS_BOW,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_BOW))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SPEAR,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SPEAR))
-			},
-			new ItemType{
-				Value = Item.ICLASS_STAFF,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_STAFF)).Trim(' ', ':')
-			},
-			new ItemType{
-				Value = Item.ICLASS_AMULET,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_AMULET))
-			},
-			new ItemType{
-				Value = Item.ICLASS_RING,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RING))
-			},
-			new ItemType{
-				Value = Item.ICLASS_ARTIFACT,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_ARTIFACT))
-			},
-			new ItemType{
-				Value = Item.ICLASS_FORMULA,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_FORMULA))
-			},
-			new ItemType{
-				Value = Item.ICLASS_RELIC,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_RELIC))
-			},
-			new ItemType{
-				Value = Item.ICLASS_CHARM,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_CHARM))
-			},
-			new ItemType{
-				Value = Item.ICLASS_SCROLL,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_SCROLL))
-			},
-			new ItemType{
-				Value = string.Join("|", Item.ICLASS_POTIONMANA, Item.ICLASS_POTIONHEALTH, Item.ICLASS_SCROLL_ETERNAL),
-				DisplayName = TranslationService.TranslateXTag("tagTutorialTip14Title")
-			},
-			new ItemType{
-				Value = Item.ICLASS_QUESTITEM,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_QUESTITEM))
-			},
-			new ItemType{
-				Value = Item.ICLASS_EQUIPMENT,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_EQUIPMENT)).Trim(' ', '~')
-			},
-			new ItemType{
-				Value = Item.ICLASS_DYE,
-				DisplayName = TranslationService.TranslateXTag(Item.GetClassTagName(Item.ICLASS_DYE))
-			},
-		};
+		var list = HighlightService.GetTypeOptions();
 
 		// Compute item space (ColumnWidth)
 		int maxWidth = list.Select(i =>
@@ -214,10 +127,10 @@ public partial class HighlightFilters : UserControl
 				, TextFormatFlags.SingleLine
 			).Width
 		).Max();
-		maxWidth += SystemInformation.VerticalScrollBarWidth;// Add this for the size of the checkbox in front of the text
+		maxWidth += scalingCheckedListBoxTypes.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxTypes.ColumnWidth = maxWidth;
 
-		scalingCheckedListBoxTypes.Items.AddRange(list);
+		scalingCheckedListBoxTypes.Items.AddRange([.. list]);
 	}
 
 	private void InitRarity()
@@ -258,7 +171,7 @@ public partial class HighlightFilters : UserControl
 				, TextFormatFlags.SingleLine
 			).Width
 		).Max();
-		maxWidth += SystemInformation.VerticalScrollBarWidth;// Add this for the size of the checkbox in front of the text
+		maxWidth += scalingCheckedListBoxRarity.VerticalScrollBarWidth();// Add this for the size of the checkbox in front of the text
 		scalingCheckedListBoxRarity.ColumnWidth = maxWidth;
 
 		scalingCheckedListBoxRarity.Items.AddRange(listRarity);
@@ -270,6 +183,7 @@ public partial class HighlightFilters : UserControl
 		scalingCheckBoxMax.Checked =
 		scalingCheckBoxMin.Checked =
 		scalingCheckBoxSetItem.Checked =
+		scalingCheckBoxHavingSkill.Checked =
 		scalingCheckBoxHavingCharm.Checked =
 		scalingCheckBoxHavingRelic.Checked =
 		scalingCheckBoxHavingPrefix.Checked =
@@ -311,26 +225,50 @@ public partial class HighlightFilters : UserControl
 		}
 	}
 
+	/// <summary>
+	/// Placed again once shown: the first show after a move to a monitor of another DPI scales the bounds the hidden panel
+	/// got for the previous DPI, which would move it away from the link.
+	/// </summary>
+	protected override void OnVisibleChanged(EventArgs e)
+	{
+		base.OnVisibleChanged(e);
+		if (this.Visible && this._link is not null)
+			this.AdjustLocation();
+	}
+
+	/// <summary>Nothing to give back: the panel is only placed.</summary>
+	void IZoomFit.UndoFit()
+	{
+	}
+
+	/// <summary>An open panel is placed over its link again: the zoom gave it back the bounds it had when the layout was kept.</summary>
+	void IZoomFit.Fit()
+	{
+		if (this.Visible && this._link is not null)
+			this.AdjustLocation();
+	}
+
 	private void AdjustLocation()
 	{
-		// Adjust location
-		var frm = FindForm();
-		var linklocation = frm.PointToClient(_link.PointToScreen(Point.Empty));
+		// Adjust location: over the link, in the view holding both.
+		var parent = Parent;
+		if (parent is null)
+			return;
+
+		var linklocation = parent.PointToClient(_link.PointToScreen(Point.Empty));
 		Location = new Point(linklocation.X, linklocation.Y - Height);
 	}
 
-	private void buttonReset_Click(object sender, EventArgs e)
+	private void buttonReset_Click(object? sender, EventArgs e)
 	{
 		var frm = FindForm();
 		ResetAll();
-		HighlightService.HighlightFilter = null;
-		_link.LinkVisited = false;
+		_link.LinkVisited = HighlightService.ApplyFilter(null);
 		Visible = false;
-		HighlightService.FindHighlight();
-		frm.Refresh();
+		frm?.Refresh();
 	}
 
-	private void buttonSave_Click(object sender, EventArgs e)
+	private void buttonSave_Click(object? sender, EventArgs e)
 	{
 		var frm = FindForm();
 		var filter = new HighlightFilterValues
@@ -345,7 +283,7 @@ public partial class HighlightFilters : UserControl
 			MinStr = (int)numericUpDownMinStr.Value,
 			MaxRequierement = scalingCheckBoxMax.Checked,
 			MinRequierement = scalingCheckBoxMin.Checked,
-			ClassItem = scalingCheckedListBoxTypes.CheckedItems.OfType<ItemType>().SelectMany(x => x.Value.Split('|')).ToList(),
+			ClassItem = scalingCheckedListBoxTypes.CheckedItems.OfType<HighlightTypeOption>().SelectMany(x => x.ItemClasses).ToList(),
 			Rarity = scalingCheckedListBoxRarity.CheckedItems.OfType<ItemRarity>().Select(x => x.Value).ToList(),
 			Origin = scalingCheckedListBoxOrigin.CheckedItems.OfType<ItemOrigin>().Select(x => x.Value).ToList(),
 			HavingPrefix = scalingCheckBoxHavingPrefix.Checked,
@@ -353,32 +291,20 @@ public partial class HighlightFilters : UserControl
 			HavingRelic = scalingCheckBoxHavingRelic.Checked,
 			HavingCharm = scalingCheckBoxHavingCharm.Checked,
 			IsSetItem = scalingCheckBoxSetItem.Checked,
+			HavingSkill = scalingCheckBoxHavingSkill.Checked,
 		};
 
-		if (filter.MaxRequierement || filter.MinRequierement || filter.HavingPrefix || filter.HavingSuffix || filter.HavingRelic || filter.HavingCharm || filter.IsSetItem
-			|| filter.ClassItem.Any() || filter.Rarity.Any() || filter.Origin.Any())
-		{
-			HighlightService.HighlightFilter = filter;
-			_link.LinkVisited = true;
-			Visible = false;
-			HighlightService.FindHighlight();
-			frm.Refresh();
-			return;
-		}
-
-		// No filters
-		HighlightService.HighlightFilter = null;
-		_link.LinkVisited = false;
+		// An empty filter clears the highlight filter.
+		_link.LinkVisited = HighlightService.ApplyFilter(filter);
 		Visible = false;
-		HighlightService.FindHighlight();
-		frm.Refresh();
+		frm?.Refresh();
 	}
 
-	private void numericUpDownMinLvl_ValueChanged(object sender, EventArgs e)
+	private void numericUpDownMinLvl_ValueChanged(object? sender, EventArgs e)
 	{
 		scalingCheckBoxMin.Checked = true;
 	}
-	private void numericUpDownMaxLvl_ValueChanged(object sender, EventArgs e)
+	private void numericUpDownMaxLvl_ValueChanged(object? sender, EventArgs e)
 	{
 		scalingCheckBoxMax.Checked = true;
 	}

@@ -17,7 +17,7 @@ public interface IGameFileService
 	/// <param name="prefix">prefix of the backup file</param>
 	/// <param name="file">file name to backup</param>
 	/// <returns>Returns the name of the backup file, or NULL if file does not exist</returns>
-	string BackupFile(string prefix, string file);
+	string? BackupFile(string prefix, string file);
 	/// <summary>
 	/// TQ has an annoying habit of throwing away your char in preference
 	/// for the Backup folder if it exists if it thinks your char is not valid.
@@ -33,6 +33,14 @@ public interface IGameFileService
 	/// <param name="newname"></param>
 	/// <returns>new directory path</returns>
 	string DuplicateCharacterFiles(string playerSaveDirectory, string newname);
+
+	/// <summary>
+	/// Gets the save folder <see cref="DuplicateCharacterFiles"/> creates for <paramref name="newname"/>.
+	/// </summary>
+	/// <param name="playerSaveDirectory">Save folder of the character to duplicate.</param>
+	/// <param name="newname">Name of the new character.</param>
+	/// <returns>The new save folder path, beside the source one.</returns>
+	string GetDuplicateCharacterFolder(string playerSaveDirectory, string newname);
 
 	/// <summary>
 	/// Archive a character
